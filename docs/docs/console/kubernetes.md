@@ -4,6 +4,12 @@ title: Kubernetes Installation
 
 # Kubernetes Installation
 
+:::info[Neo4j Upgrade]
+Neo4j version was upgraded to v5.x (from v4.4).
+
+Please follow [these](upgrade-from-v2.1.md) steps before upgrading the management console version.
+:::
+
 You can install the Management Console on a [single Docker host](docker) or in a dedicated Kubernetes cluster.
 
 ## Install the ThreatMapper Management Console
@@ -52,14 +58,14 @@ The following instructions explain how to install the ThreatMapper console on a 
     helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
     helm repo update
 
-    # helm show values deepfence/deepfence-console --version 2.1.1 | less
+    # helm show values deepfence/deepfence-console --version TM_CONSOLE_HELM_CHART_VERSION | less
 
     helm install deepfence-console deepfence/deepfence-console \
-    --set global.imageTag=2.1.0 \
+    --set global.imageTag=THREATMAPPER_VERSION \
     --set global.storageClass=gp3 \
     --namespace deepfence-console \
     --create-namespace \
-    --version 2.1.1
+    --version TM_CONSOLE_HELM_CHART_VERSION
     ```
 
    ... and wait for the pods to start up:
@@ -73,12 +79,12 @@ The following instructions explain how to install the ThreatMapper console on a 
    Deploy deepfence-router:
 
     ```bash
-    # helm show values deepfence/deepfence-router --version 2.1.0
+    # helm show values deepfence/deepfence-router --version TM_ROUTER_HELM_CHART_VERSION
    
     helm install deepfence-router deepfence/deepfence-router \
     --namespace deepfence-console \
     --create-namespace \
-    --version 2.1.0
+    --version TM_ROUTER_HELM_CHART_VERSION
     ```
 
    ... and wait for the cloud platform to deploy an external load-balancer:
@@ -94,7 +100,7 @@ Now proceed to the [Initial Configuration](initial-configuration).
 ### Console Helm Chart
 
 ```bash
-helm show values deepfence/deepfence-console --version 2.1.1 > deepfence_console_values.yaml
+helm show values deepfence/deepfence-console --version TM_CONSOLE_HELM_CHART_VERSION > deepfence_console_values.yaml
 
 # Make the changes in this file and save
 vim deepfence_console_values.yaml
@@ -102,13 +108,13 @@ vim deepfence_console_values.yaml
 helm install -f deepfence_console_values.yaml deepfence-console deepfence/deepfence-console \
     --namespace deepfence-console \
     --create-namespace \
-    --version 2.1.1
+    --version TM_CONSOLE_HELM_CHART_VERSION
 ```
 
 ### Router Helm Chart
 
 ```bash
-helm show values deepfence/deepfence-router --version 2.1.0 > deepfence_router_values.yaml
+helm show values deepfence/deepfence-router --version TM_ROUTER_HELM_CHART_VERSION > deepfence_router_values.yaml
 
 # Make the changes in this file and save
 vim deepfence_router_values.yaml
@@ -116,7 +122,7 @@ vim deepfence_router_values.yaml
 helm install -f deepfence_router_values.yaml deepfence-router deepfence/deepfence-router \
     --namespace deepfence-console \
     --create-namespace \
-    --version 2.1.0
+    --version TM_ROUTER_HELM_CHART_VERSION
 ```
 
 ## Delete the ThreatMapper Management Console

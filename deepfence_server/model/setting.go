@@ -13,14 +13,17 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 const (
 	ConsoleURLSettingKey              = "console_url"
+	FileServerURLSettingKey           = "file_server_url"
 	EmailConfigurationKey             = "email_configuration"
 	EmailSettingSES                   = "amazon_ses"
 	EmailSettingSMTP                  = "smtp"
+	EmailSettingSendGrid              = "sendgrid"
 	InactiveNodesDeleteScanResultsKey = "inactive_delete_scan_results"
 	ConsoleIDKey                      = "console_id"
 )
@@ -62,9 +65,16 @@ type GetAuditLogsRequest struct {
 	Window FetchWindow `json:"window"  required:"true"`
 }
 
+type GetAgentBinaryDownloadURLResponse struct {
+	AgentBinaryAmd64DownloadURL     string `json:"agent_binary_amd64_download_url"`
+	AgentBinaryArm64DownloadURL     string `json:"agent_binary_arm64_download_url"`
+	StartAgentScriptDownloadURL     string `json:"start_agent_script_download_url"`
+	UninstallAgentScriptDownloadURL string `json:"uninstall_agent_script_download_url"`
+}
+
 type SettingUpdateRequest struct {
 	ID    int64  `path:"id" validate:"required" required:"true"`
-	Key   string `json:"key" validate:"required,oneof=console_url inactive_delete_scan_results" required:"true" enum:"console_url,inactive_delete_scan_results"`
+	Key   string `json:"key" validate:"required,oneof=console_url file_server_url inactive_delete_scan_results" required:"true" enum:"console_url,file_server_url,inactive_delete_scan_results"`
 	Value string `json:"value" validate:"required" required:"true"`
 }
 
@@ -94,6 +104,10 @@ func (s *Setting) Update(ctx context.Context, pgClient *postgresqlDb.Queries) er
 		Value:         settingVal,
 		IsVisibleOnUi: s.IsVisibleOnUI,
 	})
+}
+
+func (s *Setting) Delete(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	return pgClient.DeleteSettingByID(ctx, s.ID)
 }
 
 func GetManagementConsoleURL(ctx context.Context, pgClient *postgresqlDb.Queries) (string, error) {
@@ -133,6 +147,10 @@ func GetVisibleSettings(ctx context.Context, pgClient *postgresqlDb.Queries) ([]
 }
 
 func GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key string) (*Setting, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "setting", "get-setting-by-key")
+	defer span.End()
+
 	setting, err := pgClient.GetSetting(ctx, key)
 	if err != nil {
 		return nil, err
@@ -151,6 +169,9 @@ func GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key st
 }
 
 func SetScanResultsDeletionSetting(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "set-scan-results-deletion-setting")
+	defer span.End()
+
 	_, err := pgClient.GetSetting(ctx, InactiveNodesDeleteScanResultsKey)
 	if errors.Is(err, sql.ErrNoRows) {
 		s := Setting{
@@ -174,6 +195,9 @@ func SetScanResultsDeletionSetting(ctx context.Context, pgClient *postgresqlDb.Q
 }
 
 func SetConsoleIDSetting(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "set-console-id-setting")
+	defer span.End()
+
 	_, err := pgClient.GetSetting(ctx, ConsoleIDKey)
 	if errors.Is(err, sql.ErrNoRows) {
 		randomInt, err := utils.GenerateRandomNumber(13)
@@ -201,6 +225,9 @@ func SetConsoleIDSetting(ctx context.Context, pgClient *postgresqlDb.Queries) er
 }
 
 func InitializeAESSetting(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "init-aes-setting")
+	defer span.End()
+
 	// set aes_secret in setting table, if !exists
 	// TODO
 	// generate aes and aes-iv

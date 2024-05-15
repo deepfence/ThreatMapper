@@ -14,10 +14,13 @@ import (
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func SyncRegistry(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get postgres client: %v", err)
@@ -72,6 +75,8 @@ func SyncRegistry(ctx context.Context, task *asynq.Task) error {
 
 func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registries []postgresql_db.GetContainerRegistriesRow) error {
 
+	log := log.WithCtx(ctx)
+
 	enqueuer, err := directory.Worker(ctx)
 	if err != nil {
 		return err
@@ -85,7 +90,7 @@ func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registri
 			continue
 		}
 
-		err = sync.SyncRegistry(ctx, pgClient, r, row.ID)
+		err = sync.SyncRegistry(ctx, pgClient, r, row)
 		if err != nil {
 			log.Error().Msgf("unable to sync registry: %s (%s): %v", row.RegistryType, row.Name, err)
 			toRetry = append(toRetry, row.ID)
@@ -107,6 +112,9 @@ func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registri
 
 // SyncRegistryPostgresNeo4jTask Synchronize registry between postgres and neo4j
 func SyncRegistryPostgresNeo4jTask(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get postgres client: %v", err)
@@ -137,23 +145,23 @@ func SyncRegistryPostgresNeo4jTask(ctx context.Context, task *asynq.Task) error 
 	if err != nil {
 		return err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := "MATCH (n:RegistryAccount) RETURN n.node_id"
 
-	res, err := tx.Run(query, map[string]interface{}{})
+	res, err := tx.Run(ctx, query, map[string]interface{}{})
 	if err != nil {
 		return err
 	}
 
-	recs, err := res.Collect()
+	recs, err := res.Collect(ctx)
 	if err != nil {
 		return err
 	}

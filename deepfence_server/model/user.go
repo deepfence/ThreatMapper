@@ -19,7 +19,10 @@ import (
 )
 
 const (
-	AdminRole         = "admin"
+	AdminRole        = "admin"
+	StandardUserRole = "standard-user"
+	ReadOnlyRole     = "read-only-user"
+
 	bcryptCost        = 11
 	GrantTypePassword = "password"
 	GrantTypeAPIToken = "api_token"
@@ -187,7 +190,7 @@ func (c *Company) GetDefaultUserGroup(ctx context.Context, pgClient *postgresqlD
 
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email" required:"true"`
-	Password string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
+	Password string `json:"password" validate:"required,min=1,max=32" required:"true"`
 }
 
 type APIAuthRequest struct {
@@ -442,8 +445,8 @@ func (u *User) Update(ctx context.Context, pgClient *postgresqlDb.Queries) (*pos
 	return &user, nil
 }
 
-func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*ResponseAccessToken, error) {
-	accessTokenID, accessToken, err := u.CreateAccessToken(tokenAuth, grantType)
+func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string, licenseActive bool) (*ResponseAccessToken, error) {
+	accessTokenID, accessToken, err := u.CreateAccessToken(tokenAuth, grantType, licenseActive)
 	if err != nil {
 		return nil, err
 	}
@@ -454,7 +457,7 @@ func (u *User) GetAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (*Re
 	return &ResponseAccessToken{AccessToken: accessToken, RefreshToken: refreshToken}, nil
 }
 
-func (u *User) CreateAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (string, string, error) {
+func (u *User) CreateAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string, licenseActive bool) (string, string, error) {
 	accessTokenID := utils.NewUUIDString()
 	claims := map[string]interface{}{
 		"id":                   accessTokenID,
@@ -469,6 +472,8 @@ func (u *User) CreateAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (
 		"is_active":            u.IsActive,
 		"grant_type":           grantType,
 		directory.NamespaceKey: u.CompanyNamespace,
+
+		directory.LicenseActiveKey: licenseActive,
 	}
 	jwtauth.SetIssuedNow(claims)
 	jwtauth.SetExpiryIn(claims, AccessTokenExpiry)

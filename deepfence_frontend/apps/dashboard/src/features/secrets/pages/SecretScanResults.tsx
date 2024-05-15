@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { capitalize, keys } from 'lodash-es';
+import { capitalize, keys, upperFirst } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -10,6 +10,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
+import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -60,28 +61,42 @@ import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
+  ScanStatusDeletePending,
   ScanStatusInError,
   ScanStatusInProgress,
   ScanStatusNoData,
   ScanStatusStopped,
   ScanStatusStopping,
 } from '@/components/ScanStatusMessage';
-import { SeverityBadge } from '@/components/SeverityBadge';
+import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityColorMap } from '@/constants/charts';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
+import { SelectNotificationChannel } from '@/features/integrations/components/SelectNotificationChannel';
 import { SecretScanResultsPieChart } from '@/features/secrets/components/scan-results/SecretScanResultsPieChart';
 import { SecretsCompare } from '@/features/secrets/components/scan-results/SecretsCompare';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
+import { THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
+import {
+  isCriticalSeverity,
+  isHighSeverity,
+  isLowSeverity,
+  isMediumSeverity,
+  isUnknownSeverity,
+  ScanTypeEnum,
+  SecretSeverityType,
+} from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
 import {
   isScanComplete,
+  isScanDeletePending,
   isScanFailed,
   isScanInProgress,
   isScanStopped,
@@ -133,12 +148,17 @@ const action = async ({
     const apiFunctionApi = apiWrapper({
       fn: apiFunction,
     });
+    const integrationIds = formData.getAll('integrationIds[]') as Array<string>;
     const result = await apiFunctionApi({
       modelScanResultsActionRequest: {
         result_ids: [...ids],
         scan_id: _scanId,
         scan_type: ScanTypeEnum.SecretScan,
         notify_individual: notifyIndividual === 'on',
+        integration_ids:
+          actionType === ActionEnumType.NOTIFY
+            ? integrationIds.map((id) => Number(id))
+            : null,
       },
     });
     if (!result.ok) {
@@ -341,7 +361,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -382,7 +402,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -427,7 +447,7 @@ const DeleteScanConfirmationModal = ({
       size="s"
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -468,7 +488,7 @@ const DeleteScanConfirmationModal = ({
             Are you sure you want to delete this scan? This action cannot be undone.
           </span>
           {fetcher.data?.message && (
-            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>
@@ -497,7 +517,7 @@ const NotifyModal = ({
       onOpenChange={() => closeModal(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-text-text-and-icon">
+          <div className="flex gap-3 items-center text-text-text-and-icon">
             <span className="h-6 w-6 shrink-0">
               <BellLineIcon />
             </span>
@@ -522,14 +542,18 @@ const NotifyModal = ({
           <div className="grid">
             <span>The selected secrets will be notified.</span>
             <br />
-            <span>Do you want to notify each secret separately?</span>
-            <div className="mt-2">
-              <Checkbox label="Yes notify them separately" name="notifyIndividual" />
-            </div>
+            <SelectNotificationChannel />
+            <br />
+            {ids.length > 1 ? (
+              <>
+                <span>Do you want to notify each secret separately?</span>
+                <div className="mt-2">
+                  <Checkbox label="Yes notify them separately" name="notifyIndividual" />
+                </div>
+              </>
+            ) : null}
             {fetcher.data?.message && (
-              <p className="mt-2 text-p7 dark:text-status-error">
-                {fetcher.data?.message}
-              </p>
+              <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
             )}
           </div>
           <div className={'flex gap-x-3 justify-end pt-3 mx-2'}>
@@ -561,17 +585,15 @@ const NotifyModal = ({
 const ScanHistory = () => {
   return (
     <div className="flex items-center h-12">
-      <span className="h-3.5 w-3.5 dark:text-text-input-value">
+      <span className="h-3.5 w-3.5 text-text-input-value">
         <ClockLineIcon />
       </span>
-      <span className="pl-2 pr-3 text-t3 dark:text-text-text-and-icon uppercase">
+      <span className="pl-2 pr-3 text-t3 text-text-text-and-icon uppercase">
         scan time
       </span>
       <Suspense
         fallback={
-          <div className="dark:text-text-text-and-icon text-p9">
-            Fetching scan history...
-          </div>
+          <div className="text-text-text-and-icon text-p9">Fetching scan history...</div>
         }
       >
         <HistoryControls />
@@ -584,7 +606,7 @@ const HistoryControls = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { data, fetchStatus } = useScanResults();
   const { scanStatusResult } = data;
-  const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
+  const { scan_id, node_id, node_type, created_at, status } = scanStatusResult ?? {};
   const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan((state) => {
     setIsSubmitting(state === 'submitting');
@@ -604,7 +626,7 @@ const HistoryControls = () => {
   }>({
     baseScanId: '',
     toScanId: '',
-    baseScanTime: updated_at ?? 0,
+    baseScanTime: created_at ?? 0,
     toScanTime: 0,
     showScanTimeModal: false,
   });
@@ -625,7 +647,7 @@ const HistoryControls = () => {
   if (!scan_id || !node_id || !node_type) {
     throw new Error('Scan Type, Node Type and Node Id are required');
   }
-  if (!updated_at) {
+  if (!created_at) {
     return null;
   }
   const onCompareScanClick = (baseScanTime: number) => {
@@ -637,7 +659,7 @@ const HistoryControls = () => {
   };
 
   return (
-    <div className="flex items-center relative flex-grow gap-2">
+    <div className="flex items-center relative flex-grow gap-4">
       {openStopScanModal && (
         <StopScanForm
           open={openStopScanModal}
@@ -679,7 +701,7 @@ const HistoryControls = () => {
             id: item.scanId,
             isCurrent: item.scanId === scan_id,
             status: item.status,
-            timestamp: item.updatedAt,
+            timestamp: item.createdAt,
             showScanCompareButton: true,
             onScanTimeCompareButtonClick: onCompareScanClick,
             onDeleteClick: (id) => {
@@ -703,7 +725,7 @@ const HistoryControls = () => {
               );
             },
           }))}
-          currentTimeStamp={formatMilliseconds(updated_at)}
+          currentTimeStamp={formatMilliseconds(created_at)}
         />
 
         {scanIdToDelete && (
@@ -732,11 +754,11 @@ const HistoryControls = () => {
             }}
           />
         )}
-        <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
-        <ScanStatusBadge status={status ?? ''} />
-        {!isScanInProgress(status ?? '') ? (
+        <div className="h-3 w-[1px] dark:bg-bg-grid-border bg-bg-border-form"></div>
+        <ScanStatusBadge status={status ?? ''} className="text-p1" />
+        {!isScanInProgress(status ?? '') && !isScanDeletePending(status ?? '') ? (
           <>
-            <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+            <div className="h-3 w-[1px] dark:bg-bg-grid-border bg-bg-border-form"></div>
             <div className="flex">
               <Button
                 variant="flat"
@@ -783,7 +805,7 @@ const HistoryControls = () => {
                     onClick={() => {
                       setCompareInput({
                         ...compareInput,
-                        baseScanTime: updated_at ?? 0,
+                        baseScanTime: created_at ?? 0,
                         showScanTimeModal: true,
                       });
                     }}
@@ -795,18 +817,22 @@ const HistoryControls = () => {
             </div>
           </>
         ) : (
-          <Button
-            type="button"
-            variant="flat"
-            size="sm"
-            className="absolute right-0 top-0"
-            onClick={(e) => {
-              e.preventDefault();
-              setOpenStopScanModal(true);
-            }}
-          >
-            Cancel scan
-          </Button>
+          <>
+            {!isScanDeletePending(status ?? '') ? (
+              <Button
+                type="button"
+                variant="flat"
+                size="sm"
+                className="absolute right-0 top-0"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenStopScanModal(true);
+                }}
+              >
+                Cancel scan
+              </Button>
+            ) : null}
+          </>
         )}
       </div>
     </div>
@@ -835,142 +861,148 @@ const ActionDropdown = ({
   isDockerImageNameEmpty: boolean;
 }) => {
   const isHost = nodeType === 'host';
+  const [openNotifyModal, setOpenNotifyModal] = useState<boolean>(false);
   return (
-    <Dropdown
-      triggerAsChild={true}
-      align={'start'}
-      content={
-        <>
-          {isHost ? (
+    <>
+      {openNotifyModal && (
+        <NotifyModal open={true} closeModal={setOpenNotifyModal} ids={ids} />
+      )}
+      <Dropdown
+        triggerAsChild={true}
+        align={'start'}
+        content={
+          <>
+            {isHost ? (
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(
+                    ids,
+                    ActionEnumType.MASK,
+                    ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  )
+                }
+              >
+                Mask secret for this host
+              </DropdownItem>
+            ) : (
+              <>
+                {!isDockerImageNameEmpty && (
+                  <>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.MASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                        )
+                      }
+                    >
+                      Mask secret for this image tag
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.MASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                        )
+                      }
+                    >
+                      Mask secret for this image(all tags)
+                    </DropdownItem>
+                  </>
+                )}
+              </>
+            )}
             <DropdownItem
               onClick={() =>
                 onTableAction(
                   ids,
                   ActionEnumType.MASK,
-                  ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  ModelScanResultsMaskRequestMaskActionEnum.Global,
                 )
               }
             >
-              Mask secret for this host
+              Mask secret across hosts and images
             </DropdownItem>
-          ) : (
-            <>
-              {!isDockerImageNameEmpty && (
-                <>
-                  <DropdownItem
-                    onClick={() =>
-                      onTableAction(
-                        ids,
-                        ActionEnumType.MASK,
-                        ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
-                      )
-                    }
-                  >
-                    Mask secret for this image tag
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() =>
-                      onTableAction(
-                        ids,
-                        ActionEnumType.MASK,
-                        ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
-                      )
-                    }
-                  >
-                    Mask secret for this image(all tags)
-                  </DropdownItem>
-                </>
-              )}
-            </>
-          )}
-          <DropdownItem
-            onClick={() =>
-              onTableAction(
-                ids,
-                ActionEnumType.MASK,
-                ModelScanResultsMaskRequestMaskActionEnum.Global,
-              )
-            }
-          >
-            Mask secret across hosts and images
-          </DropdownItem>
-          <DropdownSeparator />
-          {isHost ? (
+            <DropdownSeparator />
+            {isHost ? (
+              <DropdownItem
+                onClick={() =>
+                  onTableAction(
+                    ids,
+                    ActionEnumType.UNMASK,
+                    ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  )
+                }
+              >
+                Un-mask secret for this host
+              </DropdownItem>
+            ) : (
+              <>
+                {!isDockerImageNameEmpty && (
+                  <>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.UNMASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
+                        )
+                      }
+                    >
+                      Un-mask secret for this image tag
+                    </DropdownItem>
+                    <DropdownItem
+                      onClick={() =>
+                        onTableAction(
+                          ids,
+                          ActionEnumType.UNMASK,
+                          ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
+                        )
+                      }
+                    >
+                      Un-mask secret for this image(all tags)
+                    </DropdownItem>
+                  </>
+                )}
+              </>
+            )}
             <DropdownItem
               onClick={() =>
                 onTableAction(
                   ids,
                   ActionEnumType.UNMASK,
-                  ModelScanResultsMaskRequestMaskActionEnum.Entity,
+                  ModelScanResultsMaskRequestMaskActionEnum.Global,
                 )
               }
             >
-              Un-mask secret for this host
+              Un-mask secret across hosts and images
             </DropdownItem>
-          ) : (
-            <>
-              {!isDockerImageNameEmpty && (
-                <>
-                  <DropdownItem
-                    onClick={() =>
-                      onTableAction(
-                        ids,
-                        ActionEnumType.UNMASK,
-                        ModelScanResultsMaskRequestMaskActionEnum.ImageTag,
-                      )
-                    }
-                  >
-                    Un-mask secret for this image tag
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() =>
-                      onTableAction(
-                        ids,
-                        ActionEnumType.UNMASK,
-                        ModelScanResultsMaskRequestMaskActionEnum.AllImageTag,
-                      )
-                    }
-                  >
-                    Un-mask secret for this image(all tags)
-                  </DropdownItem>
-                </>
-              )}
-            </>
-          )}
-          <DropdownItem
-            onClick={() =>
-              onTableAction(
-                ids,
-                ActionEnumType.UNMASK,
-                ModelScanResultsMaskRequestMaskActionEnum.Global,
-              )
-            }
-          >
-            Un-mask secret across hosts and images
-          </DropdownItem>
-          <DropdownSeparator />
-          <DropdownItem
-            onClick={() => {
-              onTableAction(ids, ActionEnumType.NOTIFY);
-            }}
-          >
-            Notify
-          </DropdownItem>
-          <DropdownSeparator />
-          <DropdownItem
-            onClick={() => {
-              setIdsToDelete(ids);
-              setShowDeleteDialog(true);
-            }}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
-          >
-            Delete
-          </DropdownItem>
-        </>
-      }
-    >
-      {trigger}
-    </Dropdown>
+            <DropdownSeparator />
+            <DropdownItem
+              onClick={() => {
+                setOpenNotifyModal(true);
+              }}
+            >
+              Notify
+            </DropdownItem>
+            <DropdownSeparator />
+            <DropdownItem
+              onClick={() => {
+                setIdsToDelete(ids);
+                setShowDeleteDialog(true);
+              }}
+              color="error"
+            >
+              Delete
+            </DropdownItem>
+          </>
+        }
+      >
+        {trigger}
+      </Dropdown>
+    </>
   );
 };
 
@@ -1154,11 +1186,7 @@ const BulkActions = ({
         startIcon={<BellLineIcon />}
         disabled={!ids.length}
         onClick={() => {
-          if (ids.length === 1) {
-            onTableAction(ids, ActionEnumType.NOTIFY);
-          } else {
-            setOpenNotifyModal(true);
-          }
+          setOpenNotifyModal(true);
         }}
       >
         Notify
@@ -1187,7 +1215,7 @@ const Filters = () => {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['visibility']}
@@ -1312,7 +1340,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 const TablePlaceholder = ({
@@ -1350,6 +1378,14 @@ const TablePlaceholder = ({
       </div>
     );
   }
+  if (isScanDeletePending(scanStatus)) {
+    return (
+      <div className="flex items-center justify-center min-h-[384px]">
+        <ScanStatusDeletePending />
+      </div>
+    );
+  }
+
   return <TableNoDataElement text="No data available" />;
 };
 const SecretTable = ({
@@ -1365,6 +1401,7 @@ const SecretTable = ({
   rowSelectionState: RowSelectionState;
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useScanResults();
   const { data: scanResultData, scanStatusResult } = data;
@@ -1394,7 +1431,7 @@ const SecretTable = ({
             isDockerImageNameEmpty={isDockerImageNameEmpty}
             trigger={
               <button className="p-1">
-                <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                   <EllipsisIcon />
                 </div>
               </button>
@@ -1416,7 +1453,7 @@ const SecretTable = ({
             }}
             className="flex items-center gap-x-[6px]"
           >
-            <div className="w-4 h-4 shrink-0 dark:text-text-text-and-icon">
+            <div className="w-4 h-4 shrink-0 text-text-text-and-icon">
               <SecretsIcon />
             </div>
             <TruncatedText text={info.row.original.name ?? info.getValue() ?? ''} />
@@ -1436,13 +1473,21 @@ const SecretTable = ({
       }),
       columnHelper.accessor('matched_content', {
         cell: (info) => <TruncatedText text={info.getValue()} />,
-        header: () => 'Matched Content',
+        header: () => 'Matched content',
         minSize: 130,
         size: 140,
         maxSize: 165,
       }),
       columnHelper.accessor('level', {
-        cell: (info) => <SeverityBadge severity={info.getValue()} />,
+        cell: (info) => (
+          <div className="text-p4 text-text-text-and-icon gap-1 inline-flex">
+            <SeverityBadgeIcon
+              severity={info.getValue() as SecretSeverityType}
+              theme={theme}
+            />
+            {upperFirst(info.getValue())}
+          </div>
+        ),
         header: () => 'Severity',
         minSize: 30,
         size: 50,
@@ -1464,7 +1509,7 @@ const SecretTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
         },
-        header: () => <TruncatedText text="Affected Resources" />,
+        header: () => <TruncatedText text="Affected resources" />,
         minSize: 100,
         size: 120,
         maxSize: 190,
@@ -1481,7 +1526,7 @@ const SecretTable = ({
     ];
 
     return columns;
-  }, [setSearchParams, nodeType]);
+  }, [setSearchParams, nodeType, theme]);
 
   return (
     <Table
@@ -1558,13 +1603,34 @@ const SecretTable = ({
           message={scanStatusResult?.status_message ?? ''}
         />
       }
+      getTdProps={(cell) => {
+        const severity = cell.row.original.level;
+        return {
+          className: cn(
+            'relative',
+            'first:before:content-[""]',
+            'first:before:absolute',
+            'first:before:h-full',
+            'first:before:w-1',
+            'first:before:left-0',
+            'first:before:top-px',
+            {
+              'first:before:bg-severity-critical': isCriticalSeverity(severity),
+              'first:before:bg-severity-high': isHighSeverity(severity),
+              'first:before:bg-severity-medium': isMediumSeverity(severity),
+              'first:before:bg-severity-low': isLowSeverity(severity),
+              'first:before:bg-severity-unknown': isUnknownSeverity(severity),
+            },
+          ),
+        };
+      }}
     />
   );
 };
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <BreadcrumbWrapper>
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
@@ -1583,7 +1649,7 @@ const Header = () => {
           </Suspense>
         </Breadcrumb>
       </>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 
@@ -1679,15 +1745,17 @@ const ScanResults = () => {
         </div>
       </div>
       {filtersExpanded ? <Filters /> : null}
-      <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
-        <SecretTable
-          onTableAction={onTableAction}
-          setShowDeleteDialog={setShowDeleteDialog}
-          setIdsToDelete={setIdsToDelete}
-          rowSelectionState={rowSelectionState}
-          setRowSelectionState={setRowSelectionState}
-        />
-      </Suspense>
+      <div className="dark:shadow-none shadow-md">
+        <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
+          <SecretTable
+            onTableAction={onTableAction}
+            setShowDeleteDialog={setShowDeleteDialog}
+            setIdsToDelete={setIdsToDelete}
+            rowSelectionState={rowSelectionState}
+            setRowSelectionState={setRowSelectionState}
+          />
+        </Suspense>
+      </div>
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
@@ -1709,21 +1777,23 @@ const SeverityCounts = ({
     [k: string]: number;
   };
 }) => {
+  const { mode } = useTheme();
   const [, setSearchParams] = useSearchParams();
 
   return (
     <>
       {Object.keys(severityCounts)?.map((key) => {
         return (
-          <div className="flex gap-2 w-full py-[3px] items-center" key={key}>
+          <div className="flex gap-x-2 w-full items-center" key={key}>
             <div
               className="h-3 w-3 rounded-full"
               style={{
-                backgroundColor: SEVERITY_COLORS[key.toLowerCase() as SecretSeverityType],
+                backgroundColor:
+                  getSeverityColorMap(mode)[key.toLowerCase() as SecretSeverityType],
               }}
             ></div>
             <button
-              className="capitalize text-p7 dark:text-text-text-and-icon"
+              className="capitalize text-p4 text-text-icon"
               onClick={() => {
                 setSearchParams((prev) => {
                   prev.delete('page');
@@ -1737,7 +1807,7 @@ const SeverityCounts = ({
             >
               {key}
             </button>
-            <div className="ml-auto text-p7 dark:text-text-input-value">
+            <div className="ml-auto text-p11 text-text-input-value">
               {abbreviateNumber(severityCounts?.[key] ?? 0)}
             </div>
           </div>
@@ -1786,6 +1856,13 @@ const ScanStatusWrapper = ({
       </div>
     );
   }
+  if (isScanDeletePending(scanStatusResult?.status ?? '')) {
+    return (
+      <div className="flex items-center justify-center h-[140px]">
+        <ScanStatusDeletePending />
+      </div>
+    );
+  }
   if (displayNoData) {
     return (
       <div className="flex items-center justify-center h-[140px]">
@@ -1827,13 +1904,13 @@ const SeverityCountWidget = () => {
           />
         </div>
         <div className="flex flex-1 justify-center">
-          <div className="flex flex-col flex-1 max-w-[160px] gap-1">
+          <div className="flex flex-col flex-1 max-w-[160px]">
             {keys(severityCounts).length === 0 ? (
-              <div className="flex flex-col flex-1 gap-1">
+              <div className="flex flex-col flex-1">
                 <ScanStatusNoData />
               </div>
             ) : (
-              <div className="flex flex-col flex-1 max-w-[160px] gap-1">
+              <div className="flex flex-col flex-1 max-w-[160px] gap-y-[6px]">
                 <SeverityCounts severityCounts={severityCounts} />
               </div>
             )}
@@ -1845,6 +1922,7 @@ const SeverityCountWidget = () => {
 };
 
 const Top5Widget = () => {
+  const { mode: theme } = useTheme();
   const { data } = useTop5Secrets();
   const [searchParams] = useSearchParams();
 
@@ -1861,25 +1939,43 @@ const Top5Widget = () => {
           {data.data?.map?.((secret) => {
             return (
               <tr key={secret.node_id}>
-                <td className="w-[70%] px-0 pt-0 pb-2">
-                  <DFLink
-                    to={{
-                      pathname: `./${encodeURIComponent(secret.node_id)}`,
-                      search: searchParams.toString(),
-                    }}
-                    className="flex items-center gap-3"
-                  >
+                <td className="w-[80%] px-0 pt-0 pb-1">
+                  <div className="flex gap-x-[8px] items-center">
+                    <div
+                      className={cn('w-[3px] h-[18px] rounded shrink-0', {
+                        'bg-severity-critical': secret.level === 'critical',
+                        'bg-severity-high': secret.level === 'high',
+                        'bg-severity-medium': secret.level === 'medium',
+                        'bg-severity-low': secret.level === 'low',
+                        'bg-severity-unknown':
+                          !secret.level || secret.level === 'unknown',
+                      })}
+                    ></div>
                     <div className="w-[14px] h-[14px] shrink-0">
                       <SecretsIcon />
                     </div>
-                    <div className="text-p7 truncate">
-                      <TruncatedText text={secret.node_id} />
-                    </div>
-                  </DFLink>
+                    <DFLink
+                      to={{
+                        pathname: `./${encodeURIComponent(secret.node_id)}`,
+                        search: searchParams.toString(),
+                      }}
+                      className="flex items-center min-w-0"
+                    >
+                      <div className="text-p7 truncate">
+                        <TruncatedText text={secret.name} />
+                      </div>
+                    </DFLink>
+                  </div>
                 </td>
-                <td className="w-[30%] px-0 pt-0 pb-2">
-                  <div className="flex items-center justify-end">
-                    <SeverityBadge severity={secret.level} />
+                <td className="w-[20%] px-0 pt-0 pb-1 pl-1">
+                  <div className="flex gap-1">
+                    <SeverityBadgeIcon
+                      severity={secret.level as SecretSeverityType}
+                      theme={theme}
+                    />
+                    <span className="text-p4 text-text-text-and-icon">
+                      {upperFirst(secret.level)}
+                    </span>
                   </div>
                 </td>
               </tr>
@@ -1891,12 +1987,22 @@ const Top5Widget = () => {
   );
 };
 const TopAttackPath = () => {
+  const { mode } = useTheme();
   const { data: scanResult } = useScanResults();
   const { scanStatusResult } = scanResult;
 
   return (
     <ScanStatusWrapper scanStatusResult={scanStatusResult}>
-      <ScanStatusNoData />
+      <div
+        className={cn(
+          'h-full w-full relative select-none flex items-center justify-center',
+          {
+            'bg-[#F5F5F5]/50': mode === THEME_LIGHT,
+          },
+        )}
+      >
+        <ScanStatusNoData />
+      </div>
     </ScanStatusWrapper>
   );
 };
@@ -1904,7 +2010,7 @@ const Widgets = () => {
   return (
     <div className="grid grid-cols-3 gap-4 min-h-[200px]">
       <Card className="px-4 py-1.5 flex flex-col">
-        <div className="text-h6 dark:text-text-input-value py-1">Total secrets</div>
+        <div className="text-h6 text-text-input-value py-1">Total secrets</div>
         <div className="mt-2 flex-1 pl-4">
           <Suspense
             fallback={
@@ -1918,7 +2024,7 @@ const Widgets = () => {
         </div>
       </Card>
       <Card className="px-4 py-1.5 flex flex-col">
-        <div className="text-h6 dark:text-text-input-value py-1">Top 5 secrets</div>
+        <div className="text-h6 text-text-input-value py-1">Top 5 secrets</div>
         <div className="mt-2 flex-1">
           <Suspense
             fallback={
@@ -1932,7 +2038,7 @@ const Widgets = () => {
         </div>
       </Card>
       <Card className="px-4 py-1.5 flex flex-col">
-        <div className="text-h6 dark:text-text-input-value py-1">Top attack paths</div>
+        <div className="text-h6 text-text-input-value py-1">Top attack paths</div>
         <Suspense
           fallback={
             <div className="flex items-center justify-center min-h-[100px]">

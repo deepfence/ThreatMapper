@@ -15,13 +15,13 @@ Copy and paste the following (single project or multiple projects) into a new fi
 ```terraform
 module "cloud-scanner_example_single-project" {
   source              = "deepfence/cloud-scanner/gcp//examples/single-project"
-  version             = "0.4.0"
+  version             = "0.5.0"
   name                = "deepfence-cloud-scanner"
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url    = "<Console URL>"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key>"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.1.0"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:THREATMAPPER_VERSION"
   # project_id example: dev1-123456
   project_id          = "<PROJECT_ID>"
   # region example: asia-east1
@@ -46,7 +46,7 @@ module "cloud-scanner_example_single-project" {
 ```terraform
 module "cloud-scanner_example_multiple-projects" {
   source              = "deepfence/cloud-scanner/gcp//examples/multi-project"
-  version             = "0.4.0"
+  version             = "0.5.0"
   name                = "deepfence-cloud-scanner"
   # org_domain: root project name
   org_domain          = ""
@@ -54,7 +54,7 @@ module "cloud-scanner_example_multiple-projects" {
   mgmt-console-url    = "<Console URL>"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key>"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.1.0"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:THREATMAPPER_VERSION"
   # project_id example: dev1-123456
   project_id          = "<PROJECT_ID>"
   # region example: asia-east1
@@ -98,7 +98,7 @@ module "cloud-scanner_example_single-project" {
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.1.0"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:THREATMAPPER_VERSION"
   project_id          = "<PROJECT_ID>; ex. dev1-123456"
   region              = "<REGION_ID>; ex. asia-east1"
   #optional for private ip console

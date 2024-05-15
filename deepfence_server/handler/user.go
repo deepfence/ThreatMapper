@@ -43,6 +43,7 @@ var (
 	ErrpasswordResetCodeNotFound = NotFoundError{errors.New("code not found")}
 	ErruserInviteInvalidCode     = BadDecoding{errors.New("invalid code")}
 	ErrregistrationDone          = ForbiddenError{errors.New("cannot register. Please contact your administrator for an invite")}
+	ErrCannotDeleteSelfUser      = ForbiddenError{err: errors.New("cannot delete your account, please request another admin user to delete your account")}
 )
 
 func init() {
@@ -68,6 +69,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	registerRequest.Email = strings.ToLower(registerRequest.Email)
 	namespace := directory.FetchNamespace(registerRequest.Email)
 	ctx := directory.NewContextWithNameSpace(namespace)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf(err.Error())
@@ -171,7 +173,19 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
+	licenseActive := false
+	licenseRegistered := false
+	var licenseKey string
+	var licenseEmailDomain string
+	license, err := model.GetLicense(ctx, pgClient)
+	if err == nil {
+		licenseRegistered = true
+		licenseActive = license.IsActive
+		licenseKey = license.LicenseKey
+		licenseEmailDomain = license.LicenseEmailDomain
+	}
+
+	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword, licenseActive)
 	if err != nil {
 		log.Error().Msg("GetAccessToken: " + err.Error())
 		h.respondError(err, w)
@@ -183,6 +197,9 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		ResponseAccessToken: *accessTokenResponse,
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
 		PasswordInvalidated: user.PasswordInvalidated,
+		LicenseRegistered:   licenseRegistered,
+		LicenseKey:          licenseKey,
+		EmailDomain:         licenseEmailDomain,
 	})
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -202,7 +219,9 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
+
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(registerRequest.Namespace))
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		h.respondError(err, w)
@@ -269,7 +288,19 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword)
+	licenseActive := false
+	licenseRegistered := false
+	var licenseKey string
+	var licenseEmailDomain string
+	license, err := model.GetLicense(ctx, pgClient)
+	if err == nil {
+		licenseRegistered = true
+		licenseActive = license.IsActive
+		licenseKey = license.LicenseKey
+		licenseEmailDomain = license.LicenseEmailDomain
+	}
+
+	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypePassword, licenseActive)
 	if err != nil {
 		log.Error().Msg("GetAccessToken: " + err.Error())
 		h.respondError(err, w)
@@ -283,6 +314,9 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		ResponseAccessToken: *accessTokenResponse,
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
 		PasswordInvalidated: user.PasswordInvalidated,
+		LicenseRegistered:   licenseRegistered,
+		LicenseKey:          licenseKey,
+		EmailDomain:         licenseEmailDomain,
 	})
 }
 
@@ -423,6 +457,7 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	pgUsers, err := pgClient.GetUsers(ctx)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
+		return
 	}
 	users := make([]model.User, len(pgUsers))
 	for i, pgUser := range pgUsers {
@@ -633,21 +668,29 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DeleteUserByUserID(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 	ctx := r.Context()
 	user, statusCode, pgClient, err := model.GetUserByID(ctx, userID)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	currentUser, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
+		log.Error().Msgf("%v", err)
 		h.respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	h.deleteUserHandler(w, r, ctx, pgClient, user, currentUser.ID == user.ID)
+	if currentUser.ID == user.ID {
+		log.Error().Msgf("User: %s, error: %v", currentUser.Email, ErrCannotDeleteSelfUser)
+		h.respondError(&ErrCannotDeleteSelfUser, w)
+		return
+	}
+	h.deleteUserHandler(w, r, ctx, pgClient, user, false)
 }
 
 func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {

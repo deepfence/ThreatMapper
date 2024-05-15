@@ -1,4 +1,6 @@
-export const ShieldWarningSolidIcon = () => {
+import { Mode, THEME_LIGHT } from '@/theme/ThemeContext';
+
+export const ShieldWarningSolidIcon = ({ theme }: { theme: Mode }) => {
   return (
     <svg
       width="100%"
@@ -13,11 +15,11 @@ export const ShieldWarningSolidIcon = () => {
       />
       <path
         d="M11.4736 8.49353C11.4736 7.94125 11.9213 7.49353 12.4736 7.49353C13.0259 7.49353 13.4736 7.94125 13.4736 8.49353V13.0869C13.4736 13.6391 13.0259 14.0869 12.4736 14.0869C11.9213 14.0869 11.4736 13.6391 11.4736 13.0869L11.4736 8.49353Z"
-        fill="black"
+        fill={theme === THEME_LIGHT ? 'white' : 'black'}
       />
       <path
         d="M12.5002 17.5C11.8669 17.5 11.3535 16.9866 11.3535 16.3533C11.3535 15.72 11.8669 15.2067 12.5002 15.2067C13.1335 15.2067 13.6468 15.72 13.6468 16.3533C13.6468 16.9866 13.1335 17.5 12.5002 17.5Z"
-        fill="black"
+        fill={theme === THEME_LIGHT ? 'white' : 'black'}
       />
     </svg>
   );

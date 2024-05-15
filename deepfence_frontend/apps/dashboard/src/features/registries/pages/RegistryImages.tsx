@@ -26,6 +26,7 @@ import { InProgressIcon } from '@/components/icons/registries/InProgress';
 import { StartScanIcon } from '@/components/icons/registries/StartScan';
 import { TagsIcon } from '@/components/icons/registries/Tags';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { RegistryImagesTable } from '@/features/registries/components/RegistryImagesTable';
 import { queries } from '@/queries';
 import {
@@ -77,6 +78,18 @@ const useImageSummary = () => {
   return useSuspenseQuery({
     ...queries.registry.getImageSummary({
       registryId: nodeId,
+    }),
+  });
+};
+
+const useRegistryDetails = () => {
+  const params = useParams() as {
+    nodeId: string;
+  };
+  const nodeId = params?.nodeId;
+  return useSuspenseQuery({
+    ...queries.lookup.registryAccount({
+      nodeIds: [nodeId],
     }),
   });
 };
@@ -139,7 +152,7 @@ function getScanOptions(
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <BreadcrumbWrapper>
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
@@ -158,7 +171,7 @@ const Header = () => {
           </Suspense>
         </Breadcrumb>
       </>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 const DynamicBreadcrumbs = () => {
@@ -166,6 +179,9 @@ const DynamicBreadcrumbs = () => {
     account: string;
     nodeId: string;
   };
+
+  const { data } = useRegistryDetails();
+
   return (
     <>
       <BreadcrumbLink>
@@ -178,7 +194,7 @@ const DynamicBreadcrumbs = () => {
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink isLast>
-        <span className="inherit cursor-auto">{nodeId}</span>
+        <span className="inherit cursor-auto">{data.data?.[0]?.name ?? nodeId}</span>
       </BreadcrumbLink>
     </>
   );
@@ -293,12 +309,16 @@ const CountWidget = () => {
     );
   }
 
-  const { images = 0, tags = 0, scans_in_progress = 0 } = data.summary as ModelSummary;
+  const {
+    repositories = 0,
+    images = 0,
+    scans_in_progress = 0,
+  } = data.summary as ModelSummary;
 
   return (
     <div className="grid grid-cols-12 px-6 items-center w-full">
-      <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+      <div className="col-span-4 flex items-center text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8 text-text-icon">
           <ImageIcon />
         </div>
 
@@ -307,14 +327,14 @@ const CountWidget = () => {
             className="text-h1 dark:text-text-input-value"
             data-testid="totalRegistryImagesId"
           >
-            {abbreviateNumber(images)}
+            {abbreviateNumber(repositories)}
           </span>
-          <span className="text-p1">Total images</span>
+          <span className="text-p1a">Total repositories</span>
         </div>
       </div>
 
-      <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+      <div className="col-span-4 flex items-center text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8 text-text-icon">
           <TagsIcon />
         </div>
 
@@ -323,21 +343,21 @@ const CountWidget = () => {
             className="text-h1 dark:text-text-input-value"
             data-testid="totalRegistryImageTagsId"
           >
-            {abbreviateNumber(tags)}
+            {abbreviateNumber(images)}
           </span>
-          <span className="text-p1">Total tags</span>
+          <span className="text-p1a">Total images</span>
         </div>
       </div>
-      <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+      <div className="col-span-4 flex items-center text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8 text-text-icon">
           <InProgressIcon />
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span className="text-h1 text-text-input-value">
             {abbreviateNumber(scans_in_progress)}
           </span>
-          <span className="text-p1">In Progress</span>
+          <span className="text-p1a">In progress</span>
         </div>
       </div>
     </div>

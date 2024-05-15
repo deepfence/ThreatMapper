@@ -22,6 +22,22 @@ func (h *Handler) CompleteHostInfo(w http.ResponseWriter, r *http.Request) {
 	genericCompleteInfoHandler[model.Host](w, r, h)
 }
 
+func (h *Handler) CompleteComplianceInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.ComplianceRule](w, r, h)
+}
+
+func (h *Handler) CompleteCloudComplianceInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.CloudCompliance](w, r, h)
+}
+
+func (h *Handler) CompletePodInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.Pod](w, r, h)
+}
+
+func (h *Handler) CompleteContainerInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.Container](w, r, h)
+}
+
 func genericCompleteInfoHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Request, h *Handler) {
 	defer r.Body.Close()
 	var req completion.CompletionNodeFieldReq

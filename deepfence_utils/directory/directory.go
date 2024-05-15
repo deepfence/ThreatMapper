@@ -14,6 +14,8 @@ const (
 	NonSaaSDirKey  = NamespaceID("default")
 	DatabaseDirKey = NamespaceID("database")
 	NamespaceKey   = "namespace"
+
+	LicenseActiveKey = "license_active"
 )
 
 type NamespaceID string
@@ -39,7 +41,7 @@ type PostgresqlConfig struct {
 	SslMode  string
 }
 
-type MinioConfig struct {
+type FileServerConfig struct {
 	Endpoint   string
 	Username   string
 	Password   string
@@ -49,10 +51,10 @@ type MinioConfig struct {
 }
 
 type DBConfigs struct {
-	Redis    *RedisConfig
-	Neo4j    *Neo4jConfig
-	Postgres *PostgresqlConfig
-	Minio    *MinioConfig
+	Redis      *RedisConfig
+	Neo4j      *Neo4jConfig
+	Postgres   *PostgresqlConfig
+	FileServer *FileServerConfig
 }
 
 type namespaceDirectory struct {
@@ -66,7 +68,7 @@ func init() {
 	directory = namespaceDirectory{
 		Directory: map[NamespaceID]DBConfigs{},
 	}
-	minioCfg := initMinio()
+	fileServerCfg := initFileServer()
 
 	saasMode := false
 	saasModeOn, has := os.LookupEnv("DEEPFENCE_SAAS_MODE")
@@ -82,18 +84,18 @@ func init() {
 		neo4jCfg := initNeo4j()
 		postgresqlCfg := initPosgresql()
 		directory.Directory[NonSaaSDirKey] = DBConfigs{
-			Redis:    &redisCfg,
-			Neo4j:    &neo4jCfg,
-			Postgres: &postgresqlCfg,
-			Minio:    nil,
+			Redis:      &redisCfg,
+			Neo4j:      &neo4jCfg,
+			Postgres:   &postgresqlCfg,
+			FileServer: nil,
 		}
 	}
 
 	directory.Directory[GlobalDirKey] = DBConfigs{
-		Redis:    nil,
-		Neo4j:    nil,
-		Postgres: nil,
-		Minio:    &minioCfg,
+		Redis:      nil,
+		Neo4j:      nil,
+		Postgres:   nil,
+		FileServer: &fileServerCfg,
 	}
 	directory.Unlock()
 }
@@ -185,52 +187,52 @@ func initRedis() RedisConfig {
 	}
 }
 
-func initMinio() MinioConfig {
-	minioHost, has := os.LookupEnv("DEEPFENCE_MINIO_HOST")
+func initFileServer() FileServerConfig {
+	fileServerHost, has := os.LookupEnv("DEEPFENCE_FILE_SERVER_HOST")
 	if !has {
-		minioHost = "deepfence-file-server"
-		log.Warn().Msgf("DEEPFENCE_MINIO_HOST defaults to: %v", minioHost)
+		fileServerHost = "deepfence-file-server"
+		log.Warn().Msgf("DEEPFENCE_FILE_SERVER_HOST defaults to: %v", fileServerHost)
 	}
-	minioPort, has := os.LookupEnv("DEEPFENCE_MINIO_PORT")
+	fileServerPort, has := os.LookupEnv("DEEPFENCE_FILE_SERVER_PORT")
 	if !has {
-		minioPort = "9000"
-		log.Warn().Msgf("DEEPFENCE_MINIO_PORT defaults to: %v", minioPort)
+		fileServerPort = "9000"
+		log.Warn().Msgf("DEEPFENCE_FILE_SERVER_PORT defaults to: %v", fileServerPort)
 	}
 
-	minioUser := os.Getenv("DEEPFENCE_MINIO_USER")
-	if minioUser == "" {
-		minioUser = "deepfence"
-		log.Warn().Msgf("DEEPFENCE_MINIO_USER defaults to: %v", minioUser)
+	fileServerUser := os.Getenv("DEEPFENCE_FILE_SERVER_USER")
+	if fileServerUser == "" {
+		fileServerUser = "deepfence"
+		log.Warn().Msgf("DEEPFENCE_FILE_SERVER_USER defaults to: %v", fileServerUser)
 	}
-	minioPassword := os.Getenv("DEEPFENCE_MINIO_PASSWORD")
-	if minioPassword == "" {
-		minioPassword = "deepfence"
-		log.Warn().Msg("using default minio password")
+	fileServerPassword := os.Getenv("DEEPFENCE_FILE_SERVER_PASSWORD")
+	if fileServerPassword == "" {
+		fileServerPassword = "deepfence"
+		log.Warn().Msg("using default file server password")
 	}
-	minioBucket := os.Getenv("DEEPFENCE_MINIO_BUCKET")
-	minioRegion := os.Getenv("DEEPFENCE_MINIO_REGION")
-	minioSecure := os.Getenv("DEEPFENCE_MINIO_SECURE")
+	fileServerBucket := os.Getenv("DEEPFENCE_FILE_SERVER_BUCKET")
+	fileServerRegion := os.Getenv("DEEPFENCE_FILE_SERVER_REGION")
+	fileServerSecure := os.Getenv("DEEPFENCE_FILE_SERVER_SECURE")
 
-	minioEndpoint := minioHost
-	if minioHost != "s3.amazonaws.com" {
-		minioEndpoint = minioHost + ":" + minioPort
+	fileServerEndpoint := fileServerHost
+	if fileServerHost != "s3.amazonaws.com" {
+		fileServerEndpoint = fileServerHost + ":" + fileServerPort
 	}
 
-	if minioSecure == "" {
-		minioSecure = "false"
+	if fileServerSecure == "" {
+		fileServerSecure = "false"
 	}
-	isSecure, err := strconv.ParseBool(minioSecure)
+	isSecure, err := strconv.ParseBool(fileServerSecure)
 	if err != nil {
 		isSecure = false
-		log.Warn().Msgf("DEEPFENCE_MINIO_SECURE defaults to: %v (%v)", isSecure, err.Error())
+		log.Warn().Msgf("DEEPFENCE_FILE_SERVER_SECURE defaults to: %v (%v)", isSecure, err.Error())
 	}
-	return MinioConfig{
-		Endpoint:   minioEndpoint,
-		Username:   minioUser,
-		Password:   minioPassword,
-		BucketName: minioBucket,
+	return FileServerConfig{
+		Endpoint:   fileServerEndpoint,
+		Username:   fileServerUser,
+		Password:   fileServerPassword,
+		BucketName: fileServerBucket,
 		Secure:     isSecure,
-		Region:     minioRegion,
+		Region:     fileServerRegion,
 	}
 }
 

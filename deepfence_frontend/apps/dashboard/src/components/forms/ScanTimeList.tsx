@@ -23,7 +23,7 @@ interface TimeListProps {
 }
 
 export interface ISelected {
-  updatedAt: number;
+  createdAt: number;
   scanId: string;
 }
 
@@ -91,7 +91,7 @@ const ScanTime = ({
         placeholder="Scan time"
         value={selectedTime as unknown as ISelected}
         onChange={(value: ISelected) => {
-          setSelectedTime(value.updatedAt);
+          setSelectedTime(value.createdAt);
           onChange?.(value);
         }}
         clearAll="Clear"
@@ -109,20 +109,21 @@ const ScanTime = ({
             return page.data;
           })
           .filter(
-            (scan) => scan.updatedAt !== skipScanTime && isScanComplete(scan.status),
+            (scan) => scan.createdAt !== skipScanTime && isScanComplete(scan.status),
           )
+          .reverse()
           ?.map?.((scan) => {
             return (
               <ListboxOption
-                key={scan.updatedAt}
+                key={scan.createdAt}
                 value={
                   {
-                    updatedAt: scan.updatedAt,
+                    createdAt: scan.createdAt,
                     scanId: scan.scanId,
                   } as ISelected
                 }
               >
-                {formatMilliseconds(scan.updatedAt)}
+                {formatMilliseconds(scan.createdAt)}
               </ListboxOption>
             );
           })}

@@ -98,7 +98,7 @@ export const ScanLoader = ({ text }: { text: string }) => {
           />
         </svg>
       </div>
-      <span className="text-blue-500 animate-pulse text-md tracking-wider">
+      <span className="dark:text-blue-500 text-blue-600 animate-pulse text-md tracking-wider">
         Scanning...
       </span>
       {text ? (

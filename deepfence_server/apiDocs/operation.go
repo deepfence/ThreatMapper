@@ -13,9 +13,9 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/report"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 )
 
 func (d *OpenAPIDocs) AddUserAuthOperations() {
@@ -412,6 +412,10 @@ func (d *OpenAPIDocs) AddCloudNodeOperations() {
 		"Register Cloud Node Account", "Register Cloud Node Account and return any pending compliance scans from console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountRegisterReq), new(CloudNodeAccountRegisterResp))
 
+	d.AddOperation("deleteCloudNodeAccount", http.MethodPatch, "/deepfence/cloud-node/account/delete",
+		"Delete Cloud Node Account", "Delete Cloud Node Account and related resources",
+		http.StatusAccepted, []string{tagCloudNodes}, bearerToken, new(CloudAccountDeleteReq), nil)
+
 	d.AddOperation("listCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/list/accounts",
 		"List Cloud Node Accounts", "List Cloud Node Accounts registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountsListReq), new(CloudNodeAccountsListResp))
@@ -724,9 +728,11 @@ func (d *OpenAPIDocs) AddIntegrationOperations() {
 		"Update Integration", "Update integration",
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationUpdateReq), new(MessageResponse))
 	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
-		"Delete Integration", "Delete integration",
+		"Delete Single Integration", "Delete single integration",
 		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
-
+	d.AddOperation("deleteIntegrations", http.MethodPatch, "/deepfence/integration/delete",
+		"Delete Integrations", "Delete integrations",
+		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(DeleteIntegrationReq), nil)
 	d.AddOperation("addGenerativeAiIntegrationOpenAI", http.MethodPost, "/deepfence/generative-ai-integration/openai",
 		"Add OpenAI Generative AI Integration", "Add a new OpenAI Generative AI Integration",
 		http.StatusOK, []string{tagGenerativeAi}, bearerToken, new(AddGenerativeAiOpenAIIntegration), new(MessageResponse))
@@ -780,6 +786,9 @@ func (d *OpenAPIDocs) AddReportsOperations() {
 	d.AddOperation("deleteReport", http.MethodDelete, "/deepfence/reports/{report_id}",
 		"Delete Report", "delete report for given report_id",
 		http.StatusNoContent, []string{tagReports}, bearerToken, new(ReportReq), nil)
+	d.AddOperation("bulkDeleteReports", http.MethodPatch, "/deepfence/reports/delete",
+		"Bulk Delete Reports", "Bulk Delete reports",
+		http.StatusNoContent, []string{tagReports}, bearerToken, new(BulkDeleteReportReq), nil)
 }
 
 func (d *OpenAPIDocs) AddSettingsOperations() {
@@ -792,6 +801,12 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 	d.AddOperation("deleteEmailConfiguration", http.MethodDelete, "/deepfence/settings/email/{config_id}",
 		"Delete Email Configurations", "Delete Email Smtp / ses Configurations in system",
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(ConfigIDPathReq), nil)
+	d.AddOperation("testConfiguredEmail", http.MethodPost, "/deepfence/settings/email/test",
+		"Test Configured Email", "Test Configured Email",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(MessageResponse))
+	d.AddOperation("testUnconfiguredEmail", http.MethodPost, "/deepfence/settings/email/test-unconfigured",
+		"Test Unconfigured Email", "Test Unconfigured Email",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(EmailConfigurationAdd), new(MessageResponse))
 	d.AddOperation("getSettings", http.MethodGet, "/deepfence/settings/global-settings",
 		"Get settings", "Get all settings",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]SettingsResponse))
@@ -830,7 +845,39 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 	// Database upload
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",
 		"Upload Vulnerability Database", "Upload Vulnerability Database for use in vulnerability scans",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(vulnerability_db.DBUploadRequest), new(MessageResponse))
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+	d.AddOperation("uploadSecretsRules", http.MethodPut, "/deepfence/database/secret",
+		"Upload Secrets Rules", "Upload secrets rules for use in secrets scans",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+	d.AddOperation("uploadMalwareRules", http.MethodPut, "/deepfence/database/malware",
+		"Upload Malware Rules", "Upload malware rules for use in malware scans",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+	d.AddOperation("uploadPostureControls", http.MethodPut, "/deepfence/database/posture",
+		"Upload Posture Controls", "Upload posture controls for use in posture scans",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+
+	d.AddOperation("getAgentBinaryDownloadURL", http.MethodGet, "/deepfence/agent-deployment/binary/download-url",
+		"Get agent binary download url", "Get agent binary download url",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(GetAgentBinaryDownloadURLResponse))
+}
+
+func (d *OpenAPIDocs) AddLicenseOperations() {
+	// License
+	d.AddOperation("generateLicense", http.MethodPost, "/deepfence/license/generate",
+		"Generate License Key", "Generate a new ThreatMapper license key",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(GenerateLicenseRequest), new(GenerateLicenseResponse))
+
+	d.AddOperation("registerLicense", http.MethodPost, "/deepfence/license",
+		"Register License", "Register new license key to the console and activate",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(RegisterLicenseRequest), new(RegisterLicenseResponse))
+
+	d.AddOperation("getLicense", http.MethodGet, "/deepfence/license",
+		"Get License Details", "Get license status and expiry",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(License))
+
+	d.AddOperation("deleteLicense", http.MethodDelete, "/deepfence/license",
+		"Delete License", "Delete license from the console database",
+		http.StatusNoContent, []string{tagSettings}, bearerToken, nil, nil)
 }
 
 func (d *OpenAPIDocs) AddDiffAddOperations() {
@@ -860,5 +907,17 @@ func (d *OpenAPIDocs) AddCompletionOperations() {
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 	d.AddOperation("completeHostInfo", http.MethodPost, "/deepfence/complete/host",
 		"Get Completion for host fields", "Complete host info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeCloudCompliance", http.MethodPost, "/deepfence/complete/cloud-compliance",
+		"Get Completion for cloud compliance fields", "Complete cloud compliance info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeComplianceInfo", http.MethodPost, "/deepfence/complete/compliance",
+		"Get Completion for compliance fields", "Complete compliance info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completePodInfo", http.MethodPost, "/deepfence/complete/pod",
+		"Get Completion for Pod fields", "Complete Pod info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeContainerInfo", http.MethodPost, "/deepfence/complete/container",
+		"Get Completion for Container fields", "Complete Container info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 }

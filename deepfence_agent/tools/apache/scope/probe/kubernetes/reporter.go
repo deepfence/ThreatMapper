@@ -20,17 +20,16 @@ const (
 var (
 	kubernetesClusterId   string
 	kubernetesClusterName string
-	cloudProviderNodeId   string
 )
 
 // Reporter generate Reports containing Container and ContainerImage topologies
 type Reporter struct {
-	client             Client
-	probeID            string
-	probe              *probe.Probe
-	hostID             string
-	nodeName           string
-	k8sClusterTopology report.Topology
+	client                    Client
+	probeID                   string
+	probe                     *probe.Probe
+	hostID                    string
+	nodeName                  string
+	kubernetesClusterResource KubernetesClusterResource
 }
 
 // NewReporter makes a new Reporter
@@ -39,19 +38,20 @@ func NewReporter(client Client, probeID string, hostID string, probe *probe.Prob
 	kubernetesClusterName = os.Getenv(k8sClusterName)
 
 	reporter := &Reporter{
-		client:   client,
-		probeID:  probeID,
-		probe:    probe,
-		hostID:   hostID,
-		nodeName: nodeName,
+		client:                    client,
+		probeID:                   probeID,
+		probe:                     probe,
+		hostID:                    hostID,
+		nodeName:                  nodeName,
+		kubernetesClusterResource: NewKubernetesClusterResource(),
 	}
-	reporter.k8sClusterTopology = reporter.kubernetesClusterTopology()
 	//client.WatchPods(reporter.podEvent)
 	return reporter
 }
 
 // Stop unregisters controls.
 func (r *Reporter) Stop() {
+	r.kubernetesClusterResource.Stop()
 }
 
 // Name of this reporter, for metrics gathering
@@ -143,19 +143,11 @@ func (r *Reporter) Report() (report.Report, error) {
 	if err != nil {
 		return result, err
 	}
-	result.KubernetesCluster.Merge(r.k8sClusterTopology)
+	result.KubernetesCluster.Merge(r.kubernetesClusterResource.GetTopology())
 	result.Pod.Merge(podTopology)
 	result.Service.Merge(serviceTopology)
 	result.Namespace.Merge(namespaceTopology)
 	return result, nil
-}
-
-func (r *Reporter) kubernetesClusterTopology() report.Topology {
-	result := report.MakeTopology()
-	node := NewKubernetesClusterResource().GetNode()
-	cloudProviderNodeId = node.Parents.CloudProvider
-	result.AddNode(node)
-	return result
 }
 
 func (r *Reporter) serviceTopology() (report.Topology, []Service, error) {

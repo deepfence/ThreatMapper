@@ -4,11 +4,13 @@ import (
 	"context"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
+	ctls "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	"github.com/hibiken/asynq"
+	"github.com/jellydator/ttlcache/v3"
 )
 
 const (
@@ -17,10 +19,16 @@ const (
 
 type ConsoleController struct {
 	MaxWorkload int
+	TTLCache    *ttlcache.Cache[string, string]
 }
 
 func NewConsoleController(max int) ConsoleController {
-	return ConsoleController{MaxWorkload: max}
+	return ConsoleController{
+		MaxWorkload: max,
+		TTLCache: ttlcache.New[string, string](
+			ttlcache.WithDisableTouchOnHit[string, string](),
+		),
+	}
 }
 
 /*
@@ -28,39 +36,46 @@ Allocator shared across all workers instances per namespace
 */
 func (c ConsoleController) TriggerConsoleControls(ctx context.Context, t *asynq.Task) error {
 
-	ns, _ := directory.ExtractNamespace(ctx)
-	namespace := string(ns)
+	log := log.WithCtx(ctx)
 
 	allocatable := MaxAllocable(ctx, c.MaxWorkload)
 
-	log.Info().Str("namespace", namespace).
+	log.Info().
 		Msgf("Trigger console actions #capacity: %d", allocatable)
 
 	// skip if capacity is zero
 	if allocatable <= 0 {
-		log.Info().Str("namespace", namespace).
+		log.Info().
 			Msgf("Skip console actions #capacity: %d", allocatable)
 		return nil
 	}
 
-	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, int(allocatable))
+	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, int(allocatable), "", c.TTLCache)
 	for _, e := range errs {
 		if e != nil {
-			log.Error().Str("namespace", namespace).Msgf(e.Error())
+			log.Error().Msgf(e.Error())
 		}
 	}
 
-	log.Info().Str("namespace", namespace).
+	log.Info().
 		Msgf("Trigger console actions got #actions: %d", len(actions))
 
 	for _, action := range actions {
 		log.Info().Msgf("Init execute: %v", action.ID)
+		if shouldSkipApply(action.ID) {
+			log.Info().Msgf("skip control %v", action.ID)
+			continue
+		}
 		err := ctl.ApplyControl(ctx, action)
 		if err != nil {
 			log.Error().Msgf("Control %v failed: %v", action, err)
 		}
 	}
 	return nil
+}
+
+func shouldSkipApply(action ctls.ActionID) bool {
+	return action == ctls.UpdateAgentThreatIntel
 }
 
 // list of task types to count towards running
@@ -76,18 +91,17 @@ func shouldInclude(name string) bool {
 
 func MaxAllocable(ctx context.Context, max int) int {
 
-	ns, _ := directory.ExtractNamespace(ctx)
-	namespace := string(ns)
+	log := log.WithCtx(ctx)
 
 	worker, err := directory.Worker(ctx)
 	if err != nil {
-		log.Error().Str("namespace", namespace).Err(err).Msgf("failed to get worker instance")
+		log.Error().Err(err).Msgf("failed to get worker instance")
 		return 0
 	}
 
 	queues, err := worker.Inspector().Queues()
 	if err != nil {
-		log.Error().Str("namespace", namespace).Err(err).Msgf("failed to get worker queues")
+		log.Error().Err(err).Msgf("failed to get worker queues")
 		return 0
 	}
 
@@ -100,21 +114,21 @@ func MaxAllocable(ctx context.Context, max int) int {
 		// active tasks
 		active, err := worker.Inspector().ListActiveTasks(q, asynq.PageSize(5000))
 		if err != nil {
-			log.Error().Str("namespace", namespace).Err(err).Msgf("failed to get active tasks from queue %s", q)
+			log.Error().Err(err).Msgf("failed to get active tasks from queue %s", q)
 		} else {
 			tasks = append(tasks, active...)
 		}
 		// pending tasks
 		pending, err := worker.Inspector().ListPendingTasks(q, asynq.PageSize(5000))
 		if err != nil {
-			log.Error().Str("namespace", namespace).Err(err).Msgf("failed to get pending tasks from queue %s", q)
+			log.Error().Err(err).Msgf("failed to get pending tasks from queue %s", q)
 		} else {
 			tasks = append(tasks, pending...)
 		}
 		// retry tasks
 		retry, err := worker.Inspector().ListRetryTasks(q, asynq.PageSize(5000))
 		if err != nil {
-			log.Error().Str("namespace", namespace).Err(err).Msgf("failed to get retry tasks from queue %s", q)
+			log.Error().Err(err).Msgf("failed to get retry tasks from queue %s", q)
 		} else {
 			tasks = append(tasks, retry...)
 		}

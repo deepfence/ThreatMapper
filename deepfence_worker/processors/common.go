@@ -20,8 +20,8 @@ func Process(s *BulkProcessor, tenantID string, b []byte) error {
 	return nil
 }
 
-func desWrapper[T any](commit func(ns string, des []T) error) func(ns string, b [][]byte) error {
-	return func(ns string, b [][]byte) error {
+func desWrapper[T any](commit func(ctx context.Context, ns string, des []T) error) func(ctx context.Context, ns string, b [][]byte) error {
+	return func(ctx context.Context, ns string, b [][]byte) error {
 		ss := []T{}
 		for i := range b {
 			var s T
@@ -32,15 +32,15 @@ func desWrapper[T any](commit func(ns string, des []T) error) func(ns string, b 
 			ss = append(ss, s)
 		}
 
-		return commit(ns, ss)
+		return commit(ctx, ns, ss)
 	}
 }
 
 func telemetryWrapper(task string, cf commitFn) commitFn {
-	return func(ns string, data [][]byte) error {
-		span := telemetry.NewSpan(context.Background(), "kafka-jobs", task)
+	return func(ctx context.Context, ns string, data [][]byte) error {
+		ctx, span := telemetry.NewSpan(context.Background(), "kafka-jobs", task)
 		defer span.End()
-		err := cf(ns, data)
+		err := cf(ctx, ns, data)
 		if err != nil {
 			span.EndWithErr(err)
 		}

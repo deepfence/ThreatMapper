@@ -2,6 +2,7 @@ package reports
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -15,11 +16,14 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
+
+var ErrorMaxRecords = errors.New("number of records in result is greater than ReportRecordsMax, apply more filters to reduce number of records in results")
 
 const (
 	VULNERABILITY    = "vulnerability"
+	SBOM             = "sbom"
 	SECRET           = "secret"
 	MALWARE          = "malware"
 	COMPLIANCE       = "compliance"
@@ -41,6 +45,7 @@ type ScanData[T any] struct {
 }
 
 type NodeWiseData[T any] struct {
+	RecordCount   uint64
 	SeverityCount map[string]map[string]int32
 	ScanData      map[string]ScanData[T]
 }
@@ -48,6 +53,19 @@ type NodeWiseData[T any] struct {
 func searchScansFilter(params sdkUtils.ReportParams) rptSearch.SearchScanReq {
 	filters := rptSearch.SearchScanReq{}
 
+	filters.ScanFilter = rptSearch.SearchFilter{
+		Window: model.FetchWindow{Offset: 0, Size: 1},
+		Filters: reporters.FieldsFilters{
+			OrderFilter: reporters.OrderFilter{
+				OrderFields: []reporters.OrderSpec{
+					{
+						FieldName:  "updated_at",
+						Descending: false,
+					},
+				},
+			},
+		},
+	}
 	filters.NodeFilter = rptSearch.SearchFilter{
 		Filters: reporters.FieldsFilters{
 			ContainsFilter: reporters.ContainsFilter{
@@ -121,18 +139,19 @@ func scanResultFilter(levelKey string, levelValues []string, masked []bool) repo
 
 func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
 
+	log := log.WithCtx(ctx)
+
 	if params.Filters.MostExploitableReport {
 		return getMostExploitableVulnData(ctx, params)
 	}
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		start = params.FromTimestamp
+		end   = params.ToTimestamp
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
-		start = end.AddDate(0, 0, -params.Duration)
+	if !params.FromTimestamp.IsZero() && len(params.Filters.ScanID) == 0 {
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -145,12 +164,13 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 		return nil, err
 	}
 
-	log.Info().Msgf("vulnerability scan info: %+v", scans)
+	log.Info().Msgf("found %d vulnerability scans", len(scans))
 
 	severityFilter := scanResultFilter("cve_severity",
 		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Vulnerability]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.Vulnerability]),
 	}
@@ -162,13 +182,19 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
-		sort.Slice(result[:], func(i, j int) bool {
+		sort.Slice(result, func(i, j int) bool {
 			return result[i].CveSeverity < result[j].CveSeverity
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
 		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Vulnerability]{
 			ScanInfo:    common,
 			ScanResults: result,
+		}
+		nodeWiseData.RecordCount += uint64(len(result))
+
+		// return early
+		if nodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+			return nil, ErrorMaxRecords
 		}
 	}
 
@@ -185,6 +211,7 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 }
 
 func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
+
 	var req rptSearch.SearchNodeReq
 	req.ExtendedNodeFilter.Filters.OrderFilter.OrderFields = []reporters.OrderSpec{{FieldName: "cve_cvss_score", Descending: true}}
 	req.NodeFilter.Filters.ContainsFilter.FieldsValues = map[string][]interface{}{"exploitability_score": {1, 2, 3}}
@@ -196,16 +223,18 @@ func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParam
 		return nil, err
 	}
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		end   = time.Now()
+		start = time.Now()
 	)
 	nodeWiseData := NodeWiseData[model.Vulnerability]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.Vulnerability]),
 	}
 	nodeKey := "most_exploitable_vulnerabilities"
 	nodeWiseData.SeverityCount[nodeKey] = make(map[string]int32)
 	nodeWiseData.ScanData[nodeKey] = ScanData[model.Vulnerability]{ScanResults: entries}
+	nodeWiseData.RecordCount += uint64(len(entries))
 	sevMap := nodeWiseData.SeverityCount[nodeKey]
 	for _, entry := range entries {
 		count, present := sevMap[entry.CveSeverity]
@@ -226,20 +255,25 @@ func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParam
 		NodeWiseData:   nodeWiseData,
 	}
 
+	if data.NodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+		return &data, ErrorMaxRecords
+	}
+
 	return &data, nil
 }
 
 func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Secret], error) {
 
+	log := log.WithCtx(ctx)
+
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		start = params.FromTimestamp
+		end   = params.ToTimestamp
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
-		start = end.AddDate(0, 0, -params.Duration)
+	if !params.FromTimestamp.IsZero() && len(params.Filters.ScanID) == 0 {
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -252,12 +286,13 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 		return nil, err
 	}
 
-	log.Info().Msgf("secret scan info: %+v", scans)
+	log.Info().Msgf("found %d secret scans", len(scans))
 
 	severityFilter := scanResultFilter("level",
 		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Secret]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.Secret]),
 	}
@@ -269,13 +304,18 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
-		sort.Slice(result[:], func(i, j int) bool {
+		sort.Slice(result, func(i, j int) bool {
 			return result[i].Level < result[j].Level
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
 		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Secret]{
 			ScanInfo:    common,
 			ScanResults: result,
+		}
+
+		// return early
+		if nodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+			return nil, ErrorMaxRecords
 		}
 	}
 
@@ -293,15 +333,16 @@ func getSecretData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mod
 
 func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Malware], error) {
 
+	log := log.WithCtx(ctx)
+
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		start = params.FromTimestamp
+		end   = params.ToTimestamp
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
-		start = end.AddDate(0, 0, -params.Duration)
+	if !params.FromTimestamp.IsZero() && len(params.Filters.ScanID) == 0 {
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -313,12 +354,13 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 		return nil, err
 	}
 
-	log.Info().Msgf("malware scan info: %+v", scans)
+	log.Info().Msgf("found %d malware scans", len(scans))
 
 	severityFilter := scanResultFilter("file_severity",
 		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Malware]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.Malware]),
 	}
@@ -330,13 +372,19 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
-		sort.Slice(result[:], func(i, j int) bool {
+		sort.Slice(result, func(i, j int) bool {
 			return result[i].FileSeverity < result[j].FileSeverity
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
 		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Malware]{
 			ScanInfo:    common,
 			ScanResults: result,
+		}
+		nodeWiseData.RecordCount += uint64(len(result))
+
+		// return early
+		if nodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+			return nil, ErrorMaxRecords
 		}
 	}
 
@@ -354,15 +402,16 @@ func getMalwareData(ctx context.Context, params sdkUtils.ReportParams) (*Info[mo
 
 func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.Compliance], error) {
 
+	log := log.WithCtx(ctx)
+
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		start = params.FromTimestamp
+		end   = params.ToTimestamp
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
-		start = end.AddDate(0, 0, -params.Duration)
+	if !params.FromTimestamp.IsZero() && len(params.Filters.ScanID) == 0 {
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -374,12 +423,13 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 		return nil, err
 	}
 
-	log.Info().Msgf("compliance scan info: %+v", scans)
+	log.Info().Msgf("found %d compliance scans", len(scans))
 
 	severityFilter := scanResultFilter("compliance_check_type",
 		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Compliance]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.Compliance]),
 	}
@@ -391,13 +441,19 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
-		sort.Slice(result[:], func(i, j int) bool {
+		sort.Slice(result, func(i, j int) bool {
 			return result[i].ComplianceCheckType < result[j].ComplianceCheckType
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
 		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Compliance]{
 			ScanInfo:    common,
 			ScanResults: result,
+		}
+		nodeWiseData.RecordCount += uint64(len(result))
+
+		// return early
+		if nodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+			return nil, ErrorMaxRecords
 		}
 	}
 
@@ -415,15 +471,16 @@ func getComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info
 
 func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (*Info[model.CloudCompliance], error) {
 
+	log := log.WithCtx(ctx)
+
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time = time.Now()
-		start time.Time = time.Now()
+		start = params.FromTimestamp
+		end   = params.ToTimestamp
 	)
 
-	if params.Duration > 0 && len(params.Filters.ScanID) == 0 {
-		start = end.AddDate(0, 0, -params.Duration)
+	if !params.FromTimestamp.IsZero() && len(params.Filters.ScanID) == 0 {
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
 				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
@@ -436,12 +493,13 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 		return nil, err
 	}
 
-	log.Info().Msgf("cloud compliance scan info: %+v", scans)
+	log.Info().Msgf("found %d cloud compliance scans", len(scans))
 
 	severityFilter := scanResultFilter("compliance_check_type",
 		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.CloudCompliance]{
+		RecordCount:   0,
 		SeverityCount: make(map[string]map[string]int32),
 		ScanData:      make(map[string]ScanData[model.CloudCompliance]),
 	}
@@ -453,13 +511,19 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanID)
 			continue
 		}
-		sort.Slice(result[:], func(i, j int) bool {
+		sort.Slice(result, func(i, j int) bool {
 			return result[i].ComplianceCheckType < result[j].ComplianceCheckType
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
 		nodeWiseData.ScanData[s.NodeName] = ScanData[model.CloudCompliance]{
 			ScanInfo:    common,
 			ScanResults: result,
+		}
+		nodeWiseData.RecordCount += uint64(len(result))
+
+		// return early
+		if nodeWiseData.RecordCount > sdkUtils.ReportRecordsMax {
+			return nil, ErrorMaxRecords
 		}
 	}
 
@@ -477,15 +541,18 @@ func getCloudComplianceData(ctx context.Context, params sdkUtils.ReportParams) (
 
 func updateFilters(ctx context.Context, original sdkUtils.ReportFilters) sdkUtils.ReportFilters {
 	if len(original.AdvancedReportFilters.ImageName) > 0 {
-		original.AdvancedReportFilters.ImageName = NodeIdToNodeName(ctx, original.AdvancedReportFilters.ImageName, "container_image")
+		original.AdvancedReportFilters.ImageName = NodeIDToNodeName(ctx, original.AdvancedReportFilters.ImageName, "container_image")
 	}
 	if len(original.AdvancedReportFilters.ContainerName) > 0 {
-		original.AdvancedReportFilters.ContainerName = NodeIdToNodeName(ctx, original.AdvancedReportFilters.ContainerName, "container")
+		original.AdvancedReportFilters.ContainerName = NodeIDToNodeName(ctx, original.AdvancedReportFilters.ContainerName, "container")
 	}
 	return original
 }
 
-func NodeIdToNodeName(ctx context.Context, nodeIds []string, node_type string) []string {
+func NodeIDToNodeName(ctx context.Context, nodeIds []string, node_type string) []string {
+
+	log := log.WithCtx(ctx)
+
 	nodes := []string{}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -494,19 +561,15 @@ func NodeIdToNodeName(ctx context.Context, nodeIds []string, node_type string) [
 		return nodes
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return nodes
-	}
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nodes
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	query := ""
 	nodeStr := strings.Join(nodeIds, "\", \"")
@@ -526,13 +589,13 @@ func NodeIdToNodeName(ctx context.Context, nodeIds []string, node_type string) [
 		`
 	}
 
-	result, err := tx.Run(fmt.Sprintf(query, nodeStr), map[string]interface{}{})
+	result, err := tx.Run(ctx, fmt.Sprintf(query, nodeStr), map[string]interface{}{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nodes
 	}
 
-	records, err := result.Collect()
+	records, err := result.Collect(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nodes

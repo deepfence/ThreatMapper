@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -10,10 +11,11 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/minio/minio-go/v7"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
-
-var ReportRetentionTime = 24 * time.Hour
 
 func TimeRangeFilter(key string, start, end time.Time) []reporters.CompareFilter {
 	return []reporters.CompareFilter{
@@ -48,7 +50,7 @@ func RunCommand(cmd *exec.Cmd) (*bytes.Buffer, error) {
 	return &out, nil
 }
 
-func GetEntityIdFromScanID(scanId, scanType string, tx neo4j.Transaction) (string, error) {
+func GetEntityIdFromScanID(ctx context.Context, scanId, scanType string, tx neo4j.ExplicitTransaction) (string, error) {
 
 	entityId := ""
 	query := `MATCH (s:` + scanType + `{node_id:'` + scanId + `'}) - [:SCANNED] -> (n)
@@ -59,12 +61,12 @@ func GetEntityIdFromScanID(scanId, scanType string, tx neo4j.Transaction) (strin
 			THEN [(ci:ContainerImage{node_id:n.docker_image_id}) - [:IS] -> (cis) | cis.node_id]
 			ELSE [n.node_id]
 		END`
-	res, err := tx.Run(query, map[string]interface{}{})
+	res, err := tx.Run(ctx, query, map[string]interface{}{})
 	if err != nil {
 		return "", err
 	}
 
-	rec, err := res.Single()
+	rec, err := res.Single(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -87,4 +89,23 @@ func GetVulnerabilityNodeID(packageName, cveID, entityID string) string {
 		nodeId = nodeId + "_" + entityID
 	}
 	return nodeId
+}
+
+func UpdateRules(ctx context.Context, path string, rulesPath string) error {
+
+	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	data, err := mc.DownloadFileContexts(ctx, path, minio.GetObjectOptions{})
+	if err != nil {
+		return err
+	}
+
+	if err := utils.ExtractTarGz(bytes.NewReader(data), rulesPath); err != nil {
+		return err
+	}
+
+	return nil
 }

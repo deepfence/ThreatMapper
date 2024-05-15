@@ -121,6 +121,7 @@ const (
 	ScopeVersion      = "host_scope_version"
 
 	CloudProviderServerless = "Serverless"
+	CloudRegionServerless   = "Global"
 	// probe/overlay/weave
 	WeavePeerName     = "weave_peer_name"
 	WeavePeerNickName = "weave_peer_nick_name"

@@ -15,10 +15,11 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	linuxScanner "github.com/deepfence/compliance/scanner"
 	linuxScannerUtil "github.com/deepfence/compliance/util"
+	dfUtils "github.com/deepfence/df-utils"
 )
 
 var (
-	ErrMissingScanID = errors.New("missing scan id in the StopComplianceScanRequest")
+	ErrMissingScanID = errors.New("missing scan id in the request")
 	ErrStopScan      = errors.New("failed to stop scan")
 )
 
@@ -27,7 +28,7 @@ func SetClusterAgentControls(k8sClusterName string) {
 	if err != nil {
 		log.Error().Err(err).Msg("set controls")
 	}
-	_, err = exec.Command("/bin/sh", "/home/deepfence/token.sh").CombinedOutput()
+	_, err = exec.Command("/bin/sh", dfUtils.GetDfInstallDir()+"/home/deepfence/token.sh").CombinedOutput()
 	if err != nil {
 		log.Error().Err(err).Msg("generate token")
 	} else {
@@ -47,9 +48,9 @@ func SetClusterAgentControls(k8sClusterName string) {
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
 			log.Info().Msg("Generate Cluster Agent Diagnostic Logs")
 			return SendAgentDiagnosticLogs(req,
-				[]string{"/var/log/supervisor",
-					"/var/log/fenced/compliance-scan-logs",
-					"/var/log/deepfenced"},
+				[]string{dfUtils.GetDfInstallDir() + "/var/log/supervisor",
+					dfUtils.GetDfInstallDir() + "/var/log/fenced/compliance-scan-logs",
+					dfUtils.GetDfInstallDir() + "/var/log/deepfenced"},
 				[]string{})
 		})
 	if err != nil {
@@ -75,8 +76,8 @@ func SetAgentControls() {
 					ScanID:                    req.BinArgs["scan_id"],
 					NodeID:                    req.NodeID,
 					NodeName:                  req.NodeID,
-					ComplianceResultsFilePath: fmt.Sprintf("/var/log/fenced/compliance/%s.log", req.BinArgs["scan_id"]),
-					ComplianceStatusFilePath:  "/var/log/fenced/compliance-scan-logs/status.log",
+					ComplianceResultsFilePath: dfUtils.GetDfInstallDir() + "/var/log/fenced/compliance/compliance-scan.log",
+					ComplianceStatusFilePath:  dfUtils.GetDfInstallDir() + "/var/log/fenced/compliance-scan-logs/status.log",
 				})
 			if err != nil {
 				return err
@@ -136,8 +137,8 @@ func SetAgentControls() {
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
 			log.Info().Msg("Generate Agent Diagnostic Logs")
 			return SendAgentDiagnosticLogs(req,
-				[]string{"/var/log/supervisor", "/var/log/fenced", "/var/log/deepfenced"},
-				[]string{"/var/log/fenced/compliance/", "/var/log/fenced/malware-scan/", "/var/log/fenced/secret-scan/"})
+				[]string{dfUtils.GetDfInstallDir() + "/var/log/supervisor", dfUtils.GetDfInstallDir() + "/var/log/fenced", dfUtils.GetDfInstallDir() + "/var/log/deepfenced"},
+				[]string{dfUtils.GetDfInstallDir() + "/var/log/fenced/compliance/", dfUtils.GetDfInstallDir() + "/var/log/fenced/malware-scan/", dfUtils.GetDfInstallDir() + "/var/log/fenced/secret-scan/"})
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("set controls")
@@ -188,5 +189,26 @@ func SetAgentControls() {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("set controls")
+	}
+
+	err = router.RegisterControl(ctl.UpdateAgentThreatIntel,
+		func(req ctl.ThreatIntelInfo) error {
+
+			var errs []error
+
+			if err := router.UpdateSecretsRules(req); err != nil {
+				log.Error().Err(err).Msg("failed to update secrets rules")
+				errs = append(errs, err)
+			}
+
+			if err := router.UpdateMalwareRules(req); err != nil {
+				log.Error().Err(err).Msg("failed to update malware rules")
+				errs = append(errs, err)
+			}
+
+			return errors.Join(errs...)
+		})
+	if err != nil {
+		log.Error().Err(err).Msgf("set controls: %v", err)
 	}
 }

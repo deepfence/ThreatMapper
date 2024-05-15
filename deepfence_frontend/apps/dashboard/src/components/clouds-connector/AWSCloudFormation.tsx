@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  CircleSpinner,
   Listbox,
   ListboxOption,
   Step,
@@ -11,6 +13,7 @@ import {
 
 import { DFLink } from '@/components/DFLink';
 import { InfoIcon } from '@/components/icons/common/Info';
+import { queries } from '@/queries';
 
 const AWS_REGIONS = [
   'us-east-1',
@@ -40,10 +43,64 @@ const AWS_REGIONS = [
   'us-gov-west-1',
 ];
 
+const PLACEHOLDER_VERSION = '---PRODUCT_TAG_VERSION--';
+
+const useGetVersion = () => {
+  return useSuspenseQuery({
+    ...queries.setting.productVersion(),
+  });
+};
+
+const Links = ({ region }: { region: string }) => {
+  const { data: dataVersion } = useGetVersion();
+  const version = dataVersion.version || PLACEHOLDER_VERSION;
+
+  return (
+    <>
+      <DFLink
+        href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:${version}`}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center mt-4"
+      >
+        Deploy on one AWS account
+      </DFLink>
+
+      <DFLink
+        href="https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template"
+        target="_blank"
+        rel="noreferrer"
+        className="mt-2"
+      >
+        You can refer the single account template from here
+      </DFLink>
+      <DFLink
+        href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:${version}`}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center mt-4"
+      >
+        Deploy on multiple AWS accounts (Organization Deployment)
+      </DFLink>
+      <DFLink
+        href={
+          'https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template'
+        }
+        target="_blank"
+        rel="noreferrer"
+        className="mt-2"
+      >
+        You can refer the organization account template from here.
+      </DFLink>
+    </>
+  );
+};
+
 export const AWSCloudFormation = () => {
   const [region, setRegion] = useState('us-east-1');
+
   return (
-    <div className="w-full sm:w-1/2">
+    <div className="w-full sm:w-1/2 mt-4">
       <Stepper>
         <Step
           indicator={
@@ -58,12 +115,12 @@ export const AWSCloudFormation = () => {
           }
           title="Cloud Formation"
         >
-          <div className="text-p7 dark:text-text-text-and-icon">
+          <div className="text-p7a text-text-text-and-icon">
             Connect to your AWS Cloud Account via Cloud Formation. Find out more
             information by{' '}
             <Link
-              to="https://community.deepfence.io/threatmapper/docs/v2.1/cloudscanner/aws#cloudformation"
-              className="text-blue-600 dark:text-blue-500"
+              to="https://community.deepfence.io/threatmapper/docs/v2.2/cloudscanner/aws#cloudformation"
+              className="text-text-link"
             >
               reading our documentation
             </Link>
@@ -107,48 +164,20 @@ export const AWSCloudFormation = () => {
           }
           title="Deploy"
         >
-          <div className="text-p7 dark:text-text-text-and-icon">
+          <div className="text-p7a text-text-text-and-icon">
             <p>
               Deploy all modules for Deepfence Posture Scanner for a single account. For
               information on AWS Organizations and account types, see AWS docs.
             </p>
-            <DFLink
-              href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.1.0`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center mt-4"
-            >
-              Deploy on one AWS account
-            </DFLink>
-            <DFLink
-              href={
-                'https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template'
+            <Suspense
+              fallback={
+                <div className="mt-4">
+                  <CircleSpinner size="sm" />
+                </div>
               }
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2"
             >
-              You can refer the single account template from here
-            </DFLink>
-
-            <DFLink
-              href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.1.0`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center mt-4"
-            >
-              Deploy on multiple AWS accounts (Organization Deployment)
-            </DFLink>
-            <DFLink
-              href={
-                'https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template'
-              }
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2"
-            >
-              You can refer the organization account template from here.
-            </DFLink>
+              <Links region={region} />
+            </Suspense>
           </div>
         </Step>
       </Stepper>

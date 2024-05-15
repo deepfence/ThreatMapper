@@ -1,7 +1,13 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { isNil } from 'lodash-es';
 import { Suspense, useCallback, useMemo, useState } from 'react';
-import { ActionFunctionArgs, Outlet, useFetcher, useNavigate } from 'react-router-dom';
+import {
+  ActionFunctionArgs,
+  Outlet,
+  useFetcher,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
 import {
   Breadcrumb,
   BreadcrumbLink,
@@ -28,11 +34,14 @@ import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations
 import { TruncatedText } from '@/components/TruncatedText';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { GenerativeAIIntegrationType } from '@/types/common';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
-export const CLOUD_TRAIL_ALERT = 'CloudTrail Alert';
-export const USER_ACTIVITIES = 'User Activities';
+export const AI_INTEGRATION_TYPES: Record<GenerativeAIIntegrationType, string> = {
+  openai: 'OpenAI',
+  'amazon-bedrock': 'Amazon Bedrock',
+};
 
 export enum ActionEnumType {
   DELETE = 'delete',
@@ -154,7 +163,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -195,7 +204,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message ? (
-            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
+            <p className="mt-2 text-status-error text-p7">{fetcher.data?.message}</p>
           ) : null}
         </div>
       ) : (
@@ -275,7 +284,7 @@ const MakeDefaultConfirmationModal = ({
           <br />
           <span>Are you sure?</span>
           {fetcher.data?.message ? (
-            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
+            <p className="mt-2 text-status-error text-p7">{fetcher.data?.message}</p>
           ) : null}
         </div>
       ) : (
@@ -288,19 +297,33 @@ const MakeDefaultConfirmationModal = ({
 const AIIntegrationList = () => {
   const navigate = useNavigate();
 
+  const params = useParams() as {
+    integrationType?: GenerativeAIIntegrationType;
+  };
+  const breadcrumbs = [
+    <BreadcrumbLink key="1" asChild icon={<IntegrationsIcon />} isLink>
+      <DFLink to={'/integrations'} unstyled>
+        Integrations
+      </DFLink>
+    </BreadcrumbLink>,
+    <BreadcrumbLink key="2">
+      <span className="inherit cursor-auto">Generative AI</span>
+    </BreadcrumbLink>,
+  ];
+
+  if (params.integrationType?.length) {
+    breadcrumbs.push(
+      <BreadcrumbLink>
+        <span className="inherit cursor-auto">
+          {AI_INTEGRATION_TYPES[params.integrationType] ?? params.integrationType}
+        </span>
+      </BreadcrumbLink>,
+    );
+  }
   return (
     <>
-      <div className="px-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
-        <Breadcrumb>
-          <BreadcrumbLink asChild icon={<IntegrationsIcon />} isLink>
-            <DFLink to={'/integrations'} unstyled>
-              Integrations
-            </DFLink>
-          </BreadcrumbLink>
-          <BreadcrumbLink>
-            <span className="inherit cursor-auto">Generative AI</span>
-          </BreadcrumbLink>
-        </Breadcrumb>
+      <div className="px-4 py-2 w-full items-center bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
+        <Breadcrumb>{breadcrumbs}</Breadcrumb>
       </div>
       <div className="m-4">
         <div className="flex gapx-8">
@@ -357,7 +380,7 @@ const ActionDropdown = ({
           ) : null}
           <DropdownItem
             onClick={() => onTableAction(row, ActionEnumType.DELETE)}
-            className="dark:text-status-error dark:hover:text-[#C45268]"
+            color="error"
           >
             Delete
           </DropdownItem>
@@ -373,6 +396,16 @@ const AIIntegrationTable = () => {
   const {
     data: { data, message },
   } = useListAIIntegrations();
+
+  const params = useParams() as {
+    integrationType?: string;
+  };
+
+  const filteredData = params.integrationType?.length
+    ? data.filter(
+        (integration) => integration.integration_type === params.integrationType,
+      )
+    : data;
 
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
   const [idToMakeDefault, setIdToMakeDefault] = useState<number | null>(null);
@@ -401,7 +434,7 @@ const AIIntegrationTable = () => {
               }}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>
@@ -428,7 +461,7 @@ const AIIntegrationTable = () => {
         maxSize: 300,
       }),
       columnHelper.accessor('default_integration', {
-        header: () => 'Is Default?',
+        header: () => 'Is default?',
         cell: (info) => {
           return info.getValue() ? 'Yes' : 'No';
         },
@@ -437,7 +470,7 @@ const AIIntegrationTable = () => {
         maxSize: 150,
       }),
       columnHelper.accessor('last_error_msg', {
-        header: () => 'Last Error Message',
+        header: () => 'Last error message',
         cell: (info) => {
           const error = info.getValue();
 
@@ -454,13 +487,13 @@ const AIIntegrationTable = () => {
   }, []);
 
   if (message && message.length) {
-    return <p className="text-p7 dark:text-status-error">{message}</p>;
+    return <p className="text-p7 text-status-error">{message}</p>;
   }
 
   return (
     <>
       <Table
-        data={data}
+        data={filteredData}
         columns={columns}
         enableColumnResizing
         noDataElement={

@@ -2,17 +2,31 @@ package cronscheduler
 
 import (
 	"context"
+	"os"
+	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/minio/minio-go/v7"
 	"github.com/pressly/goose/v3"
 )
 
-const migrationsPath = "/usr/local/postgresql-migrate"
+const (
+	migrationsPath = "/usr/local/postgresql-migrate"
+	agentBinaryDir = "/opt/deepfence"
+)
 
 func applyDatabaseMigrations(ctx context.Context) error {
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "apply-sql-db-migration")
+	defer span.End()
 
 	log.Info().Msg("apply database migrations")
 	defer log.Info().Msg("complete database migrations")
@@ -37,6 +51,12 @@ func applyDatabaseMigrations(ctx context.Context) error {
 }
 
 func initSqlDatabase(ctx context.Context) error {
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "init-sql-database")
+	defer span.End()
+
 	// apply database migrations first
 	err := applyDatabaseMigrations(ctx)
 	if err != nil {
@@ -48,6 +68,14 @@ func initSqlDatabase(ctx context.Context) error {
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get db client")
 		return err
+	}
+
+	fileServerURLSetting, err := model.GetSettingByKey(ctx, pgClient, model.FileServerURLSettingKey)
+	if err == nil {
+		err = fileServerURLSetting.Delete(ctx, pgClient)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to delete FileServerURLSettingKey")
+		}
 	}
 
 	err = model.InitializeScheduledTasks(ctx, pgClient)
@@ -73,28 +101,47 @@ func initSqlDatabase(ctx context.Context) error {
 	return nil
 }
 
-func InitMinioDatabase() {
-	ctx := directory.NewContextWithNameSpace("database")
-	mc, err := directory.MinioClient(ctx)
+func InitFileServerDatabase() {
+	ctx := directory.NewContextWithNameSpace(directory.DatabaseDirKey)
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
 	}
 	retries := 3
 	for {
-		if err := mc.CreatePublicBucket(ctx, directory.MinioDatabaseBucket); err != nil {
+		if err := mc.CreatePublicBucket(ctx, directory.FileServerDatabaseBucket); err != nil {
 			log.Error().Err(err).Msgf("failed to create bucket")
 			retries -= 1
 			if retries != 0 {
 				continue
 			}
-			// donot continue we need this step succesfull
+			// do not continue, we need this step successful
 			panic(err)
 		}
 		break
 	}
 
-	// download vulnerability database once on init
-	vulnerability_db.DownloadDatabase()
+	// Add agent binaries to file server
+	err = filepath.Walk(agentBinaryDir,
+		func(fileName string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.Mode().IsRegular() || strings.HasPrefix(info.Name(), ".") {
+				return nil
+			}
 
+			dbFileName := path.Join(utils.FileServerPathAgentBinary, info.Name())
+			_, err = mc.UploadLocalFile(ctx, dbFileName, fileName, true, minio.PutObjectOptions{})
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
 }

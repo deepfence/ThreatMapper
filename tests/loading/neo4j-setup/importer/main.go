@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func main() {
@@ -22,9 +22,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	defer session.Close()
+	defer session.Close(ctx)
 
-	r, err := session.Run(`
+	r, err := session.Run(ctx, `
 		CALL apoc.export.cypher.query("match (n:CloudResource) optional match (n) -[r]- () return *",
 		null,
 			{
@@ -42,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	res, err := r.Collect()
+	res, err := r.Collect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

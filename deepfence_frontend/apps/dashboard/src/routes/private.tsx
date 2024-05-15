@@ -7,8 +7,10 @@ import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareS
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { actionStopScan } from '@/components/scan-configure-forms/StopScanForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { module as userInfoGuardModule } from '@/components/UserInfoGuard';
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
+import { action as downloadSBOMAction } from '@/features/common/data-component/downloadSBOMAction';
 import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
@@ -71,11 +73,11 @@ import { module as globalSettings } from '@/features/settings/pages/GlobalSettin
 import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
 import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs';
 import { module as settings } from '@/features/settings/pages/Settings';
+import { module as threatMapperLicenseDetailsSettings } from '@/features/settings/pages/ThreatMapperLicenseDetails';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as topologyLoader } from '@/features/topology/data-components/topologyLoader';
-import { action as agentUpgradeAction } from '@/features/topology/data-components/UpgradeAgentModal';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
 import { module as topology } from '@/features/topology/pages/Topology';
@@ -304,7 +306,7 @@ export const privateRoutes: CustomRouteObject[] = [
       },
       // Gen AI
       {
-        path: 'integrations/gen-ai',
+        path: 'integrations/gen-ai/:integrationType?',
         ...aiIntegrationList,
         meta: { title: 'ThreatRx - Generative AI Integrations' },
         children: [
@@ -564,6 +566,11 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'connection-instructions/:connectorType',
             ...connectorInstructions,
           },
+          {
+            path: 'tm-license-details',
+            ...threatMapperLicenseDetailsSettings,
+            meta: { title: 'License Details' },
+          },
         ],
       },
       {
@@ -620,6 +627,10 @@ export const privateRoutes: CustomRouteObject[] = [
         action: downloadScanAction,
       },
       {
+        path: 'sbom/download',
+        action: downloadSBOMAction,
+      },
+      {
         path: 'secret/rules/scan/:scanId',
         ...secretRulesForScan,
       },
@@ -632,8 +643,8 @@ export const privateRoutes: CustomRouteObject[] = [
         ...malwareClassesForScan,
       },
       {
-        path: 'controls/agent-upgrade',
-        action: agentUpgradeAction,
+        path: 'user-info-guard',
+        ...userInfoGuardModule,
       },
     ],
   },

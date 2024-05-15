@@ -23,6 +23,9 @@ var (
 )
 
 func StartGetLagByTopic(ctx context.Context, kafkaBrokers []string, groupID string, kgoLogger kgo.Logger) error {
+
+	log := log.WithCtx(ctx)
+
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(kafkaBrokers...),
 		kgo.WithLogger(kgoLogger),

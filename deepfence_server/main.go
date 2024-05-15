@@ -17,6 +17,7 @@ import (
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -47,13 +48,6 @@ var (
 	enableDebug           bool
 )
 
-// build info
-var (
-	Version   string
-	Commit    string
-	BuildTime string
-)
-
 type Config struct {
 	HTTPListenEndpoint     string
 	InternalListenEndpoint string
@@ -71,7 +65,7 @@ func init() {
 func main() {
 
 	log.Info().Msgf("\n version: %s\n commit: %s\n build-time: %s\n",
-		Version, Commit, BuildTime)
+		constants.Version, constants.Commit, constants.BuildTime)
 
 	if enableDebug {
 		runtime.SetBlockProfileRate(1)
@@ -325,6 +319,7 @@ func initializeOpenAPIDocs(openAPIDocs *apiDocs.OpenAPIDocs) {
 	openAPIDocs.AddSettingsOperations()
 	openAPIDocs.AddDiffAddOperations()
 	openAPIDocs.AddCompletionOperations()
+	openAPIDocs.AddLicenseOperations()
 }
 
 func initializeInternalOpenAPIDocs(openAPIDocs *apiDocs.OpenAPIDocs) {
@@ -359,7 +354,7 @@ func initializeKafka() error {
 
 func initializeTelemetry() error {
 
-	telemetryEnabled := os.Getenv("DEEPFENCE_TELEMETRY_ENABLED") != ""
+	telemetryEnabled := os.Getenv("DEEPFENCE_TELEMETRY_ENABLED") != "false"
 
 	if telemetryEnabled {
 		telemetryHost := utils.GetEnvOrDefault("DEEPFENCE_TELEMETRY_HOST", "deepfence-telemetry")

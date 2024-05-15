@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/rs/zerolog/log"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 )
@@ -20,6 +20,8 @@ type UpdateScanEvent struct {
 }
 
 func UpdatePodScanStatus(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
 
 	var event UpdateScanEvent
 	err := json.Unmarshal(task.Payload(), &event)
@@ -35,8 +37,8 @@ func UpdatePodScanStatus(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
 	// TODO: Take into account all containers, not just last one
 	query := `
@@ -47,7 +49,7 @@ func UpdatePodScanStatus(ctx context.Context, task *asynq.Task) error {
 		SET n.` + ingestersUtil.ScanStatusField[event.ScanType] + `=s.status`
 
 	log.Debug().Msgf("query: %v", query)
-	_, err = session.Run(query,
+	_, err = session.Run(ctx, query,
 		map[string]interface{}{
 			"batch": event.RecordMap,
 		},
@@ -64,6 +66,8 @@ func UpdatePodScanStatus(ctx context.Context, task *asynq.Task) error {
 
 func UpdateCloudResourceScanStatus(ctx context.Context, task *asynq.Task) error {
 
+	log := log.WithCtx(ctx)
+
 	var event UpdateScanEvent
 	err := json.Unmarshal(task.Payload(), &event)
 	if err != nil {
@@ -78,8 +82,8 @@ func UpdateCloudResourceScanStatus(ctx context.Context, task *asynq.Task) error 
 		return err
 	}
 
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
 	query := `
 		UNWIND $batch as row
@@ -91,7 +95,7 @@ func UpdateCloudResourceScanStatus(ctx context.Context, task *asynq.Task) error 
 			cr.` + ingestersUtil.LatestScanIDField[event.ScanType] + `=scan_id`
 
 	log.Debug().Msgf("query: %v", query)
-	_, err = session.Run(query,
+	_, err = session.Run(ctx, query,
 		map[string]interface{}{
 			"batch": event.RecordMap,
 		},

@@ -1,41 +1,46 @@
 package ingesters
 
 import (
+	"context"
+	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	workerUtil "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func CommitFuncVulnerabilities(ns string, data []ingestersUtil.Vulnerability) error {
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
+func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersUtil.Vulnerability) error {
+	ctx = directory.ContextWithNameSpace(ctx, directory.NamespaceID(ns))
+
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "commit-func-vulnerabilities")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer tx.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	dataMap, err := CVEsToMaps(data, tx)
+	dataMap, err := CVEsToMaps(data)
 	if err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	log.Debug().Msgf("Committing %d vulnerabilities", len(dataMap))
+
+	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row WITH row.rule as rule, row.data as data, 
 		row.scan_id as scan_id, row.node_id as node_id
 		MERGE (v:VulnerabilityStub{node_id:rule.cve_id})
@@ -56,26 +61,19 @@ func CommitFuncVulnerabilities(ns string, data []ingestersUtil.Vulnerability) er
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
-func CVEsToMaps(ms []ingestersUtil.Vulnerability,
-	tx neo4j.Transaction) ([]map[string]interface{}, error) {
+func CVEsToMaps(ms []ingestersUtil.Vulnerability) ([]map[string]interface{}, error) {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
 		data, rule := v.Split()
-
-		entityId, err := workerUtil.GetEntityIdFromScanID(v.ScanID, string(utils.NEO4JVulnerabilityScan), tx)
-		if err != nil {
-			log.Error().Msgf("Error in getting entityId: %v", err)
-			return nil, err
-		}
 
 		res = append(res, map[string]interface{}{
 			"rule":    utils.ToMap(rule),
 			"data":    utils.ToMap(data),
 			"scan_id": v.ScanID,
-			"node_id": workerUtil.GetVulnerabilityNodeID(data.CveCausedByPackage, rule.CveID, entityId),
+			"node_id": strings.Join([]string{data.CveCausedByPackagePath + data.CveCausedByPackage + rule.CveID}, "_"),
 		})
 	}
 	return res, nil

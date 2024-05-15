@@ -2,12 +2,14 @@ package dockerhub
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -23,12 +25,25 @@ func New(requestByte []byte) (*RegistryDockerHub, error) {
 }
 
 func (d *RegistryDockerHub) ValidateFields(v *validator.Validate) error {
-	return v.Struct(d)
+	err := v.Struct(d)
+	if (err != nil) || d.NonSecret.IsPublic == "true" {
+		return err
+	}
+
+	type AuthInfo struct {
+		DockerHubUsername string `json:"docker_hub_username" validate:"required,min=2"`
+		DockerHubPassword string `json:"docker_hub_password" validate:"required,min=2"`
+	}
+
+	auth := AuthInfo{}
+	auth.DockerHubUsername = d.NonSecret.DockerHubUsername
+	auth.DockerHubPassword = d.Secret.DockerHubPassword
+	return v.Struct(auth)
 }
 
 func (d *RegistryDockerHub) IsValidCredential() bool {
 	if d.NonSecret.DockerHubUsername == "" {
-		return true
+		return d.NonSecret.IsPublic == "true"
 	}
 
 	jsonData := map[string]interface{}{"username": d.NonSecret.DockerHubUsername, "password": d.Secret.DockerHubPassword}
@@ -80,7 +95,9 @@ func (d *RegistryDockerHub) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryDockerHub) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
+func (d *RegistryDockerHub) FetchImagesFromRegistry(ctx context.Context) ([]model.IngestedContainerImage, error) {
+	_, span := telemetry.NewSpan(ctx, "registry", "fetch-images-from-registry")
+	defer span.End()
 	return getImagesList(d.NonSecret.DockerHubUsername, d.Secret.DockerHubPassword, d.NonSecret.DockerHubNamespace)
 }
 

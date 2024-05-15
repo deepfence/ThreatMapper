@@ -8,9 +8,12 @@ import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudA
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { ThreatGraphComponent } from '@/features/threat-graph/components/ThreatGraph';
 import { DetailsModal } from '@/features/threat-graph/data-components/DetailsModal';
 import { ThreatGraphNodeModelConfig } from '@/features/threat-graph/utils/threat-graph-custom-node';
+import { THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
 const ThreatGraph = () => {
   const [modalData, setModalData] = useState<{
@@ -19,7 +22,7 @@ const ThreatGraph = () => {
     nodes?: { [key: string]: GraphNodeInfo } | null;
     cloudId: string;
   }>();
-
+  const { mode } = useTheme();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   return (
@@ -28,7 +31,11 @@ const ThreatGraph = () => {
       <div
         className="flex-1 flex flex-col"
         style={{
-          background: `radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)`,
+          mixBlendMode: mode === THEME_LIGHT ? 'multiply' : 'normal',
+          background:
+            mode === 'dark'
+              ? 'radial-gradient(48.55% 48.55% at 50.04% 51.45%, #16253B 0%, #0B121E 100%)'
+              : 'radial-gradient(96.81% 77.58% at 50.04% 50%, rgba(247, 247, 247, 0.50) 8.84%, rgba(180, 193, 219, 0.50) 94.89%)',
         }}
       >
         {isFilterOpen ? <Filters /> : null}
@@ -74,12 +81,12 @@ const ThreatGraphHeader = ({
 }) => {
   const [searchParams] = useSearchParams();
   return (
-    <div className="flex items-center dark:bg-bg-breadcrumb-bar min-h-[48px]">
-      <div className="px-4 flex items-center gap-[6px] dark:text-text-input-value">
+    <BreadcrumbWrapper>
+      <div className="px-4 flex items-center gap-[6px] text-text-input-value">
         <div className="h-4 w-4 shrink-0">
           <ThreatGraphIcon />
         </div>
-        <div className="text-p1">ThreatGraph</div>
+        <div className="text-p1a">ThreatGraph</div>
       </div>
       <Button
         variant="flat"
@@ -105,7 +112,7 @@ const ThreatGraphHeader = ({
       >
         Filter
       </Button>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 
@@ -146,7 +153,7 @@ const Filters = () => {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="border dark:border-bg-hover-3 rounded-l-[5px] rounded-br-[5px] mt-[6px] mx-4 dark:bg-bg-left-nav flex flex-col pt-4 pb-2.5 px-4 gap-4">
+    <FilterWrapper className="mt-[6px] mx-4 pt-4 px-4 pb-3">
       <div className="flex gap-2">
         <Combobox
           value={THREAT_TYPES.find((threatType) => {
@@ -269,7 +276,7 @@ const Filters = () => {
         />
       </div>
       {appliedFilterCount > 0 ? (
-        <div className="flex gap-2.5 flex-wrap items-center">
+        <div className="flex gap-2.5 my-4 flex-wrap items-center">
           {Array.from(searchParams)
             .filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
@@ -313,7 +320,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 export const module = {

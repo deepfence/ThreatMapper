@@ -28,7 +28,7 @@ func (h *Handler) GetKubernetesClusterControls(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	actions, errs := controls.GetKubernetesClusterActions(ctx, kubernetesClusterID.NodeID, kubernetesClusterID.AvailableWorkload)
+	actions, errs := controls.GetKubernetesClusterActions(ctx, kubernetesClusterID.NodeID, kubernetesClusterID.AvailableWorkload, h.GetHostURL(r))
 	for _, err := range errs {
 		if err != nil {
 			log.Warn().Msgf("Cannot some actions for %s: %v, skipping", kubernetesClusterID.NodeID, err)

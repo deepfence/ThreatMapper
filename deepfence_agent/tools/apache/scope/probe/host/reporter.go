@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	dfUtils "github.com/deepfence/df-utils"
 	"github.com/deepfence/df-utils/cloud_metadata"
 	"github.com/weaveworks/scope/report"
@@ -88,7 +89,7 @@ func getCloudMetadata(cloudProvider string) (string, cloud_metadata.CloudMetadat
 		if err == nil && !foundContainerSocketPath {
 			cloudProvider = report.CloudProviderServerless
 			cloudMetadata.CloudProvider = report.CloudProviderServerless
-			cloudMetadata.Region = report.CloudProviderServerless
+			cloudMetadata.Region = report.CloudRegionServerless
 		}
 		if cloudProvider == "" {
 			cloudProvider = DefaultCloud
@@ -107,6 +108,8 @@ func getCloudMetadata(cloudProvider string) (string, cloud_metadata.CloudMetadat
 
 func (r *Reporter) updateCloudMetadata(cloudProvider string) {
 	cloudProvider, cloudMetadata := getCloudMetadata(cloudProvider)
+	log.Info().Msgf("Cloud metadata: %v", cloudMetadata)
+
 	r.cloudMeta.mtx.Lock()
 	r.cloudMeta.cloudProvider = cloudProvider
 	r.cloudMeta.cloudMetadata = cloudMetadata

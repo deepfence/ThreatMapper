@@ -1,10 +1,11 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { isNil } from 'lodash-es';
-import { Suspense, useCallback, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher, useParams } from 'react-router-dom';
 import {
   Button,
   Modal,
+  RowSelectionState,
   SlidingModal,
   SlidingModalCloseButton,
   SlidingModalHeader,
@@ -104,13 +105,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
         auth_header: formBody.authKey,
       };
     case IntegrationType.awsSecurityHub: {
-      const selectedAccountsLength = Number(formData.get('selectedCloudAccountsLength'));
-      const accounts = [];
-      if (selectedAccountsLength > 0) {
-        for (let i = 0; i < selectedAccountsLength; i++) {
-          accounts.push(formData.get(`cloudAccountsFilter[${i}]`) as string);
-        }
-      }
+      const accounts = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
       return {
         aws_access_key: formBody.accessKey,
         aws_secret_key: formBody.secretKey,
@@ -173,7 +168,9 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
       break;
   }
 };
+
 type ActionData = {
+  action: ActionEnumType;
   message?: string;
   success?: boolean;
   deleteSuccess?: boolean;
@@ -181,76 +178,32 @@ type ActionData = {
 } | null;
 
 const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionData> => {
-  const _integrationType = params.integrationType?.toString();
+  const _integrationType = params.integrationType?.toString() ?? '';
   const formData = await request.formData();
-  const _notificationType = formData.get('_notificationType')?.toString();
+  const _notificationType = formData.get('_notificationType')?.toString() ?? '';
   const _actionType = formData.get('_actionType')?.toString();
   const integrationId = formData.get('integrationId')?.toString() ?? '';
 
   if (!_actionType) {
     return {
       message: 'Action Type is required',
+      action: _actionType as ActionEnumType,
     };
   }
-
   if (_actionType === ActionEnumType.ADD || _actionType === ActionEnumType.EDIT) {
-    // filters
-    // statuses filter
-    const selectedStatusesLength = Number(formData.get('selectedStatusesLength'));
-    const statusFilter = [];
-    if (selectedStatusesLength > 0) {
-      for (let i = 0; i < selectedStatusesLength; i++) {
-        statusFilter.push(formData.get(`statusFilter[${i}]`) as string);
-      }
-    }
-    // severities filter
-    const selectedSeveritiesLength = Number(formData.get('selectedSeveritiesLength'));
-    const severityFilter = [];
-    if (selectedSeveritiesLength > 0) {
-      for (let i = 0; i < selectedSeveritiesLength; i++) {
-        severityFilter.push(formData.get(`severityFilter[${i}]`) as string);
-      }
-    }
     const intervalFilter = formData.get('interval')?.toString();
-
-    // host filter
-    const selectedHostLength = Number(formData.get('selectedHostLength'));
-    const hostFilter = [];
-    if (selectedHostLength > 0) {
-      for (let i = 0; i < selectedHostLength; i++) {
-        hostFilter.push(formData.get(`hostFilter[${i}]`) as string);
-      }
-    }
-    // container filter
-    const selectedContainerLength = Number(formData.get('selectedContainerLength'));
-    const containerFilter = [];
-    if (selectedContainerLength > 0) {
-      for (let i = 0; i < selectedContainerLength; i++) {
-        containerFilter.push(formData.get(`containerFilter[${i}]`) as string);
-      }
-    }
-
-    // image filter
-    const selectedImageLength = Number(formData.get('selectedImageLength'));
-    const imageFilter = [];
-    if (selectedImageLength > 0) {
-      for (let i = 0; i < selectedImageLength; i++) {
-        imageFilter.push(formData.get(`imageFilter[${i}]`) as string);
-      }
-    }
-
-    // cluster filter
-    const selectedClusterLength = Number(formData.get('selectedClusterLength'));
-    const clusterFilter = [];
-    if (selectedClusterLength > 0) {
-      for (let i = 0; i < selectedClusterLength; i++) {
-        clusterFilter.push(formData.get(`clusterFilter[${i}]`) as string);
-      }
-    }
+    // filters
+    const statusFilter = getArrayTypeValuesFromFormData(formData, 'statusFilter');
+    const severityFilter = getArrayTypeValuesFromFormData(formData, 'severityFilter');
+    const hostFilter = getArrayTypeValuesFromFormData(formData, 'hostFilter');
+    const containerFilter = getArrayTypeValuesFromFormData(formData, 'containerFilter');
+    const imageFilter = getArrayTypeValuesFromFormData(formData, 'imageFilter');
+    const clusterFilter = getArrayTypeValuesFromFormData(formData, 'clusterFilter');
 
     const _filters: {
       node_ids: ModelNodeIdentifier[];
       fields_filters: ReportersFieldsFilters;
+      container_names: string[];
     } = {
       fields_filters: {
         compare_filter: null,
@@ -260,6 +213,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
           order_fields: null,
         },
       },
+      container_names: [],
       node_ids: [],
     };
 
@@ -288,15 +242,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       nodeIds.push(..._images);
     }
     if (containerFilter.length) {
-      const _containers: ModelNodeIdentifier[] = containerFilter.map<ModelNodeIdentifier>(
-        (id) => {
-          return {
-            node_id: id,
-            node_type: ModelNodeIdentifierNodeTypeEnum.Container,
-          };
-        },
-      );
-      nodeIds.push(..._containers);
+      _filters.container_names = containerFilter;
     }
     if (clusterFilter.length) {
       const _clusters: ModelNodeIdentifier[] = clusterFilter.map<ModelNodeIdentifier>(
@@ -355,6 +301,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       if (!integrationId) {
         return {
           message: 'Integration id is required for edit',
+          action: _actionType as ActionEnumType,
         };
       }
       result = await updateIntegrationApi({
@@ -382,12 +329,14 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
         const modelResponse: ApiDocsBadRequestResponse =
           await result.error.response.json();
         return {
+          action: _actionType as ActionEnumType,
           message: modelResponse.message ?? '',
           fieldErrors: modelResponse.error_fields ?? {},
         };
       } else if (result.error.response.status === 403) {
         const message = await get403Message(result.error);
         return {
+          action: _actionType as ActionEnumType,
           message,
         };
       }
@@ -395,32 +344,38 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     }
     invalidateAllQueries();
     return {
+      action: _actionType as ActionEnumType,
       success: true,
     };
   } else if (_actionType === ActionEnumType.DELETE) {
-    const id = formData.get('id')?.toString();
-    if (!id) {
+    const ids = formData.getAll('id[]') as string[];
+    if (ids.length === 0) {
       return {
+        action: _actionType as ActionEnumType,
         deleteSuccess: false,
-        message: 'An id is required to delete an integration',
+        message: 'No integration id to delete',
       };
     }
     const deleteIntegrationApi = apiWrapper({
-      fn: getIntegrationApiClient().deleteIntegration,
+      fn: getIntegrationApiClient().bulkDeleteIntegration,
     });
     const r = await deleteIntegrationApi({
-      integrationId: id,
+      modelDeleteIntegrationReq: {
+        integration_ids: ids?.map((id) => Number(id)),
+      },
     });
     if (!r.ok) {
       if (r.error.response.status === 400) {
         const { message } = await getResponseErrors(r.error);
         return {
+          action: _actionType as ActionEnumType,
           success: false,
           message: message ?? 'Error in deleting integrations',
         };
       } else if (r.error.response.status === 403) {
         const message = await get403Message(r.error);
         return {
+          action: _actionType as ActionEnumType,
           message,
           success: false,
         };
@@ -428,6 +383,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     }
     invalidateAllQueries();
     return {
+      action: _actionType as ActionEnumType,
       deleteSuccess: true,
     };
   }
@@ -443,12 +399,14 @@ const useEmailConfiguration = () => {
 
 const DeleteConfirmationModal = ({
   showDialog,
-  integrationId,
+  ids,
   setShowDialog,
+  onDeleteSuccess,
 }: {
   showDialog: boolean;
-  integrationId: number | undefined;
+  ids: string[];
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteSuccess: () => void;
 }) => {
   const fetcher = useFetcher<ActionData>();
 
@@ -456,14 +414,24 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('_actionType', actionType);
-      formData.append('id', integrationId?.toString() ?? '');
-
+      ids.forEach((item) => formData.append('id[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
     },
-    [fetcher, integrationId],
+    [fetcher, ids],
   );
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.deleteSuccess &&
+      fetcher.data.action === ActionEnumType.DELETE
+    ) {
+      onDeleteSuccess();
+    }
+  }, [fetcher]);
+
   return (
     <Modal
       size="s"
@@ -471,7 +439,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.deleteSuccess ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -512,7 +480,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message ? (
-            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
+            <p className="mt-2 text-status-error text-p7">{fetcher.data?.message}</p>
           ) : null}
         </div>
       ) : (
@@ -525,7 +493,7 @@ const DeleteConfirmationModal = ({
 const Header = ({ title }: { title: string }) => {
   return (
     <SlidingModalHeader>
-      <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+      <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-header bg-bg-breadcrumb-bar">
         {title}
       </div>
     </SlidingModalHeader>
@@ -538,7 +506,7 @@ const CheckMailConfiguration = () => {
   return (
     <>
       {data?.data && data?.data?.length === 0 && (
-        <span className="dark:text-status-error text-p7 flex items-center">
+        <span className="text-status-error text-p7 flex items-center">
           Not configured to send emails. Please configure it in Settings-&gt;Email
           Configuration
         </span>
@@ -546,6 +514,49 @@ const CheckMailConfiguration = () => {
     </>
   );
 };
+
+const BulkActions = ({
+  selectedRows,
+  setRowSelectionState,
+}: {
+  selectedRows: RowSelectionState;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+}) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const integrationIdsToDelete = useMemo(() => {
+    return Object.keys(selectedRows).map((id) => {
+      return id;
+    });
+  }, [selectedRows]);
+
+  return (
+    <>
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          ids={integrationIdsToDelete}
+          setShowDialog={setShowDeleteDialog}
+          onDeleteSuccess={() => {
+            setRowSelectionState({});
+          }}
+        />
+      )}
+      <Button
+        color="error"
+        variant="flat"
+        size="sm"
+        disabled={integrationIdsToDelete.length === 0}
+        onClick={() => {
+          setShowDeleteDialog(true);
+        }}
+      >
+        Delete Integration
+      </Button>
+    </>
+  );
+};
+
 const IntegrationAdd = () => {
   const { integrationType } = useParams() as {
     integrationType: string;
@@ -559,7 +570,9 @@ const IntegrationAdd = () => {
   const [showEditIntegrationModal, setShowEditIntegrationModal] =
     useState<boolean>(false);
 
-  const [integrationIdToDelete, setIntegrationIdToDelete] = useState<number>();
+  const [integrationIdsToDelete, setIntegrationIdsToDelete] = useState<string[]>([]);
+
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
   const params = useParams() as {
     integrationType: string;
@@ -568,7 +581,11 @@ const IntegrationAdd = () => {
   const onTableAction = useCallback(
     (row: ModelIntegrationListResp, actionType: string) => {
       if (actionType === ActionEnumType.DELETE) {
-        setIntegrationIdToDelete(row.id);
+        if (!row.id) {
+          console.error('Row is missing integration id');
+          return;
+        }
+        setIntegrationIdsToDelete([row.id.toString()]);
         setShowDeleteDialog(true);
       } else if (actionType === ActionEnumType.EDIT) {
         setIntegrationToEdit(row);
@@ -599,6 +616,10 @@ const IntegrationAdd = () => {
         >
           Add new integration
         </Button>
+        <BulkActions
+          selectedRows={rowSelectionState}
+          setRowSelectionState={setRowSelectionState}
+        />
         {isEmailIntegration && (
           <Suspense>
             <CheckMailConfiguration />
@@ -649,14 +670,21 @@ const IntegrationAdd = () => {
 
       <div className="self-start mt-2">
         <Suspense fallback={<TableSkeleton columns={4} rows={5} />}>
-          <IntegrationTable onTableAction={onTableAction} />
+          <IntegrationTable
+            onTableAction={onTableAction}
+            rowSelectionState={rowSelectionState}
+            setRowSelectionState={setRowSelectionState}
+          />
         </Suspense>
       </div>
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
-          integrationId={integrationIdToDelete}
+          ids={integrationIdsToDelete}
           setShowDialog={setShowDeleteDialog}
+          onDeleteSuccess={() => {
+            setRowSelectionState({});
+          }}
         />
       )}
     </div>

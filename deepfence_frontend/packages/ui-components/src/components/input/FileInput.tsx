@@ -11,15 +11,15 @@ export type SizeType = 'sm' | 'md' | 'lg';
 
 const inputCva = cva(
   [
-    'block w-full rounded-[5px] dark:placeholder-df-gray-400 cursor-auto',
-    'border border-gray-300 dark:border-accent-accent',
+    'block w-full rounded-[5px] dark:placeholder-df-gray-400 placeholder-df-gray-500 cursor-auto',
+    'border border-accent-accent',
     'bg-gray-50 dark:bg-transparent',
-    'text-gray-900 dark:text-text-text-and-icon dark:hover:border-[#3777C2] file:text-white file:dark:text-black',
+    'dark:text-text-input-value text-text-text-and-icon hover:border-[#1466B8] dark:hover:border-bg-hover-1 file:text-text-text-inverse',
     'disabled:cursor-not-allowed',
     'focus:outline-none',
     // ring styles
-    'file:border-0 file:cursor-pointer file:hover:bg-gray-700 dark:file:hover:bg-[#3777C2]',
-    'file:h-ful file:bg-gray-800 dark:file:bg-accent-accent file:px-3',
+    'file:border-0 file:cursor-pointer dark:file:hover:bg-bg-hover-1 file:hover:bg-[#1466B8]',
+    'file:h-ful file:bg-btn-blue file:px-3',
   ],
   {
     variants: {
@@ -80,7 +80,7 @@ export const FileInput = forwardRef<HTMLInputElement, TextInputProps>(
           <div className="flex gap-2 items-center">
             <LabelPrimitive.Root
               htmlFor={_id}
-              className="text-p4 text-gray-900 dark:text-text-input-value"
+              className="text-p11 dark:text-text-input-value text-text-text-and-icon"
             >
               {required && <span>*</span>}
               {label}

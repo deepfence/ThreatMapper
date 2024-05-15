@@ -51,7 +51,7 @@ describe(`Component Button`, () => {
     const startIconId = getByTestId('button-icon-start-id');
     const endIconId = getByTestId('button-icon-end-id');
     expect(getByText('Test button')).toBeInTheDocument();
-    expect(buttonId).toHaveClass('dark:bg-accent-accent');
+    expect(buttonId).toHaveClass('bg-btn-blue');
     expect(startIconId).toBeInTheDocument();
     expect(endIconId).toBeInTheDocument();
 

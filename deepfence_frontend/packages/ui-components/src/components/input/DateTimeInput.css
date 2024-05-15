@@ -1,0 +1,24 @@
+.df-datetime-input {
+  background-color: transparent;
+}
+.df-datetime-input::-webkit-datetime-edit-text,
+.df-datetime-input::-webkit-datetime-edit-month-field,
+.df-datetime-input::-webkit-datetime-edit-day-field,
+.df-datetime-input::-webkit-datetime-edit-year-field,
+.df-datetime-input::-webkit-datetime-edit-ampm-field,
+.df-datetime-input::-webkit-datetime-edit-minute-field,
+.df-datetime-input::-webkit-datetime-edit-hour-field {
+  @apply text-severity-unknown/60;
+}
+.df-datetime-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-text,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-month-field,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-day-field,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-year-field,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-ampm-field,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-minute-field,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-hour-field {
+  @apply text-text-input-value;
+}

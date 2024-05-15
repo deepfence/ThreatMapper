@@ -29,6 +29,7 @@ import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { TruncatedText } from '@/components/TruncatedText';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
@@ -55,25 +56,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
   const actionType = formData.getAll('actionType')?.toString();
 
-  // host filter
-  const selectedHostLength = Number(formData.get('selectedHostLength'));
-  const nodeIds = [];
-  if (selectedHostLength > 0) {
-    for (let i = 0; i < selectedHostLength; i++) {
-      nodeIds.push(formData.get(`hostFilter[${i}]`) as string);
-    }
-  }
-
-  // cluster filter
-  const selectedClusterLength = Number(formData.get('selectedClusterLength'));
-  const clusterIds = [];
-  if (selectedClusterLength > 0) {
-    for (let i = 0; i < selectedClusterLength; i++) {
-      clusterIds.push(formData.get(`clusterFilter[${i}]`) as string);
-    }
-  }
-
-  // cloud filter
+  const nodeIds = getArrayTypeValuesFromFormData(formData, 'hostFilter');
+  const clusterIds = getArrayTypeValuesFromFormData(formData, 'clusterFilter');
   const accountIds = getArrayTypeValuesFromFormData(formData, 'cloudAccountsFilter');
 
   if (!actionType) {
@@ -151,6 +135,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       }
       throw logsResponse.error;
     }
+    invalidateAllQueries();
     return {
       success: true,
       message: '',
@@ -177,8 +162,9 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       throw logsResponse.error;
     }
     toast.success('Logs generated successfully');
+    invalidateAllQueries();
   }
-  invalidateAllQueries();
+
   return null;
 };
 
@@ -207,13 +193,18 @@ const ConsoleDiagnosticLogsTable = () => {
             return formatMilliseconds(createdAt);
           }
         },
-        header: () => 'Created At',
+        header: () => 'Created at',
         minSize: 75,
         size: 80,
         maxSize: 85,
       }),
       columnHelper.accessor('message', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => {
+          if (!cell.row.original.message) {
+            return 'Logs generated';
+          }
+          return cell.getValue();
+        },
         header: () => 'Message',
         minSize: 75,
         size: 80,
@@ -221,7 +212,7 @@ const ConsoleDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
-          if (cell.row.original.message !== '') {
+          if (cell.row.original.url_link?.trim() === '') {
             return 'No logs';
           }
           return (
@@ -229,7 +220,7 @@ const ConsoleDiagnosticLogsTable = () => {
               href={cell.row.original.url_link ?? ''}
               download
               target={'_blank'}
-              className="flex items-center gap-x-1 dark:text-accent-accent dark:hover:text-bg-hover-1"
+              className="flex items-center gap-x-1 text-accent-accent hover:text-bg-hover-1"
               unstyled
             >
               <span className="h-3 w-3">
@@ -251,7 +242,7 @@ const ConsoleDiagnosticLogsTable = () => {
   const { data: _logs, message } = data;
   const consoleLogs = _logs?.console_logs ?? [];
   if (message) {
-    return <p className="dark:text-status-error text-p7">{message}</p>;
+    return <p className="text-status-error text-p7">{message}</p>;
   }
   return (
     <Table
@@ -287,13 +278,22 @@ const AgentDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('created_at', {
         cell: (cell) => cell.getValue(),
-        header: () => 'Created At',
+        header: () => 'Created at',
+        minSize: 75,
+        size: 80,
+        maxSize: 85,
+      }),
+      columnHelper.accessor('type', {
+        cell: (cell) => cell.getValue(),
+        header: () => 'Type',
         minSize: 75,
         size: 80,
         maxSize: 85,
       }),
       columnHelper.accessor('message', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => {
+          return <TruncatedText text={cell.getValue() ?? ''} />;
+        },
         header: () => 'Message',
         minSize: 75,
         size: 80,
@@ -301,15 +301,15 @@ const AgentDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
-          if (cell.row.original.message !== '') {
+          if (cell.row.original.url_link?.trim() === '') {
             return 'No logs';
           }
           return (
             <DFLink
-              href={cell.row.original.url_link ?? ''}
+              href={cell.row.original.url_link}
               download
               target={'_blank'}
-              className="flex items-center gap-x-1 dark:text-accent-accent dark:hover:text-bg-hover-1"
+              className="flex items-center gap-x-1 text-accent-accent hover:text-bg-hover-1"
               unstyled
             >
               <span className="h-3 w-3">
@@ -333,7 +333,7 @@ const AgentDiagnosticLogsTable = () => {
   }, 20000);
 
   if (message) {
-    return <p className="dark:text-status-error text-p7">{message}</p>;
+    return <p className="text-status-error text-p7">{message}</p>;
   }
 
   return (
@@ -387,7 +387,7 @@ const SelectCloudAccount = ({
 }: {
   fetcher: FetcherWithComponents<ActionData>;
 }) => {
-  const [cloud, setCloud] = useState('');
+  const [cloud, setCloud] = useState('AWS');
   const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>([]);
 
   return (
@@ -447,9 +447,7 @@ const AgentDiagnosticsLogsModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
-          Agent diagnostic logs
-        </div>
+        <SlidingModalHeaderWrapper>Agent diagnostic logs</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
@@ -507,9 +505,7 @@ const AgentDiagnosticsLogsModal = ({
               {nodeType === 'cloud account' && <SelectCloudAccount fetcher={fetcher} />}
 
               {fetcher?.data?.message ? (
-                <p className="text-p7 dark:text-status-error pt-2">
-                  {fetcher.data.message}
-                </p>
+                <p className="text-p7 text-status-error pt-2">{fetcher.data.message}</p>
               ) : null}
 
               <div className="flex gap-x-2 mt-8">

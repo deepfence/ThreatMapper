@@ -9,28 +9,71 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Jeffail/tunny"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-var client = &http.Client{
-	Timeout: 10 * time.Second,
-	Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	},
+const (
+	PerPageCount         = 100
+	ParallelImageFetch   = 10
+	ImageQueueBufferSize = 100
+)
+
+func init() {
+	parallelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
+	queue = make(chan []model.IngestedContainerImage, ImageQueueBufferSize)
 }
+
+type RepoDetails struct {
+	URL        string
+	UserName   string
+	Password   string
+	Project    string
+	Repository Repository
+}
+
+var (
+	client = &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			Proxy:           http.ProxyFromEnvironment,
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+	parallelImageProcessor *tunny.Pool
+	queue                  chan []model.IngestedContainerImage
+)
 
 func listImages(url, project, username, password string) ([]model.IngestedContainerImage, error) {
 
-	var (
-		images []model.IngestedContainerImage
-	)
+	var images []model.IngestedContainerImage
+	parallelImageProcessor.SetSize(ParallelImageFetch)
+	defer parallelImageProcessor.SetSize(0)
 
-	repos, err := listRepos(url, project, username, password)
+	repos, err := getRepos(url, project, username, password)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
+	for _, repo := range repos {
+		r := RepoDetails{
+			URL:        url,
+			UserName:   username,
+			Password:   password,
+			Project:    project,
+			Repository: repo,
+		}
+		go parallelImageProcessor.Process(&r)
+	}
+	for _, _ = range repos {
+		select {
+		case t := <-queue:
+			images = append(images, t...)
+		}
+	}
+
 	for _, repo := range repos {
 		artifacts, err := listArtifacts(url, username, password, project, repo.Name)
 		if err != nil {
@@ -45,15 +88,57 @@ func listImages(url, project, username, password string) ([]model.IngestedContai
 	return images, nil
 }
 
-func listRepos(url, project, username, password string) ([]Repository, error) {
+func fetchImageWithTags(rInterface interface{}) interface{} {
+	var images []model.IngestedContainerImage
+	defer func() {
+		queue <- images
+	}()
+	r, ok := rInterface.(*RepoDetails)
+	if !ok {
+		log.Error().Msg("Error processing repo details")
+		return false
+	}
+	artifacts, err := listArtifacts(r.URL, r.UserName, r.Password, r.Project, r.Repository.Name)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return false
+	}
+	log.Debug().Msgf("tags for image %d/%s are %s", r.Repository.ProjectID, r.Repository.Name, artifacts)
+
+	images = getImageWithTags(r.Repository, artifacts)
+	return true
+}
+
+func getRepos(url, project, name, password string) ([]Repository, error) {
+	var repositories []Repository
+	var queryURL string
+	i := 0
+	for {
+		i++
+		if len(repositories) == 0 {
+			queryURL = fmt.Sprintf("%s/api/v2.0/projects/%s/repositories?page_size=%d", url, project, PerPageCount)
+		} else {
+			queryURL = fmt.Sprintf("%s/api/v2.0/projects/%s/repositories?page=%d&page_size=%d", url, project, i, PerPageCount)
+		}
+		repos, err := listRepos(queryURL, name, password)
+		if err != nil {
+			return repositories, err
+		}
+		if len(repos) == 0 {
+			break
+		}
+		repositories = append(repositories, repos...)
+	}
+	return repositories, nil
+}
+
+func listRepos(url, username, password string) ([]Repository, error) {
 	var (
 		repositories []Repository
 		err          error
 	)
 
-	listReposURL := "%s/api/v2.0/projects/%s/repositories"
-	queryURL := fmt.Sprintf(listReposURL, url, project)
-	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -89,13 +174,12 @@ func listRepos(url, project, username, password string) ([]Repository, error) {
 }
 
 func listArtifacts(url, username, password, project, repo string) ([]Artifact, error) {
-	var (
-		err       error
-		artifacts []Artifact
-	)
+	var artifacts []Artifact
 
 	listRepoTagsURL := "%s/api/v2.0/projects/%s/repositories/%s/artifacts"
-	queryURL := fmt.Sprintf(listRepoTagsURL, url, project, strings.TrimPrefix(repo, project))
+	repoName := strings.TrimPrefix(repo, project)
+	repoName = strings.TrimPrefix(repoName, "/")
+	queryURL := fmt.Sprintf(listRepoTagsURL, url, project, repoName)
 	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -148,10 +232,10 @@ func getImageWithTags(repo Repository, artifacts []Artifact) []model.IngestedCon
 				Tag:           tag.Name,
 				Size:          fmt.Sprint(artifact.Size),
 				Metadata: model.Metadata{
-					"last_pushed":   tag.PushTime,
+					"last_pushed":   tag.PushTime.Unix(),
 					"digest":        artifact.Digest,
-					"creation_time": repo.CreationTime,
-					"last_updated":  tag.PushTime,
+					"creation_time": repo.CreationTime.Unix(),
+					"last_updated":  tag.PushTime.Unix(),
 				},
 			}
 			imageAndTag = append(imageAndTag, tt)

@@ -33,6 +33,7 @@ import { InProgressIcon } from '@/components/icons/registries/InProgress';
 import { StartScanIcon } from '@/components/icons/registries/StartScan';
 import { TagsIcon } from '@/components/icons/registries/Tags';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { AddRegistryModal } from '@/features/registries/components/AddRegistryModal';
 import { RegistryAccountsTable } from '@/features/registries/components/RegistryAccountsTable';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
@@ -233,7 +234,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -276,7 +277,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -294,7 +295,7 @@ const Header = () => {
     queryKey: queries.registry.listRegistryAccounts._def,
   });
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <BreadcrumbWrapper>
       <Breadcrumb>
         <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
           <DFLink to={'/registries'} unstyled>
@@ -308,9 +309,11 @@ const Header = () => {
         </BreadcrumbLink>
       </Breadcrumb>
       <div className="ml-2 flex items-center">
-        {isFetching ? <CircleSpinner size="sm" /> : null}
+        {isFetching ? (
+          <CircleSpinner size="sm" data-testid="registryAccountSpinnerId" />
+        ) : null}
       </div>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 
@@ -324,60 +327,69 @@ const CountWidget = () => {
   }
 
   const {
+    repositories = 0,
     images = 0,
-    tags = 0,
     scans_in_progress = 0,
     registries = 0,
   } = data.summary as ModelSummary;
 
   return (
     <div className="grid grid-cols-12 px-6 items-center w-full">
-      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+      <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8 text-text-icon">
           <RegistryIcon />
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span
+            className="text-h1 dark:text-text-input-value text-text-text-and-icon"
+            data-testid="totalRegistriesId"
+          >
             {abbreviateNumber(registries)}
           </span>
-          <span className="text-p1">Total registries</span>
+          <span className="text-p1a">Total registries</span>
         </div>
       </div>
-      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+      <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8 text-text-icon">
           <ImageIcon />
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
-            {abbreviateNumber(images)}
+          <span
+            className="text-h1 dark:text-text-input-value text-text-text-and-icon"
+            data-testid="totalRepositoriesId"
+          >
+            {abbreviateNumber(repositories)}
           </span>
-          <span className="text-p1">Total images</span>
+          <span className="text-p1a">Total repositories</span>
         </div>
       </div>
-      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+      <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8 text-text-icon">
           <TagsIcon />
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
-            {abbreviateNumber(tags)}
+          <span
+            className="text-h1 dark:text-text-input-value text-text-text-and-icon"
+            data-testid="totalImagesId"
+          >
+            {abbreviateNumber(images)}
           </span>
-          <span className="text-p1">Total tags</span>
+          <span className="text-p1a">Total images</span>
         </div>
       </div>
-      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-        <div className="w-8 h-8">
+      <div className="col-span-3 flex items-center text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8 text-text-icon">
           <InProgressIcon />
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-h1 dark:text-text-input-value">
+          <span className="text-h1 dark:text-text-input-value text-text-text-and-icon">
             {abbreviateNumber(scans_in_progress)}
           </span>
-          <span className="text-p1">In Progress</span>
+          <span className="text-p1a">In progress</span>
         </div>
       </div>
     </div>
@@ -538,7 +550,15 @@ const RegistryAccountsResults = () => {
           }
         />
       </div>
-      <Suspense fallback={<TableSkeleton columns={7} rows={DEFAULT_PAGE_SIZE} />}>
+      <Suspense
+        fallback={
+          <TableSkeleton
+            columns={7}
+            rows={DEFAULT_PAGE_SIZE}
+            data-testid="registryAccountSkeletonId"
+          />
+        }
+      >
         <RegistryAccountsTable
           onTableAction={onTableAction}
           setShowDeleteDialog={setShowDeleteDialog}

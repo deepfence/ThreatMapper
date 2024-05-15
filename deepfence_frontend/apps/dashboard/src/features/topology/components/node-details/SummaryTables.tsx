@@ -37,7 +37,7 @@ export const ProcessTable = ({
         cell: (cell) => {
           return (
             <button
-              className="dark:text-text-link hover:underline w-full text-left"
+              className="text-text-link hover:underline w-full text-left"
               type="button"
               onClick={() => {
                 onNodeClick(cell.row.original.node_id, 'process');
@@ -96,7 +96,7 @@ export const ProcessTable = ({
   }, []);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="topologyProcessTableId">
       <TableHeading text="Processes" />
       <Table
         columns={columns}
@@ -137,7 +137,7 @@ export const ContainerTable = ({
         cell: (cell) => {
           return (
             <button
-              className="dark:text-text-link hover:underline w-full text-left"
+              className="text-text-link hover:underline w-full text-left"
               type="button"
               onClick={() => {
                 onNodeClick(cell.row.original.node_id, 'container');
@@ -187,7 +187,7 @@ export const ContainerTable = ({
   }, []);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="topologyContainerTableId">
       <TableHeading text="Containers" />
       <Table
         columns={columns}
@@ -228,7 +228,7 @@ export const ImageTable = ({
         cell: (cell) => {
           return (
             <button
-              className="dark:text-text-link hover:underline w-full text-left"
+              className="text-text-link hover:underline w-full text-left"
               type="button"
               onClick={() => {
                 onNodeClick(cell.row.original.node_id, 'container_image');
@@ -241,7 +241,7 @@ export const ImageTable = ({
             </button>
           );
         },
-        header: () => 'Container',
+        header: () => 'Container image',
         minSize: 75,
         size: 80,
         maxSize: 85,
@@ -259,7 +259,7 @@ export const ImageTable = ({
   }, []);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="topologyContainerImageTableId">
       <TableHeading text="Container images" />
       <Table
         columns={columns}
@@ -294,6 +294,33 @@ export const ConnectionsTable = ({
     },
   ]);
 
+  const expandedConnections = useMemo(() => {
+    const newConnections: ModelConnection[] = [];
+    connections.forEach((connection) => {
+      const ipsMap: Record<string, number> = {};
+      if (connection.ips?.length) {
+        connection.ips.forEach((ip) => {
+          if (ipsMap[ip]) {
+            ipsMap[ip] += 1;
+          } else {
+            ipsMap[ip] = 1;
+          }
+        });
+        Object.keys(ipsMap).forEach((ip) => {
+          newConnections.push({
+            ...connection,
+            node_id: ip,
+            node_name: ip,
+            count: ipsMap[ip],
+          });
+        });
+      } else {
+        newConnections.push(connection);
+      }
+    });
+    return newConnections;
+  }, [connections]);
+
   const columns = useMemo(() => {
     return [
       columnHelper.accessor('node_name', {
@@ -318,13 +345,13 @@ export const ConnectionsTable = ({
   }, []);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="topologyInboundOutbountTableId">
       <TableHeading
         text={type === 'inbound' ? 'Inbound connections' : 'Outbound connections'}
       />
       <Table
         columns={columns}
-        data={connections}
+        data={expandedConnections}
         size="compact"
         enablePagination
         pageSize={10}

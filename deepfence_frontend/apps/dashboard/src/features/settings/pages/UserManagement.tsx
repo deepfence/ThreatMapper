@@ -10,6 +10,7 @@ import {
   createColumnHelper,
   Dropdown,
   DropdownItem,
+  IconButton,
   Listbox,
   ListboxOption,
   Modal,
@@ -30,6 +31,8 @@ import {
 } from '@/api/generated';
 import { ModelUser } from '@/api/generated/models/ModelUser';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { DFLink } from '@/components/DFLink';
+import { CheckIcon } from '@/components/icons/common/Check';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
@@ -37,6 +40,7 @@ import { EyeHideSolid } from '@/components/icons/common/EyeHideSolid';
 import { EyeSolidIcon } from '@/components/icons/common/EyeSolid';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { RefreshIcon } from '@/components/icons/common/Refresh';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -68,6 +72,7 @@ enum ActionEnumType {
   INVITE_USER = 'inviteUser',
   EDIT_USER = 'editUser',
   RESET_API_KEY = 'resetAPIKey',
+  DELETE_USER = 'delete_user',
 }
 
 const useListUsers = () => {
@@ -190,6 +195,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
           success: false,
           fieldErrors: {
             email: fieldErrors?.email,
+            role: fieldErrors?.role,
           },
         };
       } else if (inviteResponse.error.response.status === 403) {
@@ -283,29 +289,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 const ActionDropdown = ({
   user,
   trigger,
+  onTableAction,
 }: {
   user: ModelUser;
   trigger: React.ReactNode;
+  onTableAction: (row: ModelUser, action: ActionEnumType) => void;
 }) => {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showEditUserForm, setShowEditUserForm] = useState(false);
-
   return (
     <>
-      {showDeleteDialog && user.id && (
-        <DeleteUserConfirmationModal
-          showDialog={showDeleteDialog}
-          userId={user.id}
-          setShowDialog={setShowDeleteDialog}
-        />
-      )}
-      {showEditUserForm && (
-        <EditUserModal
-          showDialog={showEditUserForm}
-          user={user}
-          setShowDialog={setShowEditUserForm}
-        />
-      )}
       <Dropdown
         triggerAsChild={true}
         align="start"
@@ -313,16 +304,16 @@ const ActionDropdown = ({
           <>
             <DropdownItem
               onClick={() => {
-                setShowEditUserForm(true);
+                onTableAction(user, ActionEnumType.EDIT_USER);
               }}
             >
               Edit
             </DropdownItem>
             <DropdownItem
               onClick={() => {
-                setShowDeleteDialog(true);
+                onTableAction(user, ActionEnumType.DELETE_USER);
               }}
-              className="dark:text-status-error dark:hover:text-[#C45268]"
+              color="error"
             >
               Delete
             </DropdownItem>
@@ -345,9 +336,7 @@ const ChangePasswordModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
-          Change your password
-        </div>
+        <SlidingModalHeaderWrapper>Change your password</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
@@ -356,6 +345,25 @@ const ChangePasswordModal = ({
     </SlidingModal>
   );
 };
+const CopyField = ({ value }: { value: string }) => {
+  const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <div className="absolute right-0 top-0 group-hover:block">
+      {isCopied ? (
+        <IconButton size="sm" variant="flat" color="success" icon={<CheckIcon />} />
+      ) : (
+        <IconButton
+          size="sm"
+          variant="flat"
+          onClick={() => copy(value)}
+          icon={<CopyLineIcon />}
+        />
+      )}
+    </div>
+  );
+};
+
 const InviteUserModal = ({
   showDialog,
   setShowDialog,
@@ -370,16 +378,14 @@ const InviteUserModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
-          Invite user
-        </div>
+        <SlidingModalHeaderWrapper>Invite user</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
         {data?.success && data?.successMessage ? (
           <SuccessModalContent text={data?.successMessage}>
             {data?.invite_url && (
-              <p className={`my-4 text-p7 dark:text-status-success`}>
+              <p className={`my-4 text-p7 text-status-success`}>
                 {data?.invite_url} , invite will expire after {data?.invite_expiry_hours}{' '}
                 hours
               </p>
@@ -397,11 +403,13 @@ const InviteUserModal = ({
               helperText={data?.fieldErrors?.email}
             />
             <Listbox
+              required
               variant="underline"
               value={_role}
               name="role"
               label={'Role'}
               placeholder="Role"
+              color={data?.fieldErrors?.role ? 'error' : 'default'}
               helperText={data?.fieldErrors?.role}
               onChange={(item: string) => {
                 _setRole(item);
@@ -422,7 +430,7 @@ const InviteUserModal = ({
             </Listbox>
 
             {!data?.success && data?.message && (
-              <div className={`dark:text-status-error text-p7`}>
+              <div className={`text-status-error text-p7`}>
                 <span>{data?.message}</span>
               </div>
             )}
@@ -459,10 +467,23 @@ const InviteUserModal = ({
               </Button>
             </div>
             {data?.invite_url && (
-              <p className={`mt-1.5 font-normal text-center text-sm text-green-500`}>
-                Invite URL: <span data-testid="inviteUrlId">{data?.invite_url}</span>,
-                invite will expire after {data?.invite_expiry_hours} hours
-              </p>
+              <div className={`mt-1.5 font-normal text-p4 group relative`}>
+                <DFLink
+                  unstyled
+                  href={data?.invite_url ?? ''}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-text-link underline block w-[94%]"
+                  data-testid="inviteUrlId"
+                >
+                  {data?.invite_url}
+                </DFLink>
+                <CopyField value={data?.invite_url} />
+                <span className="mt-4 block">
+                  Use above invite link for registration, the link will expire after{' '}
+                  {data?.invite_expiry_hours} hours.
+                </span>
+              </div>
             )}
           </fetcher.Form>
         )}
@@ -492,9 +513,7 @@ const EditUserModal = ({
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
-        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
-          Update user
-        </div>
+        <SlidingModalHeaderWrapper>Update user</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
@@ -575,7 +594,7 @@ const EditUserModal = ({
               <ListboxOption value="Inactive">Inactive</ListboxOption>
             </Listbox>
             {!data?.success && data?.message && (
-              <p className="dark:text-status-error text-p7">{data.message}</p>
+              <p className="text-status-error text-p7">{data.message}</p>
             )}
 
             <div className="flex gap-x-2 mt-6">
@@ -608,22 +627,22 @@ const EditUserModal = ({
 const APITokenSkeletonComponent = () => {
   return (
     <div className="flex flex-col gap-y-4 animate-pulse min-w-[400px]">
-      <div className="h-10 w-72 bg-gray-200 dark:bg-bg-grid-border py-4 rounded-md"></div>
+      <div className="h-10 w-72 bg-[#939A9F]/25 dark:bg-bg-grid-border py-4 rounded-md"></div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-16 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-16 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-16 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
-        <div className="h-5 w-56 bg-gray-200 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-16 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
+        <div className="h-5 w-56 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-md"></div>
       </div>
     </div>
   );
@@ -689,7 +708,7 @@ const CurrentUserInfo = ({
     <div data-testid="currentUserWrapperId">
       <div className="flex items-center">
         <div className="flex items-end gap-x-4">
-          <span className="text-2xl dark:text-gray-100 font-semibold min-w-[124px]">
+          <span className="text-2xl dark:text-text-input-value text-text-text-and-icon font-semibold min-w-[124px]">
             {`${currentUser?.first_name || ''} ${currentUser?.last_name || ''}`}
           </span>
           <Button
@@ -702,11 +721,11 @@ const CurrentUserInfo = ({
           </Button>
         </div>
       </div>
-      <div className="flex mt-4 mb-2" data-testid="loginUserStatusWrapperId">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Status</span>
+      <div className="flex mt-4 mb-2 items-center" data-testid="loginUserStatusWrapperId">
+        <span className="text-p4 min-w-[140px] text-text-text-and-icon">Status</span>
         <span
-          className={cn('text-p1 dark:text-text-input-value', {
-            'text-green-500 dark:text-status-success': currentUser?.is_active,
+          className={cn('text-p4a text-text-input-value', {
+            'text-status-success': currentUser?.is_active,
             'text-gray-700 dark:text-df-gray-400': !currentUser?.is_active,
           })}
         >
@@ -714,30 +733,24 @@ const CurrentUserInfo = ({
         </span>
       </div>
       <div className="flex mt-4 mb-2" data-testid="loginUserEmailWrapperId">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Email</span>
-        <span className="text-p1 dark:text-text-input-value">
+        <span className="text-p4 min-w-[140px] text-text-text-and-icon">Email</span>
+        <span className="text-p4a text-text-input-value" data-testid="currentUserEmailId">
           {currentUser?.email || '-'}
         </span>
       </div>
       <div className="flex my-3">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">
-          Company
-        </span>
-        <span className="text-p1 dark:text-text-input-value">
+        <span className="text-p4 min-w-[140px] text-text-text-and-icon">Company</span>
+        <span className="text-p4a text-text-input-value">
           {currentUser?.company || '-'}
         </span>
       </div>
       <div className="flex my-3">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">Role</span>
-        <span className="text-p1 dark:text-text-input-value">
-          {currentUser?.role || '-'}
-        </span>
+        <span className="text-p4 min-w-[140px] text-text-text-and-icon">Role</span>
+        <span className="text-p4a text-text-input-value">{currentUser?.role || '-'}</span>
       </div>
       <div className="flex my-3">
-        <span className="text-p3 min-w-[140px] dark:text-text-text-and-icon">
-          API key
-        </span>
-        <div className="text-p1 items-center dark:text-text-input-value flex gap-x-2">
+        <span className="text-p4 min-w-[140px] text-text-text-and-icon">API key</span>
+        <div className="text-p4a items-center text-text-input-value flex gap-x-2">
           <Suspense fallback={<CircleSpinner size="sm" />}>
             <ApiToken />
           </Suspense>
@@ -763,7 +776,11 @@ const APITokenComponent = () => {
   );
 };
 
-const UsersTable = () => {
+const UsersTable = ({
+  onTableAction,
+}: {
+  onTableAction: (row: ModelUser, action: ActionEnumType) => void;
+}) => {
   const columnHelper = createColumnHelper<ModelUser>();
   const columns = useMemo(() => {
     const columns = [
@@ -777,9 +794,10 @@ const UsersTable = () => {
           return (
             <ActionDropdown
               user={cell.row.original}
+              onTableAction={onTableAction}
               trigger={
                 <button className="p-1">
-                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
                     <EllipsisIcon />
                   </div>
                 </button>
@@ -802,14 +820,14 @@ const UsersTable = () => {
       }),
       columnHelper.accessor('first_name', {
         cell: (cell) => cell.getValue(),
-        header: () => 'First Name',
+        header: () => 'First name',
         minSize: 30,
         size: 80,
         maxSize: 85,
       }),
       columnHelper.accessor('last_name', {
         cell: (cell) => cell.getValue(),
-        header: () => 'Last Name',
+        header: () => 'Last name',
         minSize: 30,
         size: 80,
         maxSize: 85,
@@ -832,9 +850,9 @@ const UsersTable = () => {
         cell: (cell) => {
           const active = cell.getValue();
           if (active) {
-            return <span className="dark:text-status-success">Yes</span>;
+            return <span className="text-status-success">Yes</span>;
           }
-          return <span className="dark:text-status-error">No</span>;
+          return <span className="text-status-error">No</span>;
         },
         header: () => 'Active',
         minSize: 60,
@@ -848,7 +866,7 @@ const UsersTable = () => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   if (data?.error?.message) {
-    return <p className="dark:text-status-error text-p7">{data.error.message}</p>;
+    return <p className="text-status-error text-p7">{data.error.message}</p>;
   }
   return (
     <div className="mt-2">
@@ -892,23 +910,51 @@ const InviteButton = ({
 };
 const UserManagement = () => {
   const [openInviteUserForm, setOpenInviteUserForm] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditUserForm, setShowEditUserForm] = useState(false);
+
+  const [user, setUser] = useState<ModelUser>();
+
+  const onTableAction = (row: ModelUser, action: ActionEnumType) => {
+    if (action === ActionEnumType.EDIT_USER) {
+      setUser(row);
+      setShowEditUserForm(true);
+    } else if (action === ActionEnumType.DELETE_USER) {
+      setUser(row);
+      setShowDeleteDialog(true);
+    }
+  };
 
   return (
     <div className="h-full mt-2">
+      {showDeleteDialog && user?.id && (
+        <DeleteUserConfirmationModal
+          showDialog={showDeleteDialog}
+          userId={user.id}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
+      {showEditUserForm && (
+        <EditUserModal
+          showDialog={showEditUserForm}
+          user={user!}
+          setShowDialog={setShowEditUserForm}
+        />
+      )}
       <APITokenComponent />
-      {openInviteUserForm && (
+      {openInviteUserForm ? (
         <InviteUserModal
           showDialog={openInviteUserForm}
           setShowDialog={setOpenInviteUserForm}
         />
-      )}
+      ) : null}
       <div className="mt-6" data-testid="userAccountsWrapperId">
         <div className="mt-2">
-          <h3 className="text-h6 dark:text-text-input-value">User accounts</h3>
+          <h3 className="text-h6 text-text-input-value">User accounts</h3>
         </div>
         <Suspense
           fallback={
-            <div className="animate-pulse h-6 w-32 bg-gray-200 dark:bg-bg-grid-border rounded"></div>
+            <div className="animate-pulse h-6 w-32 bg-[#939A9F]/25 dark:bg-bg-grid-border rounded"></div>
           }
         >
           <InviteButton setOpenInviteUserForm={setOpenInviteUserForm} />
@@ -924,7 +970,7 @@ const UserManagement = () => {
             />
           }
         >
-          <UsersTable />
+          <UsersTable onTableAction={onTableAction} />
         </Suspense>
       </div>
     </div>
@@ -962,7 +1008,7 @@ const DeleteUserConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -1005,7 +1051,7 @@ const DeleteUserConfirmationModal = ({
           <span>Are you sure you want to delete?</span>
           <br />
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -1039,7 +1085,7 @@ const ResetAPIKeyConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -1082,7 +1128,7 @@ const ResetAPIKeyConfirmationModal = ({
           <span>Are you sure you want to reset?</span>
           <br />
           {fetcher.data?.message && (
-            <p className="text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>

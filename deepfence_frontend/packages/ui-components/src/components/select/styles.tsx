@@ -1,15 +1,13 @@
-import './../input/input.css';
-
 import { cva } from 'cva';
 import { cn } from 'tailwind-preset';
 
 export const comboboxInputCva = cva(
   [
-    'df-input flex justify-start items-center w-full disabled:cursor-not-allowed',
+    'flex justify-start items-center w-full disabled:cursor-not-allowed',
     'focus:outline-none',
     'pt-1.5 pb-[5px]',
     'border-b',
-    'dark:bg-transparent',
+    'bg-transparent',
     'transition-[background-size] duration-[0.2s] ease-[ease]',
   ],
   {
@@ -18,37 +16,39 @@ export const comboboxInputCva = cva(
         default: [
           cn(
             // border
-            'dark:border-text-text-and-icon',
+            'dark:border-text-text-and-icon border-b-bg-border-form',
             // bg styles
             'bg-df-gray-50',
             // text font
-            'dark:text-p4',
+            'text-p4a',
             // text styles
-            'text-df-gray-900 dark:text-text-input-value',
+            'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-df-gray-700 dark:disabled:text-df-gray-600',
-            // focus style
-            'dark:bg-[length:0%_100%]',
-            // dark and bg styles
-            'dark:bg-no-repeat',
+            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600',
+            // bg styles
+            'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
+            'focus:border-b-accent-accent',
+            'bg-[length:0%_100%] bg-no-repeat',
+            'bg-gradient-to-b from-transparent from-95% to-accent-accent to-95%',
           ),
         ],
         error: [
           cn(
             // border
-            'dark:border-chart-red df-error',
+            'border-chart-red',
             // bg styles
             'bg-df-gray-50',
             // text font
-            'dark:text-p4',
+            'text-p4a',
             // text styles
-            'text-df-gray-900 dark:text-text-input-value',
+            'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-df-gray-700 dark:disabled:text-df-gray-600',
-            // focus style
-            'dark:bg-[length:0%_100%]',
-            // dark and bg styles
-            'dark:bg-no-repeat',
+            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600',
+            // bg styles
+            'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
+            'focus:border-b-status-error',
+            'bg-[length:0%_100%] bg-no-repeat',
+            'bg-gradient-to-b from-transparent from-95% dark:to-chart-red-500 to-status-error to-95%',
           ),
         ],
       },
@@ -84,7 +84,8 @@ export const comboboxInputCva = cva(
       {
         isOpen: true,
         color: 'error',
-        className: 'dark:bg-[length:100%_100%] dark:border-b-chart-red dark:bg-no-repeat',
+        className:
+          'dark:bg-[length:100%_100%] dark:border-b-chart-red dark:bg-no-repeat border-status-error',
       },
     ],
   },

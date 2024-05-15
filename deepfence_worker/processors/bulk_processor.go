@@ -10,9 +10,10 @@ import (
 	"github.com/cenkalti/backoff/v3"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/db"
 )
 
 type BulkRequest struct {
@@ -41,7 +42,7 @@ type BulkProcessor struct {
 	breaker       sync.RWMutex
 }
 
-type commitFn func(ns string, data [][]byte) error
+type commitFn func(ctx context.Context, ns string, data [][]byte) error
 
 func (s *BulkProcessor) Add(b BulkRequest) {
 	s.requestsC <- b
@@ -276,13 +277,24 @@ func isConnectivityError(err error) bool {
 
 func (w *bulkWorker) commit(ctx context.Context) []error {
 	errs := []error{}
+
+	ctx = directory.NewContextWithNameSpace(directory.NamespaceID(w.p.ns))
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "bulk-processor", "commit")
+	defer span.End()
+
 	for k, v := range w.buffer.Read() {
+
 		log.Info().Str("worker", w.workerID).Msgf("#data=%d", len(v))
+
 		w.expBackoff.Reset()
+
 		var err error
 		for {
 			w.p.breaker.RLock()
-			err = w.p.commitFn(k, v)
+			err = w.p.commitFn(ctx, k, v)
 			w.p.breaker.RUnlock()
 			if err != nil {
 				if isTransientError(err) {
@@ -298,7 +310,7 @@ func (w *bulkWorker) commit(ctx context.Context) []error {
 
 						log.Info().Msgf("Breaker opened")
 
-						configs, err := directory.GetDatabaseConfig(directory.NewContextWithNameSpace(directory.NamespaceID(w.p.ns)))
+						configs, err := directory.GetDatabaseConfig(ctx)
 						if err != nil {
 							log.Error().Msg(err.Error())
 							return

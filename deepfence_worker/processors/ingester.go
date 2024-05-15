@@ -33,7 +33,7 @@ func NewIngester(ns directory.NamespaceID, cfg wtils.Config, cancel context.Canc
 
 	log.Info().Msgf("topics %s", ing.topics)
 
-	//create if any topics is missing
+	// create if any topics is missing
 	err := utils.CreateMissingTopics(cfg.KafkaBrokers, ing.topics,
 		cfg.KafkaTopicPartitions, cfg.KafkaTopicReplicas, cfg.KafkaTopicRetentionMs,
 	)
@@ -45,6 +45,9 @@ func NewIngester(ns directory.NamespaceID, cfg wtils.Config, cancel context.Canc
 }
 
 func (i *Ingester) Start(ctx context.Context) {
+
+	ctx = directory.NewContextWithNameSpace(i.namespace)
+
 	err := StartGetLagByTopic(ctx, i.cfg.KafkaBrokers, string(i.namespace), utils.KgoLogger)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -76,6 +79,8 @@ func (i *Ingester) Stop() {
 }
 
 func (i *Ingester) StartKafkaConsumers(ctx context.Context, kgoLogger kgo.Logger) error {
+
+	log := log.WithCtx(ctx)
 
 	log.Info().Msgf("brokers: %v", i.cfg.KafkaBrokers)
 	log.Info().Msgf("topics: %v", i.topics)
@@ -110,6 +115,9 @@ func (i *Ingester) StartKafkaConsumers(ctx context.Context, kgoLogger kgo.Logger
 }
 
 func (i *Ingester) pollRecords(ctx context.Context, kc *kgo.Client) {
+
+	log := log.WithCtx(ctx)
+
 	ticker := time.NewTicker(5 * time.Second)
 	for {
 		select {

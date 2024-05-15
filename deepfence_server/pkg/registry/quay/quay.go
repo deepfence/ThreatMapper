@@ -1,6 +1,7 @@
 package quay
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -74,7 +76,9 @@ func (d *RegistryQuay) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryQuay) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
+func (d *RegistryQuay) FetchImagesFromRegistry(ctx context.Context) ([]model.IngestedContainerImage, error) {
+	_, span := telemetry.NewSpan(ctx, "registry", "fetch-images-from-registry")
+	defer span.End()
 	return listImages(d.NonSecret.QuayRegistryURL, d.NonSecret.QuayNamespace, d.Secret.QuayAccessToken)
 }
 

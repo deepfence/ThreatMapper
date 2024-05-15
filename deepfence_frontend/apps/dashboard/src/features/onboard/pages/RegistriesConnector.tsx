@@ -15,20 +15,18 @@ export const RegistriesConnector = () => {
 
   return (
     <div className="w-full">
-      <Card className="p-4">
-        <RegistryConnectorForm
-          onSuccess={() => {
-            toast.success('Added successfully');
-            navigate('/onboard/connectors/my-connectors');
-          }}
-          registryType={connectorType}
-          renderButton={(state) => {
-            setState(state);
-            return <></>;
-          }}
-        />
-      </Card>
-      <div className="mt-8 flex items-center sticky bottom-0 py-4 dark:bg-bg-page gap-x-2">
+      <RegistryConnectorForm
+        onSuccess={() => {
+          toast.success('Added successfully');
+          navigate('/onboard/connectors/my-connectors');
+        }}
+        registryType={connectorType}
+        renderButton={(state) => {
+          setState(state);
+          return <></>;
+        }}
+      />
+      <div className="mt-8 flex items-center sticky bottom-0 py-4 bg-bg-page gap-x-2">
         <Button
           size="md"
           type="submit"

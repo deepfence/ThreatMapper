@@ -54,8 +54,8 @@ const Header = ({
 
   return (
     <SlidingModalHeader>
-      <div className="pt-5 px-5 pb-4 dark:bg-bg-breadcrumb-bar">
-        <div className="flex items-center gap-2 dark:text-text-text-and-icon pr-8">
+      <div className="pt-5 px-5 dark:bg-[linear-gradient(to_bottom,_#15253e_96px,_transparent_0)] bg-[linear-gradient(to_bottom,_#EEEEEE_96px,_transparent_0)]">
+        <div className="flex items-center gap-2 text-text-text-and-icon pr-8">
           <div className="h-4 w-4 shrink-0">
             <SecretsIcon />
           </div>
@@ -148,12 +148,15 @@ const DetailsComponent = ({
     data: { data: secrets },
   } = useGetSecretDetails();
 
-  const [showResourceModal, setShowResourceModal] = useState(false);
+  const [showResourceModal, setShowResourceModal] = useState({
+    resource: '',
+    show: false,
+  });
 
   if (!secrets.length) {
     return (
       <div className="flex items-center p-4 justify-center">
-        <h3 className="text-p1">No details found</h3>
+        <h3 className="text-p1a">No details found</h3>
       </div>
     );
   }
@@ -225,12 +228,12 @@ const DetailsComponent = ({
             className="flex flex-col grow basis-[45%] max-w-full gap-1 group"
           >
             <div className="flex relative">
-              <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
+              <div className="text-p3 text-text-text-and-icon first-letter:capitalize">
                 {label}
               </div>
               <CopyField value={valueAsStr} />
             </div>
-            <div className="text-p1 dark:text-text-input-value break-words">
+            <div className="text-p1 dark:text-text-input-value text-text-text-and-icon break-words">
               {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
             </div>
           </div>
@@ -239,32 +242,40 @@ const DetailsComponent = ({
       {secret.resources?.length ? (
         <div className="flex flex-col grow basis-[100%] max-w-full gap-1 group">
           <div className="basis-[45%] flex relative">
-            <div className="text-p3 dark:text-text-text-and-icon">Resources</div>
+            <div className="text-p3 text-text-text-and-icon">Resources</div>
             <CopyField value={JSON.stringify(secret.resources)} />
           </div>
           <div className="text-p1">
-            {secret.resources.map((resource) => {
+            {showResourceModal.show ? (
+              <ResourceDetailModal
+                open={showResourceModal.show}
+                onClose={() => {
+                  setShowResourceModal({
+                    show: false,
+                    resource: '',
+                  });
+                }}
+                nodeId={showResourceModal.resource}
+              />
+            ) : null}
+
+            {secret.resources.map((resource, index) => {
               if (!resource.node_id || !resource.node_type) {
                 return null;
               }
               if (resource.node_type === 'container_image') {
                 return (
                   <>
-                    {showResourceModal && (
-                      <ResourceDetailModal
-                        open={showResourceModal}
-                        onClose={setShowResourceModal}
-                        nodeId={resource.node_id}
-                      />
-                    )}
-
                     <button
                       type="button"
-                      key={resource.node_id}
+                      key={resource.node_id + index}
                       onClick={() => {
-                        setShowResourceModal(true);
+                        setShowResourceModal({
+                          show: true,
+                          resource: resource.node_id,
+                        });
                       }}
-                      className="text-p1 w-fit dark:text-accent-accent"
+                      className="text-p1 w-fit text-accent-accent"
                     >
                       {resource.name}
                     </button>

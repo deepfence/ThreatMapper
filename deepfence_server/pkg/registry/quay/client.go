@@ -7,17 +7,43 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Jeffail/tunny"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-var client = &http.Client{Timeout: 10 * time.Second}
+const (
+	ParallelImageFetch   = 10
+	ImageQueueBufferSize = 100
+)
+
+var (
+	client                 = &http.Client{Timeout: 10 * time.Second}
+	parallelImageProcessor *tunny.Pool
+	queue                  chan []model.IngestedContainerImage
+)
+
+func init() {
+	parallelImageProcessor = tunny.NewFunc(0, fetchImageWithTags)
+	queue = make(chan []model.IngestedContainerImage, ImageQueueBufferSize)
+}
+
+type RepoDetails struct {
+	URL        string
+	Token      string
+	Password   string
+	NameSpace  string
+	Repository Repositories
+}
 
 func listImages(url, namespace, token string) ([]model.IngestedContainerImage, error) {
 
 	var (
 		images []model.IngestedContainerImage
 	)
+	parallelImageProcessor.SetSize(ParallelImageFetch)
+	defer parallelImageProcessor.SetSize(0)
 
 	repos, err := listRepos(url, namespace, token)
 	if err != nil {
@@ -25,17 +51,42 @@ func listImages(url, namespace, token string) ([]model.IngestedContainerImage, e
 		return nil, err
 	}
 	for _, repo := range repos {
-		tags, err := listRepoTags(url, namespace, token, repo.Name)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			continue
+		r := RepoDetails{
+			URL:        url,
+			NameSpace:  namespace,
+			Token:      token,
+			Repository: repo,
 		}
-		log.Debug().Msgf("tags for image %s/%s are %v", repo.Namespace, repo.Name, tags)
-
-		images = append(images, getImageWithTags(repo, tags)...)
+		go parallelImageProcessor.Process(&r)
+	}
+	for _, _ = range repos {
+		select {
+		case t := <-queue:
+			images = append(images, t...)
+		}
 	}
 
 	return images, nil
+}
+func fetchImageWithTags(rInterface interface{}) interface{} {
+	var images []model.IngestedContainerImage
+	defer func() {
+		queue <- images
+	}()
+	r, ok := rInterface.(*RepoDetails)
+	if !ok {
+		log.Error().Msg("Error processing repo details")
+		return false
+	}
+	tags, err := listRepoTags(r.URL, r.NameSpace, r.Token, r.Repository.Name)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return false
+	}
+	log.Debug().Msgf("tags for image %s/%s are %v", r.Repository.Namespace, r.Repository.Name, tags)
+
+	images = getImageWithTags(r.Repository, tags)
+	return true
 }
 
 func listRepos(url, namespace, token string) ([]Repositories, error) {
@@ -59,14 +110,14 @@ func listRepos(url, namespace, token string) ([]Repositories, error) {
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Error().Msg(err.Error())
-			break
+			return nil, err
 		}
 		defer resp.Body.Close()
 
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Error().Msg(err.Error())
-			break
+			return nil, err
 		}
 
 		if resp.StatusCode != http.StatusOK {
@@ -76,7 +127,8 @@ func listRepos(url, namespace, token string) ([]Repositories, error) {
 		}
 
 		var repos ReposResp
-		if err := json.Unmarshal(body, &repos); err != nil {
+		err = json.Unmarshal(body, &repos)
+		if err != nil {
 			log.Error().Msg(err.Error())
 			break
 		}

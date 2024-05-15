@@ -1,50 +1,70 @@
-import { preset } from 'tailwind-preset';
+import { colors } from 'tailwind-preset';
 
-import { PostureSeverityType, VulnerabilitySeverityType } from '@/types/common';
+import { Mode } from '@/theme/ThemeContext';
 
-export const SEVERITY_COLORS: {
-  [x in VulnerabilitySeverityType]: string;
-} = {
-  critical: preset.theme.extend.colors.status.error,
-  high: preset.theme.extend.colors.chart.orange,
-  medium: preset.theme.extend.colors.status.warning,
-  low: preset.theme.extend.colors.chart.yellow1,
-  unknown: preset.theme.extend.colors['df-gray'][600],
+export const getSeverityColorMap = (theme: Mode) => {
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
+  return {
+    critical: color['severity-critical'],
+    high: color['severity-high'],
+    medium: color['severity-medium'],
+    low: color['severity-low'],
+    unknown: color['severity-unknown'],
+  };
 };
 
-export function getColorForCVSSScore(score: number | undefined): string {
-  if (!score) return preset.theme.extend.colors['df-gray'][600];
-  if (score > 0 && score <= 3.9) return preset.theme.extend.colors.chart.yellow1;
-  if (score >= 4 && score <= 6.9) return preset.theme.extend.colors.status.warning;
-  if (score >= 7 && score <= 8.9) return preset.theme.extend.colors.chart.orange;
-  if (score >= 9 && score <= 10) return preset.theme.extend.colors.status.error;
-  return preset.theme.extend.colors['df-gray'][600];
+export const getSeverityChartInnerColorMap = (theme: Mode) => {
+  // const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
+  return {
+    critical: '#B50909AA',
+    high: '#E41D4BAA',
+    medium: '#F57600AA',
+    low: '#F0C800AA',
+    unknown: '#939A9FAA',
+  };
+};
+
+// TODO: take theme into account
+export function getColorForCVSSScore(theme: Mode, score: number | undefined): string {
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
+  if (!score) return color['df-gray']['600'];
+  if (score > 0 && score <= 3.9) return color.chart['yellow1'];
+  if (score >= 4 && score <= 6.9) return color['status-warning'];
+  if (score >= 7 && score <= 8.9) return color.chart['orange'];
+  if (score >= 9 && score <= 10) return color['status-error'];
+  return color['df-gray']['600'];
 }
 
-export const POSTURE_STATUS_COLORS: {
-  [x in PostureSeverityType]: string;
-} = {
-  alarm: preset.theme.extend.colors.status.error,
-  info: preset.theme.extend.colors.status.info,
-  ok: preset.theme.extend.colors.status.success,
-  skip: preset.theme.extend.colors['df-gray'][600],
+export const getPostureColor = (theme: Mode) => {
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
 
-  pass: preset.theme.extend.colors.status.success,
-  warn: preset.theme.extend.colors.status.warning,
-  note: preset.theme.extend.colors['df-gray'][600],
-  delete: preset.theme.extend.colors.chart.red,
+  return {
+    alarm: color['status-error'],
+    info: color['status-info'],
+    ok: color['status-success'],
+    skip: color['severity-unknown'],
+
+    pass: color['status-success'],
+    warn: color['status-warning'],
+    note: color['severity-unknown'],
+    delete: color['btn-red'],
+  };
 };
 
-export function getColorForCompliancePercent(percent: number | undefined | null): string {
+export function getColorForCompliancePercent(
+  theme: Mode,
+  percent: number | undefined | null,
+): string {
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
   if (percent === undefined || percent === null) {
-    return preset.theme.extend.colors['df-gray'][600];
+    return color['severity-unknown'];
   }
   if (percent >= 80 && percent <= 100) {
-    return preset.theme.extend.colors.status.success;
+    return color['btn-green'];
   } else if (percent >= 30 && percent < 80) {
-    return preset.theme.extend.colors.status.warning;
+    return color['severity-medium'];
   } else if (percent < 30) {
-    return preset.theme.extend.colors.status.error;
+    return color['status-error'];
   }
-  return preset.theme.extend.colors['df-gray'][600];
+  return color['severity-unknown'];
 }

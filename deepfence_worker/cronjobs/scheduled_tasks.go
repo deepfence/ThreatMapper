@@ -14,11 +14,15 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 )
 
 func RunScheduledTasks(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	messagePayload := map[string]interface{}{}
 	if err := json.Unmarshal(task.Payload(), &messagePayload); err != nil {
 		log.Error().Msg(err.Error())
@@ -57,11 +61,21 @@ var (
 )
 
 func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "run-system-scheduled-tasks")
+	defer span.End()
+
 	payload := messagePayload["payload"].(map[string]interface{})
 	nodeType := payload["node_type"].(string)
 	isPriority := false
 	if _, ok := payload["is_priority"]; ok {
 		isPriority = payload["is_priority"].(bool)
+	}
+	deepfenceSystemScan := false
+	if _, ok := payload["deepfence_system_scan"]; ok {
+		deepfenceSystemScan = payload["deepfence_system_scan"].(bool)
 	}
 
 	searchFilter := reporters_search.SearchFilter{
@@ -120,7 +134,7 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 	}
 
 	scanTrigger := model.ScanTriggerCommon{NodeIDs: nodeIds,
-		Filters: model.ScanFilter{}, IsPriority: isPriority}
+		Filters: model.ScanFilter{}, IsPriority: isPriority, DeepfenceSystemScan: deepfenceSystemScan}
 
 	switch messagePayload["action"].(string) {
 	case utils.VulnerabilityScan:
@@ -156,6 +170,12 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 }
 
 func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]interface{}) error {
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "run-custom-scheduled-tasks")
+	defer span.End()
+
 	var payload model.ScheduleTaskPayload
 	val := messagePayload["payload"].(map[string]interface{})
 	payloadRaw, err := json.Marshal(val)
@@ -180,7 +200,7 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 	}
 
 	scanTrigger := model.ScanTriggerCommon{NodeIDs: nodeIds,
-		Filters: scanFilter, IsPriority: payload.IsPriority}
+		Filters: scanFilter, IsPriority: payload.IsPriority, DeepfenceSystemScan: payload.DeepfenceSystemScan}
 
 	action := utils.Neo4jScanType(messagePayload["action"].(string))
 

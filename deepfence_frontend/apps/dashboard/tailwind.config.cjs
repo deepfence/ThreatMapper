@@ -4,7 +4,10 @@ const { preset } = require('tailwind-preset');
 
 module.exports = {
   presets: [preset],
-  content: ['./src/**/*.{js,jsx,ts,tsx}'],
+  content: [
+    './src/**/*.{js,jsx,ts,tsx}',
+    '../../packages/ui-components/src/**/*.{js,jsx,ts,tsx}',
+  ],
   theme: {
     extend: {
       animation: {

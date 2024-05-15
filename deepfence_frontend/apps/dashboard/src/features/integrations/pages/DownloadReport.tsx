@@ -1,7 +1,20 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useCallback, useState } from 'react';
-import { ActionFunctionArgs, Outlet, useFetcher } from 'react-router-dom';
-import { Breadcrumb, BreadcrumbLink, Button, Modal, TableSkeleton } from 'ui-components';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ActionFunctionArgs,
+  Outlet,
+  useFetcher,
+  useSearchParams,
+} from 'react-router-dom';
+import {
+  Badge,
+  Breadcrumb,
+  BreadcrumbLink,
+  Button,
+  Modal,
+  RowSelectionState,
+  TableSkeleton,
+} from 'ui-components';
 
 import { getReportsApiClient } from '@/api/api';
 import {
@@ -11,10 +24,16 @@ import {
 import { ModelExportReport } from '@/api/generated/models/ModelExportReport';
 import { DFLink } from '@/components/DFLink';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { FilterIcon } from '@/components/icons/common/Filter';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
-import { ReportTable } from '@/features/integrations/components/ReportsTable';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
+import {
+  getReportDownloadAppliedFiltersCount,
+  ReportFilters,
+  ReportTable,
+} from '@/features/integrations/components/ReportsTable';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
@@ -69,6 +88,7 @@ export const useGetReports = () => {
   });
 };
 export type ActionData = {
+  action: ActionEnumType;
   message?: string;
   success?: boolean;
   deleteSuccess?: boolean;
@@ -81,22 +101,26 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   if (!_actionType) {
     return {
       message: 'Action Type is required',
+      action: _actionType as ActionEnumType,
     };
   }
 
   if (_actionType === ActionEnumType.DELETE) {
-    const id = formData.get('id')?.toString();
-    if (!id) {
+    const reportIds = formData.getAll('reportIds[]');
+    if (!reportIds || reportIds.length <= 0) {
       return {
         deleteSuccess: false,
         message: 'Id is required to delete an integration',
+        action: _actionType as ActionEnumType,
       };
     }
     const deleteReportApi = apiWrapper({
-      fn: getReportsApiClient().deleteReport,
+      fn: getReportsApiClient().bulkDeleteReports,
     });
     const r = await deleteReportApi({
-      reportId: id,
+      modelBulkDeleteReportReq: {
+        report_ids: reportIds as string[],
+      },
     });
     if (!r.ok) {
       if (r.error.response.status === 400) {
@@ -104,12 +128,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         return {
           message: message ?? 'Error in deleting report',
           success: false,
+          action: _actionType as ActionEnumType,
         };
       } else if (r.error.response.status === 403) {
         const message = await get403Message(r.error);
         return {
           message,
           success: false,
+          action: _actionType as ActionEnumType,
         };
       }
       throw r.error;
@@ -117,6 +143,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
     invalidateAllQueries();
     return {
       deleteSuccess: true,
+      action: _actionType as ActionEnumType,
     };
   }
 
@@ -125,12 +152,14 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
 const DeleteConfirmationModal = ({
   showDialog,
-  row,
+  reportIds,
   setShowDialog,
+  onDeleteSuccess,
 }: {
   showDialog: boolean;
-  row: ModelExportReport | undefined;
+  reportIds: string[] | undefined;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteSuccess: () => void;
 }) => {
   const fetcher = useFetcher<ActionData>();
 
@@ -138,14 +167,24 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('_actionType', actionType);
-      formData.append('id', row?.report_id ?? '');
+      reportIds?.forEach((item) => formData.append('reportIds[]', item));
 
       fetcher.submit(formData, {
         method: 'post',
       });
     },
-    [fetcher, row],
+    [fetcher, reportIds],
   );
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.deleteSuccess &&
+      fetcher.data.action === ActionEnumType.DELETE
+    ) {
+      onDeleteSuccess();
+    }
+  }, [fetcher]);
 
   return (
     <Modal
@@ -156,7 +195,7 @@ const DeleteConfirmationModal = ({
       }}
       title={
         !fetcher.data?.deleteSuccess ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -197,7 +236,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message ? (
-            <p className="mt-2 dark:text-status-error text-p7">{fetcher.data?.message}</p>
+            <p className="mt-2 text-status-error text-p7">{fetcher.data?.message}</p>
           ) : null}
         </div>
       ) : (
@@ -209,7 +248,7 @@ const DeleteConfirmationModal = ({
 
 const Header = () => {
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <BreadcrumbWrapper>
       <>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<IntegrationsIcon />} isLink>
@@ -222,18 +261,45 @@ const Header = () => {
           </BreadcrumbLink>
         </Breadcrumb>
       </>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 
 const DownloadReport = () => {
   const { navigate } = usePageNavigation();
-  const [modelRow, setModelRow] = useState<ModelExportReport>();
+  const [reportIdsToDelete, setReportIdsToDelete] = useState<string[]>();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const fetcher = useFetcher<ActionData>();
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+
+  const selectdDeleteableRow = useMemo<
+    {
+      status: string;
+      id: string;
+    }[]
+  >(() => {
+    return Object.keys(rowSelectionState)
+      .map((item) => {
+        return JSON.parse(item);
+      })
+      .filter((value) => {
+        return (
+          value.status?.toLowerCase() === 'complete' ||
+          value.status?.toLowerCase() === 'error'
+        );
+      });
+  }, [rowSelectionState]);
+
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [searchParams] = useSearchParams();
 
   const onTableAction = useCallback((row: ModelExportReport, actionType: string) => {
     if (actionType === ActionEnumType.DELETE) {
-      setModelRow(row);
+      if (!row.report_id) {
+        console.error('No report id to delete');
+        return;
+      }
+      setReportIdsToDelete([row.report_id]);
       setShowDeleteDialog(true);
     } else if (actionType === ActionEnumType.DOWNLOAD) {
       download(row.url ?? '');
@@ -244,24 +310,69 @@ const DownloadReport = () => {
     <>
       <Header />
       <div className="m-4">
-        <Button
-          variant="flat"
-          startIcon={<PlusIcon />}
-          onClick={() => {
-            navigate('./create');
-          }}
-          size="sm"
-        >
-          Create new report
-        </Button>
+        <div className="flex">
+          <Button
+            variant="flat"
+            startIcon={<PlusIcon />}
+            onClick={() => {
+              navigate(`./create?${searchParams.toString()}`);
+            }}
+            size="sm"
+          >
+            Create new report
+          </Button>
+          <Button
+            size="md"
+            variant="flat"
+            color="error"
+            loading={fetcher.state === 'submitting'}
+            disabled={selectdDeleteableRow.length === 0 || fetcher.state === 'submitting'}
+            onClick={(e) => {
+              e.preventDefault();
+              setReportIdsToDelete(selectdDeleteableRow.map((row) => row.id));
+              setShowDeleteDialog(true);
+            }}
+          >
+            Delete
+          </Button>
+          <Button
+            variant="flat"
+            className="ml-auto"
+            startIcon={<FilterIcon />}
+            endIcon={
+              getReportDownloadAppliedFiltersCount(searchParams) > 0 ? (
+                <Badge
+                  label={String(getReportDownloadAppliedFiltersCount(searchParams))}
+                  variant="filled"
+                  size="small"
+                  color="blue"
+                />
+              ) : null
+            }
+            size="sm"
+            onClick={() => {
+              setFiltersExpanded((prev) => !prev);
+            }}
+          >
+            Filter
+          </Button>
+        </div>
+        {filtersExpanded ? <ReportFilters /> : null}
         <Suspense fallback={<TableSkeleton columns={5} rows={10} />}>
-          <ReportTable onTableAction={onTableAction} />
+          <ReportTable
+            onTableAction={onTableAction}
+            rowSelectionState={rowSelectionState}
+            setRowSelectionState={setRowSelectionState}
+          />
         </Suspense>
         {showDeleteDialog && (
           <DeleteConfirmationModal
             showDialog={showDeleteDialog}
-            row={modelRow}
+            reportIds={reportIdsToDelete}
             setShowDialog={setShowDeleteDialog}
+            onDeleteSuccess={() => {
+              setRowSelectionState({});
+            }}
           />
         )}
       </div>

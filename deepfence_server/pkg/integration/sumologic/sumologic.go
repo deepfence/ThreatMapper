@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
@@ -39,6 +40,10 @@ func (s SumoLogic) FormatMessage(message []map[string]interface{}) (bytes.Buffer
 }
 
 func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "sumologic-send-notification")
+	defer span.End()
+
 	// Create an HTTP client with a timeout
 	client := utils.GetHTTPClient()
 
@@ -80,4 +85,9 @@ func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[
 
 	log.Debug().Msg("Data sent to Sumo Logic successfully")
 	return nil
+}
+
+// todo
+func (s SumoLogic) IsValidCredential(ctx context.Context) (bool, error) {
+	return true, nil
 }

@@ -2,7 +2,6 @@ package model
 
 import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 type VulnerabilityScanConfigLanguage struct {
@@ -57,9 +56,10 @@ type ScanFilter struct {
 }
 
 type ScanTriggerCommon struct {
-	NodeIDs    []NodeIdentifier `json:"node_ids" required:"true"`
-	Filters    ScanFilter       `json:"filters" required:"true"`
-	IsPriority bool             `json:"is_priority"`
+	NodeIDs             []NodeIdentifier `json:"node_ids" required:"true"`
+	Filters             ScanFilter       `json:"filters" required:"true"`
+	IsPriority          bool             `json:"is_priority"`
+	DeepfenceSystemScan bool             `json:"deepfence_system_scan"` // Scan Deepfence images/containers/pods if present in NodeIDs
 }
 
 type NodeIdentifier struct {
@@ -89,12 +89,6 @@ type ComplianceScanInfo struct {
 	ScanInfo
 	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
-
-const (
-	ScanStatusSuccess    = utils.ScanStatusSuccess
-	ScanStatusStarting   = utils.ScanStatusStarting
-	ScanStatusInProgress = utils.ScanStatusInProgress
-)
 
 type ScanTriggerResp struct {
 	ScanIds    []string `json:"scan_ids" required:"true"`
@@ -140,6 +134,7 @@ type ScanResultsActionRequest struct {
 	ResultIDs        []string `json:"result_ids" validate:"required,gt=0,dive,min=1" required:"true"`
 	ScanType         string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 	NotifyIndividual bool     `json:"notify_individual"`
+	IntegrationIDs   []int32  `json:"integration_ids"`
 }
 
 type DownloadReportResponse struct {
@@ -526,7 +521,7 @@ type ComplianceRule struct {
 }
 
 func (ComplianceRule) NodeType() string {
-	return "Compliance"
+	return "ComplianceRule"
 }
 
 func (ComplianceRule) ExtendedField() string {

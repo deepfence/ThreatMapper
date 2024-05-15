@@ -86,3 +86,43 @@ export const isCloudOrgNode = (nodeType?: string) =>
   nodeType === 'aws_org' || nodeType === 'gcp_org';
 
 export type GenerativeAIIntegrationType = 'openai' | 'amazon-bedrock';
+
+export const isCriticalSeverity = (severity: string) => {
+  return severity?.toLowerCase() === 'critical';
+};
+export const isHighSeverity = (severity: string) => {
+  return severity?.toLowerCase() === 'high';
+};
+export const isMediumSeverity = (severity: string) => {
+  return severity?.toLowerCase() === 'medium';
+};
+export const isLowSeverity = (severity: string) => {
+  return severity?.toLowerCase() === 'low';
+};
+export const isUnknownSeverity = (severity: string) => {
+  return severity?.toLowerCase() === 'unknown' || severity?.toLowerCase() === '';
+};
+export const isAlarmStatus = (status: string) => {
+  return status?.toLowerCase() === 'alarm';
+};
+export const isInfoStatus = (status: string) => {
+  return status?.toLowerCase() === 'info';
+};
+export const isOkStatus = (status: string) => {
+  return status?.toLowerCase() === 'ok';
+};
+export const isSkipStatus = (status: string) => {
+  return status?.toLowerCase() === 'skip';
+};
+export const isPassStatus = (status: string) => {
+  return status?.toLowerCase() === 'pass';
+};
+export const isWarnStatus = (status: string) => {
+  return status?.toLowerCase() === 'warn';
+};
+export const isNoteStatus = (status: string) => {
+  return status?.toLowerCase() === 'note';
+};
+export const isDeleteStatus = (status: string) => {
+  return status?.toLowerCase() === 'delete' || status?.toLowerCase() === '';
+};

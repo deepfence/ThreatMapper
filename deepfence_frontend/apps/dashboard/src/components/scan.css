@@ -2,6 +2,14 @@
   stroke: #76a9fa;
 }
 
+.scan-summary svg circle {
+  stroke: #1a56db;
+}
+
+.dark .scan-summary svg circle {
+  stroke: #76a9fa;
+}
+
 .dark .scan-summary svg circle {
   stroke: #1a56db;
 }

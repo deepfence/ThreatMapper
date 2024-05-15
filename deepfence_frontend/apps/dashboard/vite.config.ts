@@ -12,6 +12,42 @@ import webfontDownload from 'vite-plugin-webfont-dl';
 const current = fileURLToPath(import.meta.url);
 const root = path.dirname(current);
 
+const matomoPlugin = (enable: string) => {
+  if (enable?.trim() === 'true') {
+    return {
+      name: 'analytics-tracking',
+      transformIndexHtml(html) {
+        return html.replace(
+          /<analytics-tracking>(.*?)<\/analytics-tracking>/,
+          `<script>
+          var _paq = (window._paq = window._paq || []);
+          /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+          _paq.push(['trackPageView']);
+          _paq.push(['enableLinkTracking']);
+          (function () {
+            var u = '//analytics.deepfence.io/';
+            _paq.push(['setTrackerUrl', u + 'matomo.php']);
+            _paq.push(['setSiteId', '1']);
+            var d = document,
+              g = d.createElement('script'),
+              s = d.getElementsByTagName('script')[0];
+            g.async = true;
+            g.src = u + 'matomo.js';
+            s.parentNode.insertBefore(g, s);
+          })();
+        </script>`,
+        );
+      },
+    };
+  }
+  return {
+    name: 'analytics-tracking',
+    transformIndexHtml(html) {
+      return html.replace(/<analytics-tracking>(.*?)<\/analytics-tracking>/, '');
+    },
+  };
+};
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const viteEnv = loadEnv(mode, '.');
@@ -19,6 +55,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       webfontDownload(),
+      matomoPlugin(process.env.ENABLE_ANALYTICS),
       ...(mode === 'production' ? [visualizer()] : []),
     ],
     test: {

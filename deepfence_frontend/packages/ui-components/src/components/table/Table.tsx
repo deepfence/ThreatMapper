@@ -227,12 +227,12 @@ const CustomTable = <TData extends RowData>(
       <div
         className={cn(
           `overflow-x-auto overflow-y-hidden`,
-          `rounded-[5px] dark:border dark:border-bg-grid-border`,
+          `rounded-[5px] border border-bg-grid-border`,
         )}
       >
         <table
           className={cn(
-            `w-full bg-white dark:bg-bg-grid-default border-spacing-0 border-collapse table-fixed`,
+            `w-full dark:bg-bg-grid-default bg-white border-spacing-0 border-collapse table-fixed`,
           )}
           cellPadding="0"
           cellSpacing="0"
@@ -250,7 +250,7 @@ const CustomTable = <TData extends RowData>(
         </table>
         {enablePagination ? (
           <div
-            className="w-full dark:bg-bg-grid-header h-12 flex items-center dark:border-t dark:border-bg-grid-border px-4"
+            className="w-full dark:bg-bg-grid-header bg-white h-12 flex items-center border-t border-bg-grid-border px-4"
             data-testid="pagination-container"
           >
             {enableRowSelection && !!table.getSelectedRowModel().flatRows.length && (
@@ -270,14 +270,14 @@ const CustomTable = <TData extends RowData>(
                   }}
                   onClick={(e) => e.stopPropagation()}
                 />
-                <div className="text-p4 dark:text-text-input-value">
+                <div className="text-p4 text-text-input-value">
                   {table.getSelectedRowModel().flatRows.length}
                 </div>
               </div>
             )}
             <div className="ml-auto flex gap-4 items-center">
               {enablePagination && enablePageResize && (
-                <div className="dark:text-p4 dark:text-text-text-and-icon flex items-center gap-2">
+                <div className="text-p4 text-text-text-and-icon flex items-center gap-2">
                   Show{' '}
                   <Dropdown
                     align="end"
@@ -298,7 +298,10 @@ const CustomTable = <TData extends RowData>(
                       );
                     })}
                   >
-                    <button className="dark:text-text-input-value flex items-center gap-1">
+                    <button
+                      className="text-text-input-value flex items-center gap-1 text-p3"
+                      data-testid="showRowId"
+                    >
                       {table.getState().pagination.pageSize}{' '}
                       <div className="h-3 w-3">
                         <TableChevronDown />
@@ -308,7 +311,7 @@ const CustomTable = <TData extends RowData>(
                 </div>
               )}
               {enablePagination && enablePageResize && (
-                <div className="w-[1px] dark:bg-bg-grid-border h-4"></div>
+                <div className="w-[1px] bg-bg-grid-border h-4"></div>
               )}
               <div>
                 <Pagination
@@ -337,7 +340,7 @@ function TableHead<TData>({
   size: SizeOf;
 }) {
   return (
-    <thead className="bg-gray-50 dark:bg-bg-grid-header">
+    <thead className="dark:bg-bg-grid-header bg-[#f5f5f5]">
       {headerGroups.map((headerGroup) => (
         <tr key={headerGroup.id} data-testid="table-header-row">
           {headerGroup.headers.map((header) => (
@@ -361,20 +364,20 @@ function Th<TData>({
       key={header.id}
       colSpan={header.colSpan}
       className={cn(
-        'relative border-0 text-gray-500 dark:text-text-text-and-icon',
-        'border-b-[1.5px] border-gray-200 dark:border-bg-grid-border',
-        'text-t5 uppercase',
+        'relative border-0 text-text-text-and-icon',
+        'border-b-[1.5px] dark:border-bg-grid-border border-[#dcdcdc]',
+        'text-p11',
         { 'cursor-pointer select-none': header.column.getCanSort() },
       )}
       style={{ width: header.getSize() }}
       onClick={header.column.getToggleSortingHandler()}
     >
       <div
-        className={cn(`w-full h-full flex truncate pl-4 pr-2.5`, {
-          ['py-4']: size === 'default',
-          ['py-2.5']: size === 'compact',
-          ['py-[13px]']: size === 'medium',
-          ['py-[19px]']: size === 'relaxed',
+        className={cn(`w-full h-full flex truncate pl-4 pr-2.5 items-center`, {
+          ['py-[15px]']: size === 'default',
+          ['py-[9px]']: size === 'compact',
+          ['py-[12px]']: size === 'medium',
+          ['py-[18px]']: size === 'relaxed',
         })}
       >
         <span className="flex-1 truncate text-start">
@@ -385,19 +388,19 @@ function Th<TData>({
         {header.column.getCanSort() ? (
           <span className={cn('ml-1 flex items-center w-[0.8rem] h-[0.8rem]')}>
             {header.column.getIsSorted() === 'asc' ? (
-              <span className="h-4 w-4 dark:text-accent-accent">
+              <span className="h-4 w-4 text-accent-accent">
                 <TableChevronUp data-testid={`column-ascending-indicator-${header.id}`} />
               </span>
             ) : null}
             {header.column.getIsSorted() === 'desc' ? (
-              <span className="h-4 w-4 dark:text-accent-accent">
+              <span className="h-4 w-4 text-accent-accent">
                 <TableChevronDown
                   data-testid={`column-descending-indicator-${header.id}`}
                 />
               </span>
             ) : null}
             {!header.column.getIsSorted() ? (
-              <span className="h-4 w-4">
+              <span className="h-4 w-4 dark:text-text-text-and-icon text-text-helper">
                 <TableChevronDefault
                   data-testid={`column-unsorted-indicator-${header.id}`}
                 />
@@ -417,7 +420,7 @@ function Th<TData>({
           aria-hidden="true"
           data-testid={`column-resizer-${header.id}`}
         >
-          <div className="ml-[3px] w-[1px] mr-[1px] h-full bg-gray-200 dark:bg-bg-grid-border" />
+          <div className="ml-[3px] w-[1px] mr-[1px] h-full dark:bg-bg-grid-border bg-[#999999]" />
         </div>
       )}
     </th>
@@ -441,9 +444,9 @@ function TableBody<TData>({
             <tr
               {...rowProps}
               className={cn(
-                `hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar`,
+                `dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar`,
                 {
-                  '!bg-gray-100 dark:!bg-bg-active-selection dark:hover:!bg-bg-active-selection/90':
+                  'dark:!bg-bg-active-selection dark:hover:!bg-bg-active-selection/90 !bg-bg-breadcrumb-bar hover:!bg-bg-breadcrumb-bar/90':
                     row.getIsSelected(),
                 },
                 'transition-colors',
@@ -467,7 +470,7 @@ function TableBody<TData>({
               <tr>
                 <td
                   colSpan={row.getVisibleCells().length}
-                  className="border-b border-t border-gray-200 dark:border-bg-grid-border"
+                  className="border-b border-t border-bg-grid-border "
                 >
                   {renderSubComponent?.({ row })}
                 </td>
@@ -499,9 +502,9 @@ function Td<TData>({
       key={cell.id}
       style={{ width: cell.column.getSize() }}
       className={cn(
-        `text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0`,
+        `text-[13px] font-medium leading-[18px] text-text-text-and-icon px-4 truncate min-w-0`,
         {
-          'border-b border-gray-200 dark:border-bg-grid-border': rowIdx !== totalRows - 1,
+          'border-b border-bg-grid-border': rowIdx !== totalRows - 1,
           ['h-[48px]']: size === 'default',
           ['h-[36px]']: size === 'compact',
           ['h-[42px]']: size === 'medium',
@@ -526,7 +529,7 @@ function getRowExpanderColumn<TData extends RowData>(
     cell: ({ row }) => {
       return row.getCanExpand() ? (
         <button
-          className="h-4 w-4 dark:text-df-gray-600 overflow-hidden block"
+          className="h-4 w-4 text-df-gray-600 overflow-hidden block"
           onClick={row.getToggleExpandedHandler()}
         >
           {row.getIsExpanded() ? <TableExpanderChecked /> : <TableExpanderUnchecked />}
@@ -599,7 +602,7 @@ const TableNoDataElement = ({
           <img src={EmptyBoxImg} alt="No data" height="100%" width="100%" />
         </span>
       </span>
-      <span className="text-h3 dark:text-text-text-and-icon">{text}</span>
+      <span className="text-h3 text-text-text-and-icon">{text}</span>
     </div>
   );
 };

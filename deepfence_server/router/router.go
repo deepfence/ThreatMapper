@@ -18,6 +18,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/redis/go-redis/v9"
 	"github.com/riandyrn/otelchi"
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -50,6 +51,7 @@ const (
 	ResourceRegistry    = "container-registry"
 	ResourceIntegration = "integration"
 	ResourceReport      = "report"
+	ResourceLicense     = "license"
 )
 
 // func telemetryInjector(next http.Handler) http.Handler {
@@ -134,7 +136,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 		Translator:       translator,
 		IngestChan:       ingestC,
 		ConsoleDiagnosis: consoleDiagnosis,
+		TTLCache: ttlcache.New[string, string](
+			ttlcache.WithDisableTouchOnHit[string, string](),
+		),
 	}
+	go dfHandler.TTLCache.Start()
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
 	r.Use(middleware.Recoverer)
@@ -217,6 +223,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/email", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.AddEmailConfiguration))
 				r.Get("/email", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetEmailConfiguration))
 				r.Delete("/email/{config_id}", dfHandler.AuthHandler(ResourceSettings, PermissionDelete, dfHandler.DeleteEmailConfiguration))
+				r.Post("/email/test", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.TestConfiguredEmail))
+				r.Post("/email/test-unconfigured", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.TestUnconfiguredEmail))
 				r.Put("/agent/version", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadAgentBinaries))
 				r.Get("/agent/versions", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.ListAgentVersion))
 			})
@@ -256,6 +264,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/process", dfHandler.CompleteProcessInfo)
 				r.Post("/vulnerability", dfHandler.CompleteVulnerabilityInfo)
 				r.Post("/host", dfHandler.CompleteHostInfo)
+				r.Post("/cloud-compliance", dfHandler.CompleteCloudComplianceInfo)
+				r.Post("/compliance", dfHandler.CompleteComplianceInfo)
+				r.Post("/pod", dfHandler.CompletePodInfo)
+				r.Post("/container", dfHandler.CompleteContainerInfo)
 			})
 
 			r.Route("/search", func(r chi.Router) {
@@ -322,7 +334,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 					r.Post("/enable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentPluginsEnable))
 					r.Post("/disable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentPluginsDisable))
 				})
-				r.Post("/cloud-node", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetCloudNodeControls))
+				r.Post("/cloud-node", dfHandler.AuthHandler(ResourceScan, PermissionRead, dfHandler.GetCloudNodeControls))
 				r.Post("/cloud-node/enable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.EnableCloudNodeControls))
 				r.Post("/cloud-node/disable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.DisableCloudNodeControls))
 			})
@@ -347,12 +359,15 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 
 			r.Route("/cloud-node", func(r chi.Router) {
 				r.Post("/account", dfHandler.AuthHandler(ResourceCloudNode, PermissionRegister, dfHandler.RegisterCloudNodeAccountHandler))
+				r.Patch("/account/delete", dfHandler.AuthHandler(ResourceCloudNode, PermissionDelete, dfHandler.DeleteCloudAccountHandler))
 				r.Post("/account/refresh", dfHandler.AuthHandler(ResourceCloudNode, PermissionWrite, dfHandler.RefreshCloudAccountHandler))
 				r.Post("/list/accounts", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeAccountHandler))
 				r.Get("/list/providers", dfHandler.AuthHandler(ResourceCloudNode, PermissionRead, dfHandler.ListCloudNodeProvidersHandler))
 			})
 
 			r.Route("/scan/start", func(r chi.Router) {
+				r.Use(directory.CheckLicenseActive)
+
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartVulnerabilityScanHandler))
 				r.Post("/secret", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartSecretScanHandler))
 				r.Post("/compliance", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.StartComplianceScanHandler))
@@ -379,6 +394,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListCloudComplianceScansHandler))
 			})
 			r.Route("/scan/results", func(r chi.Router) {
+				r.Use(directory.CheckLicenseActive)
+
 				r.Get("/fields", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanReportFields))
 
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScanResultsHandler))
@@ -442,6 +459,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			r.Post("/scan/nodes-in-result", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetAllNodesInScanResultBulkHandler))
 
 			r.Route("/scan/sbom", func(r chi.Router) {
+				r.Use(directory.CheckLicenseActive)
+
 				r.Post("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetSbomHandler))
 				r.Post("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.SbomDownloadHandler))
 			})
@@ -482,11 +501,18 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
 			})
 
+			r.Route("/agent-deployment", func(r chi.Router) {
+				r.Get("/binary/download-url", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetAgentBinaryDownloadURL))
+			})
+
 			// Reports
 			r.Route("/reports", func(r chi.Router) {
+				r.Use(directory.CheckLicenseActive)
+
 				r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.ListReports))
 				r.Get("/{report_id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.GetReport))
 				r.Post("/", dfHandler.AuthHandler(ResourceReport, PermissionGenerate, dfHandler.GenerateReport))
+				r.Patch("/delete", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.BulkDeleteReports))
 				r.Delete("/{report_id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, dfHandler.DeleteReport))
 			})
 
@@ -500,8 +526,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 
 			// Integration
 			r.Route("/integration", func(r chi.Router) {
-				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddIntegration))
+				r.Group(func(r chi.Router) {
+					r.Use(directory.CheckLicenseActive)
+
+					r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddIntegration))
+				})
+
 				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetIntegrations))
+				r.Patch("/delete", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteIntegrations))
 				r.Route("/{integration_id}", func(r chi.Router) {
 					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteIntegration))
 					r.Put("/", dfHandler.AuthHandler(ResourceIntegration, PermissionUpdate, dfHandler.UpdateIntegration))
@@ -533,6 +565,16 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 			// vulnerability db management
 			r.Route("/database", func(r chi.Router) {
 				r.Put("/vulnerability", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadVulnerabilityDB))
+				r.Put("/secret", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadSecretsRules))
+				r.Put("/malware", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadMalwareRules))
+				r.Put("/posture", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadPostureControls))
+			})
+
+			r.Route("/license", func(r chi.Router) {
+				r.Post("/generate", dfHandler.AuthHandler(ResourceLicense, PermissionWrite, dfHandler.GenerateLicenseHandler))
+				r.Post("/", dfHandler.AuthHandler(ResourceLicense, PermissionWrite, dfHandler.RegisterLicenseHandler))
+				r.Get("/", dfHandler.AuthHandler(ResourceLicense, PermissionRead, dfHandler.GetLicenseHandler))
+				r.Delete("/", dfHandler.AuthHandler(ResourceLicense, PermissionDelete, dfHandler.DeleteLicenseHandler))
 			})
 		})
 	})

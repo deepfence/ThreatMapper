@@ -25,6 +25,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/package-scanner/utils"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -46,16 +47,19 @@ type regCreds struct {
 	NameSpace     string
 	ImagePrefix   string
 	SkipTLSVerify bool
-	UseHttp       bool
+	UseHTTP       bool
 	IsRegistry    bool
 }
 
-func useHttp(url string) bool {
+func useHTTP(url string) bool {
 	return !strings.HasPrefix(url, "https://")
 }
 
-func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, regCreds, error) {
-	rc, err := GetCredentialsFromRegistry(ctx, registryId)
+func GetConfigFileFromRegistry(ctx context.Context, registryID string) (string, regCreds, error) {
+	ctx, span := telemetry.NewSpan(ctx, "scans", "get-registry-config")
+	defer span.End()
+
+	rc, err := GetCredentialsFromRegistry(ctx, registryID)
 	if err != nil {
 		return "", regCreds{}, err
 	}
@@ -65,21 +69,27 @@ func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, 
 	if rc.UserName == "" && rc.Password == "" {
 		return "", rc, nil
 	}
-	authFile, err := createAuthFile(registryId, rc.URL, rc.UserName, rc.Password)
+	authFile, err := createAuthFile(registryID, rc.URL, rc.UserName, rc.Password)
 	if err != nil {
 		return "", rc, fmt.Errorf("unable to create credential file for docker")
 	}
 	return authFile, rc, nil
 }
 
-func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCreds, error) {
+func GetCredentialsFromRegistry(ctx context.Context, registryID string) (regCreds, error) {
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "scans", "get-registry-credentials")
+	defer span.End()
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return regCreds{}, err
 	}
 
-	i, err := strconv.ParseInt(registryId, 10, 64)
+	i, err := strconv.ParseInt(registryID, 10, 64)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return regCreds{}, err
@@ -155,18 +165,20 @@ func gitlabCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) 
 		log.Error().Msg(err.Error())
 	}
 
+	imagePrefix, _, _ := strings.Cut(httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL), "/")
 	return regCreds{
 		URL:           hub.NonSecret.GitlabRegistryURL,
 		UserName:      "gitlab-ci-token",
 		Password:      hub.Secret.GitlabToken,
 		NameSpace:     "",
-		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL),
+		ImagePrefix:   imagePrefix,
 		SkipTLSVerify: true,
-		UseHttp:       useHttp(hub.NonSecret.GitlabRegistryURL),
+		UseHTTP:       useHTTP(hub.NonSecret.GitlabRegistryURL),
 		IsRegistry:    true,
 	}, nil
 
 }
+
 func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
 	var (
 		err       error
@@ -203,7 +215,7 @@ func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 	}
 	mySession := session.Must(session.NewSession(&awsConfig))
 
-	if hub.NonSecret.UseIAMRole == "true" {
+	if hub.NonSecret.UseIAMRole == "true" && len(hub.NonSecret.TargetAccountRoleARN) > 0 {
 		creds = stscreds.NewCredentials(mySession, hub.NonSecret.TargetAccountRoleARN)
 		svc = ecr.New(mySession, &aws.Config{
 			Credentials: creds,
@@ -233,7 +245,7 @@ func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 		NameSpace:     "",
 		ImagePrefix:   "",
 		SkipTLSVerify: false,
-		UseHttp:       useHttp(*authData.ProxyEndpoint),
+		UseHTTP:       useHTTP(*authData.ProxyEndpoint),
 		IsRegistry:    true,
 	}, nil
 }
@@ -270,7 +282,7 @@ func dockerHubCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AE
 		NameSpace:     hub.NonSecret.DockerHubNamespace,
 		ImagePrefix:   hub.NonSecret.DockerHubNamespace,
 		SkipTLSVerify: false,
-		UseHttp:       false,
+		UseHTTP:       false,
 		IsRegistry:    true,
 	}, nil
 }
@@ -313,7 +325,7 @@ func quayCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (r
 		NameSpace:     hub.NonSecret.QuayNamespace,
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.QuayRegistryURL) + "/" + hub.NonSecret.QuayNamespace,
 		SkipTLSVerify: true,
-		UseHttp:       useHttp(hub.NonSecret.QuayRegistryURL),
+		UseHTTP:       useHTTP(hub.NonSecret.QuayRegistryURL),
 		IsRegistry:    true,
 	}, nil
 }
@@ -362,7 +374,7 @@ func gcrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 		NameSpace:     hub.NonSecret.ProjectID,
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.RegistryURL),
 		SkipTLSVerify: false,
-		UseHttp:       useHttp(hub.NonSecret.RegistryURL),
+		UseHTTP:       useHTTP(hub.NonSecret.RegistryURL),
 		IsRegistry:    true,
 	}, nil
 }
@@ -400,7 +412,7 @@ func acrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 		NameSpace:     "",
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.AzureRegistryURL),
 		SkipTLSVerify: false,
-		UseHttp:       useHttp(hub.NonSecret.AzureRegistryURL),
+		UseHTTP:       useHTTP(hub.NonSecret.AzureRegistryURL),
 		IsRegistry:    true,
 	}, nil
 }
@@ -438,7 +450,7 @@ func harborCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) 
 		NameSpace:     "",
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.HarborRegistryURL),
 		SkipTLSVerify: true,
-		UseHttp:       useHttp(hub.NonSecret.HarborRegistryURL),
+		UseHTTP:       useHTTP(hub.NonSecret.HarborRegistryURL),
 		IsRegistry:    true,
 	}, nil
 }
@@ -476,7 +488,7 @@ func dockerprivateCreds(reg postgresql_db.GetContainerRegistryRow, aes encryptio
 		NameSpace:     "",
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.DockerRegistryURL),
 		SkipTLSVerify: true,
-		UseHttp:       useHttp(hub.NonSecret.DockerRegistryURL),
+		UseHTTP:       useHTTP(hub.NonSecret.DockerRegistryURL),
 		IsRegistry:    true,
 	}, nil
 }
@@ -514,13 +526,13 @@ func jfrogCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (
 		NameSpace:     hub.NonSecret.JfrogRepository,
 		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.JfrogRegistryURL) + "/" + hub.NonSecret.JfrogRepository,
 		SkipTLSVerify: true,
-		UseHttp:       useHttp(hub.NonSecret.JfrogRegistryURL),
+		UseHTTP:       useHTTP(hub.NonSecret.JfrogRegistryURL),
 		IsRegistry:    true,
 	}, nil
 }
 
-func createAuthFile(registryId, registryUrl, username, password string) (string, error) {
-	authFilePath := "/tmp/auth_" + registryId + "_" + utils.RandomString(12)
+func createAuthFile(registryID, registryURL, username, password string) (string, error) {
+	authFilePath := "/tmp/auth_" + registryID + "_" + utils.RandomString(12)
 	if _, err := os.Stat(authFilePath); errors.Is(err, os.ErrNotExist) {
 		err := os.MkdirAll(authFilePath, os.ModePerm)
 		if err != nil {
@@ -528,14 +540,14 @@ func createAuthFile(registryId, registryUrl, username, password string) (string,
 		}
 	}
 	if password == "" {
-		configJson := []byte("{\"auths\": {\"" + registryUrl + "\": {\"auth\": \"" + strings.ReplaceAll(username, "\"", "\\\"") + "\"} } }")
-		err := os.WriteFile(authFilePath+"/config.json", configJson, 0644)
+		configJSON := []byte("{\"auths\": {\"" + registryURL + "\": {\"auth\": \"" + strings.ReplaceAll(username, "\"", "\\\"") + "\"} } }")
+		err := os.WriteFile(authFilePath+"/config.json", configJSON, 0644)
 		if err != nil {
 			return "", err
 		}
 	} else {
-		configJson := []byte("{\"auths\": {\"" + registryUrl + "\": {\"auth\": \"" + base64.StdEncoding.EncodeToString([]byte(username+":"+password)) + "\"} } }")
-		err := os.WriteFile(authFilePath+"/config.json", configJson, 0644)
+		configJSON := []byte("{\"auths\": {\"" + registryURL + "\": {\"auth\": \"" + base64.StdEncoding.EncodeToString([]byte(username+":"+password)) + "\"} } }")
+		err := os.WriteFile(authFilePath+"/config.json", configJSON, 0644)
 		if err != nil {
 			return "", err
 		}

@@ -10,6 +10,9 @@ import (
 
 // CleanUpPostgresDB Delete expired user invites and password reset requests
 func CleanUpPostgresDB(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err

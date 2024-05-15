@@ -30,7 +30,7 @@ func Recoverer(h asynq.Handler) asynq.Handler {
 		defer func() {
 			if r := recover(); r != nil {
 				err = errors.WithStack(RecoveredPanicError{V: r, Stacktrace: string(debug.Stack())})
-				log.Error().Err(err).Msg("recovered from panic")
+				log.Error().Ctx(ctx).Err(err).Msg("recovered from panic")
 			}
 		}()
 

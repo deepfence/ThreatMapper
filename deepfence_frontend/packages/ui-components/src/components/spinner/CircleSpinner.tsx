@@ -8,19 +8,33 @@ type CircleSpinnerProps = {
   className?: string;
 };
 
-const spinnerCVA = cva(['animate-spin dark:text-bg-side-panel fill-accent-accent'], {
-  variants: {
-    size: {
-      sm: 'w-[18px] h-[18px]',
-      md: 'w-[36px] h-[36px]',
-      lg: 'w-[72px] h-[72px]',
+const spinnerCVA = cva(
+  [
+    'animate-spin dark:text-bg-side-panel text-bg-grid-border dark:fill-accent-accent fill-text-link',
+  ],
+  {
+    variants: {
+      size: {
+        sm: 'w-[18px] h-[18px]',
+        md: 'w-[36px] h-[36px]',
+        lg: 'w-[72px] h-[72px]',
+      },
     },
   },
-});
+);
 
-export const CircleSpinner = ({ size = 'md', className }: CircleSpinnerProps) => {
+export const CircleSpinner = ({
+  size = 'md',
+  className,
+  ...props
+}: CircleSpinnerProps) => {
   return (
-    <div className="inline-block bg-transparent" role="status">
+    <div
+      className="inline-block bg-transparent"
+      role="status"
+      data-testid="circularSpinnerId"
+      {...props}
+    >
       <svg
         aria-hidden="true"
         className={cn(

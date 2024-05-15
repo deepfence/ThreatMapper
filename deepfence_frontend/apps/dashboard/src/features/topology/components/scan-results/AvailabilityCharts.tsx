@@ -1,11 +1,18 @@
-import { preset } from 'tailwind-preset';
+import { colors } from 'tailwind-preset';
 import { Card } from 'ui-components';
 
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { ECOption, ReactECharts } from '@/components/ReactEcharts';
+import { Mode, useTheme } from '@/theme/ThemeContext';
 import { formatMemory, formatPercentage } from '@/utils/number';
 
-function getChartOption(usage: number, max: number, type: 'cpu' | 'memory'): ECOption {
+function getChartOption(
+  theme: Mode,
+  usage: number,
+  max: number,
+  type: 'cpu' | 'memory',
+): ECOption {
+  const color = colors[theme === 'dark' ? 'darkVariables' : 'variables'].DEFAULT;
   return {
     backgroundColor: 'transparent',
     series: [
@@ -18,7 +25,7 @@ function getChartOption(usage: number, max: number, type: 'cpu' | 'memory'): ECO
         max,
         splitNumber: 5,
         itemStyle: {
-          color: preset.theme.extend.colors.accent.accent,
+          color: color['accent-accent'],
         },
         progress: {
           show: true,
@@ -38,7 +45,7 @@ function getChartOption(usage: number, max: number, type: 'cpu' | 'memory'): ECO
           length: 5,
           lineStyle: {
             width: 1,
-            color: preset.theme.extend.colors.text['text-and-icon'],
+            color: color['text-text-and-icon'],
           },
         },
         splitLine: {
@@ -46,12 +53,12 @@ function getChartOption(usage: number, max: number, type: 'cpu' | 'memory'): ECO
           length: 10,
           lineStyle: {
             width: 2,
-            color: preset.theme.extend.colors.text['text-and-icon'],
+            color: color['text-text-and-icon'],
           },
         },
         axisLabel: {
           distance: -25,
-          color: preset.theme.extend.colors.text['text-and-icon'],
+          color: color['text-text-and-icon'],
           fontSize: 10,
           formatter: (value) => {
             if (type === 'cpu') return `${value}%`;
@@ -103,9 +110,10 @@ export const AvailabilityCharts = ({
   memoryUsage: number;
   memoryMax: number;
 }) => {
+  const { mode } = useTheme();
   return (
     <Card className="rounded-[5px]">
-      <h5 className="text-h5 dark:text-text-input-value px-3 py-2.5 flex items-center">
+      <h5 className="text-h5 text-text-input-value px-3 py-2.5 flex items-center">
         Availability
       </h5>
       <div className="grid grid-cols-2">
@@ -114,38 +122,36 @@ export const AvailabilityCharts = ({
             {cpuMax ? (
               <ReactECharts
                 theme="dark"
-                option={getChartOption(cpuUsage, cpuMax, 'cpu')}
+                option={getChartOption(mode, cpuUsage, cpuMax, 'cpu')}
               />
             ) : (
               <div className="flex items-center justify-center h-full w-full gap-2">
-                <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">
+                <div className="h-6 w-6 shrink-0 text-text-icon">
                   <ErrorStandardLineIcon />
                 </div>
-                <p className="dark:text-text-text-and-icon text-h3">Not available</p>
+                <p className="text-text-text-and-icon text-h4">Not available</p>
               </div>
             )}
           </div>
-          <div className="text-p6 dark:text-text-input-value text-center mb-4 -mt-10">
-            CPU
-          </div>
+          <div className="text-p6 text-text-input-value text-center mb-4 -mt-10">CPU</div>
         </div>
         <div className="flex flex-col justify-center">
           <div className="h-[220px]">
             {memoryMax ? (
               <ReactECharts
                 theme="dark"
-                option={getChartOption(memoryUsage, memoryMax, 'memory')}
+                option={getChartOption(mode, memoryUsage, memoryMax, 'memory')}
               />
             ) : (
               <div className="flex items-center justify-center h-full w-full gap-2">
-                <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">
+                <div className="h-6 w-6 shrink-0 text-text-icon">
                   <ErrorStandardLineIcon />
                 </div>
-                <p className="dark:text-text-text-and-icon text-h3">Not available</p>
+                <p className="text-text-text-and-icon text-h4">Not available</p>
               </div>
             )}
           </div>
-          <div className="text-p6 dark:text-text-input-value text-center mb-4 -mt-10">
+          <div className="text-p6 text-text-input-value text-center mb-4 -mt-10">
             Memory
           </div>
         </div>

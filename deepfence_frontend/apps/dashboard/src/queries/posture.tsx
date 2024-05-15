@@ -16,6 +16,7 @@ import {
   ModelScanResultsReq,
   SearchSearchNodeReq,
 } from '@/api/generated';
+import { DF404Error } from '@/components/error/404';
 import { ScanStatusEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -210,6 +211,7 @@ export const postureQueries = createQueryKeys('posture', {
       sortBy: string;
       descending: boolean;
     };
+    testNumber: string[];
   }) => {
     return {
       queryKey: [{ filters }],
@@ -219,6 +221,7 @@ export const postureQueries = createQueryKeys('posture', {
           visibility,
           status,
           benchmarkTypes,
+          testNumber,
           order,
           page = 1,
           pageSize,
@@ -238,11 +241,13 @@ export const postureQueries = createQueryKeys('posture', {
             return {
               message,
             };
+          } else if (statusResult.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
           }
           throw statusResult.error;
         }
         if (!statusResult.value || !statusResult.value?.statuses?.[scanId]) {
-          throw new Error('Scan status not found');
+          throw new DF404Error('Scan status not found');
         }
         const scanStatus = statusResult?.value.statuses?.[scanId].status;
         const isScanRunning =
@@ -281,6 +286,10 @@ export const postureQueries = createQueryKeys('posture', {
           scanResultsReq.fields_filter.contains_filter.filter_in![
             'compliance_check_type'
           ] = benchmarkTypes;
+        }
+        if (testNumber.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['test_number'] =
+            testNumber;
         }
         if (order) {
           scanResultsReq.fields_filter.order_filter.order_fields?.push({
@@ -389,6 +398,7 @@ export const postureQueries = createQueryKeys('posture', {
     status: string[];
     visibility: string[];
     benchmarkTypes: string[];
+    control: string[];
     services: string[];
     resources: string[];
     nodeType: string;
@@ -410,6 +420,7 @@ export const postureQueries = createQueryKeys('posture', {
           resources,
           page = 1,
           pageSize,
+          control,
         } = filters;
         const statusCloudComplianceScanApi = apiWrapper({
           fn: getCloudComplianceApiClient().statusCloudComplianceScan,
@@ -427,8 +438,13 @@ export const postureQueries = createQueryKeys('posture', {
             return {
               message,
             };
+          } else if (statusResult.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
           }
           throw statusResult.error;
+        }
+        if (!statusResult.value?.statuses?.length) {
+          throw new DF404Error('Scan not found');
         }
         const statuses = statusResult.value?.statuses?.[0];
 
@@ -470,6 +486,10 @@ export const postureQueries = createQueryKeys('posture', {
           scanResultsReq.fields_filter.contains_filter.filter_in![
             'compliance_check_type'
           ] = benchmarkTypes.map((type) => type.toLowerCase());
+        }
+
+        if (control.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['control_id'] = control;
         }
 
         if (services.length) {
@@ -692,8 +712,8 @@ export const postureQueries = createQueryKeys('posture', {
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
-          base_scan_id: baseScanId,
-          to_scan_id: toScanId,
+          base_scan_id: toScanId,
+          to_scan_id: baseScanId,
           window: {
             offset: 0,
             size: 99999,
@@ -714,8 +734,8 @@ export const postureQueries = createQueryKeys('posture', {
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
-          base_scan_id: toScanId,
-          to_scan_id: baseScanId,
+          base_scan_id: baseScanId,
+          to_scan_id: toScanId,
           window: {
             offset: 0,
             size: 99999,

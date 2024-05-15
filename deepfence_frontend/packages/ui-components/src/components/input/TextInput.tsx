@@ -1,5 +1,3 @@
-import './input.css';
-
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, forwardRef, useId, useState } from 'react';
@@ -106,11 +104,10 @@ const InfoIcon = () => {
 };
 const inputCva = cva(
   [
-    'text-p4 df-input block w-full disabled:cursor-not-allowed',
+    'text-p4a block w-full disabled:cursor-not-allowed',
     'focus:outline-none',
     'pl-1.5 pt-1.5 pb-[5px]',
     'border-b',
-    'dark:bg-transparent',
     'transition-[background-size] duration-[0.2s] ease-[ease]',
   ],
   {
@@ -119,44 +116,42 @@ const inputCva = cva(
         default: [
           cn(
             // border
-            'dark:border-text-text-and-icon',
+            'dark:border-text-text-and-icon border-bg-border-form dark:disabled:border-df-gray-600/50 disabled:border-severity-unknown/50',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-df-gray-600',
-            'dark:placeholder-df-gray-600 dark:disabled:placeholder-df-gray-600',
+            'placeholder:text-severity-unknown/60 disabled:placeholder:text-severity-unknown/50',
+            'dark:placeholder:text-df-gray-600 dark:disabled:placeholder:text-df-gray-600/60',
             // text styles
-            'text-gray-900 dark:text-text-input-value',
+            'text-text-input-value',
             // disabled text color
-            'disabled:text-gray-700 dark:disabled:text-df-gray-600',
+            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600/60',
             // focus style
-            'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
-            'dark:focus:border-b-accent-accent',
-            // dark and bg styles
-            'dark:bg-no-repeat',
-            'dark:focus:bg-no-repeat',
-            // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
-            // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
+            'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
+            'focus:border-b-accent-accent dark:focus:border-b-accent-accent',
+            // bg styles
+            'bg-[length:0%_100%] bg-no-repeat',
+            'bg-gradient-to-b from-transparent from-95% to-accent-accent to-95%',
+            'focus:bg-[length:100%_100%]',
           ),
         ],
         error: [
           cn(
             // border
-            'dark:border-chart-red df-error',
+            'dark:border-chart-red border-status-error dark:disabled:border-df-gray-600/50 disabled:border-severity-unknown/50',
             // placeholder styles
-            'placeholder-df-gray-500 disabled:placeholder-df-gray-600',
-            'dark:placeholder-df-gray-400 dark:disabled:placeholder-df-gray-500',
+            'placeholder:text-severity-unknown/60 disabled:placeholder:text-severity-unknown/60',
+            'dark:placeholder:text-df-gray-600 dark:disabled:placeholder:text-df-gray-600/60',
             // text font
             // text styles
-            'text-gray-900 dark:text-text-input-value',
+            'dark:text-text-input-value text-text-text-and-icon',
             // disabled text color
-            'disabled:text-gray-700 dark:disabled:text-df-gray-600',
+            'disabled:text-severity-unknown/60 dark:disabled:text-df-gray-600/60',
             // focus style
-            'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
-            'dark:focus:border-b-chart-red',
+            'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
+            'dark:focus:border-b-chart-red focus:border-b-status-error',
             // dark and bg styles
-            'dark:bg-no-repeat',
-            'dark:focus:bg-no-repeat',
-            // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
-            // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
+            'bg-[length:0%_100%] bg-no-repeat',
+            'bg-gradient-to-b from-transparent from-95% dark:to-chart-red-500 to-status-error to-95%',
+            'focus:bg-[length:100%_100%]',
           ),
         ],
       },
@@ -182,14 +177,14 @@ const inputCva = cva(
 const iconContextCva = cva('', {
   variants: {
     color: {
-      default: ['text-gray-500', 'dark:text-text-input-value'],
-      error: ['text-red-400', 'dark:text-text-input-value'],
-      success: ['text-green-400', 'dark:text-text-input-value'],
+      default: ['text-text-input-value'],
+      error: ['text-text-input-value'],
+      success: ['text-text-input-value'],
     },
     sizing: {
       md: `w-4 h-4`,
     },
-    disabled: { true: 'dark:text-df-gray-600' },
+    disabled: { true: 'dark:text-df-gray-600 text-severity-unknown/60' },
   },
   defaultVariants: {
     color: 'default',
@@ -264,9 +259,9 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           <div className="flex gap-2 pb-[10px] items-center">
             <LabelPrimitive.Root
               htmlFor={_id}
-              className={cn('text-p3 text-gray-900 dark:text-text-text-and-icon', {
-                'dark:text-df-gray-600': disabled,
-              })}
+              className={cn(
+                'text-p11 dark:text-text-input-value text-text-text-and-icon',
+              )}
             >
               {required && <span>*</span>}
               {label}
@@ -307,6 +302,9 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             type={showPassword ? 'text' : type}
             placeholder={isPasswordInput ? PLACEHOLDER_PASSWORD : placeholder}
             {...rest}
+            style={{
+              backgroundColor: 'transparent',
+            }}
           />
           {isPasswordInput && (
             <div className="relative flex items-center">
@@ -326,7 +324,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
 
           {color === 'error' && (
             <div
-              className={cn('text-chart-red', {
+              className={cn('dark:text-chart-red text-status-error', {
                 'cursor-not-allowed': disabled,
               })}
               data-testid={`textinput-error-icon-${id}`}

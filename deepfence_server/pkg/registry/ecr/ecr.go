@@ -1,17 +1,20 @@
 package ecr
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 )
 
 var (
 	errAccessKeyMissing     = errors.New("access key and secret key are required")
+	errAccountIDMissing     = errors.New("account id is required")
 	errPublicRegistryRegion = errors.New("region should be set to " + publicRegistryRegion + " for public registry")
 )
 
@@ -30,16 +33,13 @@ func (e *RegistryECR) ValidateFields(v *validator.Validate) error {
 			return errPublicRegistryRegion
 		}
 	}
-	if e.NonSecret.UseIAMRole == trueStr {
-		// IAM role based authentication
-		return v.Struct(e)
-	} else {
+	if e.NonSecret.UseIAMRole != trueStr {
 		// Key based authentication
 		if e.NonSecret.AWSAccessKeyID == "" || e.Secret.AWSSecretAccessKey == "" {
 			return errAccessKeyMissing
 		}
-		return v.Struct(e)
 	}
+	return v.Struct(e)
 }
 
 func (e *RegistryECR) IsValidCredential() bool {
@@ -77,7 +77,9 @@ func (e *RegistryECR) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (e *RegistryECR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
+func (e *RegistryECR) FetchImagesFromRegistry(ctx context.Context) ([]model.IngestedContainerImage, error) {
+	_, span := telemetry.NewSpan(ctx, "registry", "fetch-images-from-registry")
+	defer span.End()
 	// based on iamrole we need to fetch images
 	if e.NonSecret.UseIAMRole == trueStr {
 		return listIAMImages(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN, e.NonSecret.IsPublic == trueStr)

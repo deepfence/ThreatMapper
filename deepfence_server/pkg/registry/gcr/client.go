@@ -5,48 +5,119 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
+
+	"github.com/Jeffail/tunny"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-var client = &http.Client{Timeout: 10 * time.Second}
+const (
+	PerPageCount         = 100
+	ParallelImageFetch   = 10
+	ImageQueueBufferSize = 100
+)
+
+var (
+	client                 = &http.Client{Timeout: 10 * time.Second}
+	parallelImageProcessor *tunny.Pool
+	queue                  chan []model.IngestedContainerImage
+)
+
+func init() {
+	parallelImageProcessor = tunny.NewFunc(ParallelImageFetch, fetchImageWithTags)
+	queue = make(chan []model.IngestedContainerImage, ImageQueueBufferSize)
+}
+
+type RepoDetails struct {
+	URL        string
+	UserName   string
+	Password   string
+	NameSpace  string
+	Repository string
+}
 
 func listImagesRegistryV2(url, namespace, userName, password string) ([]model.IngestedContainerImage, error) {
 
 	var (
 		images []model.IngestedContainerImage
 	)
+	parallelImageProcessor.SetSize(ParallelImageFetch)
+	defer parallelImageProcessor.SetSize(0)
 
-	repos, err := listCatalogRegistryV2(url, namespace, userName, password)
+	repos, err := getRepos(url, userName, password)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
 	for _, repo := range repos {
-		repoTags, err := listRepoTagsV2(url, namespace, userName, password, repo)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			continue
+		r := RepoDetails{
+			URL:        url,
+			UserName:   userName,
+			Password:   password,
+			NameSpace:  namespace,
+			Repository: repo,
 		}
-		log.Debug().Msgf("tags for image %s/%s are %s", repo, repoTags.Name, repoTags.Tags)
-
-		images = append(images, getImageWithTags(url, namespace, userName, password, repo, repoTags)...)
+		go parallelImageProcessor.Process(&r)
+	}
+	for _, _ = range repos {
+		select {
+		case t := <-queue:
+			images = append(images, t...)
+		}
 	}
 
 	return images, nil
 }
 
-func listCatalogRegistryV2(url, namespace, userName, password string) ([]string, error) {
-	var (
-		repositories []string
-		err          error
-	)
+func fetchImageWithTags(rInterface interface{}) interface{} {
+	var images []model.IngestedContainerImage
+	defer func() {
+		queue <- images
+	}()
+	r, ok := rInterface.(*RepoDetails)
+	if !ok {
+		log.Error().Msg("Error processing repo details")
+		return false
+	}
+	repoTags, err := listRepoTagsV2(r.URL, r.NameSpace, r.UserName, r.Password, r.Repository)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return false
+	}
+	log.Debug().Msgf("tags for image %s/%s are %s", r.Repository, repoTags.Name, repoTags.Tags)
 
-	listReposURL := "%s/v2/_catalog"
-	queryURL := fmt.Sprintf(listReposURL, url)
-	req, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	images = getImageWithTags(r.URL, r.NameSpace, r.UserName, r.Password, r.Repository, repoTags)
+	return true
+}
+
+func getRepos(url, name, password string) ([]string, error) {
+	var repositories []string
+	var queryURL string
+	for {
+		if len(repositories) == 0 {
+			queryURL = fmt.Sprintf("%s/v2/_catalog?n=%d", url, PerPageCount)
+		} else {
+			queryURL = fmt.Sprintf("%s/v2/_catalog?last=%s&n=%d", url, repositories[len(repositories)-1], PerPageCount)
+		}
+		repos, err := listCatalogRegistryV2(queryURL, name, password)
+		if err != nil {
+			return repositories, err
+		}
+		if len(repos) == 0 {
+			break
+		}
+		repositories = append(repositories, repos...)
+	}
+	return repositories, nil
+}
+
+func listCatalogRegistryV2(url, userName, password string) ([]string, error) {
+	var err error
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -79,9 +150,7 @@ func listCatalogRegistryV2(url, namespace, userName, password string) ([]string,
 		return nil, err
 	}
 
-	repositories = append(repositories, repos.Repositories...)
-
-	return repositories, err
+	return repos.Repositories, err
 }
 
 func listRepoTagsV2(url, namespace, userName, password, repoName string) (RepoTagsResp, error) {
@@ -172,9 +241,20 @@ func listRepoTagsV2(url, namespace, userName, password, repoName string) (RepoTa
 
 func getImageWithTags(url, namespace, userName, password, repoName string, repoTags RepoTagsResp) []model.IngestedContainerImage {
 	var imageAndTag []model.IngestedContainerImage
+
 	for _, tag := range repoTags.Tags {
 		digest, details := getImageDetails(tag, repoTags)
 		imageID, shortImageID := model.DigestToID(*digest)
+
+		timeUploaded := ""
+		timeMS, err := strconv.ParseInt(details.TimeUploadedMs, 10, 64)
+		if err != nil {
+			timeUploaded = details.TimeUploadedMs
+		} else {
+			tm := timeMS / 1000
+			timeUploaded = strconv.FormatInt(tm, 10)
+		}
+
 		tt := model.IngestedContainerImage{
 			ID:            imageID,
 			DockerImageID: imageID,
@@ -185,7 +265,7 @@ func getImageWithTags(url, namespace, userName, password, repoName string, repoT
 			Metadata: model.Metadata{
 				"timeCreatedMs": details.TimeCreatedMs,
 				"digest":        *digest,
-				"last_updated":  details.TimeUploadedMs,
+				"last_updated":  timeUploaded,
 			},
 		}
 		imageAndTag = append(imageAndTag, tt)

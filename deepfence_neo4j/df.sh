@@ -14,6 +14,14 @@ if [ -z "$NEO4J_AUTH" ]; then
     export NEO4J_AUTH=$DEEPFENCE_NEO4J_USER/$DEEPFENCE_NEO4J_PASSWORD
 fi
 
+if [ "$OFFLINE_MAINTENANCE_MODE_ENABLED" = true ]; then
+    while true;
+    do
+        echo 'Neo4j is not running. Remove OFFLINE_MAINTENANCE_MODE_ENABLED env var or set offlineMaintenanceModeEnabled to false to resume normal operation.';
+        sleep 60;
+    done
+fi
+
 # Waker
 {
   set -e
@@ -35,11 +43,13 @@ neo4j status
 backup_db() {
     echo "Start backup"
     trap '' USR1
+    touch /backups/.inprogress
     neo4j stop
     NOW=$(date +"%Y-%m-%d_%H-%M-%S")
     neo4j-admin dump --database=neo4j --to="/backups/neo4j_$NOW.dump"
     ls -tr /backups/*.dump | head -n -${MAX_NUM_BACKUPS:-5} | xargs --no-run-if-empty rm
     start_db
+    rm /backups/.inprogress
     if [ -n "$DF_REMOTE_BACKUP_ROOT" ]
     then
         rclone sync /backups :$PROVIDER:$DF_REMOTE_BACKUP_ROOT --include "*.dump"

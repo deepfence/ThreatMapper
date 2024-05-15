@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/xuri/excelize/v2"
 )
@@ -62,16 +63,20 @@ var (
 		"G1": "masked",
 		"H1": "node_id",
 		"I1": "node_name",
-		"J1": "node_type",
-		"K1": "status",
-		"L1": "test_category",
-		"M1": "test_desc",
-		"N1": "test_info",
-		"O1": "test_number",
+		"J1": "resource",
+		"K1": "node_type",
+		"L1": "status",
+		"M1": "test_category",
+		"N1": "test_desc",
+		"O1": "test_info",
+		"P1": "test_number",
 	}
 )
 
 func generateXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "reports", "generate-xlsx-report")
+	defer span.End()
 
 	var (
 		xlsxFile string
@@ -303,6 +308,7 @@ func complianceXLSX(ctx context.Context, params utils.ReportParams) (string, err
 				c.Masked,
 				c.ComplianceNodeID,
 				nodeScanData.ScanInfo.NodeName,
+				c.Resource,
 				c.ComplianceNodeType,
 				c.Status,
 				c.TestCategory,
@@ -354,6 +360,7 @@ func cloudComplianceXLSX(ctx context.Context, params utils.ReportParams) (string
 				c.Masked,
 				c.NodeID,
 				data.ScanInfo.NodeName,
+				c.Resource,
 				c.ComplianceCheckType,
 				c.Status,
 				c.Type,

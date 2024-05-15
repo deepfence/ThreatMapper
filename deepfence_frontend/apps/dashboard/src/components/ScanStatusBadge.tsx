@@ -11,6 +11,7 @@ import { TruncatedText } from '@/components/TruncatedText';
 import {
   isNeverScanned,
   isScanComplete,
+  isScanDeletePending,
   isScanFailed,
   isScanInProgress,
   isScanStopped,
@@ -27,7 +28,7 @@ export const ScanStatusBadge = ({
   justIcon?: boolean;
 }) => {
   const wrapperClassName = cn(
-    'flex items-center gap-1.5 dark:text-text-text-and-icon text-p4',
+    'flex items-center gap-1.5 text-text-text-and-icon text-p4a',
     className,
   );
 
@@ -48,7 +49,7 @@ export const ScanStatusBadge = ({
   } else if (isScanFailed(status)) {
     return (
       <div className={wrapperClassName}>
-        <span className={cn(iconWrapper, 'dark:text-status-error')}>
+        <span className={cn(iconWrapper, 'text-status-error')}>
           <ErrorIcon />
         </span>
         {!justIcon ? <TruncatedText text={scanStatus} /> : null}
@@ -57,7 +58,7 @@ export const ScanStatusBadge = ({
   } else if (isNeverScanned(status)) {
     return (
       <div className={wrapperClassName}>
-        <span className={iconWrapper}>
+        <span className={cn(iconWrapper, 'text-severity-unknown')}>
           <NotStartedIcon />
         </span>
         <TruncatedText text={'Never Scanned'} />
@@ -85,10 +86,19 @@ export const ScanStatusBadge = ({
   } else if (isScanStopped(status)) {
     return (
       <div className={wrapperClassName}>
-        <span className={cn(iconWrapper, 'dark:text-df-gray-500')}>
+        <span className={cn(iconWrapper, 'dark:text-df-gray-500 text-df-gray-400')}>
           <ErrorIcon />
         </span>
 
+        {!justIcon ? <TruncatedText text={scanStatus} /> : null}
+      </div>
+    );
+  } else if (isScanDeletePending(status)) {
+    return (
+      <div className={wrapperClassName}>
+        <span className={iconWrapper}>
+          <CircleSpinner size="sm" />
+        </span>
         {!justIcon ? <TruncatedText text={scanStatus} /> : null}
       </div>
     );

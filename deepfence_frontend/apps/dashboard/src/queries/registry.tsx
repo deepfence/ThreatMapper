@@ -36,8 +36,8 @@ export const registryQueries = createQueryKeys('registry', {
         for (const [key, value] of Object.entries(result.value)) {
           response.push({
             registries: value.registries,
+            repositories: value.repositories,
             images: value.images,
-            tags: value.tags,
             type: key,
           });
         }
@@ -235,6 +235,21 @@ export const registryQueries = createQueryKeys('registry', {
       queryFn: async () => {
         const imageTagsRequest: ModelRegistryImagesReq = {
           image_filter: {
+            compare_filter: [],
+            match_filter: {
+              filter_in: {},
+            },
+            order_filter: {
+              order_fields: [],
+            },
+            contains_filter: {
+              filter_in: {},
+            },
+            not_contains_filter: {
+              filter_in: {},
+            },
+          },
+          image_stub_filter: {
             compare_filter: [],
             match_filter: {
               filter_in: {},

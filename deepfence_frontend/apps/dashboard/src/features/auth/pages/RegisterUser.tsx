@@ -14,11 +14,11 @@ export const RegisterUser = () => {
 
   return (
     <fetcher.Form method="post">
-      <h1 className="dark:text-text-text-and-icon text-h2 text-center">
+      <h1 className="text-text-text-and-icon text-h2 text-center">
         Register for Deepfence
       </h1>
       <TextInput
-        className="mt-8"
+        className="mt-6"
         label="First Name"
         type={'text'}
         placeholder="First Name"
@@ -31,7 +31,7 @@ export const RegisterUser = () => {
         type={'text'}
         placeholder="Last Name"
         name="lastName"
-        className="mt-8"
+        className="mt-6"
         color={data?.fieldErrors?.lastName ? 'error' : 'default'}
         helperText={data?.fieldErrors?.lastName}
       />
@@ -40,7 +40,7 @@ export const RegisterUser = () => {
         type={'text'}
         placeholder="Email"
         name="email"
-        className="mt-8"
+        className="mt-6"
         color={data?.fieldErrors?.email ? 'error' : 'default'}
         helperText={data?.fieldErrors?.email}
       />
@@ -49,7 +49,7 @@ export const RegisterUser = () => {
         type={'password'}
         placeholder="Password"
         name="password"
-        className="mt-8"
+        className="mt-6"
         color={data?.fieldErrors?.password ? 'error' : 'default'}
         helperText={data?.fieldErrors?.password}
       />
@@ -58,7 +58,7 @@ export const RegisterUser = () => {
         type={'password'}
         placeholder="Confirm Password"
         name="confirmPassword"
-        className="mt-8"
+        className="mt-6"
         color={data?.fieldErrors?.confirmPassword ? 'error' : 'default'}
         helperText={data?.fieldErrors?.confirmPassword}
       />
@@ -67,11 +67,11 @@ export const RegisterUser = () => {
         type={'text'}
         placeholder="Company"
         name="company"
-        className="mt-8"
+        className="mt-6"
         color={data?.fieldErrors?.company ? 'error' : 'default'}
         helperText={data?.fieldErrors?.company}
       />
-      <div className={`mt-8 text-p7`}>
+      <div className={`mt-6 text-p7`}>
         <Checkbox
           checked={eulaAccepted}
           onCheckedChange={(checked) => {
@@ -84,7 +84,7 @@ export const RegisterUser = () => {
               I agree to terms and conditions outlined in{' '}
               <Link
                 to="/end-user-license-agreement"
-                className="text-blue-600 dark:text-accent-accent"
+                className="text-text-link"
                 target="_blank"
               >
                 License Agreement
@@ -95,13 +95,11 @@ export const RegisterUser = () => {
       </div>
 
       {data?.error && (
-        <div className={`text-center mt-1.5 dark:text-status-error text-p7`}>
-          {data.error}
-        </div>
+        <div className={`text-center mt-1.5 text-status-error text-p7`}>{data.error}</div>
       )}
 
       <div
-        className={cn('flex flex-col w-full mt-6', {
+        className={cn('flex flex-col w-full mt-4', {
           'mt-4 ': data?.error?.length,
         })}
       >
@@ -117,10 +115,10 @@ export const RegisterUser = () => {
       </div>
 
       <div
-        className={`flex flex-row justify-center text-p4 mt-4 dark:text-text-text-and-icon`}
+        className={`flex flex-row justify-center text-p4 mt-4 text-text-text-and-icon`}
       >
         Already have an account?&nbsp;
-        <DFLink to="/auth/login" className="underline dark:text-accent-accent" unstyled>
+        <DFLink to="/auth/login" className="underline text-accent-accent" unstyled>
           Sign in
         </DFLink>
       </div>

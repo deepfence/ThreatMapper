@@ -3,6 +3,7 @@ import { useLocation, useRouteError } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 
 import { AppHeader } from '@/components/AppHeader';
+import { DF404Error, FourZeroFourAuthenticated } from '@/components/error/404';
 import { getSideNavigationState, SideNavigation } from '@/components/SideNavigation';
 import { OnboardAppHeader } from '@/features/onboard/components/OnBoardAppHeader';
 import storage from '@/utils/storage';
@@ -18,7 +19,7 @@ const ErrorComponent = ({ maintenance }: { maintenance: boolean }) => {
       <div className="mt-6 flex flex-col gap-y-14 items-center">
         <h4
           className={cn(
-            'font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center',
+            'font-semibold text-text-text-and-icon flex flex-col text-center',
             {
               'sm:text-base 2xl:text-xl': !maintenance,
               'sm:text-xl 2xl:text-2xl': maintenance,
@@ -53,14 +54,17 @@ export const FiveZeroZero = () => {
   const location = useLocation();
   const error = useRouteError();
   console.error(error);
+
   if (location.pathname.startsWith('/onboard')) {
+    const errorComponent =
+      error instanceof DF404Error ? (
+        <FourZeroFourAuthenticated />
+      ) : (
+        <ErrorComponent maintenance={((error as Error)?.cause as any)?.status === 503} />
+      );
     return (
       <div className="min-h-screen isolate dark:bg-bg-page">
-        <div className="pt-[56px] h-screen">
-          <ErrorComponent
-            maintenance={((error as Error)?.cause as any)?.status === 503}
-          />
-        </div>
+        <div className="pt-[56px] h-screen">{errorComponent}</div>
         <OnboardAppHeader />
       </div>
     );
@@ -81,9 +85,13 @@ export const FiveZeroZero = () => {
               'ml-[240px]': sideNavExpanded,
             })}
           >
-            <ErrorComponent
-              maintenance={((error as Error)?.cause as any)?.status === 503}
-            />
+            {error instanceof DF404Error ? (
+              <FourZeroFourAuthenticated />
+            ) : (
+              <ErrorComponent
+                maintenance={((error as Error)?.cause as any)?.status === 503}
+              />
+            )}
           </main>
         </>
       ) : (

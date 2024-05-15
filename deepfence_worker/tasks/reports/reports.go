@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"net/url"
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -12,11 +12,11 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 var ErrUnknownReportType = errors.New("unknown report type")
@@ -29,11 +29,16 @@ func fileExt(reportType sdkUtils.ReportType) string {
 		return ".xlsx"
 	case sdkUtils.ReportPDF:
 		return ".pdf"
+	case sdkUtils.ReportSBOM:
+		return ".json.gz"
 	}
 	return ".unknown"
 }
 
 func reportFileName(params sdkUtils.ReportParams) string {
+	if sdkUtils.ReportType(params.ReportType) == sdkUtils.ReportSBOM {
+		return fmt.Sprintf("sbom_%s%s", params.ReportID, fileExt(sdkUtils.ReportSBOM))
+	}
 	list := []string{params.Filters.ScanType, params.Filters.NodeType, params.ReportID}
 	return strings.Join(list, "_") + fileExt(sdkUtils.ReportType(params.ReportType))
 }
@@ -44,6 +49,8 @@ func putOpts(reportType sdkUtils.ReportType) minio.PutObjectOptions {
 		return minio.PutObjectOptions{ContentType: "application/xlsx"}
 	case sdkUtils.ReportPDF:
 		return minio.PutObjectOptions{ContentType: "application/pdf"}
+	case sdkUtils.ReportSBOM:
+		return minio.PutObjectOptions{ContentType: "application/gzip"}
 	}
 	return minio.PutObjectOptions{}
 }
@@ -54,11 +61,15 @@ func generateReport(ctx context.Context, params sdkUtils.ReportParams) (string, 
 		return generatePDF(ctx, params)
 	case sdkUtils.ReportXLSX:
 		return generateXLSX(ctx, params)
+	case sdkUtils.ReportSBOM:
+		return generateSBOM(ctx, params)
 	}
 	return "", ErrUnknownReportType
 }
 
 func GenerateReport(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
 
 	var params sdkUtils.ReportParams
 
@@ -71,32 +82,32 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		return errors.New("tenant-id/namespace is empty")
 	}
 
-	log.Info().Str("namespace", string(tenantID)).Msgf("payload: %s ", string(task.Payload()))
+	log.Info().Msgf("payload: %s ", string(task.Payload()))
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
-		log.Error().Str("namespace", string(tenantID)).Err(err).Msgf("error decoding report request payload %s", string(task.Payload()))
+		log.Error().Err(err).Msgf("error decoding report request payload %s", string(task.Payload()))
 	}
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
+		log.Error().Msg(err.Error())
 		return nil
 	}
 
-	session := client.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Msg(err.Error())
+		log.Error().Msg(err.Error())
 		return nil
 	}
-	defer session.Close()
+	defer session.Close(ctx)
 
-	updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusInProgress)
+	updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusInProgress, "")
 
 	// generate reportName
 	localReportPath, err := generateReport(ctx, params)
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Err(err).Msgf("failed to generate report with params %+v", params)
-		updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusFailed)
+		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
+		updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusFailed, err.Error())
 		return nil
 	}
 	log.Info().Msgf("report file path %s", localReportPath)
@@ -104,62 +115,58 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 		os.Remove(localReportPath)
 	}()
 
-	// upload file to minio
-	mc, err := directory.MinioClient(ctx)
+	// upload file to file server
+	mc, err := directory.FileServerClient(ctx)
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Err(err).Msg("failed to get minio client")
+		log.Error().Err(err).Msg("failed to get minio client")
 		return nil
 	}
 
 	reportName := path.Join("/report", reportFileName(params))
 	res, err := mc.UploadLocalFile(ctx, reportName,
-		localReportPath, false, putOpts(sdkUtils.ReportType(params.ReportType)))
+		localReportPath, true, putOpts(sdkUtils.ReportType(params.ReportType)))
 	if err != nil {
-		log.Error().Str("namespace", string(tenantID)).Err(err).Msg("failed to upload file to minio")
+		log.Error().Err(err).Msg("failed to upload file to minio")
 		return nil
 	}
 
-	cd := url.Values{
-		"response-content-disposition": []string{
-			"attachment; filename=\"" + reportFileName(params) + "\""},
-	}
-	url, err := mc.ExposeFile(ctx, res.Key, false, utils.ReportRetentionTime, cd)
-	if err != nil {
-		log.Error().Err(err)
-		return err
-	}
-	log.Info().Str("namespace", string(tenantID)).Msgf("exposed report URL: %s", url)
-
-	updateReportState(ctx, session, params.ReportID, url, res.Key, sdkUtils.ScanStatusSuccess)
+	updateReportState(ctx, session, params.ReportID, reportName, res.Key, sdkUtils.ScanStatusSuccess, "")
 
 	return nil
 }
 
-func updateReportState(ctx context.Context, session neo4j.Session, reportId, url, path, status string) {
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+func updateReportState(ctx context.Context, session neo4j.SessionWithContext,
+	reportID, reportName, path, status, message string) {
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "reports", "update-report-state")
+	defer span.End()
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	// update url in neo4j report node
 	query := `
 	MATCH (n:Report{report_id:$uid})
-	SET n.url=$url, n.updated_at=TIMESTAMP(), n.status = $status, n.storage_path = $path
+	SET n.file_name=$file_name, n.updated_at=TIMESTAMP(), n.status = $status, n.storage_path = $path, n.status_message=$status_message 
 	RETURN n
 	`
 	vars := map[string]interface{}{
-		"uid":    reportId,
-		"url":    url,
-		"status": status,
-		"path":   path,
+		"uid":            reportID,
+		"file_name":      reportName,
+		"status":         status,
+		"status_message": message,
+		"path":           path,
 	}
-	_, err = tx.Run(query, vars)
+	_, err = tx.Run(ctx, query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
 
-	if err := tx.Commit(); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		log.Error().Err(err).Msg("failed to commit tx")
 	}
 }

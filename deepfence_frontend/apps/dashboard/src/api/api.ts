@@ -17,6 +17,7 @@ import {
   LookupApi,
   MalwareScanApi,
   RegistryApi,
+  ReportsApi,
   ScanResultsApi,
   SearchApi,
   SecretScanApi,
@@ -27,8 +28,6 @@ import {
   VulnerabilityApi,
 } from '@/api/generated';
 import storage from '@/utils/storage';
-
-import { ReportsApi } from './generated/apis/ReportsApi';
 
 const configuration = new Configuration({
   basePath: `${window.location.protocol}//${window.location.host}`,
@@ -95,7 +94,6 @@ export function getVulnerabilityApiClient() {
     listVulnerabilityScans:
       vulnerabilityApi.listVulnerabilityScans.bind(vulnerabilityApi),
     getSbom: vulnerabilityApi.getSBOM.bind(vulnerabilityApi),
-    downloadSBOM: vulnerabilityApi.downloadSBOM.bind(vulnerabilityApi),
   };
 }
 
@@ -195,6 +193,7 @@ export function getSearchApiClient() {
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
     searchCloudResources: searchApi.searchCloudResources.bind(searchApi),
     searchCloudResourcesCount: searchApi.countCloudResources.bind(searchApi),
+    searchRegistryAccounts: searchApi.searchRegistryAccounts.bind(searchApi),
 
     searchSecretsScan: searchApi.searchSecretsScans.bind(searchApi),
     searchSecrets: searchApi.searchSecrets.bind(searchApi),
@@ -242,7 +241,6 @@ export function getControlsApiClient() {
     listControls: controlsApi.getCloudNodeControls.bind(controlsApi),
     enableControl: controlsApi.enableCloudNodeControls.bind(controlsApi),
     disableControl: controlsApi.disableCloudNodeControls.bind(controlsApi),
-    upgradeAgentVersion: controlsApi.upgradeAgentVersion.bind(controlsApi),
   };
 }
 
@@ -253,6 +251,7 @@ export function getCloudNodesApiClient() {
     listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
     listCloudProviders: cloudNodesApi.listCloudProviders.bind(cloudNodesApi),
     refreshCloudNodeAccount: cloudNodesApi.refreshCloudNodeAccount.bind(cloudNodesApi),
+    deleteCloudNodeAccount: cloudNodesApi.deleteCloudNodeAccount.bind(cloudNodesApi),
   };
 }
 
@@ -273,6 +272,7 @@ export function getLookupApiClient() {
     lookupMalwares: lookupApi.getMalwares.bind(lookupApi),
     lookupCompliances: lookupApi.getCompliances.bind(lookupApi),
     lookupCloudCompliances: lookupApi.getCloudCompliances.bind(lookupApi),
+    lookupRegistryAccounts: lookupApi.getRegistryAccount.bind(lookupApi),
   };
 }
 
@@ -308,6 +308,7 @@ export function getIntegrationApiClient() {
     updateIntegration: integrationApi.updateIntegration.bind(integrationApi),
     listIntegration: integrationApi.listIntegration.bind(integrationApi),
     deleteIntegration: integrationApi.deleteIntegration.bind(integrationApi),
+    bulkDeleteIntegration: integrationApi.deleteIntegrations.bind(integrationApi),
   };
 }
 
@@ -352,6 +353,7 @@ export function getReportsApiClient() {
     generateReport: reportsApi.generateReport.bind(reportsApi),
     deleteReport: reportsApi.deleteReport.bind(reportsApi),
     getReport: reportsApi.getReport.bind(reportsApi),
+    bulkDeleteReports: reportsApi.bulkDeleteReports.bind(reportsApi),
   };
 }
 
@@ -368,11 +370,19 @@ export function getSettingsApiClient() {
     deleteEmailConfiguration: settingsApi.deleteEmailConfiguration.bind(settingsApi),
     uploadVulnerabilityDatabase:
       settingsApi.uploadVulnerabilityDatabase.bind(settingsApi),
+    uploadSecretsRules: settingsApi.uploadSecretsRules.bind(settingsApi),
+    uploadMalwareRules: settingsApi.uploadMalwareRules.bind(settingsApi),
+    uploadPostureControls: settingsApi.uploadPostureControls.bind(settingsApi),
     getScheduledTasks: settingsApi.getScheduledTasks.bind(settingsApi),
     updateScheduledTask: settingsApi.updateScheduledTask.bind(settingsApi),
     deleteCustomScheduledTask: settingsApi.deleteCustomScheduledTask.bind(settingsApi),
     addScheduledTask: settingsApi.addScheduledTask.bind(settingsApi),
     getAgentVersions: settingsApi.getAgentVersions.bind(settingsApi),
+    generateThreatMapperLicense: settingsApi.generateLicense.bind(settingsApi),
+    registerThreatMapperLicense: settingsApi.registerLicense.bind(settingsApi),
+    getThreatMapperLicense: settingsApi.getLicense.bind(settingsApi),
+    deleteThreatMapperLicense: settingsApi.deleteLicense.bind(settingsApi),
+    testUnconfiguredEmail: settingsApi.testUnconfiguredEmail.bind(settingsApi),
   };
 }
 
@@ -401,5 +411,12 @@ export function getScanResultCompletionApiClient() {
     completeVulnerabilityInfo:
       scanCompleteionApi.completeVulnerabilityInfo.bind(scanCompleteionApi),
     completeHostInfo: scanCompleteionApi.completeHostInfo.bind(scanCompleteionApi),
+    completeComplianceInfo:
+      scanCompleteionApi.completeComplianceInfo.bind(scanCompleteionApi),
+    completeCloudCompliance:
+      scanCompleteionApi.completeCloudCompliance.bind(scanCompleteionApi),
+    completePodInfo: scanCompleteionApi.completePodInfo.bind(scanCompleteionApi),
+    completeContainerInfo:
+      scanCompleteionApi.completeContainerInfo.bind(scanCompleteionApi),
   };
 }

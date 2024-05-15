@@ -64,14 +64,13 @@ export const Pod = (props: PodModalProps) => {
             showBackBtn={showBackBtn}
             availableScanTypes={[]}
             showInstallAgentOption={false}
-            showUpgradeAgentOption={false}
           />
         }
       >
         <PodHeader {...props} />
       </Suspense>
       <SlidingModalContent>
-        <div className="dark:bg-bg-breadcrumb-bar">
+        <div className="dark:bg-bg-header bg-bg-breadcrumb-bar">
           <Tabs
             value={tab}
             defaultValue={tab}
@@ -83,7 +82,7 @@ export const Pod = (props: PodModalProps) => {
           >
             <Suspense
               fallback={
-                <div className="min-h-[300px] flex items-center justify-center dark:bg-bg-side-panel">
+                <div className="min-h-[300px] flex items-center justify-center dark:bg-bg-side-panel bg-white">
                   <CircleSpinner size="lg" />
                 </div>
               }
@@ -118,7 +117,6 @@ const PodHeader = ({
         ScanTypeEnum.MalwareScan,
       ]}
       showInstallAgentOption={false}
-      showUpgradeAgentOption={false}
     />
   );
 };
@@ -134,7 +132,7 @@ const TabContent = ({
 }) => {
   const { data } = useLookupPod(nodeId);
   return (
-    <div className="p-5 flex flex-col gap-x-4 gap-y-7 dark:bg-bg-side-panel">
+    <div className="p-5 flex flex-col gap-x-4 gap-y-7 dark:bg-bg-side-panel bg-white">
       {tab === 'metadata' && (
         <Metadata
           data={{

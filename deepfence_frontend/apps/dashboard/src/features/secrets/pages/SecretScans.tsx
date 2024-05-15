@@ -44,6 +44,7 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
+import { SearchableRegistryAccountList } from '@/components/forms/SearchableRegistryAccountList';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -51,13 +52,16 @@ import { TimesIcon } from '@/components/icons/common/Times';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
+import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -65,6 +69,8 @@ import { formatMilliseconds } from '@/utils/date';
 import {
   isNeverScanned,
   isScanComplete,
+  isScanDeletePending,
+  isScanFailed,
   isScanInProgress,
   isScanStopping,
   SCAN_STATUS_GROUPS,
@@ -77,7 +83,9 @@ export interface FocusableElement {
 }
 
 enum ActionEnumType {
-  DELETE = 'delete',
+  DELETE_SCAN = 'delete_scan',
+  CANCEL_SCAN = 'cancel_scan',
+  START_SCAN = 'start_scan,',
 }
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -108,7 +116,7 @@ const action = async ({
     throw new Error('Invalid action');
   }
 
-  if (actionType === ActionEnumType.DELETE) {
+  if (actionType === ActionEnumType.DELETE_SCAN) {
     const resultApi = apiWrapper({
       fn: getScanResultsApiClient().bulkDeleteScans,
     });
@@ -179,7 +187,7 @@ const DeleteConfirmationModal = ({
     if (
       fetcher.state === 'idle' &&
       fetcher.data?.success &&
-      fetcher.data.action === ActionEnumType.DELETE
+      fetcher.data.action === ActionEnumType.DELETE_SCAN
     ) {
       onDeleteSuccess();
     }
@@ -192,7 +200,7 @@ const DeleteConfirmationModal = ({
       size="s"
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -218,7 +226,7 @@ const DeleteConfirmationModal = ({
               disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
-                onDeleteAction(ActionEnumType.DELETE);
+                onDeleteAction(ActionEnumType.DELETE_SCAN);
               }}
             >
               Delete
@@ -233,7 +241,7 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -246,9 +254,11 @@ const DeleteConfirmationModal = ({
 const ActionDropdown = ({
   trigger,
   row,
+  onTableAction,
 }: {
   trigger: React.ReactNode;
   row: ModelScanInfo;
+  onTableAction: (row: ModelScanInfo, actionType: ActionEnumType) => void;
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
@@ -256,15 +266,12 @@ const ActionDropdown = ({
   const { downloadScan } = useDownloadScan((state) => {
     setIsSubmitting(state === 'submitting');
   });
-  const [openStopScanModal, setOpenStopScanModal] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const {
     scan_id: scanId,
     node_id: nodeId,
     node_type: nodeType,
     status: scanStatus,
   } = row;
-  const [showStartScan, setShowStartScan] = useState(false);
 
   const onDownloadAction = useCallback(() => {
     downloadScan({
@@ -280,47 +287,6 @@ const ActionDropdown = ({
 
   return (
     <>
-      {openStopScanModal && (
-        <StopScanForm
-          open={openStopScanModal}
-          closeModal={setOpenStopScanModal}
-          scanIds={[scanId]}
-          scanType={ScanTypeEnum.SecretScan}
-        />
-      )}
-
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          scanIds={[scanId]}
-          setShowDialog={setShowDeleteDialog}
-          onDeleteSuccess={() => {
-            //
-          }}
-        />
-      )}
-
-      {showStartScan && (
-        <ConfigureScanModal
-          open={true}
-          onOpenChange={() => setShowStartScan(false)}
-          scanOptions={
-            {
-              showAdvancedOptions: true,
-              scanType: ScanTypeEnum.SecretScan,
-              data: {
-                nodes: [
-                  {
-                    nodeId,
-                    nodeType,
-                  },
-                ],
-              },
-            } as ConfigureScanModalProps['scanOptions']
-          }
-        />
-      )}
-
       <Dropdown
         triggerAsChild
         align="start"
@@ -329,47 +295,57 @@ const ActionDropdown = ({
         content={
           <>
             <DropdownItem
-              onClick={(e) => {
+              onSelect={(e) => {
                 if (!isScanComplete(scanStatus)) return;
                 e.preventDefault();
                 onDownloadAction();
               }}
-              disabled={!isScanComplete(scanStatus) || isSubmitting}
+              disabled={
+                !isScanComplete(scanStatus) ||
+                isSubmitting ||
+                isScanDeletePending(scanStatus)
+              }
             >
               <span className="flex text-center gap-x-2">
                 {isSubmitting && <CircleSpinner size="sm" />}Download report
               </span>
             </DropdownItem>
             <DropdownItem
-              onClick={(e) => {
+              onSelect={(e) => {
                 e.preventDefault();
-                if (isScanInProgress(scanStatus)) return;
-                setShowStartScan(true);
+                onTableAction(row, ActionEnumType.START_SCAN);
               }}
-              disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
+              disabled={
+                isScanInProgress(scanStatus) ||
+                isScanStopping(scanStatus) ||
+                isScanDeletePending(scanStatus)
+              }
             >
               <span>Start scan</span>
             </DropdownItem>
             <DropdownItem
               onSelect={(e) => {
                 e.preventDefault();
-                setOpenStopScanModal(true);
+                onTableAction(row, ActionEnumType.CANCEL_SCAN);
               }}
-              disabled={!isScanInProgress(scanStatus)}
+              disabled={!isScanInProgress(scanStatus) || isScanDeletePending(scanStatus)}
             >
               <span className="flex items-center">Cancel scan</span>
             </DropdownItem>
             <DropdownItem
-              className="text-sm"
-              onClick={() => {
+              onSelect={() => {
                 if (!scanId || !nodeType) return;
-                setShowDeleteDialog(true);
+                onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
-              disabled={!scanId || !nodeType}
+              disabled={
+                !scanId ||
+                !nodeType ||
+                isScanInProgress(scanStatus) ||
+                isScanDeletePending(scanStatus)
+              }
+              color="error"
             >
-              <span className="text-red-700 dark:text-status-error dark:hover:text-[#C45268]">
-                Delete scan
-              </span>
+              Delete scan
             </DropdownItem>
           </>
         }
@@ -380,13 +356,32 @@ const ActionDropdown = ({
   );
 };
 
-const FILTER_SEARCHPARAMS: Record<string, string> = {
+enum FILTER_SEARCHPARAMS_KEYS_ENUM {
+  nodeType = 'nodeType',
+  secretScanStatus = 'secretScanStatus',
+  containerImages = 'containerImages',
+  containers = 'containers',
+  hosts = 'hosts',
+  clusters = 'clusters',
+  registryAccounts = 'registryAccounts',
+}
+
+const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
+  FILTER_SEARCHPARAMS_KEYS_ENUM.hosts,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.containerImages,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.clusters,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.registryAccounts,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.containers,
+];
+
+const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   nodeType: 'Node Type',
   secretScanStatus: 'Secret scan status',
   containerImages: 'Container image',
   containers: 'Container',
   hosts: 'Host',
   clusters: 'Cluster',
+  registryAccounts: 'Registry',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -400,9 +395,23 @@ const Filters = () => {
   const [nodeType, setNodeType] = useState('');
   const [secretScanStatusSearchText, setSecretScanStatusSearchText] = useState('');
 
+  const onFilterRemove = ({ key, value }: { key: string; value: string }) => {
+    return () => {
+      setSearchParams((prev) => {
+        const existingValues = prev.getAll(key);
+        prev.delete(key);
+        existingValues.forEach((existingValue) => {
+          if (existingValue !== value) prev.append(key, existingValue);
+        });
+        prev.delete('page');
+        return prev;
+      });
+    };
+  };
+
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['nodeType']}
@@ -571,32 +580,67 @@ const Filters = () => {
             });
           }}
         />
+        <SearchableRegistryAccountList
+          defaultSelectedRegistryAccounts={searchParams.getAll('registryAccounts')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('registryAccounts');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('registryAccounts');
+              value.forEach((registryAccount) => {
+                prev.append('registryAccounts', registryAccount);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
-          {Array.from(searchParams)
-            .filter(([key]) => {
+          {(
+            Array.from(searchParams).filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
-            })
-            .map(([key, value]) => {
+            }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
+          ).map(([key, value]) => {
+            if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
               return (
                 <FilterBadge
                   key={`${key}-${value}`}
-                  onRemove={() => {
-                    setSearchParams((prev) => {
-                      const existingValues = prev.getAll(key);
-                      prev.delete(key);
-                      existingValues.forEach((existingValue) => {
-                        if (existingValue !== value) prev.append(key, existingValue);
-                      });
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }}
+                  nodeType={(() => {
+                    if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.hosts) {
+                      return 'host';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.containerImages) {
+                      return 'containerImage';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.clusters) {
+                      return 'cluster';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.registryAccounts) {
+                      return 'registryAccount';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.containers) {
+                      return 'container';
+                    }
+                    throw new Error('unknown key');
+                  })()}
+                  onRemove={onFilterRemove({ key, value })}
+                  id={value}
+                  label={FILTER_SEARCHPARAMS[key]}
+                />
+              );
+            } else {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={onFilterRemove({ key, value })}
                   text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
                 />
               );
-            })}
+            }
+          })}
           <Button
             variant="flat"
             color="default"
@@ -616,22 +660,26 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 
 const ScansTable = ({
   rowSelectionState,
   setRowSelectionState,
+  onTableAction,
 }: {
   rowSelectionState: RowSelectionState;
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+  onTableAction: (row: ModelScanInfo, actionType: ActionEnumType) => void;
 }) => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useSuspenseQuery({
     ...queries.secret.scanList({
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       clusters: searchParams.getAll('clusters'),
+      registryAccounts: searchParams.getAll('registryAccounts'),
       containers: searchParams.getAll('containers'),
       hosts: searchParams.getAll('hosts'),
       images: searchParams.getAll('containerImages'),
@@ -662,9 +710,10 @@ const ScansTable = ({
         cell: (cell) => (
           <ActionDropdown
             row={cell.row.original}
+            onTableAction={onTableAction}
             trigger={
               <button className="p-1 flex">
-                <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90 shrink-0">
+                <span className="block h-4 w-4 text-text-text-and-icon rotate-90 shrink-0">
                   <EllipsisIcon />
                 </span>
               </button>
@@ -698,7 +747,7 @@ const ScansTable = ({
         enableSorting: false,
         cell: (info) => {
           const isNeverScan = isNeverScanned(info.row.original.status);
-          if (isNeverScan) {
+          if (isNeverScan || isScanDeletePending(info.row.original.status)) {
             return <TruncatedText text={info.getValue()} />;
           }
           return (
@@ -716,7 +765,7 @@ const ScansTable = ({
         size: 240,
         maxSize: 250,
       }),
-      columnHelper.accessor('updated_at', {
+      columnHelper.accessor('created_at', {
         cell: (info) => <TruncatedText text={formatMilliseconds(info.getValue())} />,
         header: () => <TruncatedText text="Timestamp" />,
         minSize: 140,
@@ -726,7 +775,7 @@ const ScansTable = ({
       columnHelper.accessor('status', {
         enableSorting: true,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
-        header: () => <TruncatedText text="Scan Status" />,
+        header: () => <TruncatedText text="Scan status" />,
         minSize: 100,
         size: 110,
         maxSize: 110,
@@ -736,7 +785,11 @@ const ScansTable = ({
         enableSorting: false,
         cell: (info) => (
           <div className="flex items-center justify-end tabular-nums">
-            <span className="truncate">{info.getValue()}</span>
+            {!isScanComplete(info.row.original.status) ? (
+              <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>
+            ) : (
+              <span className="truncate">{info.getValue()}</span>
+            )}
           </div>
         ),
         header: () => (
@@ -751,16 +804,14 @@ const ScansTable = ({
       columnHelper.accessor('critical', {
         enableSorting: false,
         cell: (info) => {
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
+          }
           const params = new URLSearchParams();
           params.set('severity', 'critical');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SEVERITY_COLORS['critical'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="critical" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -779,16 +830,14 @@ const ScansTable = ({
       columnHelper.accessor('high', {
         enableSorting: false,
         cell: (info) => {
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
+          }
           const params = new URLSearchParams();
           params.set('severity', 'high');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SEVERITY_COLORS['high'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="high" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -807,16 +856,14 @@ const ScansTable = ({
       columnHelper.accessor('medium', {
         enableSorting: false,
         cell: (info) => {
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
+          }
           const params = new URLSearchParams();
           params.set('severity', 'medium');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SEVERITY_COLORS['medium'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="medium" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -835,16 +882,14 @@ const ScansTable = ({
       columnHelper.accessor('low', {
         enableSorting: false,
         cell: (info) => {
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
+          }
           const params = new URLSearchParams();
           params.set('severity', 'low');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-2 h-2 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SEVERITY_COLORS['low'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="low" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -863,16 +908,14 @@ const ScansTable = ({
       columnHelper.accessor('unknown', {
         enableSorting: false,
         cell: (info) => {
+          if (!isScanComplete(info.row.original.status)) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
+          }
           const params = new URLSearchParams();
           params.set('severity', 'unknown');
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <div
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{
-                  backgroundColor: SEVERITY_COLORS['unknown'],
-                }}
-              ></div>
+              <SeverityBadgeIcon severity="unknown" theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -891,7 +934,7 @@ const ScansTable = ({
     ];
 
     return columns;
-  }, []);
+  }, [theme]);
 
   return (
     <>
@@ -969,7 +1012,7 @@ const ScansTable = ({
 
 const BulkActions = ({
   selectedRows,
-  setRowSelectionState,
+  onBulkAction,
 }: {
   selectedRows: {
     scanId: string;
@@ -977,15 +1020,25 @@ const BulkActions = ({
     nodeType: string;
     scanStatus: string;
   }[];
-  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+  onBulkAction: (
+    data: {
+      scanIdsToCancelScan: string[];
+      scanIdsToDeleteScan: string[];
+      nodesToStartScan: {
+        nodeId: string;
+        nodeType: string;
+      }[];
+    },
+    actionType: ActionEnumType,
+  ) => void;
 }) => {
-  const [openStartScan, setOpenStartScan] = useState<boolean>(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showCancelScanDialog, setShowCancelScanDialog] = useState(false);
   const nodesToStartScan = useMemo(() => {
     return selectedRows
       .filter(
-        (row) => !isScanInProgress(row.scanStatus) && !isScanStopping(row.scanStatus),
+        (row) =>
+          !isScanInProgress(row.scanStatus) &&
+          !isScanStopping(row.scanStatus) &&
+          !isScanDeletePending(row.scanStatus),
       )
       .map((row) => {
         return {
@@ -997,64 +1050,36 @@ const BulkActions = ({
 
   const scanIdsToCancelScan = useMemo(() => {
     return selectedRows
-      .filter((row) => isScanInProgress(row.scanStatus))
+      .filter(
+        (row) => isScanInProgress(row.scanStatus) && !isScanDeletePending(row.scanStatus),
+      )
       .map((row) => row.scanId);
   }, [selectedRows]);
 
   const scanIdsToDeleteScan = useMemo(() => {
     return selectedRows
-      .filter((row) => !isNeverScanned(row.scanStatus))
+      .filter(
+        (row) => !isNeverScanned(row.scanStatus) && !isScanDeletePending(row.scanStatus),
+      )
       .map((row) => row.scanId);
   }, [selectedRows]);
 
   return (
     <>
-      {openStartScan && (
-        <ConfigureScanModal
-          open={true}
-          onOpenChange={() => setOpenStartScan(false)}
-          onSuccess={() => setRowSelectionState({})}
-          scanOptions={
-            {
-              showAdvancedOptions: true,
-              scanType: ScanTypeEnum.SecretScan,
-              data: {
-                nodes: nodesToStartScan,
-              },
-            } as ConfigureScanModalProps['scanOptions']
-          }
-        />
-      )}
-
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          scanIds={scanIdsToDeleteScan}
-          setShowDialog={setShowDeleteDialog}
-          onDeleteSuccess={() => {
-            setRowSelectionState({});
-          }}
-        />
-      )}
-      {showCancelScanDialog ? (
-        <StopScanForm
-          open={showCancelScanDialog}
-          closeModal={setShowCancelScanDialog}
-          scanIds={scanIdsToCancelScan}
-          scanType={ScanTypeEnum.SecretScan}
-          onCancelScanSuccess={() => {
-            setRowSelectionState({});
-          }}
-        />
-      ) : null}
-
       <Button
         color="default"
         variant="flat"
         size="sm"
         disabled={nodesToStartScan.length == 0}
         onClick={() => {
-          setOpenStartScan(true);
+          onBulkAction(
+            {
+              scanIdsToCancelScan: [],
+              scanIdsToDeleteScan: [],
+              nodesToStartScan,
+            },
+            ActionEnumType.START_SCAN,
+          );
         }}
       >
         Start Scan
@@ -1064,7 +1089,16 @@ const BulkActions = ({
         variant="flat"
         size="sm"
         disabled={scanIdsToCancelScan.length === 0}
-        onClick={() => setShowCancelScanDialog(true)}
+        onClick={() =>
+          onBulkAction(
+            {
+              scanIdsToCancelScan,
+              scanIdsToDeleteScan: [],
+              nodesToStartScan: [],
+            },
+            ActionEnumType.CANCEL_SCAN,
+          )
+        }
       >
         Cancel Scan
       </Button>
@@ -1075,7 +1109,14 @@ const BulkActions = ({
         size="sm"
         disabled={scanIdsToDeleteScan.length === 0}
         onClick={() => {
-          setShowDeleteDialog(true);
+          onBulkAction(
+            {
+              scanIdsToCancelScan: [],
+              scanIdsToDeleteScan,
+              nodesToStartScan: [],
+            },
+            ActionEnumType.DELETE_SCAN,
+          );
         }}
       >
         Delete Scan
@@ -1093,6 +1134,9 @@ const SecretScans = () => {
   });
 
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const [openStartScan, setOpenStartScan] = useState<boolean>(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCancelScanDialog, setShowCancelScanDialog] = useState(false);
 
   const selectedRows = useMemo<
     {
@@ -1107,9 +1151,116 @@ const SecretScans = () => {
     });
   }, [rowSelectionState]);
 
+  const [rowToAction, setRowToAction] = useState<{
+    scanIdsToCancelScan: string[];
+    scanIdsToDeleteScan: string[];
+    nodesToStartScan: {
+      nodeId: string;
+      nodeType: string;
+    }[];
+  }>({
+    scanIdsToCancelScan: [],
+    scanIdsToDeleteScan: [],
+    nodesToStartScan: [],
+  });
+
+  const onTableAction = (row: ModelScanInfo, actionType: string) => {
+    if (actionType === ActionEnumType.DELETE_SCAN) {
+      setRowToAction({
+        scanIdsToCancelScan: [],
+        scanIdsToDeleteScan: [row.scan_id],
+        nodesToStartScan: [],
+      });
+      setShowDeleteDialog(true);
+    } else if (actionType === ActionEnumType.CANCEL_SCAN) {
+      setRowToAction({
+        scanIdsToCancelScan: [row.scan_id],
+        scanIdsToDeleteScan: [],
+        nodesToStartScan: [],
+      });
+      setShowCancelScanDialog(true);
+    } else if (actionType === ActionEnumType.START_SCAN) {
+      setRowToAction({
+        scanIdsToCancelScan: [],
+        scanIdsToDeleteScan: [],
+        nodesToStartScan: [
+          {
+            nodeId: row.node_id,
+            nodeType: row.node_type,
+          },
+        ],
+      });
+      setOpenStartScan(true);
+    }
+  };
+
+  const onBulkAction = (
+    data: {
+      scanIdsToCancelScan: string[];
+      scanIdsToDeleteScan: string[];
+      nodesToStartScan: {
+        nodeId: string;
+        nodeType: string;
+      }[];
+    },
+    actionType: string,
+  ) => {
+    setRowToAction({
+      scanIdsToCancelScan: data.scanIdsToCancelScan,
+      scanIdsToDeleteScan: data.scanIdsToDeleteScan,
+      nodesToStartScan: data.nodesToStartScan,
+    });
+    if (actionType === ActionEnumType.DELETE_SCAN) {
+      setShowDeleteDialog(true);
+    } else if (actionType === ActionEnumType.CANCEL_SCAN) {
+      setShowCancelScanDialog(true);
+    } else if (actionType === ActionEnumType.START_SCAN) {
+      setOpenStartScan(true);
+    }
+  };
+
   return (
     <div>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <>
+        {openStartScan && (
+          <ConfigureScanModal
+            open={true}
+            onOpenChange={() => setOpenStartScan(false)}
+            onSuccess={() => setRowSelectionState({})}
+            scanOptions={
+              {
+                showAdvancedOptions: true,
+                scanType: ScanTypeEnum.SecretScan,
+                data: {
+                  nodes: rowToAction?.nodesToStartScan,
+                },
+              } as ConfigureScanModalProps['scanOptions']
+            }
+          />
+        )}
+        {showDeleteDialog && (
+          <DeleteConfirmationModal
+            showDialog={showDeleteDialog}
+            scanIds={rowToAction?.scanIdsToDeleteScan}
+            setShowDialog={setShowDeleteDialog}
+            onDeleteSuccess={() => {
+              setRowSelectionState({});
+            }}
+          />
+        )}
+        {showCancelScanDialog ? (
+          <StopScanForm
+            open={showCancelScanDialog}
+            closeModal={setShowCancelScanDialog}
+            scanIds={rowToAction?.scanIdsToCancelScan}
+            scanType={ScanTypeEnum.SecretScan}
+            onCancelScanSuccess={() => {
+              setRowSelectionState({});
+            }}
+          />
+        ) : null}
+      </>
+      <BreadcrumbWrapper>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
             <DFLink to={'/secret'} unstyled>
@@ -1124,14 +1275,11 @@ const SecretScans = () => {
         <div className="ml-2 flex items-center">
           {isFetching ? <CircleSpinner size="sm" /> : null}
         </div>
-      </div>
+      </BreadcrumbWrapper>
 
       <div className="mx-4">
         <div className="h-12 flex items-center">
-          <BulkActions
-            selectedRows={selectedRows}
-            setRowSelectionState={setRowSelectionState}
-          />
+          <BulkActions onBulkAction={onBulkAction} selectedRows={selectedRows} />
           <Button
             variant="flat"
             className="ml-auto"
@@ -1160,6 +1308,7 @@ const SecretScans = () => {
           <ScansTable
             rowSelectionState={rowSelectionState}
             setRowSelectionState={setRowSelectionState}
+            onTableAction={onTableAction}
           />
         </Suspense>
       </div>

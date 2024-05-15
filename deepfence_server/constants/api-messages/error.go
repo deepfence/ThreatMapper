@@ -11,4 +11,5 @@ const (
 // Integration errors
 const (
 	ErrIntegrationExists = "integration with this configuration already exists"
+	ErrInvalidCredential = "invalid credentials"
 )

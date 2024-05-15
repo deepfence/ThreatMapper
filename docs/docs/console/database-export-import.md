@@ -10,37 +10,45 @@ Export PostgreSQL data from one management console and import in another console
 
 Connect to old management console / database, run following commands to export
 
-```shell
-mkdir deepfence_export
-cd deepfence_export
+* Step 1: Login to the host running the postgres docker instance.
+* Step 2: Docker exec into the postgres instance using the below command:
 
-docker run --net=host --rm=true --name=postgresql-backup \
-  -v "$(pwd)":/data:rw \
-  --entrypoint=/usr/local/bin/pg-export.sh \
-  -e POSTGRES_DB_HOST="127.0.0.1" \
-  -e POSTGRES_DB_PORT="5432" \
-  -e POSTGRES_DB_NAME=users \
-  -e POSTGRES_DB_USERNAME="" \
-  -e POSTGRES_DB_PASSWORD="" \
-  deepfenceio/deepfence_backup:2.1.0
-```
+    ```shell
+    docker exec -it deepfence-postgres /bin/bash
+    ```
+* Step 3: Run the backup script from inside the postgres container as follows:
+
+    ```shell
+    /usr/local/bin/pg-export.sh
+    ```
+    This will create a backup file `/data/pg_data.dump` inside the container.
+* Step 4: Copy the postgres backup file created above to host or any intermediate location
 
 ### Import
 
-Connect to new management console / database, run following commands to import
+* Step 1: Copy the backup file from intermediate location to the target machine using scp (or similar commands)
+* Step 2: Login to the target machine and copy the backup file in to the running postgres container using below command:
 
-```shell
-docker run --net=host --rm=true --name=postgresql-restore \
-  -v "$(pwd)":/data:rw \
-  --entrypoint=/usr/local/bin/pg-import.sh \
-  -e POSTGRES_DB_HOST="127.0.0.1" \
-  -e POSTGRES_DB_PORT="5432" \
-  -e POSTGRES_DB_NAME=users \
-  -e POSTGRES_DB_USERNAME="" \
-  -e POSTGRES_DB_PASSWORD="" \
-  deepfenceio/deepfence_backup:2.1.0
-```
-- Restart management console once
+    ```shell
+    docker cp pg_data.dump deepfence-postgres:/
+    ```
+* Step 3: Take a bash session of the running postgres container using the below command:
+
+    ```shell
+    docker exec -it deepfence-postgres /bin/bash
+    ```
+* Step 4: Run the restore script from inside the postgres docker instance as follows:
+
+    ```shell
+    /usr/local/bin/pg-import.sh /pg_data.dump
+    ```
+
+### Steps for Kubernetes:
+
+The steps for kubernetes remains similar to the above.
+For Kubernetes, we will have to use `kubectl` utility to:
+* Copy the file from and to the pod.
+* Take a bash session of the pod
 
 
 ## Neo4J Graph Database Export and Import

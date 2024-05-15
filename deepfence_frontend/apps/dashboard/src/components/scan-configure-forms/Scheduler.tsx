@@ -225,12 +225,12 @@ export const Scheduler = (props: ScheduleProps) => {
       {period === PERIOD.Month && (
         <>
           <DaysOfMonth {...props} />
-          <span className="text-p3 text-text-text-and-icon dark:text-text-text-and-icon flex justify-end items-end pb-2">
+          <span className="text-p3 text-text-text-and-icon flex justify-end items-end pb-2">
             and
           </span>
           <DaysOfWeek {...props} defaultDaysOfWeek={[]} key={'daysOfMonth'} />
           <Hours {...props} />
-          <span className="text-p3 text-text-text-and-icon dark:text-text-text-and-icon flex justify-end items-end pb-2">
+          <span className="text-p3 text-text-text-and-icon flex justify-end items-end pb-2">
             :
           </span>
           <Minutes {...props} />
@@ -240,7 +240,7 @@ export const Scheduler = (props: ScheduleProps) => {
         <>
           <DaysOfWeek {...props} defaultDaysOfWeek={[DAYS_OF_WEEK[0]]} key={'week'} />
           <Hours {...props} />
-          <span className="text-p3 text-text-text-and-icon dark:text-text-text-and-icon flex justify-end items-end pb-2">
+          <span className="text-p3 text-text-text-and-icon flex justify-end items-end pb-2">
             :
           </span>
           <Minutes {...props} />
@@ -249,7 +249,7 @@ export const Scheduler = (props: ScheduleProps) => {
       {period === PERIOD.Day && (
         <>
           <Hours {...props} />
-          <span className="text-p3 text-text-text-and-icon dark:text-text-text-and-icon flex justify-end items-end pb-2">
+          <span className="text-p3 text-text-text-and-icon flex justify-end items-end pb-2">
             :
           </span>
           <Minutes {...props} />

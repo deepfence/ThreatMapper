@@ -1,6 +1,7 @@
 package dockerprivate
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -21,7 +23,21 @@ func New(requestByte []byte) (*RegistryDockerPrivate, error) {
 }
 
 func (d *RegistryDockerPrivate) ValidateFields(v *validator.Validate) error {
-	return v.Struct(d)
+	err := v.Struct(d)
+	if (err != nil) || d.NonSecret.IsPublic == "true" {
+		return err
+	}
+
+	type AuthInfo struct {
+		DockerUsername string `json:"docker_username" validate:"required,min=2"`
+		DockerPassword string `json:"docker_password" validate:"required,min=2"`
+	}
+
+	auth := AuthInfo{}
+	auth.DockerUsername = d.NonSecret.DockerUsername
+	auth.DockerPassword = d.Secret.DockerPassword
+	return v.Struct(auth)
+
 }
 
 func (d *RegistryDockerPrivate) IsValidCredential() bool {
@@ -74,7 +90,9 @@ func (d *RegistryDockerPrivate) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryDockerPrivate) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
+func (d *RegistryDockerPrivate) FetchImagesFromRegistry(ctx context.Context) ([]model.IngestedContainerImage, error) {
+	_, span := telemetry.NewSpan(ctx, "registry", "fetch-images-from-registry")
+	defer span.End()
 	return listImagesRegistryV2(d.NonSecret.DockerRegistryURL, d.NonSecret.DockerUsername, d.Secret.DockerPassword)
 }
 

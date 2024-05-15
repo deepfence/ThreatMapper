@@ -1,0 +1,27 @@
+routes:
+  - local_path: var/log/fenced/secret-scan/secret_scan.log
+    remote_path: /deepfence/ingest/secrets
+
+  - local_path: var/log/fenced/secret-scan-log/secret_scan_log.log
+    remote_path: /deepfence/ingest/secret-scan-logs
+
+  - local_path: var/log/fenced/malware-scan/malware_scan.log
+    remote_path: /deepfence/ingest/malware
+
+  - local_path: var/log/fenced/malware-scan-log/malware_scan_log.log
+    remote_path: /deepfence/ingest/malware-scan-logs
+
+  - local_path: var/log/fenced/compliance/compliance-scan.log
+    remote_path: /deepfence/ingest/compliance
+
+  - local_path: var/log/fenced/compliance-scan-logs/status.log
+    remote_path: /deepfence/ingest/compliance-scan-logs
+
+  - local_path: var/log/fenced/status/status.log
+    remote_path: /deepfence/ingest/agent-status
+
+  # - local_path: var/log/fenced/file_alerts.log
+  #   remote_path: /deepfence/ingest/alerts
+
+  # - local_path: var/log/fenced/netmon_alerts.log
+  #   remote_path: /deepfence/ingest/alerts

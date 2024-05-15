@@ -23,7 +23,7 @@ export type SearchableHostListProps = {
   isScannedForMalware?: boolean;
   displayValue?: string;
 };
-
+const fieldName = 'hostFilter';
 const PAGE_SIZE = 15;
 const SearchableHost = ({
   scanType,
@@ -93,18 +93,11 @@ const SearchableHost = ({
 
   return (
     <>
-      <input
-        type="text"
-        name="selectedHostLength"
-        hidden
-        readOnly
-        value={selectedHosts.length}
-      />
       <Combobox
         startIcon={
           isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
-        name="hostFilter"
+        name={fieldName}
         triggerVariant={triggerVariant || 'button'}
         label={isSelectVariantType ? 'Host' : undefined}
         getDisplayValue={() =>
@@ -112,7 +105,7 @@ const SearchableHost = ({
             ? `${selectedHosts.length} selected`
             : displayValue
             ? displayValue
-            : 'Select host'
+            : null
         }
         placeholder="Select host"
         multiple
@@ -145,7 +138,7 @@ const SearchableHost = ({
 };
 
 export const SearchableHostList = (props: SearchableHostListProps) => {
-  const { triggerVariant } = props;
+  const { triggerVariant, defaultSelectedHosts = [] } = props;
   const isSelectVariantType = useMemo(() => {
     return triggerVariant === 'select';
   }, [triggerVariant]);
@@ -153,19 +146,23 @@ export const SearchableHostList = (props: SearchableHostListProps) => {
   return (
     <Suspense
       fallback={
-        <Combobox
-          label={isSelectVariantType ? 'Host' : undefined}
-          triggerVariant={triggerVariant || 'button'}
-          startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          placeholder="Select host"
-          multiple
-          onQueryChange={() => {
-            // no operation
-          }}
-          getDisplayValue={() => {
-            return props.displayValue ? props.displayValue : 'Select host';
-          }}
-        />
+        <>
+          <Combobox
+            name={fieldName}
+            value={defaultSelectedHosts}
+            label={isSelectVariantType ? 'Host' : undefined}
+            triggerVariant={triggerVariant || 'button'}
+            startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+            placeholder="Select host"
+            multiple
+            onQueryChange={() => {
+              // no operation
+            }}
+            getDisplayValue={() => {
+              return props.displayValue ? props.displayValue : 'Select host';
+            }}
+          />
+        </>
       }
     >
       <SearchableHost {...props} />

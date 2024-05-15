@@ -1,2 +1,37 @@
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+::-webkit-scrollbar {
+  @apply h-1 w-1 bg-gray-100 dark:bg-gray-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-sm bg-gray-300 hover:bg-gray-400 dark:border-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600;
+}
+
+/* Copied from packages/ui-components/src/components/input/DateTimeInput.css */
+.df-datetime-input {
+  background-color: transparent;
+}
+.df-datetime-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+.df-datetime-input::-webkit-datetime-edit-text,
+.df-datetime-input::-webkit-datetime-edit-month-field,
+.df-datetime-input::-webkit-datetime-edit-day-field,
+.df-datetime-input::-webkit-datetime-edit-year-field,
+.df-datetime-input::-webkit-datetime-edit-ampm-field,
+.df-datetime-input::-webkit-datetime-edit-minute-field,
+.df-datetime-input::-webkit-datetime-edit-hour-field {
+  @apply text-severity-unknown/60;
+}
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-text,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-month-field,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-day-field,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-year-field,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-ampm-field,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-minute-field,
+.df-datetime-input.df-datetime-input--has-value::-webkit-datetime-edit-hour-field {
+  @apply text-text-input-value;
+}

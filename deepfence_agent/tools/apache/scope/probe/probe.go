@@ -2,19 +2,19 @@ package probe
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/hashicorp/go-metrics"
-	"golang.org/x/time/rate"
 
 	"github.com/weaveworks/scope/report"
 )
 
 const (
-	spiedReportBufferSize    = 16
-	shortcutReportBufferSize = 1024
+	// There are 4 reports in production, default is spy every 5 seconds, max is 1800 sec (30 min)
+	// This gives us the max number of reports over 30 min
+	spiedReportBufferSize = 4 * 360
 )
 
 // ReportPublisher publishes reports, probably to a remote collector.
@@ -23,23 +23,102 @@ type ReportPublisher interface {
 	PublishInterval() int32
 }
 
+type AsyncMerger struct {
+	spiedReports chan report.Report
+	nextReport   report.Report
+	access       sync.Mutex
+	wg           sync.WaitGroup
+	cancel       context.CancelFunc
+	drainCount   int
+}
+
+func NewAsyncMerger(bufferSize int) *AsyncMerger {
+	res := &AsyncMerger{
+		spiedReports: make(chan report.Report, spiedReportBufferSize),
+		nextReport:   report.MakeReport(),
+	}
+
+	res.start()
+
+	return res
+}
+
+func (dc *AsyncMerger) start() {
+
+	ctx, cancel := context.WithCancel(context.Background())
+	dc.cancel = cancel
+
+	dc.wg.Add(1)
+	go func() {
+		defer dc.wg.Done()
+		for {
+			select {
+			case r := <-dc.spiedReports:
+				dc.nextReport.UnsafeMerge(r)
+				dc.drainCount++
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+}
+
+func (dc *AsyncMerger) Add(r *report.Report) error {
+	dc.access.Lock()
+	defer dc.access.Unlock()
+	select {
+	case dc.spiedReports <- r.Copy():
+	default:
+		return errors.New("reports full")
+	}
+	return nil
+}
+
+func (dc *AsyncMerger) stopAndFlush() {
+	dc.access.Lock()
+	defer dc.access.Unlock()
+
+	dc.cancel()
+	dc.wg.Wait()
+
+	for len(dc.spiedReports) > 0 {
+		dc.nextReport.UnsafeMerge(<-dc.spiedReports)
+		dc.drainCount++
+	}
+
+}
+
+func (dc *AsyncMerger) Drain() (report.Report, int) {
+	dc.stopAndFlush()
+
+	res := dc.nextReport
+	cnt := dc.drainCount
+
+	dc.nextReport = report.MakeReport()
+	dc.drainCount = 0
+
+	dc.start()
+
+	return res, cnt
+}
+
 // Probe sits there, generating and publishing reports.
 type Probe struct {
 	spyInterval, publishInterval time.Duration
 	publisher                    ReportPublisher
-	rateLimiter                  *rate.Limiter
 	ticksPerFullReport           int
 	noControls                   bool
 
-	tickers   []Ticker
-	reporters []Reporter
-	taggers   []Tagger
+	tickers          []Ticker
+	reporters        []Reporter
+	taggers          []Tagger
+	reportersReports []report.Report
+	readyIndxes      chan int
 
-	quit chan struct{}
-	done sync.WaitGroup
+	ctx    context.Context
+	cancel context.CancelFunc
 
-	spiedReports    chan report.Report
-	shortcutReports chan report.Report
+	spiedReports *AsyncMerger
 }
 
 // Tagger tags nodes with value-add node metadata.
@@ -82,16 +161,16 @@ func New(
 	ticksPerFullReport int,
 	noControls bool,
 ) *Probe {
+	ctx, cancel := context.WithCancel(context.Background())
 	result := &Probe{
 		spyInterval:        spyInterval,
 		publishInterval:    publishInterval,
 		publisher:          publisher,
-		rateLimiter:        rate.NewLimiter(rate.Every(publishInterval/100), 1),
 		ticksPerFullReport: ticksPerFullReport,
 		noControls:         noControls,
-		quit:               make(chan struct{}),
-		spiedReports:       make(chan report.Report, spiedReportBufferSize),
-		shortcutReports:    make(chan report.Report, shortcutReportBufferSize),
+		spiedReports:       NewAsyncMerger(spiedReportBufferSize),
+		ctx:                ctx,
+		cancel:             cancel,
 	}
 	return result
 }
@@ -104,6 +183,9 @@ func (p *Probe) AddTagger(ts ...Tagger) {
 // AddReporter adds a new Reported to the Probe
 func (p *Probe) AddReporter(rs ...Reporter) {
 	p.reporters = append(p.reporters, rs...)
+
+	p.reportersReports = append(p.reportersReports, report.Report{})
+	p.readyIndxes = make(chan int, len(p.reporters))
 }
 
 // AddTicker adds a new Ticker to the Probe
@@ -113,8 +195,7 @@ func (p *Probe) AddTicker(ts ...Ticker) {
 
 // Stop stops the probe
 func (p *Probe) Stop() error {
-	close(p.quit)
-	p.done.Wait()
+	p.cancel()
 	return nil
 }
 
@@ -122,43 +203,38 @@ func (p *Probe) Stop() error {
 // bypassing the spy tick
 func (p *Probe) Publish(rpt report.Report) {
 	rpt = p.tag(rpt)
-	p.spiedReports <- rpt
+	err := p.spiedReports.Add(&rpt)
+	if err != nil {
+		log.Error().Err(err).Msg("Spy enqueue failed")
+	}
 }
 
-func (p *Probe) spyLoop() {
-	defer p.done.Done()
-	spyTick := time.Tick(p.spyInterval)
-
+func (p *Probe) spyLoop(ctx context.Context) {
+	rpt := report.MakeReport()
 	for {
 		select {
-		case <-spyTick:
-			p.tick()
-			rpt := p.report()
+		case <-time.After(p.spyInterval):
+			for _, ticker := range p.tickers {
+				err := ticker.Tick()
+				if err != nil {
+					log.Error().Err(err).Msgf("Spy ticks for %v failed", ticker.Name())
+				}
+			}
+			rpt.Clear()
+			rpt := p.mergeReporters(rpt)
 			rpt = p.tag(rpt)
-			p.spiedReports <- rpt
-		case <-p.quit:
+			err := p.spiedReports.Add(&rpt)
+			if err != nil {
+				log.Error().Err(err).Msg("Spy enqueue failed")
+			}
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (p *Probe) tick() {
-	for _, ticker := range p.tickers {
-		t := time.Now()
-		err := ticker.Tick()
-		metrics.MeasureSinceWithLabels([]string{"duration", "seconds"}, t, []metrics.Label{
-			{Name: "operation", Value: "ticker"},
-			{Name: "module", Value: ticker.Name()},
-		})
-		if err != nil {
-			log.Error().Msgf("Error doing ticker: %v", err)
-		}
-	}
-}
-
-func (p *Probe) report() report.Report {
-	reports := make(chan report.Report, len(p.reporters))
-	for _, rep := range p.reporters {
+func (p *Probe) mergeReporters(result report.Report) report.Report {
+	for i, rep := range p.reporters {
 		go func(rep Reporter) {
 			t := time.Now()
 			timer := time.AfterFunc(p.spyInterval, func() { log.Warn().Msgf("%v reporter took longer than %v", rep.Name(), p.spyInterval) })
@@ -166,22 +242,20 @@ func (p *Probe) report() report.Report {
 			if !timer.Stop() {
 				log.Warn().Msgf("%v reporter took %v (longer than %v)", rep.Name(), time.Now().Sub(t), p.spyInterval)
 			}
-			metrics.MeasureSinceWithLabels([]string{"duration", "seconds"}, t, []metrics.Label{
-				{Name: "operation", Value: "reporter"},
-				{Name: "module", Value: rep.Name()},
-			})
 			if err != nil {
 				log.Error().Msgf("Error generating %s report: %v", rep.Name(), err)
 				newReport = report.MakeReport() // empty is OK to merge
 			}
-			reports <- newReport
+			p.reportersReports[i] = newReport
+			p.readyIndxes <- i
 		}(rep)
 	}
 
-	result := report.MakeReport()
 	result.TS = time.Now()
-	for i := 0; i < cap(reports); i++ {
-		result.UnsafeMerge(<-reports)
+	for i := 0; i < cap(p.readyIndxes); i++ {
+		index := <-p.readyIndxes
+		result.UnsafeMerge(p.reportersReports[index])
+		p.reportersReports[index].Clear()
 	}
 	return result
 }
@@ -195,36 +269,9 @@ func (p *Probe) tag(r report.Report) report.Report {
 		if !timer.Stop() {
 			log.Warn().Msgf("%v tagger took %v (longer than %v)", tagger.Name(), time.Now().Sub(t), p.spyInterval)
 		}
-		metrics.MeasureSinceWithLabels([]string{"duration", "seconds"}, t, []metrics.Label{
-			{Name: "operation", Value: "tagger"},
-			{Name: "module", Value: tagger.Name()},
-		})
 		if err != nil {
 			log.Error().Msgf("Error applying tagger: %v", err)
 		}
 	}
 	return r
-}
-
-func (p *Probe) drainAndSanitise(rpt report.Report, rs chan report.Report) (report.Report, int) {
-	p.rateLimiter.Wait(context.Background())
-	rpt = rpt.Copy()
-	count := 0
-ForLoop:
-	for {
-		select {
-		case r := <-rs:
-			rpt.UnsafeMerge(r)
-			count++
-		default:
-			break ForLoop
-		}
-	}
-
-	if p.noControls {
-		//rpt.WalkTopologies(func(t *report.Topology) {
-		//	t.Controls = report.Controls{}
-		//})
-	}
-	return rpt, count
 }

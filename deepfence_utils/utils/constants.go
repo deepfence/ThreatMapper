@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"time"
+)
+
 const (
 	Project           = "ThreatMapper"
 	ErrorUserNotFound = "user not found"
@@ -43,7 +47,7 @@ const (
 	ReportGeneratorTask               = "tasks_generate_report"
 	ComputeThreatTask                 = "compute_threat"
 	SendNotificationTask              = "tasks_send_notification"
-	CloudComplianceTask               = "cloud_compliance"
+	CloudComplianceControlsTask       = "cloud_compliance_controls"
 	CachePostureProviders             = "cache_posture_providers"
 	ReportCleanUpTask                 = "tasks_cleanup_reports"
 	LinkCloudResourceTask             = "link_cloud_resource"
@@ -57,6 +61,18 @@ const (
 	AutoFetchGenerativeAIIntegrations = "auto_fetch_generative_ai_integrations"
 	AsynqDeleteAllArchivedTasks       = "asynq_delete_all_archived_tasks"
 	RedisRewriteAOF                   = "redis_rewrite_aof"
+	DeleteCloudAccounts               = "delete_cloud_accounts"
+
+	UpdateLicenseTask      = "update_license"
+	ReportLicenseUsageTask = "report_license_usage"
+
+	ThreatIntelUpdateTask = "threat_intel_update"
+)
+
+const (
+	ReportRetentionTime     = 24 * time.Hour
+	ReportGenerationTimeout = 30 * time.Minute
+	ReportRecordsMax        = 100000
 )
 
 const (
@@ -67,6 +83,11 @@ const (
 	ScanStatusCancelPending = "CANCEL_PENDING"
 	ScanStatusCancelling    = "CANCELLING"
 	ScanStatusCancelled     = "CANCELLED"
+	ScanStatusDeletePending = "DELETE_PENDING"
+)
+
+const (
+	ScanRetryFailedStatusMessage = "scan failed to complete, please check agent logs"
 )
 
 // Neo4j Node Labels
@@ -201,7 +222,7 @@ var Tasks = []string{
 	ReportGeneratorTask,
 	ComputeThreatTask,
 	SendNotificationTask,
-	CloudComplianceTask,
+	CloudComplianceControlsTask,
 	CachePostureProviders,
 	ReportCleanUpTask,
 	LinkCloudResourceTask,
@@ -211,6 +232,11 @@ var Tasks = []string{
 	StopVulnerabilityScanTask,
 	UpdateCloudResourceScanStatusTask,
 	UpdatePodScanStatusTask,
+
+	UpdateLicenseTask,
+	ReportLicenseUsageTask,
+
+	ThreatIntelUpdateTask,
 }
 
 type ReportType string
@@ -218,6 +244,7 @@ type ReportType string
 const (
 	ReportXLSX ReportType = "xlsx"
 	ReportPDF  ReportType = "pdf"
+	ReportSBOM ReportType = "sbom"
 )
 
 // mask_global : This is to mask gobally. (same as previous mask_across_hosts_and_images flag)
@@ -229,4 +256,13 @@ const (
 	MaskAllImageTag = "mask_all_image_tag"
 	MaskEntity      = "mask_entity"
 	MaskImageTag    = "mask_image_tag"
+)
+
+const (
+	FileServerURLSettingLabel       = "Console File Server URL"
+	FileServerURLSettingDescription = "Serve threat intel feeds to agents. If agents are connected using a different URL than Console URL, please change this"
+)
+
+const (
+	FileServerPathAgentBinary = "agent-binary"
 )

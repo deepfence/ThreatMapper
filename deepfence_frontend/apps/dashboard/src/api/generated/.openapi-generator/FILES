@@ -79,7 +79,9 @@ models/ModelAgentPluginDisable.ts
 models/ModelAgentPluginEnable.ts
 models/ModelAgentUpgrade.ts
 models/ModelBasicNode.ts
+models/ModelBulkDeleteReportReq.ts
 models/ModelBulkDeleteScansRequest.ts
+models/ModelCloudAccountDeleteReq.ts
 models/ModelCloudAccountRefreshReq.ts
 models/ModelCloudCompliance.ts
 models/ModelCloudComplianceBenchmark.ts
@@ -107,6 +109,7 @@ models/ModelComplianceScanTriggerReq.ts
 models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
+models/ModelDeleteIntegrationReq.ts
 models/ModelDeleteRegistryBulkReq.ts
 models/ModelDownloadReportResponse.ts
 models/ModelDownloadScanResultsResponse.ts
@@ -116,6 +119,8 @@ models/ModelExportReport.ts
 models/ModelFetchWindow.ts
 models/ModelFiltersReq.ts
 models/ModelFiltersResult.ts
+models/ModelGenerateLicenseRequest.ts
+models/ModelGenerateLicenseResponse.ts
 models/ModelGenerateReportReq.ts
 models/ModelGenerateReportResp.ts
 models/ModelGenerativeAiIntegrationCloudPostureRequest.ts
@@ -125,6 +130,7 @@ models/ModelGenerativeAiIntegrationListResponse.ts
 models/ModelGenerativeAiIntegrationMalwareRequest.ts
 models/ModelGenerativeAiIntegrationSecretRequest.ts
 models/ModelGenerativeAiIntegrationVulnerabilityRequest.ts
+models/ModelGetAgentBinaryDownloadURLResponse.ts
 models/ModelGetAuditLogsRequest.ts
 models/ModelGraphResult.ts
 models/ModelHost.ts
@@ -137,6 +143,7 @@ models/ModelIntegrationUpdateReq.ts
 models/ModelInviteUserRequest.ts
 models/ModelInviteUserResponse.ts
 models/ModelKubernetesCluster.ts
+models/ModelLicense.ts
 models/ModelListAgentVersionResp.ts
 models/ModelLoginRequest.ts
 models/ModelLoginResponse.ts
@@ -155,9 +162,12 @@ models/ModelPod.ts
 models/ModelPostureProvider.ts
 models/ModelProcess.ts
 models/ModelRegisterInvitedUserRequest.ts
+models/ModelRegisterLicenseRequest.ts
+models/ModelRegisterLicenseResponse.ts
 models/ModelRegistryAccount.ts
 models/ModelRegistryAddReq.ts
 models/ModelRegistryCountResp.ts
+models/ModelRegistryCredentials.ts
 models/ModelRegistryImageStubsReq.ts
 models/ModelRegistryImagesReq.ts
 models/ModelRegistryListResp.ts
@@ -226,6 +236,7 @@ models/SearchSearchNodeReq.ts
 models/SearchSearchScanReq.ts
 models/UtilsAdvancedReportFilters.ts
 models/UtilsReportFilters.ts
+models/UtilsReportOptions.ts
 models/UtilsScanSbomRequest.ts
 models/index.ts
 runtime.ts

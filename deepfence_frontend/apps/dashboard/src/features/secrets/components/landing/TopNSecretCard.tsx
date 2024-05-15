@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { truncate } from 'lodash-es';
 import { Suspense } from 'react';
-import { preset } from 'tailwind-preset';
+import { colors, preset } from 'tailwind-preset';
 import { Card, CircleSpinner } from 'ui-components';
 
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
@@ -9,9 +9,11 @@ import { ContainerIcon } from '@/components/icons/container';
 import { HostIcon } from '@/components/icons/host';
 import { ImageIcon } from '@/components/icons/image';
 import { ReactECharts, ReactEChartsProps } from '@/components/ReactEcharts';
-import { SEVERITY_COLORS } from '@/constants/charts';
+import { getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/secrets/components/landing/CardHeader';
 import { queries } from '@/queries';
+import { Mode, useTheme } from '@/theme/ThemeContext';
+import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export interface TopNSecretChartData {
@@ -23,7 +25,9 @@ export interface TopNSecretChartData {
   unknown: number;
 }
 
-function getChartOptions({ data }: { data: TopNSecretChartData[] }) {
+function getChartOptions({ data, theme }: { data: TopNSecretChartData[]; theme: Mode }) {
+  const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
+
   return {
     backgroundColor: 'transparent',
     title: {
@@ -69,9 +73,9 @@ function getChartOptions({ data }: { data: TopNSecretChartData[] }) {
       confine: true,
       borderWidth: 0,
       borderRadius: 5,
-      backgroundColor: '#000',
+      backgroundColor: color['bg-page'],
       textStyle: {
-        color: preset.theme.extend.colors.text['input-value'],
+        color: color['text-text-and-icon'],
         fontSize: '13px',
       },
     },
@@ -89,12 +93,18 @@ function getChartOptions({ data }: { data: TopNSecretChartData[] }) {
       type: 'value',
       splitLine: {
         lineStyle: {
-          color: preset.theme.extend.colors['df-gray'][900],
+          opacity: 0.6,
+          color: color['chart-splitline'],
         },
       },
       axisLabel: {
+        fontSize: 10,
         fontWeight: 600,
-        color: preset.theme.extend.colors['df-gray']['600'],
+        lineHeight: 13,
+        color: color['chart-axislabel'],
+        formatter: (value) => {
+          return abbreviateNumber(value);
+        },
       },
     },
     yAxis: {
@@ -103,8 +113,9 @@ function getChartOptions({ data }: { data: TopNSecretChartData[] }) {
         formatter: (value: string) => {
           return truncate(value, { length: 20 });
         },
-        fontSize: '12px',
-        color: preset.theme.extend.colors.text['text-and-icon'],
+        fontSize: '13px',
+        lineHeight: 18,
+        color: color['text-text-and-icon'],
       },
       axisLine: {
         show: false,
@@ -117,35 +128,35 @@ function getChartOptions({ data }: { data: TopNSecretChartData[] }) {
       {
         type: 'bar',
         stack: 'total',
-        color: SEVERITY_COLORS['critical'],
+        color: getSeverityColorMap(theme)['critical'],
         cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: SEVERITY_COLORS['high'],
+        color: getSeverityColorMap(theme)['high'],
         cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: SEVERITY_COLORS['medium'],
+        color: getSeverityColorMap(theme)['medium'],
         cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: SEVERITY_COLORS['low'],
+        color: getSeverityColorMap(theme)['low'],
         cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: SEVERITY_COLORS['unknown'],
+        color: getSeverityColorMap(theme)['unknown'],
         cursor: 'pointer',
         barMaxWidth: 20,
       },
@@ -195,10 +206,11 @@ const TopNCardContent = ({ type }: { type: 'host' | 'container' | 'image' }) => 
   const { data } = useSuspenseQuery({
     ...queries.secret.top5SecretAssets({ nodeType: type }),
   });
-  const chartOptions = getChartOptions({ data: data });
+  const { mode } = useTheme();
+  const chartOptions = getChartOptions({ data: data, theme: mode });
   const { navigate } = usePageNavigation();
   return (
-    <div className="pb-3 pt-5 px-5 h-[300px] flex items-center justify-center">
+    <div className="pb-2 h-[300px] flex items-center justify-center">
       {data.length ? (
         <ReactECharts
           theme="dark"
@@ -224,7 +236,7 @@ const TopNCardContent = ({ type }: { type: 'host' | 'container' | 'image' }) => 
           }}
         />
       ) : (
-        <div className="flex items-center justify-center gap-2 dark:text-text-text-and-icon">
+        <div className="flex items-center justify-center gap-2 text-text-text-and-icon">
           <div className="h-6 w-6 shrink-0">
             <ErrorStandardLineIcon />
           </div>

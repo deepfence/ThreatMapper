@@ -27,6 +27,7 @@ import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableNamespaceList } from '@/components/forms/SearchableNamespaceList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -35,6 +36,7 @@ import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { queries } from '@/queries';
 import {
@@ -201,13 +203,30 @@ const BulkActions = ({ nodeIds }: { nodeIds: string[] }) => {
   );
 };
 
-const FILTER_SEARCHPARAMS: Record<string, string> = {
+enum FILTER_SEARCHPARAMS_KEYS_ENUM {
+  vulnerabilityScanStatus = 'vulnerabilityScanStatus',
+  secretScanStatus = 'secretScanStatus',
+  malwareScanStatus = 'malwareScanStatus',
+  hosts = 'hosts',
+  clusters = 'clusters',
+  containers = 'containers',
+  namespaces = 'namespaces',
+}
+
+const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
+  FILTER_SEARCHPARAMS_KEYS_ENUM.hosts,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.clusters,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.containers,
+];
+
+const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   vulnerabilityScanStatus: 'Vulnerability scan status',
   secretScanStatus: 'Secret scan status',
   malwareScanStatus: 'Malware scan status',
   hosts: 'Host',
   clusters: 'Cluster',
   containers: 'Container',
+  namespaces: 'Namespace',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -224,8 +243,22 @@ function Filters() {
   const [malwareScanStatusSearchText, setMalwareScanStatusSearchText] = useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
+  const onFilterRemove = ({ key, value }: { key: string; value: string }) => {
+    return () => {
+      setSearchParams((prev) => {
+        const existingValues = prev.getAll(key);
+        prev.delete(key);
+        existingValues.forEach((existingValue) => {
+          if (existingValue !== value) prev.append(key, existingValue);
+        });
+        prev.delete('page');
+        return prev;
+      });
+    };
+  };
+
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <SearchableContainerList
           scanType={'none'}
@@ -392,32 +425,64 @@ function Filters() {
             });
           }}
         />
+        <SearchableNamespaceList
+          nodeType="container"
+          defaultSelectedNamespaces={searchParams.getAll('namespaces')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('namespaces');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('namespaces');
+              value.forEach((pod) => {
+                prev.append('namespaces', pod);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
-          {Array.from(searchParams)
-            .filter(([key]) => {
+          {(
+            Array.from(searchParams).filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
-            })
-            .map(([key, value]) => {
+            }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
+          ).map(([key, value]) => {
+            if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
               return (
                 <FilterBadge
                   key={`${key}-${value}`}
-                  onRemove={() => {
-                    setSearchParams((prev) => {
-                      const existingValues = prev.getAll(key);
-                      prev.delete(key);
-                      existingValues.forEach((existingValue) => {
-                        if (existingValue !== value) prev.append(key, existingValue);
-                      });
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }}
-                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                  nodeType={(() => {
+                    if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.hosts) {
+                      return 'host';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.clusters) {
+                      return 'cluster';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.containers) {
+                      return 'container';
+                    }
+                    throw new Error('unknown key');
+                  })()}
+                  onRemove={onFilterRemove({ key, value })}
+                  id={value}
+                  label={FILTER_SEARCHPARAMS[key]}
                 />
               );
-            })}
+            }
+            return (
+              <FilterBadge
+                key={`${key}-${value}`}
+                onRemove={onFilterRemove({ key, value })}
+                text={value}
+                label={FILTER_SEARCHPARAMS[key]}
+              />
+            );
+          })}
           <Button
             variant="flat"
             color="default"
@@ -437,7 +502,7 @@ function Filters() {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 }
 
@@ -460,6 +525,7 @@ function useSearchContainersWithPagination() {
       order: getOrderFromSearchParams(searchParams),
       clusterIds: searchParams.getAll('clusters'),
       containers: searchParams.getAll('containers'),
+      kubernetesNamespace: searchParams.getAll('namespaces'),
     }),
     keepPreviousData: true,
   });
@@ -531,7 +597,7 @@ const DataTable = ({
           }
           return '-';
         },
-        header: () => <TruncatedText text={'Created On'} />,
+        header: () => <TruncatedText text={'Created on'} />,
         minSize: 100,
         size: 105,
         maxSize: 110,

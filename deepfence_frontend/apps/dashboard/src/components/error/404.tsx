@@ -411,8 +411,8 @@ const PageNotFoundComponent = () => {
         404
       </h1>
       <div className="mt-6 flex flex-col gap-y-14 items-center">
-        <h4 className="sm:text-base 2xl:text-xl font-semibold text-text-text-and-icon dark:text-text-text-and-icon flex flex-col text-center">
-          Page not found.
+        <h4 className="sm:text-base 2xl:text-xl font-semibold text-text-text-and-icon flex flex-col text-center">
+          The page/resource you are looking for does not exist or it has been deleted.
         </h4>
         <div className="sm:w-[375px] 2xl:w-[455px]">
           <SVG404 />
@@ -434,8 +434,13 @@ export const FourZeroFourPublic = () => {
   console.error(error);
 
   return (
-    <div className="fixed inset-0 dark:bg-bg-page py-20">
+    <div className="fixed inset-0 bg-bg-page py-20">
       <PageNotFoundComponent />
     </div>
   );
 };
+
+export class DF404Error extends Error {
+  public readonly status = 404;
+  public readonly message = 'Resource not found';
+}

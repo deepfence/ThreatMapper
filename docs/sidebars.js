@@ -55,6 +55,7 @@ const sidebars = {
           },
           items: [
             'console/requirements',
+            'console/upgrade-from-v2.1',
             'console/docker',
             'console/kubernetes',
             'console/managed-database',
@@ -153,6 +154,7 @@ const sidebars = {
         'integrations/jira',
         'integrations/s3',
         'integrations/reports',
+        'integrations/splunk',
       ],
     },
 

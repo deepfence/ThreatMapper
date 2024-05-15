@@ -83,7 +83,7 @@ func NewSQLConnection(ctx context.Context) (*sql.DB, error) {
 	return db, nil
 }
 
-func GetManagementConsoleURL(ctx context.Context) (string, error) {
+func GetFileServerURL(ctx context.Context) (string, error) {
 	pgClient, err := PostgresClient(ctx)
 	if err != nil {
 		return "", err
@@ -100,8 +100,8 @@ func GetManagementConsoleURL(ctx context.Context) (string, error) {
 	return fmt.Sprintf("%v", settingVal.Value), nil
 }
 
-func GetManagementHost(ctx context.Context) (string, error) {
-	url, err := GetManagementConsoleURL(ctx)
+func GetFileServerHost(ctx context.Context) (string, error) {
+	url, err := GetFileServerURL(ctx)
 	if err != nil {
 		return "", err
 	}

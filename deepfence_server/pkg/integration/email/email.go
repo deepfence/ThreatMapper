@@ -14,6 +14,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/sendemail"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 )
 
 // BatchSize todo: add support for batch size
@@ -87,6 +88,10 @@ func (e Email) FormatMessage(message []map[string]interface{}) string {
 }
 
 func (e Email) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "email-send-notification")
+	defer span.End()
+
 	// formatting : unmarshal into payload
 	var msg []map[string]interface{}
 
@@ -125,4 +130,9 @@ func (e Email) IsEmailConfigured(ctx context.Context) bool {
 	}
 
 	return true
+}
+
+// In case of email basic validation and regex check should be enough
+func (e Email) IsValidCredential(ctx context.Context) (bool, error) {
+	return true, nil
 }

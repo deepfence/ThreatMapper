@@ -11,6 +11,7 @@ import (
 	"time"
 
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -19,26 +20,35 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 )
 
 const NOTIFICATION_INTERVAL = 60000 //in milliseconds
 
-var fieldsMap = map[string]map[string]string{utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
-	"cve_severity":          "Severity",
-	"cve_id":                "CVE Id",
-	"cve_description":       "Description",
-	"cve_attack_vector":     "Attack Vector",
-	"cve_container_layer":   "Container Layer",
-	"cve_overall_score":     "CVE Overall Score",
-	"cve_type":              "CVE Type",
-	"cve_link":              "CVE Link",
-	"cve_fixed_in":          "CVE Fixed In",
-	"cve_cvss_score":        "CVSS Score",
-	"cve_caused_by_package": "CVE Caused By Package",
-	"node_id":               "Node ID",
-	"updated_at":            "updated_at"},
+var (
+	NotificationRecordsCounts = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "notification_records_total",
+		Help: "Total number of records sent by notification types",
+	}, []string{"resource", "type", "status", "namespace"})
+)
+
+var fieldsMap = map[string]map[string]string{
+	utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
+		"cve_severity":          "Severity",
+		"cve_id":                "CVE Id",
+		"cve_description":       "Description",
+		"cve_attack_vector":     "Attack Vector",
+		"cve_container_layer":   "Container Layer",
+		"cve_overall_score":     "CVE Overall Score",
+		"cve_type":              "CVE Type",
+		"cve_link":              "CVE Link",
+		"cve_fixed_in":          "CVE Fixed In",
+		"cve_cvss_score":        "CVSS Score",
+		"cve_caused_by_package": "CVE Caused By Package",
+		"node_id":               "Node ID",
+		"updated_at":            "updated_at"},
 	utils.ScanTypeDetectedNode[utils.NEO4JSecretScan]: {
 		"node_id":            "Node ID",
 		"full_filename":      "File Name",
@@ -121,28 +131,27 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	// notificationLock.Lock()
 	// defer notificationLock.Unlock()
 
-	namespace, _ := directory.ExtractNamespace(ctx)
-	ns := string(namespace)
+	log := log.WithCtx(ctx)
 
 	start := time.Now()
-	log.Info().Str("namespace", ns).Msgf("SendNotifications task for timestamp %s starting", string(task.Payload()))
-	defer log.Info().Str("namespace", ns).Msgf("SendNotifications task for timestamp %s ended elapsed: %s",
+	log.Info().Msgf("SendNotifications task for timestamp %s starting", string(task.Payload()))
+	defer log.Info().Msgf("SendNotifications task for timestamp %s ended elapsed: %s",
 		string(task.Payload()), time.Now().Sub(start))
 
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
-		log.Error().Str("namespace", ns).Msgf("Error getting postgresCtx: %v", err)
+		log.Error().Msgf("Error getting postgresCtx: %v", err)
 		return nil
 	}
 	integrations, err := pgClient.GetIntegrations(ctx)
 	if err != nil {
-		log.Error().Str("namespace", ns).Msgf("Error getting postgresCtx: %v", err)
+		log.Error().Msgf("Error getting postgresCtx: %v", err)
 		return nil
 	}
 
 	// check if any integrations are configured
 	if len(integrations) <= 0 {
-		log.Warn().Str("namespace", ns).Msg("No integrations configured to notify")
+		log.Warn().Msg("No integrations configured to notify")
 		return nil
 	}
 
@@ -152,7 +161,7 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	for _, integrationRow := range integrations {
 		if integrationRow.ErrorMsg.String != "" &&
 			time.Since(integrationRow.LastSentTime.Time) < NotificationErrorBackoff {
-			log.Info().Str("namespace", ns).Msgf("Skipping integration for %s rowId: %d due to error: %s "+
+			log.Info().Msgf("Skipping integration for %s rowId: %d due to error: %s "+
 				"occured at last attempt, %s ago",
 				integrationRow.IntegrationType, integrationRow.ID,
 				integrationRow.ErrorMsg.String, time.Since(integrationRow.LastSentTime.Time))
@@ -162,12 +171,12 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 
 		go func(integration postgresql_db.Integration) {
 			defer wg.Done()
-			log.Info().Str("namespace", ns).Msgf("Processing integration for %s rowId: %d",
+			log.Info().Msgf("Processing integration for %s rowId: %d",
 				integration.IntegrationType, integration.ID)
 
 			err := processIntegrationRow(integration, ctx, task)
 
-			log.Info().Str("namespace", ns).Msgf("Processed integration for %s rowId: %d",
+			log.Info().Msgf("Processed integration for %s rowId: %d",
 				integration.IntegrationType, integration.ID)
 
 			update_row := err != nil || (err == nil && integration.ErrorMsg.Valid)
@@ -276,6 +285,12 @@ func injectNodeDatamap(results []map[string]interface{}, common model.ScanResult
 }
 
 func processIntegration[T any](ctx context.Context, task *asynq.Task, integrationRow postgresql_db.Integration) error {
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "process-integration")
+	defer span.End()
+
 	startTime := time.Now()
 	var filters model.IntegrationFilters
 	err := json.Unmarshal(integrationRow.Filters, &filters)
@@ -307,22 +322,64 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		FieldsValues: map[string][]interface{}{"status": {utils.ScanStatusSuccess}},
 	}
 
-	profileStart := time.Now()
-	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource],
-		filters.NodeIds, filters.FieldsFilters, model.FetchWindow{})
-	if err != nil {
-		return err
+	scansList := []model.ScanInfo{}
+	scanType, ok := utils.DetectedNodeScanType[integrationRow.Resource]
+	if !ok {
+		log.Error().Msgf("Unsupported scan type in integration: %v", integrationRow)
+		return errors.New("Unsupported scan type in integration")
 	}
-	neo4j_query_1 := time.Since(profileStart).Milliseconds()
+
+	reqNC, reqC := integrationFilters2SearchScanReqs(filters)
+	profileStart := time.Now()
+	if reqNC != nil {
+		scansInfo, err := reporters_search.SearchScansReport(ctx, *reqNC, scanType)
+		if err != nil {
+			log.Error().Msgf("Failed to get scans for non-container type, error: %v", err)
+			return err
+		} else if len(scansInfo) > 0 {
+			scansList = append(scansList, scansInfo...)
+		}
+	}
+	neo4j_query_nc := time.Since(profileStart).Milliseconds()
+
+	profileStart = time.Now()
+	if reqC != nil {
+		containerScanInfo, err := reporters_search.SearchScansReport(ctx, *reqC, scanType)
+		if err != nil {
+			log.Error().Msgf("Failed to get scans for container type, error: %v", err)
+			return err
+		} else if len(containerScanInfo) > 0 {
+			scansList = append(scansList, containerScanInfo...)
+		}
+	}
+	neo4j_query_c := time.Since(profileStart).Milliseconds()
+
+	neo4j_query_default := int64(0)
+	if reqNC == nil && reqC == nil {
+		profileStart = time.Now()
+		reqDefault := reporters_search.SearchScanReq{}
+		reqDefault.ScanFilter = reporters_search.SearchFilter{
+			Filters: filters.FieldsFilters,
+		}
+		reqDefault.Window = model.FetchWindow{}
+		defaultScanInfo, err := reporters_search.SearchScansReport(ctx, reqDefault, scanType)
+		if err != nil {
+			log.Error().Msgf("Failed to get default scans, error: %v", err)
+			return err
+		} else if len(defaultScanInfo) > 0 {
+			scansList = append(scansList, defaultScanInfo...)
+		}
+		neo4j_query_default = time.Since(profileStart).Milliseconds()
+	}
 
 	// nothing to notify
-	if len(list.ScansInfo) == 0 {
+	if len(scansList) == 0 {
 		log.Info().Msgf("No %s scans to notify at timestamp (%d,%d)",
 			integrationRow.Resource, last30sTimeStamp, ts)
 		return nil
 	}
 
-	log.Info().Msgf("list of %s scans to notify: %+v", integrationRow.Resource, list)
+	log.Info().Msgf("list of %s scans to notify: %+v", integrationRow.Resource, scansList)
 
 	filters = model.IntegrationFilters{}
 	err = json.Unmarshal(integrationRow.Filters, &filters)
@@ -334,7 +391,15 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 	totalQueryTime := int64(0)
 	totalSendTime := int64(0)
 
-	for _, scan := range list.ScansInfo {
+	scanIDMap := make(map[string]bool)
+	for _, scan := range scansList {
+		//This map is required as we might have duplicates in the scansList
+		//for the containers
+		if _, ok := scanIDMap[scan.ScanID]; ok {
+			continue
+		}
+		scanIDMap[scan.ScanID] = true
+
 		profileStart = time.Now()
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
 			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanID,
@@ -381,15 +446,35 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
 		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
 		if err != nil {
+			NotificationRecordsCounts.WithLabelValues(
+				integrationRow.Resource,
+				integrationRow.IntegrationType,
+				"error",
+				func() string {
+					ns, _ := directory.ExtractNamespace(ctx)
+					return string(ns)
+				}(),
+			).Add(float64(len(updatedResults)))
 			return err
 		}
+		NotificationRecordsCounts.WithLabelValues(
+			integrationRow.Resource,
+			integrationRow.IntegrationType,
+			"success",
+			func() string {
+				ns, _ := directory.ExtractNamespace(ctx)
+				return string(ns)
+			}(),
+		).Add(float64(len(updatedResults)))
 		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken:%d",
 			integrationRow.Resource, len(results), integrationRow.IntegrationType,
 			integrationRow.ID, time.Since(profileStart).Milliseconds())
 	}
 	log.Info().Msgf("%s Total Time taken for integration %s: %d", integrationRow.Resource,
 		integrationRow.IntegrationType, time.Since(startTime).Milliseconds())
-	log.Debug().Msgf("Time taken for neo4j_query_1: %d", neo4j_query_1)
+	log.Debug().Msgf("Time taken for neo4j_query_nc: %d", neo4j_query_nc)
+	log.Debug().Msgf("Time taken for neo4j_query_c: %d", neo4j_query_c)
+	log.Debug().Msgf("Time taken for neo4j_query_default: %d", neo4j_query_default)
 	log.Debug().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
 	log.Debug().Msgf("Time taken for sending data : %d", totalSendTime)
 	return nil
@@ -410,4 +495,61 @@ func FormatForMessagingApps[T any](results []T, resourceType string) []map[strin
 		data = append(data, d)
 	}
 	return data
+}
+
+func integrationFilters2SearchScanReqs(filters model.IntegrationFilters) (*reporters_search.SearchScanReq,
+	*reporters_search.SearchScanReq) {
+
+	scanFilter := reporters_search.SearchFilter{
+		Filters: filters.FieldsFilters,
+	}
+
+	filterMap := make(map[string][]interface{})
+	containerFilterMap := make(map[string][]interface{})
+
+	containerNames := make([]interface{}, len(filters.ContainerNames))
+	for i, v := range filters.ContainerNames {
+		containerNames[i] = v
+	}
+
+	var nodeIDs, nodeTypes []interface{}
+	nodeTypeSet := make(map[string]bool)
+	for _, v := range filters.NodeIds {
+		nodeIDs = append(nodeIDs, v.NodeID)
+		if _, ok := nodeTypeSet[v.NodeType]; !ok {
+			nodeTypeSet[v.NodeType] = true
+			nodeTypes = append(nodeTypes, v.NodeType)
+			if v.NodeType == "image" {
+				nodeTypeSet["container_image"] = true
+				nodeTypes = append(nodeTypes, "container_image")
+			}
+		}
+	}
+
+	if len(nodeIDs) > 0 {
+		filterMap["node_id"] = nodeIDs
+		filterMap["node_type"] = nodeTypes
+	}
+
+	if len(containerNames) > 0 {
+		containerFilterMap["node_name"] = containerNames
+		containerFilterMap["node_type"] = []interface{}{"container"}
+	}
+
+	var reqNC, reqC *reporters_search.SearchScanReq
+	if len(filterMap) > 0 {
+		reqNC = &reporters_search.SearchScanReq{}
+		reqNC.NodeFilter.Filters.ContainsFilter.FieldsValues = filterMap
+		reqNC.ScanFilter = scanFilter
+		reqNC.Window = model.FetchWindow{}
+	}
+
+	if len(containerFilterMap) > 0 {
+		reqC = &reporters_search.SearchScanReq{}
+		reqC.NodeFilter.Filters.ContainsFilter.FieldsValues = containerFilterMap
+		reqC.ScanFilter = scanFilter
+		reqC.Window = model.FetchWindow{}
+	}
+
+	return reqNC, reqC
 }

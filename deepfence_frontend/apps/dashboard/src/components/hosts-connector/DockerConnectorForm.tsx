@@ -52,11 +52,11 @@ const Command = () => {
   -e MGMT_CONSOLE_URL="${window.location.host ?? '---CONSOLE-IP---'}" \\
   -e MGMT_CONSOLE_PORT="443" \\
   -e DEEPFENCE_KEY="${dfApiKey}" \\
-  deepfenceio/deepfence_agent_ce:${version}`;
+  quay.io/deepfenceio/deepfence_agent_ce:${version}`;
 
   return (
     <>
-      <pre className="h-fit text-p7 dark:text-text-text-and-icon">{code}</pre>
+      <pre className="h-fit text-p7a text-text-text-and-icon">{code}</pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
         <IconButton
@@ -101,53 +101,55 @@ const Skeleton = () => {
 
 export const DockerConnectorForm = () => {
   return (
-    <Stepper>
-      <Step
-        indicator={
-          <StepIndicator className="rounded-full">
-            <div className="w-6 h-6 flex items-center justify-center">
-              <span className="w-4 h-4">
-                <InfoIcon />
-              </span>
-            </div>
-            <StepLine />
-          </StepIndicator>
-        }
-        title="Connect Docker Container"
-      >
-        <div className="text-p7 dark:text-text-text-and-icon">
-          Deploy Deepfence agent sensor as a docker container. Find out more information
-          by{' '}
-          <DFLink
-            href={`https://community.deepfence.io/threatmapper/docs/v2.1/sensors/docker`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-2"
-          >
-            reading our documentation
-          </DFLink>
-          .
-        </div>
-      </Step>
-      <Step
-        indicator={
-          <StepIndicator className="rounded-full">
-            <span className="w-6 h-6 flex items-center justify-center">1</span>
-          </StepIndicator>
-        }
-        title="Deploy"
-      >
-        <div className="text-p7 dark:text-text-text-and-icon">
-          <p className="mb-2.5">
-            Copy the following commands and paste them into your shell.
-          </p>
-          <Card className="w-full relative flex p-4">
-            <Suspense fallback={<Skeleton />}>
-              <Command />
-            </Suspense>
-          </Card>
-        </div>
-      </Step>
-    </Stepper>
+    <div className="mt-4">
+      <Stepper>
+        <Step
+          indicator={
+            <StepIndicator className="rounded-full">
+              <div className="w-6 h-6 flex items-center justify-center">
+                <span className="w-4 h-4">
+                  <InfoIcon />
+                </span>
+              </div>
+              <StepLine />
+            </StepIndicator>
+          }
+          title="Connect Docker Container"
+        >
+          <div className="text-p7a text-text-text-and-icon">
+            Deploy Deepfence agent sensor as a docker container. Find out more information
+            by{' '}
+            <DFLink
+              href={`https://community.deepfence.io/threatmapper/docs/v2.2/sensors/docker`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2"
+            >
+              reading our documentation
+            </DFLink>
+            .
+          </div>
+        </Step>
+        <Step
+          indicator={
+            <StepIndicator className="rounded-full">
+              <span className="w-6 h-6 flex items-center justify-center">1</span>
+            </StepIndicator>
+          }
+          title="Deploy"
+        >
+          <div className="text-p7a text-text-text-and-icon">
+            <p className="mb-2.5">
+              Copy the following commands and paste them into your shell.
+            </p>
+            <Card className="w-full relative flex p-4">
+              <Suspense fallback={<Skeleton />}>
+                <Command />
+              </Suspense>
+            </Card>
+          </div>
+        </Step>
+      </Stepper>
+    </div>
   );
 };

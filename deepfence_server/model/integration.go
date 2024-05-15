@@ -10,26 +10,36 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 )
 
 type IntegrationIDPathReq struct {
 	IntegrationID string `path:"integration_id" validate:"required" required:"true"`
 }
 
+type DeleteIntegrationReq struct {
+	IntegrationIDs []int32 `json:"integration_ids" required:"true"`
+}
+
 // IntegrationAddReq is the request body for adding a new integration
 type IntegrationAddReq struct {
 	Config           map[string]interface{} `json:"config"`
-	IntegrationType  string                 `json:"integration_type"`
-	NotificationType string                 `json:"notification_type"`
+	IntegrationType  string                 `json:"integration_type" required:"true"`
+	NotificationType string                 `json:"notification_type" required:"true"`
 	Filters          IntegrationFilters     `json:"filters"`
 }
 
 type IntegrationFilters struct {
-	FieldsFilters reporters.FieldsFilters `json:"fields_filters"`
-	NodeIds       []NodeIdentifier        `json:"node_ids" required:"true"`
+	FieldsFilters  reporters.FieldsFilters `json:"fields_filters"`
+	NodeIds        []NodeIdentifier        `json:"node_ids" required:"true"`
+	ContainerNames []string                `json:"container_names" required:"false"`
 }
 
 func (i *IntegrationAddReq) IntegrationExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "integration-exists")
+	defer span.End()
+
 	integrations, err := pgClient.GetIntegrationsFromType(ctx, i.IntegrationType)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -57,6 +67,9 @@ func (i *IntegrationAddReq) IntegrationExists(ctx context.Context, pgClient *pos
 }
 
 func (i *IntegrationAddReq) CreateIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, userID int64) error {
+	ctx, span := telemetry.NewSpan(ctx, "model", "create-integration")
+	defer span.End()
+
 	bConfig, err := json.Marshal(i.Config)
 	if err != nil {
 		return err
@@ -93,6 +106,10 @@ type IntegrationListResp struct {
 }
 
 func (i *IntegrationListReq) GetIntegrations(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.Integration, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "get-integrations")
+	defer span.End()
+
 	var integrations []postgresqlDb.Integration
 
 	if len(i.IntegrationTypes) == 0 {
@@ -128,8 +145,8 @@ func redactLastHalfString(s string) string {
 	return s[:len(s)/2] + "****"
 }
 
-func DeleteIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integrationID int32) error {
-	err := pgClient.DeleteIntegration(ctx, integrationID)
+func DeleteIntegrations(ctx context.Context, pgClient *postgresqlDb.Queries, integrationIDs []int32) error {
+	err := pgClient.DeleteIntegrations(ctx, integrationIDs)
 	return err
 }
 
@@ -143,6 +160,10 @@ type IntegrationUpdateReq struct {
 }
 
 func (i *IntegrationUpdateReq) UpdateIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integration postgresqlDb.Integration) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "update-integration")
+	defer span.End()
+
 	bConfig, err := json.Marshal(i.Config)
 	if err != nil {
 		return err
@@ -172,6 +193,10 @@ func (i *IntegrationUpdateReq) UpdateIntegration(ctx context.Context, pgClient *
 }
 
 func GetIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integrationID int32) (postgresqlDb.Integration, bool, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "model", "get-integration")
+	defer span.End()
+
 	integration, err := pgClient.GetIntegrationFromID(ctx, integrationID)
 	if err != nil {
 		if err == sql.ErrNoRows {

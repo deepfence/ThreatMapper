@@ -20,7 +20,10 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/rs/zerolog/log"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 var (
@@ -34,6 +37,10 @@ type EmailSender interface {
 }
 
 func NewEmailSender(ctx context.Context) (EmailSender, error) {
+
+	_, span := telemetry.NewSpan(ctx, "send-email", "new-email-sender")
+	defer span.End()
+
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return nil, err
@@ -56,10 +63,44 @@ func NewEmailSender(ctx context.Context) (EmailSender, error) {
 	if err != nil {
 		return nil, err
 	}
-	if emailConfig.EmailProvider == model.EmailSettingSMTP {
+
+	switch emailConfig.EmailProvider {
+	case model.EmailSettingSMTP:
 		return newEmailSenderSMTP(encryptionKey, emailConfig)
-	} else {
+	case model.EmailSettingSendGrid:
+		return newEmailSenderSendGrid(encryptionKey, emailConfig)
+	case model.EmailSettingSES:
 		return newEmailSenderSES(encryptionKey, emailConfig)
+	default:
+		return nil, errors.New("invalid email provider")
+	}
+}
+
+func NewEmailSendByConfiguration(ctx context.Context, emailConfig model.EmailConfigurationAdd) (EmailSender, error) {
+	_, span := telemetry.NewSpan(ctx, "send-email", "new-email-sender")
+	defer span.End()
+
+	switch emailConfig.EmailProvider {
+	case model.EmailSettingSMTP:
+		return &emailSenderSMTP{
+			emailSenderCommon{
+				emailConfig: emailConfig,
+			},
+		}, nil
+	case model.EmailSettingSendGrid:
+		return &emailSenderSendGrid{
+			emailSenderCommon{
+				emailConfig: emailConfig,
+			},
+		}, nil
+	case model.EmailSettingSES:
+		return &emailSenderSES{
+			emailSenderCommon{
+				emailConfig: emailConfig,
+			},
+		}, nil
+	default:
+		return nil, errors.New("invalid email provider")
 	}
 }
 
@@ -205,6 +246,59 @@ func (e *emailSenderSMTP) Send(recipients []string, subject string, text string,
 		err = e.SendCustom(recipients, subject, text, html, attachments)
 	}
 	return err
+}
+
+type emailSenderSendGrid struct {
+	emailSenderCommon
+}
+
+func newEmailSenderSendGrid(encryptionKey encryption.AES, emailConfig model.EmailConfigurationAdd) (*emailSenderSendGrid, error) {
+	decryptedAPIKey, err := encryptionKey.Decrypt(emailConfig.APIKey)
+	if err != nil {
+		return nil, err
+	}
+	emailConfig.APIKey = decryptedAPIKey
+
+	return &emailSenderSendGrid{
+		emailSenderCommon{
+			emailConfig: emailConfig,
+		},
+	}, nil
+}
+
+func (e *emailSenderSendGrid) Send(recipients []string, subject string, text string, html string, attachments map[string][]byte) error {
+	err := e.validateSendParams(recipients, subject, text, html, attachments)
+	if err != nil {
+		return err
+	}
+
+	from := mail.NewEmail("", e.emailConfig.EmailID)
+	to := mail.NewEmail("", recipients[0])
+
+	client := sendgrid.NewSendClient(e.emailConfig.APIKey)
+	message := mail.NewSingleEmail(from, subject, to, text, html)
+
+	// add attachment
+	for k, v := range attachments {
+		att := mail.NewAttachment()
+		att.SetContent(base64.StdEncoding.EncodeToString(v))
+		att.SetType(http.DetectContentType(v))
+		att.SetFilename(k)
+		att.SetDisposition("attachment")
+		att.SetContentID(k)
+		att.SetContent(base64.StdEncoding.EncodeToString(v))
+		message.AddAttachment(att)
+	}
+	response, err := client.Send(message)
+	if err != nil {
+		log.Error().Msg("Error in emailSenderSendGrid Send(): " + err.Error())
+		return err
+	}
+	// check 2xx
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		return errors.New("sendgrid error: " + response.Body)
+	}
+	return nil
 }
 
 func (e *emailSenderSMTP) SendCustom(recipients []string, subject string, text string,

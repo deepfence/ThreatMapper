@@ -1,34 +1,37 @@
 package ingesters
 
 import (
+	"context"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func CommitFuncCompliance(ns string, data []ingestersUtil.Compliance) error {
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
+func CommitFuncCompliance(ctx context.Context, ns string, data []ingestersUtil.Compliance) error {
+	ctx = directory.ContextWithNameSpace(ctx, directory.NamespaceID(ns))
+
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "commit-func-compliance")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer tx.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row WITH row.rule as rule, row.data as data, row.scan_id as scan_id
 		MERGE (n:Compliance{node_id:data.node_id})
 		MERGE (r:ComplianceRule{node_id:rule.test_number})
@@ -47,7 +50,7 @@ func CommitFuncCompliance(ns string, data []ingestersUtil.Compliance) error {
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func CompliancesToMaps(ms []ingestersUtil.Compliance) []map[string]interface{} {

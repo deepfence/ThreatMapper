@@ -3,6 +3,7 @@ package cronscheduler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	stdLogger "log"
 	"os"
 	"strconv"
@@ -12,8 +13,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	"github.com/hibiken/asynq"
 	"github.com/robfig/cron/v3"
 )
@@ -58,11 +59,6 @@ func NewScheduler() (*Scheduler, error) {
 }
 
 func (s *Scheduler) Init() {
-	// download updated vulnerability database
-	_, err := s.cron.AddFunc("@every 120m", vulnerability_db.DownloadDatabase)
-	if err != nil {
-		return
-	}
 
 	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
 		return "scheduler addJobs", s.AddJobs(ctx)
@@ -73,6 +69,9 @@ func (s *Scheduler) Init() {
 }
 
 func (s *Scheduler) AddJobs(ctx context.Context) error {
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "add-jobs")
+	defer span.End()
+
 	err := s.addCronJobs(ctx)
 	if err != nil {
 		return err
@@ -120,12 +119,20 @@ func (s *Scheduler) updateScheduledJobs() {
 
 	for range ticker.C {
 		directory.ForEachNamespace(func(ctx context.Context) (string, error) {
+			ctx, span := telemetry.NewSpan(ctx, "cronjobs", "update-scheduled-jobs")
+			defer span.End()
 			return "Update scheduled jobs", s.addScheduledJobs(ctx)
 		})
 	}
 }
 
 func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "add-scheduled-jobs")
+	defer span.End()
+
 	// Get scheduled tasks
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
@@ -183,18 +190,33 @@ func (s *Scheduler) addScheduledJobs(ctx context.Context) error {
 }
 
 func (s *Scheduler) addCronJobs(ctx context.Context) error {
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "add-cron-jobs")
+	defer span.End()
+
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
 	}
-	log.Info().Msgf("Register cronjobs for namespace %v", namespace)
+	log.Info().Msg("Register cronjobs")
 
 	s.jobs.CronJobsMutex.Lock()
 	defer s.jobs.CronJobsMutex.Unlock()
 	var jobIDs []cron.EntryID
 
 	// Documentation: https://pkg.go.dev/github.com/robfig/cron#hdr-Usage
+
 	var jobID cron.EntryID
+
+	// based on neo4j connectivity status pause/unpause queues
+	jobID, err = s.cron.AddJob("@every 30s", NewAsynqQueueState(namespace, time.Second*10))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
 	jobID, err = s.cron.AddFunc("@every 30s",
 		s.enqueueTask(namespace, utils.TriggerConsoleActionsTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
@@ -246,7 +268,7 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 
 	// Adding CloudComplianceTask only to ensure data is ingested if task fails on startup
 	jobID, err = s.cron.AddFunc("@every 60m",
-		s.enqueueTask(namespace, utils.CloudComplianceTask, true, utils.CritialTaskOpts()...))
+		s.enqueueTask(namespace, utils.CloudComplianceControlsTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
 	}
@@ -274,7 +296,7 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m",
+	jobID, err = s.cron.AddFunc("@every 30m",
 		s.enqueueTask(namespace, utils.ReportCleanUpTask, true, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err
@@ -316,12 +338,36 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
+	jobID, err = s.cron.AddFunc("@every 2h", s.enqueueTask(namespace, utils.UpdateLicenseTask, true, utils.CritialTaskOpts()...))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 1h", s.enqueueTask(namespace, utils.ReportLicenseUsageTask, true, utils.CritialTaskOpts()...))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
+	jobID, err = s.cron.AddFunc("@every 5h", s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, false, utils.CritialTaskOpts()...))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
 	s.jobs.CronJobs[namespace] = CronJobs{jobIDs: jobIDs}
 
 	return nil
 }
 
 func (s *Scheduler) startInitJobs(ctx context.Context) error {
+
+	log := log.WithCtx(ctx)
+
+	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "start-init-jobs")
+	defer span.End()
+
 	namespace, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
@@ -329,21 +375,23 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 
 	// initialize sql database
 	if err := initSqlDatabase(ctx); err != nil {
-		log.Error().Err(err).Msgf("failed to initialize sql database for namespace %s", namespace)
+		log.Error().Err(err).Msg("failed to initialize sql database")
 	}
 
 	// initialize neo4j database
 	if err := initNeo4jDatabase(ctx); err != nil {
-		log.Error().Err(err).Msgf("failed to initialize neo4j database for namespace %s", namespace)
+		log.Error().Err(err).Msg("failed to initialize neo4j database")
 	}
 
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
 	s.enqueueTask(namespace, utils.CheckAgentUpgradeTask, true)()
 	s.enqueueTask(namespace, utils.SyncRegistryPostgresNeo4jTask, true, utils.CritialTaskOpts()...)()
-	s.enqueueTask(namespace, utils.CloudComplianceTask, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.ReportCleanUpTask, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.CachePostureProviders, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.RedisRewriteAOF, true, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.AsynqDeleteAllArchivedTasks, true, utils.CritialTaskOpts()...)()
+
+	s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, false, utils.CritialTaskOpts()...)()
 
 	return nil
 }
@@ -356,8 +404,13 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID,
 	schedule postgresqlDb.Scheduler, payload json.RawMessage) func() {
 	log.Info().Msgf("Registering task: %s, %s for namespace %s", schedule.Description, schedule.CronExpr, namespace)
 	return func() {
+		ctx := directory.NewContextWithNameSpace(namespace)
+
+		log := log.WithCtx(ctx)
+
 		log.Info().Msgf("Enqueuing task: %s, %s for namespace %s",
 			schedule.Description, schedule.CronExpr, namespace)
+
 		message := map[string]interface{}{
 			"action":      schedule.Action,
 			"id":          schedule.ID,
@@ -366,7 +419,7 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID,
 			"is_system":   schedule.IsSystem,
 		}
 		messageJson, _ := json.Marshal(message)
-		worker, err := directory.Worker(directory.NewContextWithNameSpace(namespace))
+		worker, err := directory.Worker(ctx)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return
@@ -379,12 +432,16 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID,
 }
 
 func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string, unique bool, taskOpts ...asynq.Option) func() {
-	ns := string(namespace)
 	return func() {
-		log.Info().Str("namespace", ns).Msgf("Enqueuing task %s", task)
-		worker, err := directory.Worker(directory.NewContextWithNameSpace(namespace))
+		ctx := directory.NewContextWithNameSpace(namespace)
+
+		log := log.WithCtx(ctx)
+
+		log.Info().Msgf("Enqueuing task %s", task)
+
+		worker, err := directory.Worker(ctx)
 		if err != nil {
-			log.Error().Str("namespace", ns).Msg(err.Error())
+			log.Error().Msg(err.Error())
 			return
 		}
 
@@ -393,10 +450,10 @@ func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string, un
 		} else {
 			err = worker.EnqueueUnique(task, []byte(strconv.FormatInt(utils.GetTimestamp(), 10)), taskOpts...)
 		}
-		if err == asynq.ErrTaskIDConflict {
-			log.Warn().Str("namespace", ns).Msgf("unique task true, skip enqueue task %s %s", task, err.Error())
+		if errors.Is(err, asynq.ErrTaskIDConflict) {
+			log.Warn().Msgf("unique task true, skip enqueue task %s %s", task, err.Error())
 		} else if err != nil {
-			log.Error().Str("namespace", ns).Msg(err.Error())
+			log.Error().Msg(err.Error())
 		}
 	}
 }

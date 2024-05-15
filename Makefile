@@ -12,12 +12,18 @@ export PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
 export COMPLIANCE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/compliance
 export DEEPFENCE_CTL=$(PWD)/deepfence_ctl
 export DEEPFENCED=$(PWD)/deepfence_bootstrapper
-export IMAGE_REPOSITORY?=deepfenceio
+export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/agent-binary
+export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
-export VERSION?="2.1.0"
+export VERSION?=2.2.1
+export AGENT_BINARY_BUILD=$(DEEPFENCE_FARGATE_DIR)/build
+export AGENT_BINARY_BUILD_RELATIVE=deepfence_agent/agent-binary/build
+export AGENT_BINARY_DIST=$(DEEPFENCE_FARGATE_DIR)/dist
+export AGENT_BINARY_DIST_RELATIVE=deepfence_agent/agent-binary/dist
+export AGENT_BINARY_FILENAME=deepfence-agent-$(shell dpkg --print-architecture)-$(VERSION).tar.gz
 
-default: bootstrap console_plugins agent console
+default: bootstrap console_plugins agent console fargate-local
 
 .PHONY: console
 console: redis postgres kafka-broker router server worker ui file-server graphdb jaeger
@@ -33,10 +39,6 @@ bootstrap:
 alpine_builder:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-alpine .
 
-.PHONY: go1_20_builder
-go1_20_builder:
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_go_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debianfluent-bit .
-
 .PHONY: debian_builder
 debian_builder:
 	docker build --build-arg DF_IMG_TAG=${DF_IMG_TAG} --build-arg IMAGE_REPOSITORY=${IMAGE_REPOSITORY} --tag=$(IMAGE_REPOSITORY)/deepfence_glibc_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debian .
@@ -49,9 +51,31 @@ bootstrap-agent-plugins:
 	(cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh)
 
 .PHONY: agent
-agent: go1_20_builder debian_builder deepfenced console_plugins
+agent: debian_builder deepfenced console_plugins
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
-	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" VERSION="$(VERSION)" bash build.sh)
+	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build.sh)
+
+.PHONY: agent-binary
+agent-binary: agent agent-binary-tar
+
+.PHONY: agent-binary-tar
+agent-binary-tar:
+	mkdir -p $(AGENT_BINARY_DIST) $(AGENT_BINARY_BUILD)
+	ID=$$(docker create $(IMAGE_REPOSITORY)/deepfence_agent_ce:$(DF_IMG_TAG)); \
+	(cd $(DEEPFENCE_FARGATE_DIR) &&\
+	CONTAINER_ID=$$ID VERSION=$(VERSION) AGENT_BINARY_BUILD=$(AGENT_BINARY_BUILD) AGENT_BINARY_DIST=$(AGENT_BINARY_DIST) AGENT_BINARY_FILENAME=$(AGENT_BINARY_FILENAME) bash copy-bin-from-agent.sh); \
+	docker rm -v $$ID
+
+.PHONY: fargate-local
+fargate-local: agent-binary-tar
+	(cd $(DEEPFENCE_AGENT_DIR) &&\
+	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) AGENT_BINARY_BUILD_RELATIVE=$(AGENT_BINARY_BUILD_RELATIVE) AGENT_BINARY_FILENAME=$(AGENT_BINARY_FILENAME) bash build-fargate-local-bin.sh)
+
+.PHONY: fargate
+fargate:
+	mkdir -p $(AGENT_BINARY_BUILD)
+	(cd $(DEEPFENCE_AGENT_DIR) &&\
+	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) AGENT_BINARY_BUILD=$(AGENT_BINARY_BUILD) AGENT_BINARY_BUILD_RELATIVE=$(AGENT_BINARY_BUILD_RELATIVE) bash build-fargate.sh)
 
 .PHONY: deepfenced
 deepfenced: alpine_builder bootstrap bootstrap-agent-plugins
@@ -79,12 +103,12 @@ file-server:
 	docker build -t $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG) $(DEEPFENCE_FILE_SERVER_DIR)
 
 .PHONY: server
-server: alpine_builder
-	(cd ./deepfence_server && make image)
+server: debian_builder
+	(cd ./deepfence_server && VERSION=$(VERSION) make image)
 
 .PHONY: worker
-worker: alpine_builder
-	(cd ./deepfence_worker && make image)
+worker: debian_builder agent-binary-tar
+	(cd ./deepfence_worker && VERSION=$(VERSION) AGENT_BINARY_DIST_RELATIVE=$(AGENT_BINARY_DIST_RELATIVE) make image)
 
 .PHONY: jaeger
 jaeger:
@@ -98,7 +122,7 @@ graphdb:
 ui:
 	git log --format="%h" -n 1 > $(DEEPFENCE_FRONTEND_DIR)/console_version.txt && \
 	echo $(VERSION) > $(DEEPFENCE_FRONTEND_DIR)/product_version.txt && \
-	docker run --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:18-bullseye-slim -c "cd /app && corepack enable && corepack prepare pnpm@7.17.1 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install --frozen-lockfile --prefer-offline && pnpm run build" && \
+	docker run --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:18-bullseye-slim -c "cd /app && corepack enable && corepack prepare pnpm@7.17.1 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install --frozen-lockfile --prefer-offline && ENABLE_ANALYTICS=true pnpm run build" && \
 	docker build -f $(DEEPFENCE_FRONTEND_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
 	rm -rf $(DEEPFENCE_FRONTEND_DIR)/console_version.txt $(DEEPFENCE_FRONTEND_DIR)/product_version.txt
 
@@ -146,7 +170,7 @@ cli: bootstrap
 	(cd $(DEEPFENCE_CTL) && make clean && make all)
 
 .PHONY: publish
-publish: publish-redis publish-postgres publish-kafka publish-router publish-minio publish-server publish-worker publish-ui publish-agent publish-cluster-agent publish-packagescanner publish-secretscanner publish-malwarescanner publish-graphdb publish-jaeger
+publish: publish-redis publish-postgres publish-kafka publish-router publish-file-server publish-server publish-worker publish-ui publish-agent publish-cluster-agent publish-packagescanner publish-secretscanner publish-malwarescanner publish-graphdb publish-jaeger
 
 .PHONY: publish-redis
 publish-redis:
@@ -164,8 +188,8 @@ publish-kafka:
 publish-router:
 	docker push $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG)
 
-.PHONY: publish-minio
-publish-minio:
+.PHONY: publish-file-server
+publish-file-server:
 	docker push $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG)
 
 .PHONY: publish-server
@@ -211,6 +235,8 @@ publish-jaeger:
 .PHONY: clean
 clean:
 	-(cd $(DEEPFENCE_AGENT_DIR) && make clean)
+	-(cd $(DEEPFENCE_FARGATE_DIR) && rm -rf deepfence-agent-bin-$(VERSION)*)
 	-(cd $(ROOT_MAKEFILE_DIR)/deepfence_server && make clean)
 	-(cd $(ROOT_MAKEFILE_DIR)/deepfence_worker && make clean)
 	-(cd $(DEEPFENCED) && make clean && rm $(DEEPFENCE_AGENT_DIR)/deepfenced)
+	-rm -rf $(AGENT_BINARY_DIST)/* $(AGENT_BINARY_BUILD)/*

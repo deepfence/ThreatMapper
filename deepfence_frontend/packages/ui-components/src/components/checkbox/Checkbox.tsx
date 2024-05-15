@@ -32,15 +32,20 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         id={_id}
         className={cn(
           'flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] peer group',
-          'data-[state=unchecked]:bg-gray-50 data-[state=unchecked]:dark:bg-transparent data-[state=unchecked]:border border-gray-300 dark:border-text-text-and-icon',
-          'data-[state=checked]:dark:bg-accent-accent',
+          'data-[state=unchecked]:bg-transparent data-[state=unchecked]:border border-text-icon',
+          'dark:data-[state=checked]:bg-accent-accent data-[state=checked]:bg-text-link',
           // uncheck disabled
           'dark:data-[state=unchecked]:disabled:bg-gray-600 dark:data-[state=unchecked]:disabled:border-none',
+          // light uncheck disabled
+          'data-[state=unchecked]:disabled:bg-transparent data-[state=unchecked]:disabled:border-severity-unknown/60',
           // check disabled
           'dark:data-[state=checked]:disabled:bg-gray-600 dark:data-[state=checked]:disabled:border-none',
           'disabled:cursor-not-allowed',
+          // light check disabled
+          'data-[state=checked]:disabled:bg-severity-unknown/60 data-[state=checked]:disabled:border-none',
+          'disabled:cursor-not-allowed',
           {
-            'dark:bg-accent-accent': internalChecked === 'indeterminate',
+            'dark:bg-accent-accent bg-text-link': internalChecked === 'indeterminate',
           },
           'transition-colors',
           className,
@@ -59,12 +64,12 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
       >
         <CheckboxPrimitive.Indicator>
           {internalChecked === 'indeterminate' && (
-            <span className="self-center text-white dark:text-black dark:group-disabled:group-data-[state=checked]:bg-gray-900">
+            <span className="self-center text-white dark:text-black dark:group-disabled:group-data-[state=checked]:bg-gray-900 group-disabled:group-data-[state=checked]:bg-severity-unknown">
               <InterminateIcon />
             </span>
           )}
           {internalChecked === true && (
-            <span className="self-center text-white dark:text-black dark:group-disabled:group-data-[state=checked]:bg-gray-900">
+            <span className="self-center text-white dark:text-black dark:group-disabled:group-data-[state=checked]:bg-gray-900 group-disabled:group-data-[state=checked]:bg-severity-unknown">
               <CheckedIcon />
             </span>
           )}
@@ -74,7 +79,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         <LabelPrimitive.Label
           htmlFor={_id}
           className={cn(
-            'pl-1.5 text-p4 dark:text-text-input-value dark:peer-disabled:text-gray-600 peer-disabled:cursor-not-allowed',
+            'pl-1.5 text-p4 dark:text-text-input-value text-text-text-and-icon dark:peer-disabled:text-gray-600 peer-disabled:text-severity-unknown peer-disabled:cursor-not-allowed',
           )}
         >
           {label}

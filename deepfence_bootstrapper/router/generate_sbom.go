@@ -9,13 +9,14 @@ import (
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
+	dfUtils "github.com/deepfence/df-utils"
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	packageScannerSocket = getDfInstallDir() + "/tmp/package-scanner.sock"
+	packageScannerSocket = dfUtils.GetDfInstallDir() + "/tmp/package-scanner.sock"
 	scanPath             = "dir:/fenced/mnt/host/"
 )
 

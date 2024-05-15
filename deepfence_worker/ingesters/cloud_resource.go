@@ -8,8 +8,9 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 const (
@@ -19,31 +20,35 @@ const (
 	AwsEc2ResourceId          = "aws_ec2_instance"
 	GcpComputeResourceId      = "gcp_compute_instance"
 	AzureComputeResourceId    = "azure_compute_virtual_machine"
-	DeepfenceVersion          = "v2.0.0"
 )
 
-func CommitFuncCloudResource(ns string, cs []ingestersUtil.CloudResource) error {
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
+func CommitFuncCloudResource(ctx context.Context, ns string, cs []ingestersUtil.CloudResource) error {
+
+	ctx = directory.ContextWithNameSpace(ctx, directory.NamespaceID(ns))
+
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "commit-func-cloud-resource")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
 	batch, hosts, clusters := ResourceToMaps(cs)
 
 	start := time.Now()
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	// Add everything
-	_, err = tx.Run(`
+	_, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		WITH row, row.node_type IN $shown_types as show
 		MERGE (n:CloudResource{node_id:row.node_id})
@@ -58,7 +63,7 @@ func CommitFuncCloudResource(ns string, cs []ingestersUtil.CloudResource) error 
 	}
 
 	if len(hosts) > 0 {
-		if _, err = tx.Run(`
+		if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		OPTIONAL MATCH (n:Node{node_id:row.node_id})
 		WITH n, row as row
@@ -71,7 +76,7 @@ func CommitFuncCloudResource(ns string, cs []ingestersUtil.CloudResource) error 
 	}
 
 	if len(clusters) > 0 {
-		if _, err = tx.Run(`
+		if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		OPTIONAL MATCH (n:KubernetesCluster{node_id:row.node_id})
 		WITH n, row as row
@@ -82,7 +87,7 @@ func CommitFuncCloudResource(ns string, cs []ingestersUtil.CloudResource) error 
 			return err
 		}
 
-		if _, err := tx.Run(`
+		if _, err := tx.Run(ctx, `
 		MATCH (k:KubernetesCluster)
 		WHERE not (k) -[:INSTANCIATE]-> (:Node)
 		MATCH (n:Node{kubernetes_cluster_id:k.kubernetes_cluster_id})
@@ -92,9 +97,9 @@ func CommitFuncCloudResource(ns string, cs []ingestersUtil.CloudResource) error 
 		}
 	}
 
-	log.Debug().Msgf("cloud resource ingest took: %v", time.Until(start))
+	log.Debug().Ctx(ctx).Msgf("cloud resource ingest took: %v", time.Since(start))
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func ResourceToMaps(ms []ingestersUtil.CloudResource) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
@@ -144,10 +149,11 @@ func ResourceToMaps(ms []ingestersUtil.CloudResource) ([]map[string]interface{},
 				"active":                  true,
 				"cloud_provider":          v.CloudProvider,
 				"agent_running":           false,
-				"version":                 DeepfenceVersion,
+				"version":                 "",
 				"instance_id":             newmap["node_id"],
 				"host_name":               v.Name,
 				"node_id":                 v.Name,
+				"account_id":              newmap["account_id"],
 			})
 			if k8sClusterName != "" {
 				clusters = append(clusters, map[string]interface{}{
@@ -160,6 +166,7 @@ func ResourceToMaps(ms []ingestersUtil.CloudResource) ([]map[string]interface{},
 					"active":                  true,
 					"cloud_provider":          v.CloudProvider,
 					"agent_running":           false,
+					"account_id":              newmap["account_id"],
 				})
 			}
 		}
@@ -174,16 +181,16 @@ func LinkNodesWithCloudResources(ctx context.Context) error {
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:Node) -[r:IS]-> (m:CloudResource)
 		DELETE r`,
 		map[string]interface{}{}); err != nil {
@@ -191,7 +198,7 @@ func LinkNodesWithCloudResources(ctx context.Context) error {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:Node)
 		WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n
 		WHERE map.label = 'AWS'
@@ -204,7 +211,7 @@ func LinkNodesWithCloudResources(ctx context.Context) error {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:Node)
 		WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n
 		WHERE map.label = 'GCP'
@@ -217,7 +224,7 @@ func LinkNodesWithCloudResources(ctx context.Context) error {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:Node)
 		WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n
 		WHERE map.label = 'AZURE'
@@ -230,5 +237,5 @@ func LinkNodesWithCloudResources(ctx context.Context) error {
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }

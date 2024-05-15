@@ -55,13 +55,6 @@ export const ComplianceForm = ({
       </Listbox>
       {provider && (
         <>
-          <input
-            type="text"
-            name="selectedSeveritiesOrCheckTypeLength"
-            hidden
-            readOnly
-            value={benchmarkType.length}
-          />
           <Listbox
             variant="underline"
             value={benchmarkType}

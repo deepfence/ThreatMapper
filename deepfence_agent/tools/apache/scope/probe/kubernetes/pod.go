@@ -103,10 +103,15 @@ func (p *pod) GetNode() report.TopologyNode {
 		KubernetesCreated:         p.Created(),
 		KubernetesLabels:          labelsStr,
 	}
+	if appLabel, found := p.Labels()[report.DeepfenceK8sAppLabelKey]; found {
+		if appLabel == report.DeepfenceK8sConsoleAppLabelValue || appLabel == report.DeepfenceK8sAgentAppLabelValue {
+			metadata.IsDeepfenceSystem = true
+		}
+	}
 	return report.TopologyNode{
 		Metadata: metadata,
 		Parents: &report.Parent{
-			CloudProvider:     cloudProviderNodeId,
+			//CloudProvider:     cloudProviderNodeId,
 			KubernetesCluster: kubernetesClusterId,
 			Host:              hostname,
 			Namespace:         kubernetesClusterId + "-" + p.GetNamespace(),

@@ -12,27 +12,25 @@ export interface TableSkeletonProps {
 interface SkeletonProps {
   className?: string;
   size?: SizeOf;
-  location: 'header' | 'body';
 }
 
 // tailwind skeleton component
-const Skeleton = ({ className, size = 'default', location }: SkeletonProps) => {
+const Skeleton = ({ className, size = 'default' }: SkeletonProps) => {
   return (
     <div
       role="status"
       className={cn('w-full h-full opacity-50 px-4', {
-        ['py-4']: size === 'default' && location === 'header',
-        ['py-2.5']: size === 'compact' && location === 'header',
-        ['py-[13px]']: size === 'medium' && location === 'header',
-        ['py-[19px]']: size === 'relaxed' && location === 'header',
-        ['py-[15px]']: size === 'default' && location === 'body',
-        ['py-[9px]']: size === 'compact' && location === 'body',
-        ['py-[12px]']: size === 'medium' && location === 'body',
-        ['py-[18px]']: size === 'relaxed' && location === 'body',
+        ['py-[15px]']: size === 'default',
+        ['py-[9px]']: size === 'compact',
+        ['py-[12px]']: size === 'medium',
+        ['py-[18px]']: size === 'relaxed',
       })}
     >
       <div
-        className={cn('bg-gray-200 dark:bg-bg-grid-border rounded-[6px] h-4', className)}
+        className={cn(
+          'bg-[#939A9F]/25 dark:bg-bg-grid-border rounded-[6px] h-4',
+          className,
+        )}
       />
     </div>
   );
@@ -43,27 +41,30 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
   rows,
   className,
   size = 'default',
+  ...props
 }) => (
   <div
     className={cn(
       `overflow-x-auto overflow-y-hidden`,
-      `rounded-[5px] dark:border dark:border-bg-grid-border`,
+      `rounded-[5px] border border-bg-grid-border`,
       className,
     )}
+    data-testid={'tableSkeletonWrapperId'}
+    {...props}
   >
     <table
       className="w-full bg-white dark:bg-bg-grid-default border-spacing-0 border-collapse"
       cellPadding="0"
       cellSpacing="0"
     >
-      <thead className="bg-gray-50 dark:bg-bg-grid-header">
+      <thead className="bg-[#F5F5F5] dark:bg-bg-grid-header">
         <tr>
           {Array.from({ length: columns }).map((_, index) => (
             <th
               key={index}
-              className="relative border-0 text-gray-500 dark:text-df-gray-500 border-b-[1.5px] border-gray-200 dark:border-bg-grid-border"
+              className="relative border-0 text-gray-500 dark:text-df-gray-500 border-b-[1.5px] border-bg-grid-border dark:border-bg-grid-border"
             >
-              <Skeleton size={size} location="header" />
+              <Skeleton size={size} className={'bg-[#B0B0B0]/50'} />
             </th>
           ))}
         </tr>
@@ -74,11 +75,14 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
             {Array.from({ length: columns }).map((_, index) => (
               <td
                 key={index}
-                className={cn('border-gray-200 dark:border-bg-grid-border', {
+                className={cn('border-bg-grid-border dark:border-bg-grid-border', {
                   ['border-b']: rowIdx !== rows - 1,
                 })}
               >
-                <Skeleton size={size} location="body" />
+                <Skeleton
+                  size={size}
+                  className={'bg-[#939A9F]/25 dark:bg-bg-grid-border'}
+                />
               </td>
             ))}
           </tr>

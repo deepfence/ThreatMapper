@@ -21,8 +21,10 @@ import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import { isScanComplete } from '@/utils/scan';
 import {
   getOrderFromSearchParams,
@@ -339,7 +341,7 @@ function Filters() {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           value={searchParams.getAll('cloudProvider')}
@@ -409,6 +411,7 @@ function Filters() {
           onClearAll={() => {
             setSearchParams((prev) => {
               prev.delete('aws_account_ids');
+              prev.delete('page');
               return prev;
             });
           }}
@@ -418,6 +421,7 @@ function Filters() {
               value.forEach((id) => {
                 prev.append('aws_account_ids', id);
               });
+              prev.delete('page');
               return prev;
             });
           }}
@@ -429,6 +433,7 @@ function Filters() {
           onClearAll={() => {
             setSearchParams((prev) => {
               prev.delete('gcp_account_ids');
+              prev.delete('page');
               return prev;
             });
           }}
@@ -438,6 +443,7 @@ function Filters() {
               value.forEach((id) => {
                 prev.append('gcp_account_ids', id);
               });
+              prev.delete('page');
               return prev;
             });
           }}
@@ -449,6 +455,7 @@ function Filters() {
           onClearAll={() => {
             setSearchParams((prev) => {
               prev.delete('azure_account_ids');
+              prev.delete('page');
               return prev;
             });
           }}
@@ -458,6 +465,7 @@ function Filters() {
               value.forEach((id) => {
                 prev.append('azure_account_ids', id);
               });
+              prev.delete('page');
               return prev;
             });
           }}
@@ -507,11 +515,12 @@ function Filters() {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 }
 
 const DataTable = () => {
+  const { mode } = useTheme();
   const { data } = useSearchCloudResourcesWithPagination();
   const columnHelper = createColumnHelper<ModelCloudResource>();
   const [sort, setSort] = useSortingState();
@@ -552,18 +561,18 @@ const DataTable = () => {
       columnHelper.accessor('node_type', {
         cell: (info) => {
           const imagePath =
-            getNodeImage(info.row.original.node_type) ??
-            getNodeImage('cloud_provider', info.row.original.cloud_provider);
+            getNodeImage(mode, info.row.original.node_type) ??
+            getNodeImage(mode, 'cloud_provider', info.row.original.cloud_provider);
           return (
             <div className="flex items-center gap-2">
-              <div className="shrink-0">
+              <div className="shrink-0 text-text-input-value">
                 <img src={imagePath} alt={info.getValue()} height={24} width={24} />
               </div>
               <TruncatedText text={info.getValue()} />
             </div>
           );
         },
-        header: () => <TruncatedText text="service type" />,
+        header: () => <TruncatedText text="Service type" />,
         minSize: 80,
         size: 100,
         maxSize: 300,
@@ -574,7 +583,7 @@ const DataTable = () => {
             <div className="flex items-center gap-2 uppercase">
               <div className="shrink-0">
                 <img
-                  src={getNodeImage('cloud_provider', info.getValue())}
+                  src={getNodeImage(mode, 'cloud_provider', info.getValue())}
                   alt={info.getValue()}
                   height={24}
                   width={24}
@@ -584,7 +593,7 @@ const DataTable = () => {
             </div>
           );
         },
-        header: () => <TruncatedText text="cloud provider" />,
+        header: () => <TruncatedText text="Cloud provider" />,
         minSize: 50,
         size: 80,
         maxSize: 300,
@@ -593,7 +602,7 @@ const DataTable = () => {
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <TruncatedText text="cloud region" />,
+        header: () => <TruncatedText text="Cloud region" />,
         minSize: 50,
         size: 70,
         maxSize: 300,
@@ -632,7 +641,7 @@ const DataTable = () => {
           }
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <TruncatedText text="account id" />,
+        header: () => <TruncatedText text="Account id" />,
         minSize: 70,
         size: 120,
         maxSize: 300,

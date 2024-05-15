@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperFirst } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -34,6 +35,7 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { queries } from '@/queries';
 import {
   ComplianceScanNodeTypeEnum,
@@ -67,7 +69,7 @@ function Filters() {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <SearchableClusterList
           defaultSelectedClusters={searchParams.getAll('clusters')}
@@ -165,7 +167,7 @@ function Filters() {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 }
 
@@ -425,7 +427,7 @@ const DataTable = ({
                   </>
                 }
               >
-                <div className="cursor-pointer h-3 w-4 dark:text-text-text-and-icon rotate-90">
+                <div className="cursor-pointer h-3 w-4 text-text-text-and-icon rotate-90">
                   <EllipsisIcon />
                 </div>
               </Dropdown>
@@ -434,18 +436,27 @@ const DataTable = ({
           );
         },
         header: () => 'Name',
-        minSize: 180,
-        size: 190,
-        maxSize: 250,
+        minSize: 140,
+        size: 160,
+        maxSize: 200,
       }),
       columnHelper.accessor('node_id', {
         cell: (info) => {
           return <TruncatedText text={info.getValue() ?? ''} />;
         },
-        header: () => <span>Node Id</span>,
+        header: () => <span>Node id</span>,
         minSize: 200,
         size: 210,
         maxSize: 250,
+      }),
+      columnHelper.accessor('agent_running', {
+        cell: (info) => {
+          return <TruncatedText text={upperFirst(info.getValue() + '' || 'false')} />;
+        },
+        header: () => <span>Agent running</span>,
+        minSize: 60,
+        size: 100,
+        maxSize: 120,
       }),
     ],
     [],

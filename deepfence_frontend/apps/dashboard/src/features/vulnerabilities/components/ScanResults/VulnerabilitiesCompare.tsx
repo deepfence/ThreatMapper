@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperFirst } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
@@ -20,10 +21,13 @@ import { ModelVulnerability } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { PopOutIcon } from '@/components/icons/common/PopOut';
-import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
+import { CveCVSSScore, SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
+import { VulnerabilitySeverityType } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
 
@@ -47,6 +51,7 @@ const useGetScanDiff = (props: { baseScanId: string; toScanId: string }) => {
 };
 
 const CompareTable = (props: IScanCompareProps & { type: string }) => {
+  const { mode: theme } = useTheme();
   const { data } = useGetScanDiff({
     baseScanId: props.baseScanId,
     toScanId: props.toScanId,
@@ -70,7 +75,7 @@ const CompareTable = (props: IScanCompareProps & { type: string }) => {
             }}
             className="flex items-center gap-x-[6px]"
           >
-            <div className="w-4 h-4 shrink-0 dark:text-text-text-and-icon">
+            <div className="w-4 h-4 shrink-0 text-text-text-and-icon">
               <VulnerabilityIcon />
             </div>
             <div className="truncate">{info.getValue()}</div>
@@ -90,9 +95,7 @@ const CompareTable = (props: IScanCompareProps & { type: string }) => {
       }),
       columnHelper.accessor('cve_cvss_score', {
         cell: (info) => (
-          <div>
-            <CveCVSSScore score={info.getValue()} />
-          </div>
+          <div className="text-p3 text-text-text-and-icon">{info.getValue()}</div>
         ),
         header: () => <TruncatedText text="CVSS Score" />,
         minSize: 50,
@@ -101,8 +104,12 @@ const CompareTable = (props: IScanCompareProps & { type: string }) => {
       }),
       columnHelper.accessor('cve_severity', {
         cell: (info) => (
-          <div>
-            <SeverityBadge severity={info.getValue()} />
+          <div className="text-p4 text-text-text-and-icon gap-1 inline-flex">
+            <SeverityBadgeIcon
+              severity={info.getValue() as VulnerabilitySeverityType}
+              theme={theme}
+            />
+            {upperFirst(info.getValue())}
           </div>
         ),
         header: () => 'Severity',
@@ -181,21 +188,24 @@ const CompareCountWidget = ({
   const counts = !isDeleted ? data.added : data.deleted;
 
   return (
-    <div className="flex flex-col  dark:text-text-text-and-icon items-center">
+    <div className="flex flex-col text-text-text-and-icon items-center">
       <div className="flex flex-col gap-y-1.5">
-        <span className="text-p1">{title}</span>
-        <div className="flex flex-1 max-w-[160px] dark:text-text-input-value items-baseline">
+        <span className="text-p1a">{title}</span>
+        <div className="flex flex-1 max-w-[160px] text-text-input-value items-baseline">
           <>
             <div
               className={cn('h-5 w-5', {
-                'dark:text-status-success rotate-180': isDeleted,
-                'dark:text-status-error': !isDeleted,
+                'text-status-success rotate-180': isDeleted,
+                'text-status-error': !isDeleted,
               })}
             >
               <ArrowLine />
             </div>
 
-            <span className="text-h1 dark:text-text-input pl-1.5">
+            <span
+              className="text-h1 dark:text-text-input pl-1.5"
+              data-testid="totalCountId"
+            >
               {abbreviateNumber(counts.length)}
             </span>
           </>
@@ -231,13 +241,13 @@ const CountWidget = (props: {
 const ScanComapareTime = ({ baseScanTime, toScanTime }: IScanCompareProps) => {
   return (
     <div className="px-1.5 flex items-center h-12">
-      <div className="dark:text-text-text-and-icon text-p4 flex gap-x-1">
+      <div className="text-text-text-and-icon text-p4 flex gap-x-1">
         Comparing scan{' '}
-        <span className="dark:text-text-input-value text-p4">
+        <span className="text-text-input-value text-p4">
           {formatMilliseconds(baseScanTime)}
         </span>{' '}
         with{' '}
-        <span className="dark:text-text-input-value text-p4">
+        <span className="text-text-input-value text-p4">
           {formatMilliseconds(toScanTime)}
         </span>
       </div>
@@ -279,11 +289,11 @@ export const VulnerabilitiesCompare = ({
       >
         <SlidingModalCloseButton />
         <SlidingModalHeader>
-          <div className="p-4 text-h3 dark:text-text-text-and-icon dark:bg-bg-breadcrumb-bar ">
+          <SlidingModalHeaderWrapper>
             <div className="overflow-hidden">
               <TruncatedText text="Scan comparision" />
             </div>
-          </div>
+          </SlidingModalHeaderWrapper>
         </SlidingModalHeader>
         <SlidingModalContent>
           <div className="mx-4">

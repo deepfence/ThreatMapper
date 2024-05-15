@@ -26,6 +26,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableNamespaceList } from '@/components/forms/SearchableNamespaceList';
 import { SearchablePodList } from '@/components/forms/SearchablePodList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -35,6 +36,7 @@ import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { queries } from '@/queries';
 import {
@@ -100,11 +102,26 @@ export const PodsTable = () => {
   );
 };
 
-const FILTER_SEARCHPARAMS: Record<string, string> = {
+enum FILTER_SEARCHPARAMS_KEYS_ENUM {
+  hosts = 'hosts',
+  clusters = 'clusters',
+  kubernetesStatus = 'kubernetesStatus',
+  pods = 'pods',
+  namespaces = 'namespaces',
+}
+
+const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
+  FILTER_SEARCHPARAMS_KEYS_ENUM.hosts,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.clusters,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.pods,
+];
+
+const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   hosts: 'Host',
   clusters: 'Cluster',
   kubernetesStatus: 'Kubernetes status',
   pods: 'Pod',
+  namespaces: 'Namespace',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -126,9 +143,22 @@ function Filters() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [kubernetesStatusSearchText, setKubernetesStatusSearchText] = useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
+  const onFilterRemove = ({ key, value }: { key: string; value: string }) => {
+    return () => {
+      setSearchParams((prev) => {
+        const existingValues = prev.getAll(key);
+        prev.delete(key);
+        existingValues.forEach((existingValue) => {
+          if (existingValue !== value) prev.append(key, existingValue);
+        });
+        prev.delete('page');
+        return prev;
+      });
+    };
+  };
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <SearchablePodList
           defaultSelectedPods={searchParams.getAll('pods')}
@@ -228,32 +258,64 @@ function Filters() {
             });
           }}
         />
+        <SearchableNamespaceList
+          nodeType="pod"
+          defaultSelectedNamespaces={searchParams.getAll('namespaces')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('namespaces');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('namespaces');
+              value.forEach((pod) => {
+                prev.append('namespaces', pod);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
-          {Array.from(searchParams)
-            .filter(([key]) => {
+          {(
+            Array.from(searchParams).filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
-            })
-            .map(([key, value]) => {
+            }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
+          ).map(([key, value]) => {
+            if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
               return (
                 <FilterBadge
                   key={`${key}-${value}`}
-                  onRemove={() => {
-                    setSearchParams((prev) => {
-                      const existingValues = prev.getAll(key);
-                      prev.delete(key);
-                      existingValues.forEach((existingValue) => {
-                        if (existingValue !== value) prev.append(key, existingValue);
-                      });
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }}
-                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                  nodeType={(() => {
+                    if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.hosts) {
+                      return 'host';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.clusters) {
+                      return 'cluster';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.pods) {
+                      return 'pod';
+                    }
+                    throw new Error('unknown key');
+                  })()}
+                  onRemove={onFilterRemove({ key, value })}
+                  id={value}
+                  label={FILTER_SEARCHPARAMS[key]}
                 />
               );
-            })}
+            }
+            return (
+              <FilterBadge
+                key={`${key}-${value}`}
+                onRemove={onFilterRemove({ key, value })}
+                text={value}
+                label={FILTER_SEARCHPARAMS[key]}
+              />
+            );
+          })}
           <Button
             variant="flat"
             color="default"
@@ -273,7 +335,7 @@ function Filters() {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 }
 
@@ -288,6 +350,7 @@ function useSearchPodsWithPagination() {
       clusterNames: searchParams.getAll('clusters'),
       pods: searchParams.getAll('pods'),
       kubernetesStatus: searchParams.get('kubernetesStatus') ?? undefined,
+      kubernetesNamespace: searchParams.getAll('namespaces'),
     }),
     keepPreviousData: true,
   });
@@ -439,7 +502,7 @@ const DataTable = ({
             </div>
           );
         },
-        header: () => <TruncatedText text="Pod Name" />,
+        header: () => <TruncatedText text="Pod name" />,
         minSize: 130,
         size: 140,
         maxSize: 145,
@@ -448,7 +511,7 @@ const DataTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <TruncatedText text="Cluster Name" />,
+        header: () => <TruncatedText text="Cluster name" />,
         minSize: 80,
         size: 80,
         maxSize: 90,
@@ -457,7 +520,7 @@ const DataTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <TruncatedText text="Kubernetes Namespace" />,
+        header: () => <TruncatedText text="Kubernetes namespace" />,
         minSize: 100,
         size: 105,
         maxSize: 110,
@@ -466,7 +529,7 @@ const DataTable = ({
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <TruncatedText text="Kubernetes State" />,
+        header: () => <TruncatedText text="Kubernetes state" />,
         minSize: 80,
         size: 80,
         maxSize: 90,

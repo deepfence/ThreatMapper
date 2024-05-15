@@ -10,7 +10,6 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
-import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -31,6 +30,7 @@ import {
   TableNoDataElement,
   TableSkeleton,
   Tabs,
+  Tooltip,
 } from 'ui-components';
 
 import { getCloudNodesApiClient, getScanResultsApiClient } from '@/api/api';
@@ -49,6 +49,7 @@ import {
 } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { ArrowUpCircleLine } from '@/components/icons/common/ArrowUpCircleLine';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -56,13 +57,17 @@ import { PlusIcon } from '@/components/icons/common/Plus';
 import { RefreshIcon } from '@/components/icons/common/Refresh';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
-import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import {
+  CLOUDS,
+  ComplianceScanConfigureFormProps,
+} from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
-import { TruncatedText } from '@/components/TruncatedText';
 import { getColorForCompliancePercent } from '@/constants/charts';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import {
   isKubernetesProvider,
   isLinuxProvider,
@@ -71,6 +76,7 @@ import {
 } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
 import {
   ComplianceScanNodeTypeEnum,
   isCloudNode,
@@ -85,6 +91,8 @@ import {
   ComplianceScanGroupedStatus,
   isNeverScanned,
   isScanComplete,
+  isScanDeletePending,
+  isScanFailed,
   isScanInProgress,
   isScanStopping,
   SCAN_STATUS_GROUPS,
@@ -95,16 +103,17 @@ import {
   useSortingState,
 } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
+import { isUpgradeAvailable } from '@/utils/version';
 
 enum ActionEnumType {
-  DELETE = 'delete',
+  DELETE_SCAN = 'delete_scan',
   REFRESH_ACCOUNT = 'refresh_account',
+  DELETE_ACCOUNT = 'delete_account',
   START_SCAN = 'start_scan',
+  CANCEL_SCAN = 'cancel_scan',
 }
 
-export const getNodeTypeByProviderName = (
-  providerName: string,
-): ComplianceScanNodeTypeEnum | undefined => {
+const getNodeTypeByProviderName = (providerName: string): ComplianceScanNodeTypeEnum => {
   switch (providerName) {
     case 'linux':
     case 'host':
@@ -122,7 +131,7 @@ export const getNodeTypeByProviderName = (
     case 'kubernetes':
       return ComplianceScanNodeTypeEnum.kubernetes_cluster;
     default:
-      return;
+      throw new Error('No matching provider name found');
   }
 };
 
@@ -152,7 +161,7 @@ const action = async ({
     throw new Error('Invalid action');
   }
 
-  if (actionType === ActionEnumType.DELETE) {
+  if (actionType === ActionEnumType.DELETE_SCAN) {
     if (scanIds.length === 0) {
       throw new Error('Scan ids are required for deletion');
     }
@@ -179,7 +188,7 @@ const action = async ({
         const { message } = await getResponseErrors(result.error);
         return {
           success: false,
-          action: ActionEnumType.DELETE,
+          action: ActionEnumType.DELETE_SCAN,
           message,
         };
       } else if (result.error.response.status === 403) {
@@ -187,7 +196,7 @@ const action = async ({
         return {
           success: false,
           message,
-          action: ActionEnumType.DELETE,
+          action: ActionEnumType.DELETE_SCAN,
         };
       }
       throw result.error;
@@ -218,6 +227,33 @@ const action = async ({
         };
       }
       throw refreshAccountRresult.error;
+    }
+  } else if (actionType === ActionEnumType.DELETE_ACCOUNT) {
+    const deleteCloudNodeAccountApi = apiWrapper({
+      fn: getCloudNodesApiClient().deleteCloudNodeAccount,
+    });
+    const deleteAccountRresult = await deleteCloudNodeAccountApi({
+      modelCloudAccountDeleteReq: {
+        node_ids: accountIds,
+      },
+    });
+    if (!deleteAccountRresult.ok) {
+      if (deleteAccountRresult.error.response.status === 400) {
+        const { message } = await getResponseErrors(deleteAccountRresult.error);
+        return {
+          success: false,
+          message,
+          action: ActionEnumType.DELETE_ACCOUNT,
+        };
+      } else if (deleteAccountRresult.error.response.status === 403) {
+        const message = await get403Message(deleteAccountRresult.error);
+        return {
+          message,
+          success: false,
+          action: ActionEnumType.DELETE_ACCOUNT,
+        };
+      }
+      throw deleteAccountRresult.error;
     }
   }
   invalidateAllQueries();
@@ -252,7 +288,23 @@ const usePostureAccounts = () => {
   });
 };
 
-const FILTER_SEARCHPARAMS: Record<string, string> = {
+enum FILTER_SEARCHPARAMS_KEYS_ENUM {
+  complianceScanStatus = 'complianceScanStatus',
+  status = 'status',
+  org_accounts = 'org_accounts',
+  aws_accounts = 'aws_accounts',
+  gcp_accounts = 'gcp_accounts',
+  azure_accounts = 'azure_accounts',
+  hosts = 'hosts',
+  clusters = 'clusters',
+}
+
+const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
+  FILTER_SEARCHPARAMS_KEYS_ENUM.hosts,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.clusters,
+];
+
+const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   complianceScanStatus: 'Posture scan status',
   status: 'Status',
   org_accounts: 'Organization accounts',
@@ -270,17 +322,32 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
 };
 const Filters = () => {
   const { nodeType } = useParams() as {
-    nodeType: string;
+    nodeType: 'aws' | 'gcp' | 'azure';
   };
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [status, setStatus] = useState('');
   const [complianceScanStatusSearchText, setComplianceScanStatusSearchText] =
     useState('');
+
+  const onFilterRemove = ({ key, value }: { key: string; value: string }) => {
+    return () => {
+      setSearchParams((prev) => {
+        const existingValues = prev.getAll(key);
+        prev.delete(key);
+        existingValues.forEach((existingValue) => {
+          if (existingValue !== value) prev.append(key, existingValue);
+        });
+        prev.delete('page');
+        return prev;
+      });
+    };
+  };
+
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['status']}
@@ -368,6 +435,7 @@ const Filters = () => {
             onClearAll={() => {
               setSearchParams((prev) => {
                 prev.delete('org_accounts');
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -377,6 +445,7 @@ const Filters = () => {
                 value.forEach((id) => {
                   prev.append('org_accounts', id);
                 });
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -390,6 +459,7 @@ const Filters = () => {
             onClearAll={() => {
               setSearchParams((prev) => {
                 prev.delete(`${nodeType}_accounts`);
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -399,6 +469,7 @@ const Filters = () => {
                 value.forEach((id) => {
                   prev.append(`${nodeType}_accounts`, id);
                 });
+                prev.delete('page');
                 return prev;
               });
             }}
@@ -454,29 +525,38 @@ const Filters = () => {
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
-          {Array.from(searchParams)
-            .filter(([key]) => {
+          {(
+            Array.from(searchParams).filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
-            })
-            .map(([key, value]) => {
+            }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
+          ).map(([key, value]) => {
+            if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
               return (
                 <FilterBadge
                   key={`${key}-${value}`}
-                  onRemove={() => {
-                    setSearchParams((prev) => {
-                      const existingValues = prev.getAll(key);
-                      prev.delete(key);
-                      existingValues.forEach((existingValue) => {
-                        if (existingValue !== value) prev.append(key, existingValue);
-                      });
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }}
-                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                  nodeType={(() => {
+                    if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.hosts) {
+                      return 'host';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.clusters) {
+                      return 'cluster';
+                    }
+                    throw new Error('unknown key');
+                  })()}
+                  onRemove={onFilterRemove({ key, value })}
+                  id={value}
+                  label={FILTER_SEARCHPARAMS[key]}
                 />
               );
-            })}
+            }
+            return (
+              <FilterBadge
+                key={`${key}-${value}`}
+                onRemove={onFilterRemove({ key, value })}
+                text={value}
+                label={FILTER_SEARCHPARAMS[key]}
+              />
+            );
+          })}
           <Button
             variant="flat"
             color="default"
@@ -496,7 +576,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 const DeleteConfirmationModal = ({
@@ -531,7 +611,7 @@ const DeleteConfirmationModal = ({
     if (
       fetcher.state === 'idle' &&
       fetcher.data?.success &&
-      fetcher.data.action === ActionEnumType.DELETE
+      fetcher.data.action === ActionEnumType.DELETE_SCAN
     ) {
       onSuccess();
     }
@@ -544,7 +624,7 @@ const DeleteConfirmationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title={
         !fetcher.data?.success ? (
-          <div className="flex gap-3 items-center dark:text-status-error">
+          <div className="flex gap-3 items-center text-status-error">
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
@@ -570,7 +650,7 @@ const DeleteConfirmationModal = ({
               disabled={fetcher.state === 'submitting'}
               onClick={(e) => {
                 e.preventDefault();
-                onDeleteAction(ActionEnumType.DELETE);
+                onDeleteAction(ActionEnumType.DELETE_SCAN);
               }}
             >
               Delete
@@ -585,7 +665,107 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
+          )}
+        </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+const DeleteAccountConfirmationModal = ({
+  showDialog,
+  accountIds,
+  setShowDialog,
+  onSuccess,
+}: {
+  showDialog: boolean;
+  accountIds: string[];
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onSuccess: () => void;
+}) => {
+  const fetcher = useFetcher();
+  const params = useParams();
+
+  const onDeleteAction = useCallback(
+    (actionType: string) => {
+      const formData = new FormData();
+      formData.append('actionType', actionType);
+      accountIds.forEach((accountId) => formData.append('accountId[]', accountId));
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [accountIds, fetcher],
+  );
+
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.success &&
+      fetcher.data.action === ActionEnumType.DELETE_ACCOUNT
+    ) {
+      onSuccess();
+    }
+  }, [fetcher]);
+
+  return (
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete account
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.success ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              size="md"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="md"
+              color="error"
+              loading={fetcher.state === 'submitting'}
+              disabled={fetcher.state === 'submitting'}
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE_ACCOUNT);
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          <span>
+            {isCloudNode(params.nodeType)
+              ? `The Selected cloud account, resources and scans related to the account will be
+              deleted.`
+              : isCloudOrgNode(params.nodeType)
+              ? `The Selected org cloud account, child accounts related to org account, resources and scans related to the cloud accounts will be deleted.`
+              : ''}
+          </span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message && (
+            <p className="mt-2 text-p7a text-status-error">{fetcher.data?.message}</p>
           )}
         </div>
       ) : (
@@ -606,28 +786,22 @@ const ActionDropdown = ({
   nodeType?: string;
   scanType: ScanTypeEnum;
   row: ModelCloudNodeAccountInfo;
-  onTableAction: (ids: string[], actionType: ActionEnumType) => void;
+  onTableAction: (row: ModelCloudNodeAccountInfo, actionType: ActionEnumType) => void;
 }) => {
   const fetcher = useFetcher();
-  const {
-    last_scan_id: scanId = '',
-    node_id: nodeId,
-    last_scan_status: scanStatus = '',
-    active,
-  } = row;
+  const { last_scan_id: scanId = '', last_scan_status: scanStatus = '', active } = row;
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { downloadScan } = useDownloadScan((state) => {
     setIsSubmitting(state === 'submitting');
   });
-  const [openStopScanModal, setOpenStopScanModal] = useState(false);
-
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onDownloadAction = useCallback(() => {
     downloadScan({
       scanId,
-      nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+      nodeType: (nodeType?.toString() === ComplianceScanNodeTypeEnum.kubernetes_cluster
+        ? 'cluster'
+        : nodeType) as UtilsReportFiltersNodeTypeEnum,
       scanType:
         (scanType as ScanTypeEnum) === ScanTypeEnum.CloudComplianceScan
           ? UtilsReportFiltersScanTypeEnum.CloudCompliance
@@ -639,35 +813,12 @@ const ActionDropdown = ({
     if (fetcher.state === 'idle') setOpen(false);
   }, [fetcher]);
 
-  if (!nodeType || !nodeId) {
-    throw new Error('Node type and Node id are required');
+  if (!nodeType) {
+    throw new Error('Node type is required');
   }
 
   return (
     <>
-      {openStopScanModal && (
-        <StopScanForm
-          open={openStopScanModal}
-          closeModal={setOpenStopScanModal}
-          scanIds={[scanId]}
-          scanType={scanType}
-        />
-      )}
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          scanIds={[scanId]}
-          scanType={
-            (scanType as ScanTypeEnum) === ScanTypeEnum.ComplianceScan
-              ? ModelBulkDeleteScansRequestScanTypeEnum.Compliance
-              : ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance
-          }
-          setShowDialog={setShowDeleteDialog}
-          onSuccess={() => {
-            //
-          }}
-        />
-      )}
       <Dropdown
         triggerAsChild
         align="start"
@@ -677,13 +828,13 @@ const ActionDropdown = ({
           <>
             <DropdownItem
               disabled={
-                !active || isScanInProgress(scanStatus) || isScanStopping(scanStatus)
+                !active ||
+                isScanInProgress(scanStatus) ||
+                isScanStopping(scanStatus) ||
+                isScanDeletePending(scanStatus)
               }
               onSelect={() => {
-                if (!nodeId) {
-                  throw new Error('Node id is required to start scan');
-                }
-                onTableAction([nodeId], ActionEnumType.START_SCAN);
+                onTableAction(row, ActionEnumType.START_SCAN);
               }}
             >
               Start scan
@@ -691,15 +842,15 @@ const ActionDropdown = ({
             <DropdownItem
               onSelect={(e) => {
                 e.preventDefault();
-                setOpenStopScanModal(true);
+                onTableAction(row, ActionEnumType.CANCEL_SCAN);
               }}
-              disabled={!isScanInProgress(scanStatus)}
+              disabled={!isScanInProgress(scanStatus) || isScanDeletePending(scanStatus)}
             >
               <span className="flex items-center">Cancel scan</span>
             </DropdownItem>
             <DropdownItem
-              disabled={!isScanComplete(scanStatus)}
-              onClick={(e) => {
+              disabled={!isScanComplete(scanStatus) || isScanDeletePending(scanStatus)}
+              onSelect={(e) => {
                 if (!isScanComplete(scanStatus)) return;
                 e.preventDefault();
                 onDownloadAction();
@@ -710,31 +861,43 @@ const ActionDropdown = ({
               </span>
             </DropdownItem>
             <DropdownItem
-              disabled={!scanId || !nodeType}
-              onClick={() => {
-                if (!scanId || !nodeType) return;
-                setShowDeleteDialog(true);
-              }}
-            >
-              <span
-                className={cn('flex items-center gap-x-2', {
-                  'text-red-700 dark:text-status-error': scanId,
-                  'dark:text-df-gray-600': !scanId || !nodeType,
-                })}
-              >
-                Delete latest scan
-              </span>
-            </DropdownItem>
-            <DropdownItem
+              disabled={
+                !scanId ||
+                !nodeType ||
+                isScanInProgress(scanStatus) ||
+                isNeverScanned(scanStatus) ||
+                isScanDeletePending(scanStatus)
+              }
               onSelect={() => {
-                if (!nodeId) {
-                  throw new Error('Account id is required to refresh');
-                }
-                onTableAction([nodeId], ActionEnumType.REFRESH_ACCOUNT);
+                if (!scanId || !nodeType) return;
+                onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
             >
-              Refresh account
+              Delete latest scan
             </DropdownItem>
+
+            {isCloudNode(nodeType) || isCloudOrgNode(nodeType) ? (
+              <>
+                <DropdownItem
+                  onSelect={() => {
+                    onTableAction(row, ActionEnumType.REFRESH_ACCOUNT);
+                  }}
+                >
+                  Refresh account
+                </DropdownItem>
+                <DropdownItem
+                  disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
+                  onSelect={() => {
+                    if (isScanInProgress(scanStatus) || isScanStopping(scanStatus)) {
+                      return;
+                    }
+                    onTableAction(row, ActionEnumType.DELETE_ACCOUNT);
+                  }}
+                >
+                  Delete account
+                </DropdownItem>
+              </>
+            ) : null}
           </>
         }
       >
@@ -745,26 +908,69 @@ const ActionDropdown = ({
 };
 
 const BulkActions = ({
-  onClick,
-  onDelete,
-  onRefreshAccount,
-  onCancelScan,
-  disableStartScan,
-  disableCancelScan,
-  disableDeleteScan,
-  disableRefreshAccount,
+  nodeType,
+  selectedRows,
+  onBulkAction,
 }: {
-  onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  onCancelScan?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  onDelete?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  onRefreshAccount?: React.MouseEventHandler<HTMLButtonElement> | undefined;
-  disableStartScan: boolean;
-  disableCancelScan: boolean;
-  disableDeleteScan: boolean;
-  disableRefreshAccount: boolean;
+  nodeType: ComplianceScanNodeTypeEnum;
+  selectedRows: {
+    scanId: string;
+    nodeId: string;
+    nodeType: string;
+    active: boolean;
+    scanStatus: string;
+  }[];
+  onBulkAction: (
+    data: {
+      scanIdsToCancelScan: string[];
+      scanIdsToDeleteScan: string[];
+      nodesToStartScan: ComplianceScanConfigureFormProps['data'] | null;
+      nodesToDeleteScan: string[];
+    },
+    actionType: ActionEnumType,
+  ) => void;
 }) => {
   const { navigate } = usePageNavigation();
   const params = useParams();
+
+  const scanIdsToDeleteScan = useMemo(() => {
+    return selectedRows
+      .filter(
+        (row) =>
+          !isNeverScanned(row.scanStatus) &&
+          !isScanDeletePending(row.scanStatus) &&
+          !isScanInProgress(row.scanStatus),
+      )
+      .map((row) => row.scanId);
+  }, [selectedRows]);
+
+  const nodeIdsToScan = useMemo(() => {
+    return selectedRows
+      .filter(
+        (node) =>
+          node.active &&
+          !isScanInProgress(node.scanStatus) &&
+          !isScanStopping(node.scanStatus) &&
+          !isScanDeletePending(node.scanStatus),
+      )
+      .map((node) => node.nodeId);
+  }, [selectedRows]);
+
+  const scanIdsToCancelScan = useMemo(() => {
+    return selectedRows
+      .filter(
+        (row) => isScanInProgress(row.scanStatus) && !isScanDeletePending(row.scanStatus),
+      )
+      .map((row) => row.scanId);
+  }, [selectedRows]);
+
+  const nodeIdsToDelete = useMemo(() => {
+    return selectedRows
+      .filter(
+        (row) => !(isScanInProgress(row.scanStatus) || isScanStopping(row.scanStatus)),
+      )
+      .map((row) => row.nodeId);
+  }, [selectedRows]);
 
   return (
     <>
@@ -791,8 +997,21 @@ const BulkActions = ({
         color="default"
         variant="flat"
         size="sm"
-        disabled={disableStartScan}
-        onClick={onClick}
+        disabled={nodeIdsToScan.length == 0}
+        onClick={() =>
+          onBulkAction(
+            {
+              scanIdsToCancelScan: [],
+              scanIdsToDeleteScan: [],
+              nodesToStartScan: {
+                nodeIds: nodeIdsToScan,
+                nodeType,
+              },
+              nodesToDeleteScan: [],
+            },
+            ActionEnumType.START_SCAN,
+          )
+        }
       >
         Start scan
       </Button>
@@ -800,8 +1019,18 @@ const BulkActions = ({
         color="default"
         variant="flat"
         size="sm"
-        disabled={disableCancelScan}
-        onClick={onCancelScan}
+        disabled={scanIdsToCancelScan.length === 0}
+        onClick={() =>
+          onBulkAction(
+            {
+              scanIdsToCancelScan,
+              scanIdsToDeleteScan: [],
+              nodesToStartScan: null,
+              nodesToDeleteScan: [],
+            },
+            ActionEnumType.CANCEL_SCAN,
+          )
+        }
       >
         Cancel scan
       </Button>
@@ -810,22 +1039,72 @@ const BulkActions = ({
         variant="flat"
         startIcon={<TrashLineIcon />}
         size="sm"
-        disabled={disableDeleteScan}
-        onClick={onDelete}
+        disabled={scanIdsToDeleteScan.length === 0}
+        onClick={() =>
+          onBulkAction(
+            {
+              scanIdsToCancelScan: [],
+              scanIdsToDeleteScan,
+              nodesToStartScan: null,
+              nodesToDeleteScan: [],
+            },
+            ActionEnumType.DELETE_SCAN,
+          )
+        }
       >
         Delete scan
       </Button>
-      <Button
-        variant="flat"
-        startIcon={<RefreshIcon />}
-        size="sm"
-        disabled={disableRefreshAccount}
-        onClick={onRefreshAccount}
-      >
-        Refresh account
-      </Button>
+      {isCloudNode(nodeType) || isCloudOrgNode(nodeType) ? (
+        <>
+          <Button
+            variant="flat"
+            startIcon={<RefreshIcon />}
+            size="sm"
+            disabled={selectedRows.length === 0}
+            onClick={() =>
+              onBulkAction(
+                {
+                  scanIdsToCancelScan: [],
+                  scanIdsToDeleteScan: [],
+                  nodesToStartScan: null,
+                  nodesToDeleteScan: [],
+                },
+                ActionEnumType.REFRESH_ACCOUNT,
+              )
+            }
+          >
+            Refresh account
+          </Button>
+          <Button
+            variant="flat"
+            startIcon={<TrashLineIcon />}
+            size="sm"
+            disabled={nodeIdsToDelete.length === 0}
+            color="error"
+            onClick={() =>
+              onBulkAction(
+                {
+                  scanIdsToCancelScan: [],
+                  scanIdsToDeleteScan: [],
+                  nodesToStartScan: null,
+                  nodesToDeleteScan: nodeIdsToDelete,
+                },
+                ActionEnumType.DELETE_ACCOUNT,
+              )
+            }
+          >
+            Delete account
+          </Button>
+        </>
+      ) : null}
     </>
   );
+};
+
+const useGetAgentVersions = () => {
+  return useSuspenseQuery({
+    ...queries.setting.listAgentVersion(),
+  });
 };
 
 const AccountTable = ({
@@ -839,10 +1118,13 @@ const AccountTable = ({
   scanType: 'ComplianceScan' | 'CloudComplianceScan';
   setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   rowSelectionState: RowSelectionState;
-  onTableAction: (ids: string[], actionType: ActionEnumType) => void;
+  onTableAction: (row: ModelCloudNodeAccountInfo, actionType: ActionEnumType) => void;
 }) => {
+  const { mode: theme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = usePostureAccounts();
+  const { data: versionsData } = useGetAgentVersions();
+  const versions = versionsData.versions ?? [];
 
   const [sort, setSort] = useSortingState();
 
@@ -924,7 +1206,7 @@ const AccountTable = ({
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1 flex">
-                  <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90 shrink-0">
+                  <span className="block h-4 w-4 text-text-text-and-icon rotate-90 shrink-0">
                     <EllipsisIcon />
                   </span>
                 </button>
@@ -956,7 +1238,8 @@ const AccountTable = ({
               scanId: encodeURIComponent(cell.row.original.last_scan_id ?? ''),
               nodeType: cell.row.original.cloud_provider ?? '',
             });
-            return isNeverScan ? (
+            return isNeverScan ||
+              isScanDeletePending(cell.row.original.last_scan_status!) ? (
               <span>{children}</span>
             ) : (
               <DFLink to={redirectUrl}>{children}</DFLink>
@@ -984,7 +1267,7 @@ const AccountTable = ({
             return (
               <span
                 style={{
-                  color: getColorForCompliancePercent(percent),
+                  color: getColorForCompliancePercent(theme, percent),
                 }}
               >
                 {formatPercentage(percent, {
@@ -1018,12 +1301,12 @@ const AccountTable = ({
               return (
                 <>
                   <div className="flex gap-x-1.5 items-center" key={current}>
-                    <span className="dark:text-text-input-value font-medium">
+                    <span className="text-text-input-value font-medium">
                       {data[current]}
                     </span>
                     <ScanStatusBadge status={scanStatus ?? ''} />
                     {index < keys.length - 1 ? (
-                      <div className="mx-2 w-px h-[20px] dark:bg-bg-grid-border" />
+                      <div className="mx-2 w-px h-[20px] bg-bg-grid-border" />
                     ) : null}
                   </div>
                 </>
@@ -1045,7 +1328,46 @@ const AccountTable = ({
         columnHelper.accessor('version', {
           enableSorting: false,
           cell: (info) => {
-            return <TruncatedText text={info.getValue() ?? ''} />;
+            const upgradeAvailable = isUpgradeAvailable(info.getValue(), versions);
+            return (
+              <div className="flex items-center gap-2 justify-start">
+                <div className="truncate">{info.getValue() ?? ''}</div>
+                {upgradeAvailable && (
+                  <Tooltip
+                    content={
+                      <div className="flex-col gap-2 dark:text-text-text-and-icon text-text-text-inverse">
+                        <div className="text-h5">Update Available.</div>
+                        <div className="text-p6">
+                          Version <span className="text-h6">{versions[0]}</span> is
+                          available. Please follow{' '}
+                          <DFLink
+                            href="https://community.deepfence.io/threatmapper/docs/cloudscanner/"
+                            target="_blank"
+                            className="dark:text-text-link text-blue-500"
+                          >
+                            these instructions
+                          </DFLink>{' '}
+                          to upgrade the scanner. If you need automatic updates to the
+                          scanner, please try{' '}
+                          <DFLink
+                            href="https://www.deepfence.io/threatstryker"
+                            target="_blank"
+                            className="dark:text-text-link text-blue-500"
+                          >
+                            ThreatStryker
+                          </DFLink>
+                          .
+                        </div>
+                      </div>
+                    }
+                  >
+                    <div className="h-4 w-4 dark:text-status-warning">
+                      <ArrowUpCircleLine />
+                    </div>
+                  </Tooltip>
+                )}
+              </div>
+            );
           },
           header: () => 'Version',
           ...columnWidth.version,
@@ -1054,7 +1376,7 @@ const AccountTable = ({
     }
 
     return columns;
-  }, [rowSelectionState, searchParams, data, nodeType]);
+  }, [rowSelectionState, searchParams, data, nodeType, versions, theme]);
 
   return (
     <>
@@ -1145,7 +1467,7 @@ const Header = () => {
   });
 
   return (
-    <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+    <BreadcrumbWrapper>
       <Breadcrumb>
         <BreadcrumbLink asChild icon={<PostureIcon />} isLink>
           <DFLink to={'/posture'} unstyled>
@@ -1161,16 +1483,12 @@ const Header = () => {
       <div className="ml-2 flex items-center">
         {isFetching ? <CircleSpinner size="sm" /> : null}
       </div>
-    </div>
+    </BreadcrumbWrapper>
   );
 };
 const Accounts = () => {
   const [searchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-
-  const [selectedScanType, setSelectedScanType] = useState<
-    typeof ScanTypeEnum.ComplianceScan | typeof ScanTypeEnum.CloudComplianceScan
-  >();
 
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const fetcher = useFetcher();
@@ -1183,8 +1501,9 @@ const Accounts = () => {
   );
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState(false);
   const [showCancelScan, setShowCancelScan] = useState(false);
-  const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
+  const [openStartScan, setOpenStartScan] = useState<boolean>(false);
 
   const scanType = isNonCloudProvider(routeParams.nodeType)
     ? ScanTypeEnum.ComplianceScan
@@ -1204,49 +1523,101 @@ const Accounts = () => {
     });
   }, [rowSelectionState]);
 
-  const nodeIdsToDeleteScan = useMemo(() => {
-    return selectedRows
-      .filter((row) => !isNeverScanned(row.scanStatus))
-      .map((row) => row.scanId);
-  }, [selectedRows]);
-
-  const nodeIdsToCancelScan = useMemo(() => {
-    return selectedRows
-      .filter((row) => isScanInProgress(row.scanStatus))
-      .map((row) => row.scanId);
-  }, [selectedRows]);
-
-  useEffect(() => {
-    setNodeIdsToScan(
-      selectedRows
-        .filter(
-          (node) =>
-            node.active &&
-            !isScanInProgress(node.scanStatus) &&
-            !isScanStopping(node.scanStatus),
-        )
-        .map((node) => node.nodeId),
-    );
-  }, [selectedRows]);
+  const [rowToAction, setRowToAction] = useState<{
+    scanIdsToCancelScan: string[];
+    scanIdsToDeleteScan: string[];
+    nodesToStartScan: ComplianceScanConfigureFormProps['data'] | null;
+    nodesToDeleteScan: string[];
+  }>({
+    scanIdsToCancelScan: [],
+    scanIdsToDeleteScan: [],
+    nodesToStartScan: null,
+    nodesToDeleteScan: [],
+  });
 
   const onTableAction = useCallback(
-    (nodeIds: string[], actionType: ActionEnumType) => {
-      if (actionType === ActionEnumType.START_SCAN) {
-        setNodeIdsToScan(nodeIds);
-        setSelectedScanType(scanType);
+    (row: ModelCloudNodeAccountInfo, actionType: ActionEnumType) => {
+      if (actionType === ActionEnumType.START_SCAN && nodeType) {
+        setRowToAction({
+          scanIdsToCancelScan: [],
+          scanIdsToDeleteScan: [],
+          nodesToStartScan: {
+            nodeIds: [row.node_id!],
+            nodeType: nodeType,
+          },
+          nodesToDeleteScan: [],
+        });
+        setOpenStartScan(true);
         return;
       } else if (actionType === ActionEnumType.REFRESH_ACCOUNT) {
         const formData = new FormData();
         formData.append('actionType', ActionEnumType.REFRESH_ACCOUNT);
-        nodeIds.forEach((nodeId) => formData.append('accountId[]', nodeId));
+        [row.node_id!].forEach((nodeId) => formData.append('accountId[]', nodeId));
         fetcher.submit(formData, {
           method: 'post',
         });
         return;
+      } else if (actionType === ActionEnumType.DELETE_SCAN) {
+        setRowToAction({
+          scanIdsToCancelScan: [],
+          scanIdsToDeleteScan: [row.last_scan_id!],
+          nodesToStartScan: null,
+          nodesToDeleteScan: [],
+        });
+        setShowDeleteDialog(true);
+      } else if (actionType === ActionEnumType.CANCEL_SCAN) {
+        setRowToAction({
+          scanIdsToCancelScan: [row.last_scan_id!],
+          scanIdsToDeleteScan: [],
+          nodesToStartScan: null,
+          nodesToDeleteScan: [],
+        });
+        setShowCancelScan(true);
+      } else if (actionType === ActionEnumType.DELETE_ACCOUNT) {
+        setRowToAction({
+          scanIdsToCancelScan: [],
+          scanIdsToDeleteScan: [],
+          nodesToStartScan: null,
+          nodesToDeleteScan: [row.node_id!],
+        });
+        setShowDeleteAccountDialog(true);
       }
     },
     [fetcher],
   );
+
+  const onBulkAction = (
+    data: {
+      scanIdsToCancelScan: string[];
+      scanIdsToDeleteScan: string[];
+      nodesToStartScan: ComplianceScanConfigureFormProps['data'] | null;
+      nodesToDeleteScan: string[];
+    },
+    actionType: string,
+  ) => {
+    setRowToAction({
+      scanIdsToCancelScan: data.scanIdsToCancelScan,
+      scanIdsToDeleteScan: data.scanIdsToDeleteScan,
+      nodesToStartScan: data.nodesToStartScan,
+      nodesToDeleteScan: data.nodesToDeleteScan,
+    });
+    if (actionType === ActionEnumType.DELETE_SCAN) {
+      setShowDeleteDialog(true);
+    } else if (actionType === ActionEnumType.CANCEL_SCAN) {
+      setShowCancelScan(true);
+    } else if (actionType === ActionEnumType.START_SCAN) {
+      setOpenStartScan(true);
+    } else if (actionType === ActionEnumType.REFRESH_ACCOUNT) {
+      const formData = new FormData();
+      formData.append('actionType', ActionEnumType.REFRESH_ACCOUNT);
+      selectedRows.forEach((row) => formData.append('accountId[]', row.nodeId));
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    } else if (actionType === ActionEnumType.DELETE_ACCOUNT) {
+      setShowDeleteAccountDialog(true);
+    }
+  };
 
   return (
     <div>
@@ -1255,37 +1626,60 @@ const Accounts = () => {
         <StopScanForm
           open={true}
           closeModal={setShowCancelScan}
-          scanIds={nodeIdsToCancelScan}
+          scanIds={rowToAction.scanIdsToCancelScan}
           scanType={scanType}
           onCancelScanSuccess={() => {
             setRowSelectionState({});
           }}
         />
       )}
+      {openStartScan && (
+        <ConfigureScanModal
+          open={true}
+          onOpenChange={() => setOpenStartScan(false)}
+          onSuccess={() => setRowSelectionState({})}
+          scanOptions={
+            nodeType && rowToAction.nodesToStartScan
+              ? {
+                  showAdvancedOptions: true,
+                  scanType,
+                  data: rowToAction.nodesToStartScan,
+                }
+              : undefined
+          }
+        />
+      )}
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          scanIds={rowToAction.scanIdsToDeleteScan}
+          scanType={
+            isNonCloudProvider(routeParams.nodeType)
+              ? ModelBulkDeleteScansRequestScanTypeEnum.Compliance
+              : ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance
+          }
+          setShowDialog={setShowDeleteDialog}
+          onSuccess={() => {
+            setRowSelectionState({});
+          }}
+        />
+      )}
+      {showDeleteAccountDialog ? (
+        <DeleteAccountConfirmationModal
+          showDialog={showDeleteAccountDialog}
+          accountIds={rowToAction.nodesToDeleteScan}
+          setShowDialog={setShowDeleteAccountDialog}
+          onSuccess={() => {
+            setRowSelectionState({});
+          }}
+        />
+      ) : null}
       <div className="mb-4 mx-4">
         <div className="flex h-12 items-center">
           <BulkActions
-            disableStartScan={nodeIdsToScan.length == 0}
-            disableCancelScan={nodeIdsToCancelScan.length === 0}
-            disableDeleteScan={nodeIdsToDeleteScan.length === 0}
-            disableRefreshAccount={selectedRows.length === 0}
-            onRefreshAccount={() => {
-              const formData = new FormData();
-              formData.append('actionType', ActionEnumType.REFRESH_ACCOUNT);
-              selectedRows.forEach((row) => formData.append('accountId[]', row.nodeId));
-              fetcher.submit(formData, {
-                method: 'post',
-              });
-            }}
-            onClick={() => {
-              setSelectedScanType(scanType);
-            }}
-            onCancelScan={() => {
-              setShowCancelScan(true);
-            }}
-            onDelete={() => {
-              setShowDeleteDialog(true);
-            }}
+            nodeType={nodeType}
+            onBulkAction={onBulkAction}
+            selectedRows={selectedRows}
           />
           <Button
             variant="flat"
@@ -1310,24 +1704,6 @@ const Accounts = () => {
           </Button>
         </div>
         {filtersExpanded ? <Filters /> : null}
-        <ConfigureScanModal
-          open={!!selectedScanType}
-          onOpenChange={() => setSelectedScanType(undefined)}
-          onSuccess={() => setRowSelectionState({})}
-          scanOptions={
-            selectedScanType && nodeType
-              ? {
-                  showAdvancedOptions: true,
-                  scanType: selectedScanType,
-                  data: {
-                    nodeIds: nodeIdsToScan,
-                    nodeType: nodeType,
-                  },
-                }
-              : undefined
-          }
-        />
-
         <Suspense fallback={<TableSkeleton columns={6} rows={10} />}>
           <AccountTable
             setRowSelectionState={setRowSelectionState}
@@ -1338,21 +1714,6 @@ const Accounts = () => {
           />
         </Suspense>
       </div>
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          scanIds={nodeIdsToDeleteScan}
-          scanType={
-            isNonCloudProvider(routeParams.nodeType)
-              ? ModelBulkDeleteScansRequestScanTypeEnum.Compliance
-              : ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance
-          }
-          setShowDialog={setShowDeleteDialog}
-          onSuccess={() => {
-            setRowSelectionState({});
-          }}
-        />
-      )}
     </div>
   );
 };

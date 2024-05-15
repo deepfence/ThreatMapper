@@ -2,6 +2,8 @@ import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import { NavLink } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 
+import { isThreatMapper } from '@/utils/version';
+
 const MenuItems: Array<{
   title: string;
   to: string;
@@ -40,10 +42,17 @@ const MenuItems: Array<{
   },
 ];
 
+if (isThreatMapper) {
+  MenuItems.push({
+    title: 'License Details',
+    to: '/settings/tm-license-details',
+  });
+}
+
 const linkClass = cn(
-  'text-p5 dark:text-text-text-and-icon py-3 px-6',
-  'dark:hover:bg-bg-breadcrumb-bar',
-  'flex relative border-b dark:border-bg-grid-border',
+  'text-p5 text-text-text-and-icon py-3 px-6',
+  'hover:bg-bg-breadcrumb-bar',
+  'flex relative border-b border-bg-grid-border',
 );
 
 export const SettingNavigation = () => {
@@ -53,7 +62,7 @@ export const SettingNavigation = () => {
         orientation="vertical"
         className={cn(
           'overflow-x-hidden overflow-y-auto',
-          'border-r dark:border-bg-top-header ml-4 h-screen w-[208px]',
+          'border-r dark:border-bg-top-header border-bg-grid-border ml-4 h-screen w-[208px]',
         )}
       >
         <NavigationMenu.List>
@@ -62,7 +71,8 @@ export const SettingNavigation = () => {
               <div
                 className={cn(
                   `${linkClass}`,
-                  'text-h6 dark:text-text-input-value dark:hover:bg-transparent',
+                  'text-h6 dark:text-text-input-value',
+                  'dark:border-bg-grid-border dark:hover:bg-transparent hover:bg-transparent bg-transparent',
                 )}
               >
                 Setting options
@@ -80,7 +90,7 @@ export const SettingNavigation = () => {
                         isActive
                           ? cn(
                               linkClass,
-                              'dark:bg-bg-active-selection dark:text-text-input-value',
+                              'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value',
                             )
                           : linkClass
                       }
@@ -89,7 +99,7 @@ export const SettingNavigation = () => {
                         return (
                           <>
                             {isActive && (
-                              <div className="absolute w-1 left-0 top-0 bottom-0 dark:bg-accent-accent" />
+                              <div className="absolute w-1 left-0 top-0 bottom-0 bg-accent-accent" />
                             )}
                             <div className="overflow-wrap">{menuItem.title}</div>
                           </>

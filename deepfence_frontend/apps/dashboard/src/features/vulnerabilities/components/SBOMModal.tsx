@@ -1,9 +1,13 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { upperFirst } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { generatePath } from 'react-router-dom';
 import {
+  Button,
   CircleSpinner,
   createColumnHelper,
+  Dropdown,
+  DropdownItem,
   SlidingModal,
   SlidingModalCloseButton,
   SlidingModalContent,
@@ -12,12 +16,21 @@ import {
   Table,
 } from 'ui-components';
 
-import { ModelSbomResponse } from '@/api/generated';
+import {
+  ModelSbomResponse,
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportOptionsSbomFormatEnum,
+} from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { CaretDown } from '@/components/icons/common/CaretDown';
+import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { FileLineIcon } from '@/components/icons/common/FileLine';
-import { SeverityBadge } from '@/components/SeverityBadge';
+import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { TruncatedText } from '@/components/TruncatedText';
+import { useDownloadSBOM } from '@/features/common/data-component/downloadSBOMAction';
 import { queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
+import { VulnerabilitySeverityType } from '@/types/common';
 
 function useScanSBOM(scanId: string) {
   return useSuspenseQuery({
@@ -29,11 +42,15 @@ export const SbomModal = ({
   onClose,
   scanId,
   nodeName,
+  nodeType,
 }: {
   scanId: string;
   nodeName: string;
+  nodeType: string;
   onClose: () => void;
 }) => {
+  const { downloadSBOM, downloadingInFormat } = useDownloadSBOM();
+
   return (
     <SlidingModal
       open={true}
@@ -44,11 +61,88 @@ export const SbomModal = ({
     >
       <SlidingModalCloseButton />
       <SlidingModalHeader>
-        <div className="flex items-center gap-2 dark:text-text-text-and-icon dark:bg-bg-breadcrumb-bar p-5 text-h3">
+        <div className="flex items-center gap-2 text-text-text-and-icon dark:bg-bg-header bg-bg-breadcrumb-bar p-5 text-h3">
           <div className="h-5 w-5 shrink-0">
             <FileLineIcon />
           </div>
-          <div>SBOM for {nodeName}</div>
+          <TruncatedText text={`SBOM for ${nodeName}`} />
+          <Dropdown
+            align="end"
+            triggerAsChild
+            content={
+              <>
+                <DropdownItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    downloadSBOM({
+                      scanId,
+                      scanType: 'vulnerability',
+                      nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+                      format: UtilsReportOptionsSbomFormatEnum.SyftJson,
+                    });
+                  }}
+                  disabled={!!downloadingInFormat}
+                >
+                  <span className="flex text-center gap-x-2">
+                    {downloadingInFormat ===
+                      UtilsReportOptionsSbomFormatEnum.SyftJson && (
+                      <CircleSpinner size="sm" />
+                    )}{' '}
+                    Syft Format
+                  </span>
+                </DropdownItem>
+                <DropdownItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    downloadSBOM({
+                      scanId,
+                      scanType: 'vulnerability',
+                      nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+                      format: UtilsReportOptionsSbomFormatEnum.CyclonedxJson15,
+                    });
+                  }}
+                  disabled={!!downloadingInFormat}
+                >
+                  <span className="flex text-center gap-x-2">
+                    {downloadingInFormat ===
+                      UtilsReportOptionsSbomFormatEnum.CyclonedxJson15 && (
+                      <CircleSpinner size="sm" />
+                    )}{' '}
+                    CycloneDX Format
+                  </span>
+                </DropdownItem>
+                <DropdownItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    downloadSBOM({
+                      scanId,
+                      scanType: 'vulnerability',
+                      nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+                      format: UtilsReportOptionsSbomFormatEnum.SpdxJson23,
+                    });
+                  }}
+                  disabled={!!downloadingInFormat}
+                >
+                  <span className="flex text-center gap-x-2">
+                    {downloadingInFormat ===
+                      UtilsReportOptionsSbomFormatEnum.SpdxJson23 && (
+                      <CircleSpinner size="sm" />
+                    )}{' '}
+                    SPDX Format
+                  </span>
+                </DropdownItem>
+              </>
+            }
+          >
+            <Button
+              type="button"
+              startIcon={<DownloadLineIcon />}
+              endIcon={<CaretDown />}
+              className="ml-auto mr-8"
+            >
+              Download
+            </Button>
+          </Dropdown>
         </div>
       </SlidingModalHeader>
       <SlidingModalContent>
@@ -69,6 +163,7 @@ export const SbomModal = ({
 };
 
 const ModalContent = ({ scanId }: { scanId: string }) => {
+  const { mode: theme } = useTheme();
   const { data } = useScanSBOM(scanId);
   const [sort, setSort] = useState<SortingState>([
     {
@@ -83,7 +178,7 @@ const ModalContent = ({ scanId }: { scanId: string }) => {
     const columns = [
       columnHelper.accessor('package_name', {
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => <TruncatedText text="Package Name" />,
+        header: () => <TruncatedText text="Package name" />,
         minSize: 50,
         size: 70,
         maxSize: 100,
@@ -133,7 +228,15 @@ const ModalContent = ({ scanId }: { scanId: string }) => {
         sortUndefined: -1,
         cell: (info) => {
           if (!info.getValue()) return '';
-          return <SeverityBadge severity={info.getValue() ?? ''} />;
+          return (
+            <div className="flex items-center gap-x-2 tabular-nums">
+              <SeverityBadgeIcon
+                severity={(info.getValue() as VulnerabilitySeverityType) ?? ''}
+                theme={theme}
+              />
+              {upperFirst(info.getValue())}
+            </div>
+          );
         },
         sortingFn: (rowA, rowB) => {
           const severityA = rowA.original.severity?.toLowerCase() || 'default';
@@ -158,7 +261,7 @@ const ModalContent = ({ scanId }: { scanId: string }) => {
   }, []);
 
   if (data.message?.length) {
-    return <div className="dark:text-text-text-and-icon">{data.message}</div>;
+    return <div className="text-text-text-and-icon">{data.message}</div>;
   }
 
   return (

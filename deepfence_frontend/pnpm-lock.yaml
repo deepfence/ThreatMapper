@@ -36,6 +36,7 @@ importers:
       '@typescript-eslint/parser': ^6.3.0
       '@vitejs/plugin-react': ^4.0.4
       '@vitest/coverage-c8': ^0.33.0
+      '@yornaath/batshit': ^0.9.0
       autoprefixer: ^10.4.15
       cron-converter: ^2.0.1
       cronstrue: ^2.41.0
@@ -79,6 +80,7 @@ importers:
       '@suspensive/react': 1.11.6_react@18.2.0
       '@suspensive/react-query': 1.11.6_mtrmixnuil4ipbilqpq7buadam
       '@tanstack/react-query': 4.32.6_biqbaboplfbrettd7655fr4n2y
+      '@yornaath/batshit': 0.9.0
       cron-converter: 2.0.1
       cronstrue: 2.41.0
       dayjs: 1.11.9
@@ -131,6 +133,8 @@ importers:
 
   packages/tailwind-preset:
     specifiers:
+      '@mertasan/tailwindcss-variables': ^2.7.0
+      '@types/mertasan__tailwindcss-variables': ^2.6.4
       classnames: ^2.3.2
       tailwind-merge: ^1.14.0
       tailwindcss: ^3.3.3
@@ -139,6 +143,8 @@ importers:
       classnames: 2.3.2
       tailwind-merge: 1.14.0
     devDependencies:
+      '@mertasan/tailwindcss-variables': 2.7.0_gtkfdoc4yzqy2xj3ku2n5fmgdy
+      '@types/mertasan__tailwindcss-variables': 2.6.4
       tailwindcss: 3.3.3
       typescript: 5.1.6
 
@@ -192,6 +198,7 @@ importers:
       jsdom: ^22.1.0
       lodash-es: ^4.17.21
       postcss: ^8.4.27
+      postcss-import: ^15.1.0
       react: ^18.2.0
       react-dom: ^18.2.0
       react-use: ^17.4.0
@@ -256,6 +263,7 @@ importers:
       eslint-plugin-storybook: 0.6.13_qj3u6ezxe2airdzjq3nyoxe24m
       jsdom: 22.1.0
       postcss: 8.4.27
+      postcss-import: 15.1.0_postcss@8.4.27
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       resize-observer-polyfill: 1.5.1
@@ -2330,6 +2338,18 @@ packages:
       '@types/mdx': 2.0.6
       '@types/react': 18.2.20
       react: 18.2.0
+    dev: true
+
+  /@mertasan/tailwindcss-variables/2.7.0_gtkfdoc4yzqy2xj3ku2n5fmgdy:
+    resolution: {integrity: sha512-rKPhxi/0r6XWP0+OjPmsfrloX/TtQmvONj2Pr3Nl8BNBznQVP3M9sphguDBUDC0AiKYx2xgup3XzAhlIDLPLIA==}
+    engines: {node: '>=12.13.0'}
+    peerDependencies:
+      autoprefixer: ^10.0.2
+      postcss: ^8.0.9
+    dependencies:
+      autoprefixer: 10.4.15_postcss@8.4.27
+      lodash: 4.17.21
+      postcss: 8.4.27
     dev: true
 
   /@microsoft/api-extractor-model/7.27.6:
@@ -4914,6 +4934,14 @@ packages:
     resolution: {integrity: sha512-sVcwEG10aFU2KcM7cIA0M410UPv/DesOPyG8zMVk0QUDexHA3lYmGucpEpZ2dtWWhi2ip3CG+5g/iH0PwoW4Fw==}
     dev: true
 
+  /@types/mertasan__tailwindcss-variables/2.6.4:
+    resolution: {integrity: sha512-gMiHep7/ProK1THXJtPhUGQpOcEV18aySFZKq5WyNR+AsFGcPNrAUka7O4MFglM3d5mBcL5s+oM71PUkeI0uvQ==}
+    dependencies:
+      tailwindcss: 3.3.3
+    transitivePeerDependencies:
+      - ts-node
+    dev: true
+
   /@types/mime-types/2.1.1:
     resolution: {integrity: sha512-vXOTGVSLR2jMw440moWTC7H19iUyLtP3Z1YTj7cSsubOICinjMxFeb/V57v9QdyyPGbbWolUFSSmSiRSn94tFw==}
     dev: true
@@ -5542,6 +5570,16 @@ packages:
       '@types/emscripten': 1.39.7
       tslib: 1.14.1
     dev: true
+
+  /@yornaath/batshit-devtools/1.6.0:
+    resolution: {integrity: sha512-ckKxrdfuFSRFz54tYU+VkD1eZOOaxa92U4eKOPtlxc1itB12Cqb1Dmk8Rqv6mARxp8YvocVGKbccrXoCwH2Lew==}
+    dev: false
+
+  /@yornaath/batshit/0.9.0:
+    resolution: {integrity: sha512-QdI1hQUPlpFT+o1iKLi9fQEKCli8c3UG7q4Ih8MP4jn+pyAjbfC4xaK5PwqSsSZgT0YeAZ0GWbbO9+1xAtWXlQ==}
+    dependencies:
+      '@yornaath/batshit-devtools': 1.6.0
+    dev: false
 
   /@zxing/text-encoding/0.9.0:
     resolution: {integrity: sha512-U/4aVJ2mxI0aDNI8Uq0wEhMgY+u4CNtEb0om3+y3+niDAsoTCOB33UF0sxpzqzdqXLqmvc+vZyAt4O8pPdfkwA==}

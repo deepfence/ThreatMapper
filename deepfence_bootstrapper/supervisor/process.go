@@ -160,6 +160,8 @@ func (ph *procHandler) start() error {
 						shortRetries -= 1
 						if shortRetries == 0 {
 							log.Info().Msgf("%s keeps crashing, stopped", ph.command)
+							// set flag to inicate the process is stopped
+							ph.started = false
 							break loop
 						}
 					} else {

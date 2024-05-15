@@ -9,6 +9,9 @@ const (
 	SuccessIntegrationUpdated         = "integration updated successfully"
 	SuccessIntegrationCreated         = "integration added successfully"
 	SuccessEmailConfigCreated         = "email configuration added successfully"
+	SuccessEmailConfigTest            = "test email sent successfully"
 	ErrIntegrationDoesNotExist        = "integration does not exist"
 	ErrIntegrationTypeCannotBeUpdated = "integration type cannot be updated"
+	ErrIntegrationTypeEmpty           = "integration type cannot be empty"
+	ErrNotificationTypeEmpty          = "notification type cannot be empty"
 )

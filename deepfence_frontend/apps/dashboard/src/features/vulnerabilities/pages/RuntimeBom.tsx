@@ -28,6 +28,8 @@ import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
+import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SbomModal } from '@/features/vulnerabilities/components/SBOMModal';
 import { queries } from '@/queries';
@@ -67,7 +69,7 @@ const RuntimeBom = () => {
 
   return (
     <div>
-      <div className="flex pl-4 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <BreadcrumbWrapper>
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<VulnerabilityIcon />} isLink>
             <DFLink to={'/vulnerability'} unstyled>
@@ -81,30 +83,33 @@ const RuntimeBom = () => {
         <div className="ml-2 flex items-center">
           {isFetching ? <CircleSpinner size="sm" /> : null}
         </div>
-      </div>
+      </BreadcrumbWrapper>
 
       <div className="mx-4">
-        <Button
-          variant="flat"
-          className="ml-auto py-2"
-          startIcon={<FilterIcon />}
-          endIcon={
-            getAppliedFiltersCount(searchParams) > 0 ? (
-              <Badge
-                label={String(getAppliedFiltersCount(searchParams))}
-                variant="filled"
-                size="small"
-                color="blue"
-              />
-            ) : null
-          }
-          size="sm"
-          onClick={() => {
-            setFiltersExpanded((prev) => !prev);
-          }}
-        >
-          Filter
-        </Button>
+        <div className="h-12 flex items-center">
+          <Button
+            variant="flat"
+            className="ml-auto py-2"
+            startIcon={<FilterIcon />}
+            endIcon={
+              getAppliedFiltersCount(searchParams) > 0 ? (
+                <Badge
+                  label={String(getAppliedFiltersCount(searchParams))}
+                  variant="filled"
+                  size="small"
+                  color="blue"
+                />
+              ) : null
+            }
+            size="sm"
+            onClick={() => {
+              setFiltersExpanded((prev) => !prev);
+            }}
+          >
+            Filter
+          </Button>
+        </div>
+
         {filtersExpanded ? <Filters /> : null}
         <Suspense fallback={<TableSkeleton columns={11} rows={15} />}>
           <ScansTable />
@@ -114,7 +119,22 @@ const RuntimeBom = () => {
   );
 };
 
-const FILTER_SEARCHPARAMS: Record<string, string> = {
+enum FILTER_SEARCHPARAMS_KEYS_ENUM {
+  nodeType = 'nodeType',
+  containerImages = 'containerImages',
+  containers = 'containers',
+  hosts = 'hosts',
+  clusters = 'clusters',
+}
+
+const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
+  FILTER_SEARCHPARAMS_KEYS_ENUM.hosts,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.containerImages,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.clusters,
+  FILTER_SEARCHPARAMS_KEYS_ENUM.containers,
+];
+
+const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   nodeType: 'Node Type',
   containerImages: 'Container image',
   containers: 'Container',
@@ -132,9 +152,23 @@ const Filters = () => {
 
   const [nodeType, setNodeType] = useState('');
 
+  const onFilterRemove = ({ key, value }: { key: string; value: string }) => {
+    return () => {
+      setSearchParams((prev) => {
+        const existingValues = prev.getAll(key);
+        prev.delete(key);
+        existingValues.forEach((existingValue) => {
+          if (existingValue !== value) prev.append(key, existingValue);
+        });
+        prev.delete('page');
+        return prev;
+      });
+    };
+  };
+
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
-    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+    <FilterWrapper>
       <div className="flex gap-2">
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['nodeType']}
@@ -262,29 +296,42 @@ const Filters = () => {
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
-          {Array.from(searchParams)
-            .filter(([key]) => {
+          {(
+            Array.from(searchParams).filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
-            })
-            .map(([key, value]) => {
+            }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
+          ).map(([key, value]) => {
+            if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
               return (
                 <FilterBadge
                   key={`${key}-${value}`}
-                  onRemove={() => {
-                    setSearchParams((prev) => {
-                      const existingValues = prev.getAll(key);
-                      prev.delete(key);
-                      existingValues.forEach((existingValue) => {
-                        if (existingValue !== value) prev.append(key, existingValue);
-                      });
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }}
-                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                  nodeType={(() => {
+                    if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.hosts) {
+                      return 'host';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.containerImages) {
+                      return 'containerImage';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.clusters) {
+                      return 'cluster';
+                    } else if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.containers) {
+                      return 'container';
+                    }
+                    throw new Error('unknown key');
+                  })()}
+                  onRemove={onFilterRemove({ key, value })}
+                  id={value}
+                  label={FILTER_SEARCHPARAMS[key]}
                 />
               );
-            })}
+            }
+            return (
+              <FilterBadge
+                key={`${key}-${value}`}
+                onRemove={onFilterRemove({ key, value })}
+                text={value}
+                label={FILTER_SEARCHPARAMS[key]}
+              />
+            );
+          })}
           <Button
             variant="flat"
             color="default"
@@ -304,7 +351,7 @@ const Filters = () => {
           </Button>
         </div>
       ) : null}
-    </div>
+    </FilterWrapper>
   );
 };
 
@@ -316,6 +363,7 @@ const ScansTable = () => {
   const [selectedNode, setSelectedNode] = useState<{
     nodeName: string;
     scanId: string;
+    nodeType: string;
   } | null>(null);
 
   const columns = useMemo(() => {
@@ -349,6 +397,7 @@ const ScansTable = () => {
                   setSelectedNode({
                     scanId: info.row.original.scan_id,
                     nodeName: info.row.original.node_name,
+                    nodeType: info.row.original.node_type,
                   });
                 }}
                 href="#"
@@ -429,6 +478,7 @@ const ScansTable = () => {
         <SbomModal
           scanId={selectedNode.scanId}
           nodeName={selectedNode.nodeName}
+          nodeType={selectedNode.nodeType}
           onClose={() => {
             setSelectedNode(null);
           }}

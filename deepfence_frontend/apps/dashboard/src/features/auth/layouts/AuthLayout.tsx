@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 import { Card } from 'ui-components';
 
 import AuthBg from '@/assets/auth-bg.svg';
+import AuthBgLight from '@/assets/auth-bg-light.svg';
+import { useTheme } from '@/theme/ThemeContext';
 
 const DeepfenceLogo = () => {
   return (
@@ -101,26 +104,32 @@ const DeepfenceLogo = () => {
   );
 };
 export const AuthLayout = () => {
+  const { mode } = useTheme();
+  const bg = useMemo(() => {
+    if (mode === 'light') {
+      return AuthBgLight;
+    }
+    return AuthBg;
+  }, [mode]);
+
   return (
     <div
       className="grid h-screen place-items-center overflow-auto"
       style={{
-        background: `url("${AuthBg}") no-repeat center center`,
+        background: `url("${bg}") no-repeat center center`,
         backgroundSize: 'cover',
-        backgroundColor: '#150C58',
+        // backgroundColor: '#150C58',
       }}
     >
       <div className="relative">
         <div className="h-full grid place-items-center">
           <div className="flex mt-4">
             <DeepfenceLogo />
-            <span className="dark:text-text-input-value text-h2 font-normal ml-1">
+            <span className="dark:text-text-input-value text-white text-h2 font-normal ml-1">
               Deepfence
             </span>
           </div>
-          <Card
-            className={cn('w-[360px] px-14 py-12 my-4 rounded-[15px] dark:bg-bg-page/70')}
-          >
+          <Card className={cn('w-[360px] px-14 py-12 my-4 rounded-[15px] bg-bg-page')}>
             <Outlet />
           </Card>
         </div>

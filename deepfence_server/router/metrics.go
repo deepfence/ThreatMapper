@@ -9,9 +9,10 @@ import (
 )
 
 type Collector struct {
-	activeAgents *prometheus.Desc
-	activeUsers  *prometheus.Desc
-	userInfo     *prometheus.Desc
+	activeAgents    *prometheus.Desc
+	activeUsers     *prometheus.Desc
+	userInfo        *prometheus.Desc
+	neo4jNodesCount *prometheus.Desc
 }
 
 func newCollector() *Collector {
@@ -31,6 +32,11 @@ func newCollector() *Collector {
 			"users info",
 			[]string{"namespace", "company"}, nil,
 		),
+		neo4jNodesCount: prometheus.NewDesc(
+			"neo4j_node_label_count",
+			"all neo4j nodes count",
+			[]string{"label", "namespace"}, nil,
+		),
 	}
 }
 
@@ -38,6 +44,7 @@ func (collector *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.activeAgents
 	ch <- collector.activeUsers
 	ch <- collector.userInfo
+	ch <- collector.neo4jNodesCount
 }
 
 func (collector *Collector) Collect(ch chan<- prometheus.Metric) {
@@ -63,6 +70,16 @@ func (collector *Collector) Collect(ch chan<- prometheus.Metric) {
 			float64(counts.KubernetesCluster), "kubernetes_cluster", ns)
 		ch <- prometheus.MustNewConstMetric(collector.activeAgents, prometheus.GaugeValue,
 			float64(counts.Namespace), "kubernetes_namespace", ns)
+	}
+
+	allNodes, err := reporters_search.CountAllNodeLabels(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to fetch all nodes count for metrics")
+	} else {
+		for k, v := range allNodes {
+			ch <- prometheus.MustNewConstMetric(collector.neo4jNodesCount, prometheus.GaugeValue,
+				float64(v), k, ns)
+		}
 	}
 
 	// get number of users

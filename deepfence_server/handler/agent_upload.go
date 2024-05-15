@@ -8,9 +8,8 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
-
-	url2 "net/url"
 
 	m "github.com/minio/minio-go/v7"
 
@@ -18,10 +17,15 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"golang.org/x/mod/semver"
+)
+
+const (
+	agentBinaryExtention = ".tar.gz"
 )
 
 func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
@@ -41,9 +45,9 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	filename := filepath.Base(fileHeader.Filename)
-	vername := filename[:len(filename)-len(filepath.Ext(filename))]
+	vername := strings.TrimSuffix(filename, agentBinaryExtention)
 	if !semver.IsValid(vername) {
-		h.respondError(&BadDecoding{fmt.Errorf("tarball name should be versioned %v", vername)}, w)
+		h.respondError(&BadDecoding{fmt.Errorf("tarball name should be versioned: %v", vername)}, w)
 		return
 	}
 
@@ -62,13 +66,13 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 		vername: bytes.NewBuffer(tarball),
 	}
 
-	tagsWithURLs, err := PrepareAgentBinariesReleases(ctx, versionedTarball)
+	tagsWithFileServerKeys, err := PrepareAgentBinariesReleases(ctx, versionedTarball)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
 	}
 
-	err = IngestAgentVersion(ctx, tagsWithURLs)
+	err = IngestAgentVersion(ctx, tagsWithFileServerKeys, true)
 	if err != nil {
 		h.respondError(&InternalServerError{err}, w)
 		return
@@ -84,14 +88,18 @@ func (h *Handler) UploadAgentBinaries(w http.ResponseWriter, r *http.Request) {
 }
 
 func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[string]*bytes.Buffer) (map[string]string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "agent", "prepare-agent-binaries-releases")
+	defer span.End()
+
 	processedTags := map[string]string{}
-	minio, err := directory.MinioClient(ctx)
+	fileServerClient, err := directory.FileServerClient(ctx)
 	if err != nil {
 		return processedTags, err
 	}
 
 	for version, b := range versionedTarball {
-		res, err := minio.UploadFile(ctx,
+		res, err := fileServerClient.UploadFile(ctx,
 			version,
 			b.Bytes(),
 			false,
@@ -110,85 +118,97 @@ func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[stri
 			key = res.Key
 		}
 
-		url, err := minio.ExposeFile(ctx, key, false, 10*time.Hour, url2.Values{})
-		if err != nil {
-			log.Error().Err(err)
-			continue
-		}
-		log.Debug().Msgf("Exposed URL: %v", url)
-		processedTags[version] = url
+		log.Debug().Msgf("File server key: %v", key)
+		processedTags[version] = key
 	}
 	return processedTags, nil
 }
 
-func IngestAgentVersion(ctx context.Context, tagsToURL map[string]string) error {
+func IngestAgentVersion(ctx context.Context, tagsWithFileServerKeys map[string]string, manual bool) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "agent", "ingest-agent-version")
+	defer span.End()
+
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	tagsToIngest := []map[string]string{}
-	for k, v := range tagsToURL {
-		tagsToIngest = append(tagsToIngest, map[string]string{"tag": k, "url": v})
+	for k, v := range tagsWithFileServerKeys {
+		tagsToIngest = append(tagsToIngest, map[string]string{"tag": k, "key": v})
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		MERGE (n:AgentVersion{node_id: row.tag})
-		SET n.url = row.url`,
-		map[string]interface{}{"batch": tagsToIngest}); err != nil {
+		SET n.url = row.key,
+			n.manual = $manual`,
+		map[string]interface{}{
+			"batch":  tagsToIngest,
+			"manual": manual,
+		}); err != nil {
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func CleanUpAgentVersion(ctx context.Context, tagsToKeep []string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "agent", "cleanup-agent-version")
+	defer span.End()
+
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		MATCH (n:AgentVersion)
 		WHERE NOT n.node_id IN $tags
+		AND COALESCE(n.manual, false) = false
 		SET n.url = NULL`,
 		map[string]interface{}{"tags": tagsToKeep}); err != nil {
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]string) error {
+
+	ctx, span := telemetry.NewSpan(ctx, "agent", "schedule-auto-upgrade-for-patch-changes")
+	defer span.End()
+
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
 	tagsToIngest := []map[string]string{}
 	for k, v := range latest {
@@ -209,7 +229,7 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 				"action":      string(actionStr)})
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (vnew:AgentVersion{node_id: row.latest})
 		MATCH (v:AgentVersion) <-[:VERSIONED]- (n:Node)
@@ -222,7 +242,7 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func GetLatestVersionByMajorMinor(versions map[string]*bytes.Buffer) map[string]string {
@@ -258,25 +278,26 @@ func GetAgentVersionList(ctx context.Context) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close()
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Close()
+	defer tx.Close(ctx)
 
-	res, err := tx.Run(`
+	res, err := tx.Run(ctx, `
 		MATCH (n:AgentVersion)
 		WHERE NOT n.url IS NULL
-		RETURN n.node_id`,
+		RETURN n.node_id
+		ORDER BY n.node_id DESC`,
 		map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	recs, err := res.Collect()
+	recs, err := res.Collect(ctx)
 	if err != nil {
 		return nil, err
 	}

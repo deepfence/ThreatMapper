@@ -10,7 +10,7 @@ metadata:
     name: {{ include "deepfence-console.fullname" . }}-secrets-postgres
 stringData:
   DEEPFENCE_POSTGRES_USER_DB_PORT: "5432"
-  DEEPFENCE_POSTGRES_USER_DB_HOST: {{ include "deepfence-console.fullname" . }}-postgres
+  DEEPFENCE_POSTGRES_USER_DB_HOST: {{ include "deepfence-console.fullname" . }}-postgres.{{ .Release.Namespace }}.svc.{{ .Values.global.cluster_domain }}
   DEEPFENCE_POSTGRES_USER_DB_SSLMODE: disable
   {{- if .Values.fileserver.secrets }}
   DEEPFENCE_POSTGRES_USER_DB_USER: {{ .Values.postgres.secrets.POSTGRES_USER | quote }}

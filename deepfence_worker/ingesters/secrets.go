@@ -1,42 +1,43 @@
 package ingesters
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	workerUtil "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func CommitFuncSecrets(ns string, data []ingestersUtil.Secret) error {
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
+func CommitFuncSecrets(ctx context.Context, ns string, data []ingestersUtil.Secret) error {
+	ctx = directory.ContextWithNameSpace(ctx, directory.NamespaceID(ns))
+
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "commit-func-secrets")
+	defer span.End()
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		return err
 	}
-	defer session.Close()
+	defer tx.Close(ctx)
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	dataMap, err := secretsToMaps(data, tx)
+	dataMap, err := secretsToMaps(data)
 	if err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret
 		MERGE (r:SecretRule{rule_id:rule.rule_id})
 		SET r+=rule,
@@ -57,11 +58,10 @@ func CommitFuncSecrets(ns string, data []ingestersUtil.Secret) error {
 		return err
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
-func secretsToMaps(data []ingestersUtil.Secret,
-	tx neo4j.Transaction) ([]map[string]map[string]interface{}, error) {
+func secretsToMaps(data []ingestersUtil.Secret) ([]map[string]map[string]interface{}, error) {
 
 	var secrets []map[string]map[string]interface{}
 	for _, i := range data {
@@ -78,23 +78,8 @@ func secretsToMaps(data []ingestersUtil.Secret,
 			secret[k] = v
 		}
 
-		entityId := ""
-		if _, ok := secret["scan_id"]; ok {
-			scanId := secret["scan_id"].(string)
-			var err error
-			entityId, err = workerUtil.GetEntityIdFromScanID(scanId, string(utils.NEO4JSecretScan), tx)
-			if err != nil {
-				log.Error().Msgf("Error in getting entityId: %v", err)
-				return nil, err
-			}
-		}
-
-		nodeId := utils.ScanIDReplacer.Replace(fmt.Sprintf("%v:%v",
+		secret["node_id"] = utils.ScanIDReplacer.Replace(fmt.Sprintf("%v:%v",
 			i.Rule.ID, i.Match.FullFilename))
-		if len(entityId) > 0 {
-			nodeId = nodeId + "_" + entityId
-		}
-		secret["node_id"] = nodeId
 		rule := utils.ToMap(i.Rule)
 		delete(rule, "id")
 		rule["rule_id"] = i.Rule.ID

@@ -4,9 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/rs/zerolog/log"
+
+	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
@@ -20,6 +24,10 @@ func New(ctx context.Context, b []byte) (*ElasticSearch, error) {
 }
 
 func (e ElasticSearch) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
+	_, span := telemetry.NewSpan(ctx, "integrations", "elasticsearch-send-notification")
+	defer span.End()
+
 	var req *http.Request
 	var err error
 	var msg []map[string]interface{}
@@ -41,8 +49,10 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 
 	// send message to this elasticsearch using http
 	// Set up the HTTP request.
-	req, err = http.NewRequest("POST", e.Config.EndpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
+	endpointURL := strings.TrimRight(e.Config.EndpointURL, "/")
+	req, err = http.NewRequest("POST", endpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	}
 
@@ -59,6 +69,7 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	client := utils.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
+		span.EndWithErr(err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -69,4 +80,27 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	}
 
 	return nil
+}
+
+func (e ElasticSearch) IsValidCredential(ctx context.Context) (bool, error) {
+	// url might have trailing slash, remove it
+	url := strings.TrimRight(e.Config.EndpointURL, "/")
+	// Construct the URL for the Elasticsearch index
+	url = fmt.Sprintf("%s/%s", url, e.Config.Index)
+
+	// Send a HEAD request to check if the index exists
+	resp, err := http.Head(url)
+	if err != nil {
+		log.Error().Msgf("Error connecting to Elasticsearch: %v", err)
+		return false, fmt.Errorf("error connecting to Elasticsearch: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the status code
+	if resp.StatusCode != http.StatusOK {
+		log.Error().Msgf("Elasticsearch index validation failed. Status code: %d", resp.StatusCode)
+		return false, fmt.Errorf("Elasticsearch index validation failed. Status code: %d", resp.StatusCode)
+	}
+
+	return true, nil
 }
