@@ -11,7 +11,7 @@ import {
   SlidingModalFooter,
   SlidingModalHeader,
 } from '@/components/modal/SlidingModal';
-import { renderUI } from '@/tests/utils';
+import { renderUI, waitFor } from '@/tests/utils';
 
 /**
  * Why user-event???
@@ -32,9 +32,11 @@ describe(`Component SlidingModal`, () => {
 
       return (
         <>
-          <Button onClick={() => setOpen(true)} id="trigger-id" ref={ref}>
-            Click to open
-          </Button>
+          <div className="some-test">
+            <Button onClick={() => setOpen(true)} id="trigger-id" ref={ref}>
+              Click to open
+            </Button>
+          </div>
           <SlidingModal
             defaultOpen={false}
             open={open}
@@ -46,25 +48,29 @@ describe(`Component SlidingModal`, () => {
         </>
       );
     };
-    const { getByTestId, queryByText, getByText } = renderUI(<UI />);
-    expect(queryByText('This is a content')).toBeNull();
+    const { getByTestId, queryByText, getByText, findByTestId } = renderUI(<UI />);
+    expect(queryByText('This is a content')).not.toBeInTheDocument();
 
     const openBtnForModal = getByTestId('button-trigger-id');
     expect(openBtnForModal).toBeInTheDocument();
-    await user.click(openBtnForModal);
+    user.click(openBtnForModal);
 
-    expect(getByText('This is a content')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(getByText('This is a content')).toBeInTheDocument();
+    });
 
     // on close
     const overlay = getByTestId('sliding-modal-overlay');
     expect(overlay).toBeInTheDocument();
+    user.click(overlay);
 
-    await user.click(overlay);
-    expect(queryByText('This is a content')).toBeNull();
+    await waitFor(() => {
+      expect(queryByText('This is a content')).not.toBeInTheDocument();
+    });
 
     // triggerer focus back
-    const openBtnForModalAfterClose = getByTestId('button-trigger-id');
-    expect(openBtnForModalAfterClose).toHaveFocus();
+    expect(overlay).not.toBeInTheDocument();
+    expect(await findByTestId('button-trigger-id')).toHaveFocus();
   });
 
   it(`open sliding modal with header and footer`, async () => {
@@ -96,10 +102,12 @@ describe(`Component SlidingModal`, () => {
 
     const openBtnForModal = getByTestId('button-trigger-id');
     expect(openBtnForModal).toBeInTheDocument();
-    await user.click(openBtnForModal);
+    user.click(openBtnForModal);
 
-    expect(getByText('This is a content')).toBeInTheDocument();
-    expect(getByTestId('sliding-modal-title')).toHaveTextContent('Test title');
-    expect(getByTestId('sliding-modal-footer')).toHaveTextContent('Footer');
+    await waitFor(() => {
+      expect(getByText('This is a content')).toBeInTheDocument();
+      expect(getByTestId('sliding-modal-title')).toHaveTextContent('Test title');
+      expect(getByTestId('sliding-modal-footer')).toHaveTextContent('Footer');
+    });
   });
 });

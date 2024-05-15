@@ -759,8 +759,8 @@ const DeleteAccountConfirmationModal = ({
               ? `The Selected cloud account, resources and scans related to the account will be
               deleted.`
               : isCloudOrgNode(params.nodeType)
-              ? `The Selected org cloud account, child accounts related to org account, resources and scans related to the cloud accounts will be deleted.`
-              : ''}
+                ? `The Selected org cloud account, child accounts related to org account, resources and scans related to the cloud accounts will be deleted.`
+                : ''}
           </span>
           <br />
           <span>Are you sure you want to delete?</span>
