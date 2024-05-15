@@ -62,7 +62,7 @@ importers:
       remark-gfm: ^4.0.0
       resize-observer-polyfill: ^1.5.1
       rollup-plugin-visualizer: ^5.12.0
-      sonner: ^0.6.2
+      sonner: ^1.4.41
       tailwind-preset: workspace:*
       tailwindcss: ^3.4.3
       typescript: ^5.4.4
@@ -94,7 +94,7 @@ importers:
       react-use: 17.5.0_biqbaboplfbrettd7655fr4n2y
       rehype-sanitize: 6.0.0
       remark-gfm: 4.0.0
-      sonner: 0.6.2_biqbaboplfbrettd7655fr4n2y
+      sonner: 1.4.41_biqbaboplfbrettd7655fr4n2y
       tailwind-preset: link:../../packages/tailwind-preset
       ui-components: link:../../packages/ui-components
     devDependencies:
@@ -11410,8 +11410,8 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /sonner/0.6.2_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-bh4FWhYoNN481ZIW94W4e0kSLBTMGislYg2YXvDS1px1AJJz4erQe9jHV8s5pS1VMVDgfh3CslNSFLaU6Ldrnw==}
+  /sonner/1.4.41_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-uG511ggnnsw6gcn/X+YKkWPo5ep9il9wYi3QJxHsYe7yTZ4+cOd1wuodOUmOpFuXL+/RE3R04LczdNCDygTDgQ==}
     peerDependencies:
       react: ^18.0.0
       react-dom: ^18.0.0
