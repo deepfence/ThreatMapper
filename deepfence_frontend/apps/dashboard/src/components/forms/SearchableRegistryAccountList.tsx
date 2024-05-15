@@ -89,8 +89,8 @@ const SearchableRegistryAccount = ({
           isSelectVariantType && selectedRegistryAccounts.length > 0
             ? `${selectedRegistryAccounts.length} selected`
             : displayValue
-            ? displayValue
-            : 'Select registry account'
+              ? displayValue
+              : 'Select registry account'
         }
         placeholder="Select registry account"
         multiple

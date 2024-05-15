@@ -262,8 +262,8 @@ const ThirdCommand = ({ command }: { command: string }) => {
     status !== 'success'
       ? PLACEHOLDER_API_KEY
       : apiToken === undefined
-      ? PLACEHOLDER_API_KEY
-      : apiToken;
+        ? PLACEHOLDER_API_KEY
+        : apiToken;
 
   const { copy, isCopied } = useCopyToClipboardState();
   return (

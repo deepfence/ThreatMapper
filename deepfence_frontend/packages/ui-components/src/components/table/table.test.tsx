@@ -107,7 +107,7 @@ describe(`Component Table`, () => {
 
     expect(queryByText('row id 2')).not.toBeInTheDocument();
 
-    await user.click(expanderButtons[1]);
+    user.click(expanderButtons[1]);
 
     await waitFor(() => {
       expect(getByText('row id 2')).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe(`Component Table`, () => {
     expect(getByTestId('pagination-prev')).toBeInTheDocument();
     expect(getByRole('cell', { name: /fruit 0/i })).toBeInTheDocument();
 
-    await user.click(getByRole('button', { name: /2/i }));
+    user.click(getByRole('button', { name: /2/i }));
 
     await waitFor(() => {
       expect(queryByText('fruit 0')).not.toBeInTheDocument();
@@ -191,7 +191,7 @@ describe(`Component Table`, () => {
     expect(getByTestId('pagination-prev')).toBeInTheDocument();
     expect(getByRole('cell', { name: /fruit 0/i })).toBeInTheDocument();
 
-    await user.click(getByRole('button', { name: /2/i }));
+    user.click(getByRole('button', { name: /2/i }));
 
     await waitFor(() => {
       expect(queryByText('fruit 0')).not.toBeInTheDocument();
@@ -230,7 +230,7 @@ describe(`Component Table`, () => {
     expect(rows[1].children.item(0)?.textContent).toEqual('0');
     expect(rows[10].children.item(0)?.textContent).toEqual('9');
     expect(getByTestId('column-unsorted-indicator-id')).toBeInTheDocument();
-    await user.click(getByRole('columnheader', { name: /id/i }));
+    user.click(getByRole('columnheader', { name: /id/i }));
 
     await waitFor(() => {
       const rows = getAllByRole('row');
@@ -242,7 +242,7 @@ describe(`Component Table`, () => {
       expect(rows[10].children.item(0)?.textContent).toEqual('90');
     });
 
-    await user.click(getByRole('columnheader', { name: /id/i }));
+    user.click(getByRole('columnheader', { name: /id/i }));
 
     await waitFor(() => {
       const rows = getAllByRole('row');
@@ -254,7 +254,7 @@ describe(`Component Table`, () => {
       expect(rows[10].children.item(0)?.textContent).toEqual('9');
     });
 
-    await user.click(getByRole('columnheader', { name: /id/i }));
+    user.click(getByRole('columnheader', { name: /id/i }));
 
     await waitFor(() => {
       const rows = getAllByRole('row');
@@ -311,7 +311,7 @@ describe(`Component Table`, () => {
     expect(rows[1].children.item(0)?.textContent).toEqual('0');
     expect(rows[10].children.item(0)?.textContent).toEqual('9');
     expect(getByTestId('column-unsorted-indicator-id')).toBeInTheDocument();
-    await user.click(getByRole('columnheader', { name: /id/i }));
+    user.click(getByRole('columnheader', { name: /id/i }));
 
     await waitFor(() => {
       const rows = getAllByRole('row');
@@ -323,7 +323,7 @@ describe(`Component Table`, () => {
       expect(rows[10].children.item(0)?.textContent).toEqual('90');
     });
 
-    await user.click(getByRole('columnheader', { name: /id/i }));
+    user.click(getByRole('columnheader', { name: /id/i }));
 
     await waitFor(() => {
       const rows = getAllByRole('row');
@@ -335,7 +335,7 @@ describe(`Component Table`, () => {
       expect(rows[10].children.item(0)?.textContent).toEqual('9');
     });
 
-    await user.click(getByRole('columnheader', { name: /id/i }));
+    user.click(getByRole('columnheader', { name: /id/i }));
 
     await waitFor(() => {
       const rows = getAllByRole('row');
@@ -384,14 +384,14 @@ describe(`Component Table`, () => {
     expect(checkboxes.length).toEqual(10);
     expect(getByTestId('selected-rows')).toHaveTextContent('');
 
-    await user.click(checkboxes[4]);
+    user.click(checkboxes[4]);
 
     await waitFor(() => {
       expect(getByTestId('selected-rows').textContent).toContain(`"id-4"`);
     });
 
     [selectAllCheckBox, ...checkboxes] = getAllByRole('checkbox');
-    await user.click(checkboxes[5]);
+    user.click(checkboxes[5]);
 
     await waitFor(() => {
       expect(getByTestId('selected-rows').textContent).toContain(`"id-4"`);
@@ -399,7 +399,7 @@ describe(`Component Table`, () => {
     });
 
     [selectAllCheckBox, ...checkboxes] = getAllByRole('checkbox');
-    await user.click(selectAllCheckBox);
+    user.click(selectAllCheckBox);
 
     await waitFor(() => {
       checkboxes.slice(checkboxes.length - 1).forEach((checkbox, index) => {

@@ -88,10 +88,10 @@ const SearchableCloudAccounts = ({
           isSelectVariantType && selectedAccounts.length > 0
             ? `${selectedAccounts.length} selected`
             : cloudProvider
-            ? displayValue
               ? displayValue
-              : `${cloudProvider} account`
-            : 'Cloud account'
+                ? displayValue
+                : `${cloudProvider} account`
+              : 'Cloud account'
         }
         multiple
         value={selectedAccounts}
@@ -147,8 +147,8 @@ export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListPr
               return displayValue
                 ? displayValue
                 : cloudProvider
-                ? `${cloudProvider} account`
-                : 'Cloud account';
+                  ? `${cloudProvider} account`
+                  : 'Cloud account';
             }}
             multiple
             onQueryChange={() => {
