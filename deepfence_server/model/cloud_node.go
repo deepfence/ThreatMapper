@@ -33,6 +33,7 @@ var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderGCP,
 
 type CloudNodeAccountRegisterReq struct {
 	NodeID              string            `json:"node_id" required:"true"`
+	HostNodeId          string            `json:"host_node_id"`
 	CloudAccount        string            `json:"cloud_account" required:"true"`
 	CloudProvider       string            `json:"cloud_provider" required:"true"  enum:"aws,gcp,azure"`
 	MonitoredAccountIDs map[string]string `json:"monitored_account_ids"`
@@ -45,10 +46,9 @@ type CloudNodeAccountRegisterResp struct {
 }
 
 type CloudNodeAccountRegisterRespData struct {
-	Scans            map[string]CloudComplianceScanDetails `json:"scans"`
-	CloudtrailTrails []CloudNodeCloudtrailTrail            `json:"cloudtrail_trails"`
-	Refresh          string                                `json:"refresh"`
-	LogAction        ctl.Action                            `json:"log_action"`
+	CloudtrailTrails []CloudNodeCloudtrailTrail `json:"cloudtrail_trails"`
+	Refresh          string                     `json:"refresh"`
+	LogAction        ctl.Action                 `json:"log_action"`
 }
 
 type CloudNodeAccountsListReq struct {
@@ -139,18 +139,12 @@ func (CloudNodeAccountInfo) GetJSONCategory() string {
 	return "cloud_provider"
 }
 
-type CloudComplianceBenchmark struct {
-	ID             string   `json:"id"`
-	ComplianceType string   `json:"compliance_type"`
-	Controls       []string `json:"controls"`
-}
-
 type CloudComplianceScanDetails struct {
-	ScanID        string                     `json:"scan_id"`
-	ScanTypes     []string                   `json:"scan_types"`
-	AccountID     string                     `json:"account_id"`
-	Benchmarks    []CloudComplianceBenchmark `json:"benchmarks"`
-	StopRequested bool                       `json:"stop_requested"`
+	ScanID        string                             `json:"scan_id"`
+	ScanTypes     []string                           `json:"scan_types"`
+	AccountID     string                             `json:"account_id"`
+	Benchmarks    []ctl.CloudComplianceScanBenchmark `json:"benchmarks"`
+	StopRequested bool                               `json:"stop_requested"`
 }
 
 type CloudNodeCloudtrailTrail struct {
@@ -199,7 +193,8 @@ type PostureProvider struct {
 	ResourceCount        int64   `json:"resource_count"`
 }
 
-func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}, parentNodeID string) error {
+func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{},
+	parentNodeID string, hostNodeId string) error {
 
 	ctx, span := telemetry.NewSpan(ctx, "model", "upsert-cloud-compliance-node")
 	defer span.End()
@@ -220,24 +215,32 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 
 	if parentNodeID == "" {
 		if _, err := tx.Run(ctx, `
-			WITH $param as row
+			MATCH (r:Node{node_id:$host_node_id, node_type: "cloud_agent"})
+			WITH $param as row, r
 			MERGE (n:CloudNode{node_id:row.node_id})
-			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version`,
+			MERGE (r) -[:HOSTS]-> (n)
+			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version,
+			r.node_name=$host_node_id, r.active = true, r.agent_running=true, r.updated_at = TIMESTAMP()`,
 			map[string]interface{}{
-				"param": nodeDetails,
+				"param":        nodeDetails,
+				"host_node_id": hostNodeId,
 			}); err != nil {
 			return err
 		}
 	} else {
 		if _, err := tx.Run(ctx, `
+			MATCH (r:Node{node_id:$host_node_id, node_type: "cloud_agent"})
 			MERGE (m:CloudNode{node_id: $parent_node_id})
-			WITH $param as row, m
+			WITH $param as row, r, m
 			MERGE (n:CloudNode{node_id:row.node_id})
 			MERGE (m) -[:IS_CHILD]-> (n)
-			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version`,
+			MERGE (r) -[:HOSTS]-> (n)
+			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version, 
+			r.active = true, r.agent_running=true, r.updated_at = TIMESTAMP()`,
 			map[string]interface{}{
 				"param":          nodeDetails,
 				"parent_node_id": parentNodeID,
+				"host_node_id":   hostNodeId,
 			}); err != nil {
 			return err
 		}
@@ -484,64 +487,6 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	total = int(countRec.Values[0].(int64))
 
 	return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloudNodeAccountsInfo, Total: total}, nil
-}
-
-func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloudProvider string) ([]CloudComplianceBenchmark, error) {
-
-	ctx, span := telemetry.NewSpan(ctx, "model", "get-active-cloud-controls")
-	defer span.End()
-
-	var benchmarks []CloudComplianceBenchmark
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return benchmarks, err
-	}
-
-	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close(ctx)
-
-	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
-	if err != nil {
-		return benchmarks, err
-	}
-	defer tx.Close(ctx)
-
-	var res neo4j.ResultWithContext
-	res, err = tx.Run(ctx, `
-		MATCH (n:CloudComplianceBenchmark) -[:PARENT]-> (m:CloudComplianceControl)
-		WHERE m.active = true
-		AND m.disabled = false
-		AND m.compliance_type IN $compliance_types
-		AND n.cloud_provider = $cloud_provider
-		RETURN  n.benchmark_id, n.compliance_type, collect(m.control_id)
-		ORDER BY n.compliance_type`,
-		map[string]interface{}{
-			"cloud_provider":   cloudProvider,
-			"compliance_types": complianceTypes,
-		})
-	if err != nil {
-		return benchmarks, err
-	}
-
-	recs, err := res.Collect(ctx)
-	if err != nil {
-		return benchmarks, err
-	}
-
-	for _, rec := range recs {
-		var controls []string
-		for _, rVal := range rec.Values[2].([]interface{}) {
-			controls = append(controls, rVal.(string))
-		}
-		benchmark := CloudComplianceBenchmark{
-			ID:             rec.Values[0].(string),
-			ComplianceType: rec.Values[1].(string),
-			Controls:       controls,
-		}
-		benchmarks = append(benchmarks, benchmark)
-	}
-
-	return benchmarks, nil
 }
 
 type CloudAccountRefreshReq struct {

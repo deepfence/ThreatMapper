@@ -9,19 +9,22 @@ import (
 	"sync/atomic"
 	"time"
 
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 	"github.com/rs/zerolog/log"
 )
 
-func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent bool, version string) error {
+func (ct *OpenapiClient) StartControlsWatching(nodeID string,
+	isClusterAgent bool, version string, nodeType string) error {
 	if isClusterAgent {
 
 	} else {
 		req := ct.API().ControlsAPI.GetAgentInitControls(context.Background())
 		req = req.ModelInitAgentReq(
 			*openapi.NewModelInitAgentReq(
-				getMaxAllocatable(),
+				getMaxAllocatable(nodeType),
 				nodeID,
+				nodeType,
 				version,
 			),
 		)
@@ -45,7 +48,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent boo
 	if isClusterAgent {
 		go func() {
 			req := ct.API().ControlsAPI.GetKubernetesClusterControls(context.Background())
-			agentID := openapi.NewModelAgentID(getMaxAllocatable(), nodeID)
+			agentID := openapi.NewModelAgentID(getMaxAllocatable(nodeType), nodeID)
 			req = req.ModelAgentID(*agentID)
 			ticker := time.NewTicker(time.Second * time.Duration(ct.PublishInterval()/2))
 			for {
@@ -55,7 +58,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent boo
 				case <-ct.stopControlListening:
 					break
 				}
-				agentID.SetAvailableWorkload(getMaxAllocatable())
+				agentID.SetAvailableWorkload(getMaxAllocatable(nodeType))
 				req = req.ModelAgentID(*agentID)
 				ctl, _, err := ct.API().ControlsAPI.GetKubernetesClusterControlsExecute(req)
 				if err != nil {
@@ -77,7 +80,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent boo
 	} else {
 		go func() {
 			req := ct.API().ControlsAPI.GetAgentControls(context.Background())
-			agentID := openapi.NewModelAgentID(getMaxAllocatable(), nodeID)
+			agentID := openapi.NewModelAgentID(getMaxAllocatable(nodeType), nodeID)
+			agentID.NodeType = &nodeType
 			req = req.ModelAgentID(*agentID)
 			ticker := time.NewTicker(time.Second * time.Duration(ct.PublishInterval()/2))
 			for {
@@ -87,7 +91,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent boo
 				case <-ct.stopControlListening:
 					break
 				}
-				agentID.SetAvailableWorkload(getMaxAllocatable())
+				agentID.SetAvailableWorkload(getMaxAllocatable(nodeType))
 				req = req.ModelAgentID(*agentID)
 				ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 				if err != nil {
@@ -114,17 +118,25 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string, isClusterAgent boo
 }
 
 const (
-	MaxAgentWorkload = 2
+	MaxAgentWorkload      = 2
+	MaxCloudAgentWorkload = 1
 )
 
-func GetScannersWorkloads() int32 {
+func GetScannersWorkloads(nodeType string) int32 {
 	res := int32(0)
-	secret := GetSecretScannerJobCount()
-	malware := GetMalwareScannerJobCount()
-	vuln := GetPackageScannerJobCount()
+	var secret, malware, vuln, cloud int32
+	if nodeType == ctl.CLOUD_AGENT {
+		cloud = GetCloudScannerJobCount()
+	} else {
+		secret = GetSecretScannerJobCount()
+		malware = GetMalwareScannerJobCount()
+		vuln = GetPackageScannerJobCount()
+	}
+
 	//TODO: Add more scanners workload
-	log.Info().Msgf("workloads = vuln: %d, secret: %d, malware: %d", vuln, secret, malware)
-	res = secret + malware + vuln
+	log.Info().Msgf("workloads = vuln: %d, secret: %d, malware: %d, cloud: %d",
+		vuln, secret, malware, cloud)
+	res = secret + malware + vuln + cloud
 	return res
 }
 
@@ -138,18 +150,26 @@ func UnsetUpgrade() {
 	upgrade.Store(false)
 }
 
-func getUpgradeWorkload() int32 {
+func getUpgradeWorkload(nodeType string) int32 {
 	if upgrade.Load() {
-		return MaxAgentWorkload
+		return MaxWorkload(nodeType)
 	}
 	return 0
 }
 
-func getMaxAllocatable() int32 {
-	workload := MaxAgentWorkload - GetScannersWorkloads() - getUpgradeWorkload()
+func MaxWorkload(nodeType string) int32 {
+	if nodeType == ctl.CLOUD_AGENT {
+		return int32(MaxCloudAgentWorkload)
+	}
+	return int32(MaxAgentWorkload)
+}
+
+func getMaxAllocatable(nodeType string) int32 {
+	workload := MaxWorkload(nodeType) - GetScannersWorkloads(nodeType) - getUpgradeWorkload(nodeType)
+
 	if workload <= 0 {
 		workload = 0
 	}
-	log.Info().Msgf("Workload: %v\n", workload)
+	log.Info().Msgf("Workload: %d", workload)
 	return workload
 }

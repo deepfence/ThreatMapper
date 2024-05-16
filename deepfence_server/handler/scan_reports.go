@@ -456,12 +456,11 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	var scanIds []string
 	var bulkID string
-	var scanStatusType string
+	scanStatusType := ""
 	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
 		scanIds, bulkID, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes, reqs.IsPriority)
-		scanStatusType = utils.CloudComplianceScanStatus
 	} else {
 		scanIds, bulkID, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 		scanStatusType = utils.ComplianceScanStatus
@@ -476,8 +475,10 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	for _, i := range scanIds {
-		h.SendScanStatus(r.Context(), scanStatusType, NewScanStatus(i, utils.ScanStatusStarting, ""))
+	if len(scanStatusType) > 0 {
+		for _, i := range scanIds {
+			h.SendScanStatus(r.Context(), scanStatusType, NewScanStatus(i, utils.ScanStatusStarting, ""))
+		}
 	}
 
 	if len(scanIds) == 0 {
@@ -2257,7 +2258,7 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 			isPriority)
 
 		if err != nil {
-			log.Info().Msgf("Error in AddNewCloudComplianceScan:%v", err)
+			log.Error().Msgf("Error in AddNewCloudComplianceScan:%v", err)
 			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
 				scanIds = append(scanIds, e.ScanID)
 				continue

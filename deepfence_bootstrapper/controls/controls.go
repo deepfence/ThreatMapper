@@ -137,8 +137,12 @@ func SetAgentControls() {
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
 			log.Info().Msg("Generate Agent Diagnostic Logs")
 			return SendAgentDiagnosticLogs(req,
-				[]string{dfUtils.GetDfInstallDir() + "/var/log/supervisor", dfUtils.GetDfInstallDir() + "/var/log/fenced", dfUtils.GetDfInstallDir() + "/var/log/deepfenced"},
-				[]string{dfUtils.GetDfInstallDir() + "/var/log/fenced/compliance/", dfUtils.GetDfInstallDir() + "/var/log/fenced/malware-scan/", dfUtils.GetDfInstallDir() + "/var/log/fenced/secret-scan/"})
+				[]string{dfUtils.GetDfInstallDir() + "/var/log/supervisor",
+					dfUtils.GetDfInstallDir() + "/var/log/fenced",
+					dfUtils.GetDfInstallDir() + "/var/log/deepfenced"},
+				[]string{dfUtils.GetDfInstallDir() + "/var/log/fenced/compliance/",
+					dfUtils.GetDfInstallDir() + "/var/log/fenced/malware-scan/",
+					dfUtils.GetDfInstallDir() + "/var/log/fenced/secret-scan/"})
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("set controls")
@@ -210,5 +214,71 @@ func SetAgentControls() {
 		})
 	if err != nil {
 		log.Error().Err(err).Msgf("set controls: %v", err)
+	}
+}
+
+func SetCloudScannerControls() {
+	err := router.RegisterControl(ctl.StartCloudComplianceScan,
+		router.StartCloudComplianceScan)
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+
+	err = router.RegisterControl(ctl.StopCloudComplianceScan,
+		router.StopCloudComplianceScan)
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+
+	err = router.RegisterControl(ctl.RefreshResources,
+		router.RefreshResources)
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+	err = router.RegisterControl(ctl.StartAgentUpgrade,
+		func(req ctl.StartAgentUpgradeRequest) error {
+			log.Info().Msg("Start Agent Upgrade")
+			router.SetUpgrade()
+			defer router.UnsetUpgrade()
+			return router.StartAgentUpgrade(req)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+	err = router.RegisterControl(ctl.StartAgentPlugin,
+		func(req ctl.EnableAgentPluginRequest) error {
+			log.Info().Msg("Start & download Agent Plugin")
+			router.SetUpgrade()
+			err = supervisor.UpgradeProcessFromURL(req.PluginName, req.BinURL)
+			if err != nil {
+				return err
+			}
+			return supervisor.StartProcess(req.PluginName)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+	err = router.RegisterControl(ctl.StopAgentPlugin,
+		func(req ctl.DisableAgentPluginRequest) error {
+			log.Info().Msg("Stop Agent Plugin")
+			return supervisor.StopProcess(req.PluginName)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+
+	err = router.RegisterControl(ctl.SendAgentDiagnosticLogs,
+		func(req ctl.SendAgentDiagnosticLogsRequest) error {
+			log.Info().Msg("Generate Agent Diagnostic Logs")
+			return SendAgentDiagnosticLogs(req,
+				[]string{dfUtils.GetDfInstallDir() + "/var/log/supervisor",
+					dfUtils.GetDfInstallDir() + "/var/log/fenced",
+					dfUtils.GetDfInstallDir() + "/var/log/deepfenced"},
+				[]string{dfUtils.GetDfInstallDir() + "/var/log/fenced/compliance/",
+					dfUtils.GetDfInstallDir() + "/var/log/fenced/malware-scan/",
+					dfUtils.GetDfInstallDir() + "/var/log/fenced/secret-scan/"})
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("set controls")
 	}
 }
