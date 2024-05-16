@@ -28,5 +28,5 @@
 	branch = main
 [submodule "deepfence_agent/plugins/cloud-scanner"]
 	path = deepfence_agent/plugins/cloud-scanner
-	url = git@github.com:deepfence/cloud-scanner.git
+	url = https://github.com/deepfence/cloud-scanner
 	branch = main
