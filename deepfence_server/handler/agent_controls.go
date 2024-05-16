@@ -26,7 +26,7 @@ func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actions, errs := controls.GetAgentActions(ctx, agentID.NodeID, agentID.AvailableWorkload, h.GetHostURL(r), h.TTLCache)
+	actions, errs := controls.GetAgentActions(ctx, agentID, h.GetHostURL(r), h.TTLCache)
 	for _, err := range errs {
 		if err != nil {
 			log.Warn().Msgf("Cannot process some actions for %s: %v, skipping",
@@ -63,8 +63,9 @@ func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = controls.CompleteAgentUpgrade(ctx, agentID.Version, agentID.NodeID)
+	err = controls.CompleteAgentUpgrade(ctx, agentID.Version, agentID.NodeID, agentID.NodeType)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
 	}

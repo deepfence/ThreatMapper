@@ -81,7 +81,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"version":        req.Version,
 			"node_type":      nodeType,
 		}
-		err = model.UpsertCloudComplianceNode(ctx, node, "")
+		err = model.UpsertCloudComplianceNode(ctx, node, "", req.HostNodeId)
 		if err != nil {
 			h.complianceError(w, err.Error())
 			return
@@ -97,33 +97,10 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				"version":         req.Version,
 				"node_type":       nodeType,
 			}
-			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeID)
+			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeID, req.HostNodeId)
 			if err != nil {
 				h.complianceError(w, err.Error())
 				return
-			}
-			pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4JCloudComplianceScan, monitoredNodeID)
-			if err != nil {
-				continue
-			}
-			for _, scan := range pendingScansList.ScansInfo {
-				benchmarks, err := model.GetActiveCloudControls(ctx, scan.BenchmarkTypes, req.CloudProvider)
-				if err != nil {
-					log.Error().Msgf("Error getting controls for compliance type: %+v", scan.BenchmarkTypes)
-				}
-				stopRequested := false
-				if scan.Status == utils.ScanStatusCancelling {
-					stopRequested = true
-				}
-
-				scanDetail := model.CloudComplianceScanDetails{
-					ScanID:        scan.ScanID,
-					ScanTypes:     scan.BenchmarkTypes,
-					AccountID:     monitoredAccountID,
-					Benchmarks:    benchmarks,
-					StopRequested: stopRequested,
-				}
-				scanList[scan.ScanID] = scanDetail
 			}
 		}
 		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, append(monitoredNodeIds, nodeID), h.GetHostURL(r))
@@ -140,7 +117,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"node_type":      req.CloudProvider,
 		}
 		log.Debug().Msgf("Node for upsert: %+v", node)
-		err = model.UpsertCloudComplianceNode(ctx, node, "")
+		err = model.UpsertCloudComplianceNode(ctx, node, "", req.HostNodeId)
 		if err != nil {
 			log.Error().Msgf("Error while upserting node: %+v", err)
 			h.complianceError(w, err.Error())
@@ -151,48 +128,12 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		if err != nil {
 			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 		}
-		pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4JCloudComplianceScan, nodeID)
-		if err != nil || len(pendingScansList.ScansInfo) == 0 {
-			err = httpext.JSON(w, http.StatusOK,
-				model.CloudNodeAccountRegisterResp{
-					Data: model.CloudNodeAccountRegisterRespData{
-						Scans:            scanList,
-						CloudtrailTrails: cloudtrailTrails,
-						Refresh:          doRefresh,
-						LogAction:        logRequestAction,
-					},
-				})
-			if err != nil {
-				log.Error().Msg(err.Error())
-			}
-			return
-		}
-		for _, scan := range pendingScansList.ScansInfo {
-			benchmarks, err := model.GetActiveCloudControls(ctx, scan.BenchmarkTypes, req.CloudProvider)
-			if err != nil {
-				log.Error().Msgf("Error getting controls for compliance type: %+v", scan.BenchmarkTypes)
-			}
-
-			stopRequested := false
-			if scan.Status == utils.ScanStatusCancelling {
-				stopRequested = true
-			}
-			scanDetail := model.CloudComplianceScanDetails{
-				ScanID:        scan.ScanID,
-				ScanTypes:     scan.BenchmarkTypes,
-				AccountID:     req.CloudAccount,
-				Benchmarks:    benchmarks,
-				StopRequested: stopRequested,
-			}
-			scanList[scan.ScanID] = scanDetail
-		}
 		log.Debug().Msgf("Pending scans for node: %+v", scanList)
 	}
 	log.Debug().Msgf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
 	err = httpext.JSON(w, http.StatusOK,
 		model.CloudNodeAccountRegisterResp{
 			Data: model.CloudNodeAccountRegisterRespData{
-				Scans:            scanList,
 				CloudtrailTrails: cloudtrailTrails,
 				Refresh:          doRefresh,
 				LogAction:        logRequestAction,
@@ -220,7 +161,8 @@ func (h *Handler) RefreshCloudAccountHandler(w http.ResponseWriter, r *http.Requ
 
 	cloudNodeIds, err := reporters_scan.GetCloudAccountIDs(r.Context(), nodeIdentifiers)
 	if err != nil {
-		fmt.Println(err)
+		log.Error().Msgf(err.Error())
+		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 

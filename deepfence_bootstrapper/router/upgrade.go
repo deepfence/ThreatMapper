@@ -22,7 +22,7 @@ const (
 )
 
 func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
-	log.Info().Msgf("Fetching %v", req.HomeDirectoryURL)
+	log.Info().Msgf("Starting agent upgrade, Fetching %v", req.HomeDirectoryURL)
 	err := downloadFile(binariesFile, req.HomeDirectoryURL)
 	if err != nil {
 		return err
@@ -47,6 +47,7 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 	}
 
 	plugins := []NamePath{}
+	shouldRestartSelf := false
 	err = filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -54,7 +55,11 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 		if info.IsDir() {
 			return nil
 		}
-		plugins = append(plugins, NamePath{name: filepath.Base(path), path: path})
+		name := filepath.Base(path)
+		plugins = append(plugins, NamePath{name: name, path: path})
+		if name == supervisor.SelfID {
+			shouldRestartSelf = true
+		}
 		return nil
 	})
 
@@ -62,19 +67,20 @@ func StartAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 		return err
 	}
 
-	restart := false
 	for _, plugin := range plugins {
-		err = supervisor.UpgradeProcessFromFile(plugin.name, plugin.path)
+		log.Info().Msgf("Starting supervisor.UpgradeProcessFromFile for: %s", plugin.name)
+		err = supervisor.UpgradeProcessFromFile(plugin.name, plugin.path, shouldRestartSelf)
 		if err != nil {
 			log.Error().Msgf("plugin: %v, path: %v, err: %v", plugin.name, plugin.path, err)
-		} else if plugin.name == supervisor.SelfID {
-			restart = true
 		}
 	}
 
-	if restart {
+	if shouldRestartSelf {
 		log.Info().Msgf("Restart self")
 		err = restartSelf()
+		if err != nil {
+			log.Fatal().Msgf("Failed to restart self... exiting")
+		}
 	}
 
 	return err
@@ -87,6 +93,7 @@ func restartSelf() error {
 	}
 	argv0, err := exec.LookPath(os.Args[0])
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		return err
 	}
 	return syscall.Exec(argv0, os.Args, os.Environ())

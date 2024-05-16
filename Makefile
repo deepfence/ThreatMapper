@@ -10,13 +10,15 @@ export SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
 export MALWARE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/YaraHunter/
 export PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
 export COMPLIANCE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/compliance
+export CLOUD_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/cloud-scanner
 export DEEPFENCE_CTL=$(PWD)/deepfence_ctl
 export DEEPFENCED=$(PWD)/deepfence_bootstrapper
 export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/agent-binary
 export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
+export STEAMPIPE_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
-export VERSION?=2.2.0
+export VERSION?=v2.2.0
 export AGENT_BINARY_BUILD=$(DEEPFENCE_FARGATE_DIR)/build
 export AGENT_BINARY_BUILD_RELATIVE=deepfence_agent/agent-binary/build
 export AGENT_BINARY_DIST=$(DEEPFENCE_FARGATE_DIR)/dist
@@ -49,6 +51,7 @@ bootstrap-agent-plugins:
 	(cd $(PACKAGE_SCANNER_DIR) && bash bootstrap.sh)
 	(cd $(SECRET_SCANNER_DIR) && bash bootstrap.sh)
 	(cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh)
+	(cd $(CLOUD_SCANNER_DIR) && bash bootstrap.sh)
 
 .PHONY: agent
 agent: debian_builder deepfenced console_plugins
@@ -141,6 +144,11 @@ packagescanner: bootstrap-agent-plugins
 .PHONY: compliancescanner
 compliancescanner:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_compliance_scanner_ce:$(DF_IMG_TAG) -f $(COMPLIANCE_SCANNER_DIR)/Dockerfile $(COMPLIANCE_SCANNER_DIR)
+
+.PHONY: cloudscanner
+cloudscanner: debian_builder deepfenced 
+	(cd $(DEEPFENCE_AGENT_DIR) &&\
+	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build_cs_agent.sh)
 
 .PHONY: openapi
 openapi: server

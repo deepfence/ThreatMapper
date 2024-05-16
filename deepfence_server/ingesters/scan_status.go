@@ -9,6 +9,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
@@ -328,17 +329,65 @@ func AddNewCloudComplianceScan(
 	if nodeType == controls.ResourceTypeToString(controls.Host) {
 		nt = controls.Host
 	}
-	internalReq, _ := json.Marshal(controls.StartComplianceScanRequest{
-		NodeID:   nodeID,
-		NodeType: nt,
-		BinArgs:  map[string]string{"scan_id": scanID, "benchmark_types": strings.Join(benchmarkTypes, ",")},
-	})
-	action, _ := json.Marshal("{}")
+	var action []byte
+	var hostNodeId, hostNeo4jNodeType string
+
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || nodeType == controls.ResourceTypeToString(controls.Host) {
-		action, _ = json.Marshal(controls.Action{ID: controls.StartComplianceScan, RequestPayload: string(internalReq)})
+		hostNodeId = nodeID
+		hostNeo4jNodeType = neo4jNodeType
+		internalReq, _ := json.Marshal(controls.StartComplianceScanRequest{
+			NodeID:   nodeID,
+			NodeType: nt,
+			BinArgs: map[string]string{"scan_id": scanID,
+				"benchmark_types": strings.Join(benchmarkTypes, ",")},
+		})
+		action, _ = json.Marshal(controls.Action{ID: controls.StartComplianceScan,
+			RequestPayload: string(internalReq)})
+	} else { // if nodeType == controls.ResourceTypeToString(controls.CloudAccount)
+		hostNeo4jNodeType = "Node"
+		res, err = tx.Run(ctx,
+			fmt.Sprintf(`MATCH (n:%s) -[:HOSTS]-> (m:%s{node_id: $node_id})
+			WHERE n.active=true
+			RETURN  n.node_id, m.cloud_provider, m.node_name`, hostNeo4jNodeType, neo4jNodeType),
+			map[string]interface{}{
+				"node_id": nodeID,
+			})
+		if err != nil {
+			log.Error().Msgf(err.Error())
+			return err
+		}
+		rec, err = res.Single(ctx)
+		if err != nil {
+			log.Error().Msgf(err.Error())
+			return err
+		}
+		scanNodeDetails := controls.CloudScanNodeDetails{
+			AgentNodeId:   rec.Values[0].(string),
+			CloudProvider: rec.Values[1].(string),
+			NodeName:      rec.Values[2].(string),
+		}
+		hostNodeId = scanNodeDetails.AgentNodeId
+		benchmarks, err := GetActiveCloudControls(ctx, tx, benchmarkTypes, scanNodeDetails.CloudProvider)
+		if err != nil {
+			log.Error().Msgf("Error getting controls for compliance type: %+v", benchmarkTypes)
+		}
+
+		internalReq, _ := json.Marshal(controls.StartCloudComplianceScanRequest{
+			NodeID:   nodeID,
+			NodeType: nt,
+			BinArgs:  map[string]string{"scan_id": scanID, "benchmark_types": strings.Join(benchmarkTypes, ",")},
+			ScanDetails: controls.CloudComplianceScanDetails{
+				ScanId:     scanID,
+				ScanTypes:  benchmarkTypes,
+				AccountId:  scanNodeDetails.NodeName,
+				Benchmarks: benchmarks,
+			},
+		})
+		action, _ = json.Marshal(controls.Action{ID: controls.StartCloudComplianceScan, RequestPayload: string(internalReq)})
 	}
+
 	if _, err = tx.Run(ctx, fmt.Sprintf(`
-MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action, created_at:TIMESTAMP(), is_priority: $is_priority})
+		MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action, created_at:TIMESTAMP(), is_priority: $is_priority})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
@@ -349,6 +398,7 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 			"action":          string(action),
 			"is_priority":     isPriority,
 		}); err != nil {
+		log.Error().Msgf(err.Error())
 		return err
 	}
 
@@ -373,10 +423,10 @@ MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, 
 	if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:%s{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, scanType, neo4jNodeType),
+		MERGE (n)-[:SCHEDULED]->(m)`, scanType, "Node"),
 		map[string]interface{}{
 			"scan_id": scanID,
-			"node_id": nodeID,
+			"node_id": hostNodeId,
 		}); err != nil {
 		return err
 	}
@@ -436,4 +486,44 @@ func AddBulkScan(ctx context.Context, tx neo4j.ExplicitTransaction, scanType uti
 	}
 
 	return nil
+}
+
+func GetActiveCloudControls(ctx context.Context, tx neo4j.ExplicitTransaction, complianceTypes []string,
+	cloudProvider string) ([]controls.CloudComplianceScanBenchmark, error) {
+	var benchmarks []controls.CloudComplianceScanBenchmark
+	res, err := tx.Run(ctx, `
+		MATCH (n:CloudComplianceBenchmark) -[:PARENT]-> (m:CloudComplianceControl)
+		WHERE m.active = true
+		AND m.disabled = false
+		AND m.compliance_type IN $compliance_types
+		AND n.cloud_provider = $cloud_provider
+		RETURN  n.benchmark_id, n.compliance_type, collect(m.control_id)
+		ORDER BY n.compliance_type`,
+		map[string]interface{}{
+			"cloud_provider":   cloudProvider,
+			"compliance_types": complianceTypes,
+		})
+	if err != nil {
+		return benchmarks, err
+	}
+
+	recs, err := res.Collect(ctx)
+	if err != nil {
+		return benchmarks, err
+	}
+
+	for _, rec := range recs {
+		var controlList []string
+		for _, rVal := range rec.Values[2].([]interface{}) {
+			controlList = append(controlList, rVal.(string))
+		}
+		benchmark := controls.CloudComplianceScanBenchmark{
+			Id:             rec.Values[0].(string),
+			ComplianceType: rec.Values[1].(string),
+			Controls:       controlList,
+		}
+		benchmarks = append(benchmarks, benchmark)
+	}
+
+	return benchmarks, nil
 }
