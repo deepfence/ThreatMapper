@@ -29,8 +29,8 @@ const Command = () => {
     status !== 'success'
       ? PLACEHOLDER_API_KEY
       : apiToken === undefined
-      ? PLACEHOLDER_API_KEY
-      : apiToken;
+        ? PLACEHOLDER_API_KEY
+        : apiToken;
   const { data: dataVersion } = useGetVersion();
   const version = dataVersion.version || PLACEHOLDER_VERSION;
 

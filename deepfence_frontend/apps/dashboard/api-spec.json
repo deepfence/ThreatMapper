@@ -13,7 +13,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "2.2.0"
+    "version": "2.2.1"
   },
   "externalDocs": {
     "description": "Deepfence Community",
@@ -16052,12 +16052,7 @@
         "type": "object",
         "properties": {
           "sbom_format": {
-            "enum": [
-              "syft-json@11.0.1",
-              "cyclonedx-json@1.5",
-              "spdx-json@2.2",
-              "spdx-json@2.3"
-            ],
+            "enum": ["syft-json", "cyclonedx-json@1.5", "spdx-json@2.2", "spdx-json@2.3"],
             "type": "string"
           }
         }

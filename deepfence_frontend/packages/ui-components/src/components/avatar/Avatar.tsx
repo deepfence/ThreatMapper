@@ -3,7 +3,7 @@ import { cn } from 'tailwind-preset';
 
 import { UserLineIcon } from '@/components/icons/UserLine';
 
-interface AvatarType {
+export interface AvatarType {
   alt?: string;
   src?: string;
   className?: string;

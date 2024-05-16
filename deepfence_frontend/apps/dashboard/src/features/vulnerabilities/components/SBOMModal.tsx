@@ -78,14 +78,14 @@ export const SbomModal = ({
                       scanId,
                       scanType: 'vulnerability',
                       nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
-                      format: UtilsReportOptionsSbomFormatEnum.SyftJson1101,
+                      format: UtilsReportOptionsSbomFormatEnum.SyftJson,
                     });
                   }}
                   disabled={!!downloadingInFormat}
                 >
                   <span className="flex text-center gap-x-2">
                     {downloadingInFormat ===
-                      UtilsReportOptionsSbomFormatEnum.SyftJson1101 && (
+                      UtilsReportOptionsSbomFormatEnum.SyftJson && (
                       <CircleSpinner size="sm" />
                     )}{' '}
                     Syft Format

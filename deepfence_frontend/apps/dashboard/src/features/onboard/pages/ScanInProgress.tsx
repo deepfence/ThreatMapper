@@ -175,9 +175,6 @@ const ScanStatus = () => {
         minSize: 125,
         size: 150,
       }),
-    ];
-
-    columns.push(
       columnHelper.accessor((row) => row.status, {
         enableSorting: true,
         id: 'status',
@@ -188,8 +185,6 @@ const ScanStatus = () => {
         },
         header: () => <span>Status</span>,
       }),
-    );
-    columns.push(
       getRowExpanderColumn(columnHelper, {
         minSize: 30,
         size: 30,
@@ -219,7 +214,7 @@ const ScanStatus = () => {
           ) : null;
         },
       }),
-    );
+    ];
     return columns;
   }, [data]);
 

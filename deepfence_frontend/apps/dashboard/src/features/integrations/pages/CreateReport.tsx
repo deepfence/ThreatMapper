@@ -53,18 +53,18 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
 
-  const fromDate = body.fromDate;
-  const fromTime = body.fromTime;
-  const toDate = body.toDate;
-  const toTime = body.toTime;
+  const fromDate = body.fromDate ? String(body.fromDate) : null;
+  const fromTime = body.fromTime ? String(body.fromTime) : null;
+  const toDate = body.toDate ? String(body.toDate) : null;
+  const toTime = body.toTime ? String(body.toTime) : null;
 
   const fromTimeStamp =
-    fromDate.length && fromTime.length
+    fromDate?.length && fromTime?.length
       ? new Date(`${fromDate}T${fromTime}`).getTime()
       : undefined;
 
   const toTimeStamp =
-    toDate.length && toTime.length
+    toDate?.length && toTime?.length
       ? new Date(`${toDate}T${toTime}`).getTime()
       : undefined;
 

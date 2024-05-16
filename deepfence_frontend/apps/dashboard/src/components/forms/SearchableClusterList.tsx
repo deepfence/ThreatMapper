@@ -88,8 +88,8 @@ const SearchableCluster = ({
           isSelectVariantType && selectedClusters.length > 0
             ? `${selectedClusters.length} selected`
             : displayValue
-            ? displayValue
-            : null
+              ? displayValue
+              : null
         }
         placeholder="Select cluster"
         multiple

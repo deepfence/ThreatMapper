@@ -1,7 +1,3 @@
-ARG VECTORSCAN_IMG_TAG=latest
-ARG VECTORSCAN_IMAGE_REPOSITORY=deepfenceio
-FROM $VECTORSCAN_IMAGE_REPOSITORY/deepfence_vectorscan_build:$VECTORSCAN_IMG_TAG AS vectorscan
-
 ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
 
@@ -11,11 +7,37 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -y
 RUN apt-get -qq -y --no-install-recommends install \
-    build-essential automake libtool make gcc pkg-config libssl-dev git protoc-gen-go \
-    bash make git gcc libc-dev lsb-release software-properties-common libz-dev apt-utils\
-    protobuf-compiler ca-certificates libpcap-dev time file shellcheck curl \
-    libjansson-dev libmagic-dev \
-    cmake flex bison libyaml-dev
+    build-essential \
+    automake \
+    libtool \
+    make \
+    gcc \
+    pkg-config \
+    libssl-dev \
+    git \
+    protoc-gen-go \
+    bash \
+    make \
+    gcc \
+    libc-dev \
+    lsb-release \
+    software-properties-common \
+    libz-dev \
+    apt-utils \
+    protobuf-compiler \
+    ca-certificates \
+    libpcap-dev \
+    time \
+    file \
+    shellcheck \
+    curl \
+    libjansson-dev \
+    libmagic-dev \
+    cmake \
+    flex \
+    bison \
+    libyaml-dev \
+    libvectorscan-dev
 
 RUN cd /root  \
     && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.3.2.tar.gz \
@@ -28,11 +50,12 @@ RUN cd /root  \
     && cd /usr/local/ \
     && tar -czf yara.tar.gz yara
 
-COPY --from=vectorscan /vectorscan.tar.bz2 /
-RUN tar -xjf /vectorscan.tar.bz2 -C / && rm /vectorscan.tar.bz2
-
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.32.0
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+
+ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/include/hs/lib:$LD_LIBRARY_PATH \
+    PKG_CONFIG_PATH=/usr/local/yara/lib/pkgconfig:$(PKG_CONFIG_PATH) \
+    GOWORK=off
 
 RUN mkdir /home/deepfence
 COPY deepfence_agent/build_scripts/*.sh /home/deepfence/
@@ -41,3 +64,5 @@ ARG DF_AGENT_SRC=/go/src/github.com/deepfence/deepfence_agent
 WORKDIR $DF_AGENT_SRC
 
 ENV GOWORK=off
+
+RUN go install github.com/hibiken/asynq/tools/asynq@latest

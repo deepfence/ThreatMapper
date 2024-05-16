@@ -59,7 +59,7 @@ Then create the new policy.
 - Copy and paste the following JSON configuration: (Replace `<DEEPFENCE_KEY>` and `<MGMT_CONSOLE_URL>` with actual values)
 
 :::info
-Image tag `deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch` is supported in amd64 and arm64/v8 architectures.
+Image tag `deepfenceio/deepfence_agent_ce:2.1.1-multiarch` is supported in amd64 and arm64/v8 architectures.
 :::
 
 ```json
@@ -125,7 +125,7 @@ Image tag `deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch` is sup
       "memoryReservation": null,
       "volumesFrom": [],
       "stopTimeout": null,
-      "image": "docker.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION",
+      "image": "docker.io/deepfenceio/deepfence_agent_ce:2.1.1",
       "startTimeout": null,
       "firelensConfiguration": null,
       "dependsOn": null,

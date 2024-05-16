@@ -18,7 +18,7 @@ interface PageButtonProps {
   onPageChange?: () => void;
 }
 
-interface OwnProps {
+export interface OwnProps {
   onPageChange: (page: number) => void;
   approximatePagination?: boolean;
   totalRows: number;

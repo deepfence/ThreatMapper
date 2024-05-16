@@ -18,7 +18,7 @@ export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
 export STEAMPIPE_IMG_TAG?=latest
 export IS_DEV_BUILD?=false
-export VERSION?=v2.2.0
+export VERSION?=v2.2.1
 export AGENT_BINARY_BUILD=$(DEEPFENCE_FARGATE_DIR)/build
 export AGENT_BINARY_BUILD_RELATIVE=deepfence_agent/agent-binary/build
 export AGENT_BINARY_DIST=$(DEEPFENCE_FARGATE_DIR)/dist
@@ -106,11 +106,11 @@ file-server:
 	docker build -t $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG) $(DEEPFENCE_FILE_SERVER_DIR)
 
 .PHONY: server
-server: alpine_builder
+server: debian_builder
 	(cd ./deepfence_server && VERSION=$(VERSION) make image)
 
 .PHONY: worker
-worker: alpine_builder agent-binary-tar
+worker: debian_builder agent-binary-tar
 	(cd ./deepfence_worker && VERSION=$(VERSION) AGENT_BINARY_DIST_RELATIVE=$(AGENT_BINARY_DIST_RELATIVE) make image)
 
 .PHONY: jaeger
