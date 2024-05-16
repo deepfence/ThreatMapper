@@ -5,6 +5,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.cloudtrail_bucket_not_public",
     "description": "CloudTrail logs a record of every API call made in your account. These log files are stored in an S3 bucket. Security Hub recommends that the S3 bucket policy, or access control list (ACL), be applied to the S3 bucket that CloudTrail logs to prevent public access to the CloudTrail logs.",
     "title": "Ensure the S3 bucket CloudTrail logs to is not publicly accessible",
@@ -30,6 +31,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.cloudtrail_multi_region_trail_enabled",
     "description": "AWS CloudTrail records AWS Management Console actions and API calls. You can identify which users and accounts called AWS, the source IP address from where the calls were made, and when the calls occurred. CloudTrail will deliver log files from all AWS Regions to your S3 bucket if MULTI_REGION_CLOUD_TRAIL_ENABLED is enabled.",
     "title": "At least one multi-region AWS CloudTrail should be present in an account",
@@ -68,6 +70,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.cloudtrail_s3_logging_enabled",
     "description": "S3 Bucket Access Logging generates a log that contains access records for each request made to your S3 bucket. An access log record contains details about the request, such as the request type, the resources specified in the request worked, and the time and date the request was processed. It is recommended that bucket access logging be enabled on the CloudTrail S3 bucket.",
     "title": "Ensure S3 bucket access logging is enabled on the CloudTrail S3 bucket",
@@ -93,6 +96,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.cloudtrail_trail_integrated_with_logs",
     "description": "Use AWS CloudWatch to centrally collect and manage log event activity. Inclusion of AWS CloudTrail data provides details of API call activity within your AWS account.",
     "title": "CloudTrail trails should be integrated with CloudWatch logs",
@@ -131,6 +135,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.cloudtrail_trail_logs_encrypted_with_kms_cmk",
     "description": "To help protect sensitive data at rest, ensure encryption is enabled for your AWS CloudWatch Log Groups.",
     "title": "CloudTrail trail logs should be encrypted with KMS CMK",
@@ -169,6 +174,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.cloudtrail_trail_validation_enabled",
     "description": "Utilize AWS CloudTrail log file validation to check the integrity of CloudTrail logs. Log file validation helps determine if a log file was modified or deleted or unchanged after CloudTrail delivered it. This feature is built using industry standard algorithms: SHA-256 for hashing and SHA-256 with RSA for digital signing. This makes it computationally infeasible to modify, delete or forge CloudTrail log files without detection.",
     "title": "CloudTrail trail log file validation should be enabled",
@@ -205,6 +211,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.config_enabled_all_regions",
     "description": "This control checks whether AWS Config is enabled in the account for the local Region and is recording all resources.",
     "title": "AWS Config should be enabled",
@@ -235,6 +242,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_account_password_policy_min_length_14",
     "description": "Password policies, in part, enforce password complexity requirements. Use IAM password policies to ensure that passwords are at least a given length. Security Hub recommends that the password policy require a minimum password length of 14 characters.",
     "title": "Ensure IAM password policy requires a minimum length of 14 or greater",
@@ -261,6 +269,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_account_password_policy_one_lowercase_letter",
     "description": "Password policies, in part, enforce password complexity requirements. Use IAM password policies to ensure that passwords use different character sets. Security Hub recommends that the password policy require at least one lowercase letter. Setting a password complexity policy increases account resiliency against brute force login attempts.",
     "title": "Ensure IAM password policy requires at least one lowercase letter",
@@ -284,6 +293,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_account_password_policy_one_number",
     "description": "Password policies, in part, enforce password complexity requirements. Use IAM password policies to ensure that passwords use different character sets.",
     "title": "Ensure IAM password policy requires at least one number",
@@ -307,6 +317,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_account_password_policy_one_symbol",
     "description": "Password policies, in part, enforce password complexity requirements. Use IAM password policies to ensure that passwords use different character sets. Security Hub recommends that the password policy require at least one symbol. Setting a password complexity policy increases account resiliency against brute force login attempts.",
     "title": "Ensure IAM password policy requires at least one symbol",
@@ -330,6 +341,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_account_password_policy_one_uppercase_letter",
     "description": "Password policies, in part, enforce password complexity requirements. Use IAM password policies to ensure that passwords use different character sets.",
     "title": "Ensure IAM password policy requires at least one uppercase letter",
@@ -353,6 +365,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_account_password_policy_reuse_24",
     "description": "This control checks whether the number of passwords to remember is set to 24. The control fails if the value is not 24. IAM password policies can prevent the reuse of a given password by the same user.",
     "title": "Ensure IAM password policy prevents password reuse",
@@ -376,6 +389,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_account_password_policy_strong",
     "description": "This control checks whether the account password policy for IAM users have strong configurations.",
     "title": "Password policies for IAM users should have strong configurations",
@@ -402,6 +416,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_password_policy_expire_90",
     "description": "IAM password policies can require passwords to be rotated or expired after a given number of days. Security Hub recommends that the password policy expire passwords after 90 days or less. Reducing the password lifetime increases account resiliency against brute force login attempts.",
     "title": "Ensure IAM password policy expires passwords within 90 days or less",
@@ -425,6 +440,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_policy_no_star_star",
     "description": "AWS Identity and Access Management (IAM) can help you incorporate the principles of least privilege and separation of duties with access permissions and authorizations, restricting policies from containing 'Effect': 'Allow' with 'Action': '*' over 'Resource': '*'.",
     "title": "IAM policy should not have statements with admin access",
@@ -463,6 +479,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_root_user_hardware_mfa_enabled",
     "description": "Manage access to resources in the AWS Cloud by ensuring hardware MFA is enabled for the root user.",
     "title": "IAM root user hardware MFA should be enabled",
@@ -500,6 +517,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_root_user_mfa_enabled",
     "description": "Manage access to resources in the AWS Cloud by ensuring MFA is enabled for the root user.",
     "title": "IAM root user MFA should be enabled",
@@ -537,6 +555,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_root_user_no_access_keys",
     "description": "Access to systems and assets can be controlled by checking that the root user does not have access keys attached to their AWS Identity and Access Management (IAM) role.",
     "title": "IAM root user should not have access keys",
@@ -575,6 +594,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_support_role",
     "description": "AWS provides a support center that can be used for incident notification and response, as well as technical support and customer services.",
     "title": "Ensure a support role has been created to manage incidents with AWS Support",
@@ -598,6 +618,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_user_access_key_age_90",
     "description": "The credentials are audited for authorized devices, users, and processes by ensuring IAM access keys are rotated as per organizational policy.",
     "title": "IAM user access keys should be rotated at least every 90 days",
@@ -632,6 +653,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_user_console_access_mfa_enabled",
     "description": "Manage access to resources in the AWS Cloud by ensuring that MFA is enabled for all AWS Identity and Access Management (IAM) users that have a console password.",
     "title": "IAM users with console access should have MFA enabled",
@@ -670,6 +692,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_user_no_inline_attached_policies",
     "description": "This rule ensures AWS Identity and Access Management (IAM) policies are attached only to groups or roles to control access to systems and assets.",
     "title": "IAM user should not have any inline or attached policies",
@@ -708,6 +731,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.iam_user_unused_credentials_90",
     "description": "AWS Identity and Access Management (IAM) can help you with access permissions and authorizations by checking for IAM passwords and access keys that are not used for a specified time period.",
     "title": "IAM user credentials that have not been used in 90 days should be disabled",
@@ -745,6 +769,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.kms_cmk_rotation_enabled",
     "description": "Enable key rotation to ensure that keys are rotated once they have reached the end of their crypto period.",
     "title": "KMS CMK rotation should be enabled",
@@ -778,6 +803,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_bucket_policy",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. Security Hub recommends that you create a metric filter and alarm for changes to S3 bucket policies. Monitoring these changes might reduce time to detect and correct permissive policies on sensitive S3 buckets.",
     "title": "Ensure a log metric filter and alarm exist for S3 bucket policy changes",
@@ -803,6 +829,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_cloudtrail_configuration",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. Security Hub recommends that you create a metric filter and alarm for changes to CloudTrail configuration settings. Monitoring these changes helps ensure sustained visibility to activities in the account.",
     "title": "Ensure a log metric filter and alarm exist for CloudTrail configuration changes",
@@ -828,6 +855,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_config_configuration",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. Security Hub recommends that you create a metric filter and alarm for changes to AWS Config configuration settings. Monitoring these changes helps ensure sustained visibility of configuration items in the account",
     "title": "Ensure a log metric filter and alarm exist for AWS Config configuration changes",
@@ -853,6 +881,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_console_authentication_failure",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. Security Hub recommends that you create a metric filter and alarm for failed console authentication attempts.",
     "title": "Ensure a log metric filter and alarm exist for AWS Management Console authentication failures",
@@ -880,6 +909,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_console_login_mfa",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. Security Hub recommends that you create a metric filter and alarm console logins that aren't protected by MFA.",
     "title": "Ensure a log metric filter and alarm exist for AWS Management Console sign-in without MFA",
@@ -905,6 +935,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_disable_or_delete_cmk",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. Security Hub recommends that you create a metric filter and alarm for customer managed keys that have changed state to disabled or scheduled deletion. Data encrypted with disabled or deleted keys is no longer accessible.",
     "title": "Ensure a log metric filter and alarm exist for disabling or scheduled deletion of customer managed keys",
@@ -929,6 +960,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_iam_policy",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. Security Hub recommends that you create a metric filter and alarm for changes made to IAM policies. Monitoring these changes helps ensure that authentication and authorization controls remain intact.",
     "title": "Ensure a log metric filter and alarm exist for IAM policy changes",
@@ -955,6 +987,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_network_acl",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. NACLs are used as a stateless packet filter to control ingress and egress traffic for subnets in a VPC. Security Hub recommends that you create a metric filter and alarm for changes to NACLs. Monitoring these changes helps ensure that AWS resources and services aren't unintentionally exposed.",
     "title": "Ensure a log metric filter and alarm exist for changes to Network Access Control Lists (NACL)",
@@ -980,6 +1013,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_network_gateway",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. Network gateways are required to send and receive traffic to a destination outside a VPC. Security Hub recommends that you create a metric filter and alarm for changes to network gateways.",
     "title": "Ensure a log metric filter and alarm exist for changes to network gateways",
@@ -1005,6 +1039,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_root_login",
     "description": "You can do real-time monitoring of API calls directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms.Security Hub recommends that you create a metric filter and alarm for root login attempts. Monitoring for root account logins provides visibility into the use of a fully privileged account and an opportunity to reduce the use of it.",
     "title": "Ensure a log metric filter and alarm exist for usage of 'root' account",
@@ -1033,6 +1068,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_route_table",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. Routing tables route network traffic between subnets and to network gateways. Security Hub recommends that you create a metric filter and alarm for changes to route tables. Monitoring these changes helps ensure that all VPC traffic flows through an expected path.",
     "title": "Ensure a log metric filter and alarm exist for route table changes",
@@ -1058,6 +1094,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_security_group",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. Security groups are a stateful packet filter that controls ingress and egress traffic in a VPC. Security Hub recommends that you create a metric filter and alarm for changes to security groups. Monitoring these changes helps ensure that resources and services aren't unintentionally exposed.",
     "title": "Ensure a log metric filter and alarm exist for security group changes",
@@ -1083,6 +1120,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_unauthorized_api",
     "description": "Real-time monitoring of API calls can be achieved by directing CloudTrail Logs to CloudWatch Logs and establishing corresponding metric filters and alarms. It is recommended that a metric filter and alarm be established for unauthorized API calls.",
     "title": "Ensure a log metric filter and alarm exist for unauthorized API calls",
@@ -1108,6 +1146,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.log_metric_filter_vpc",
     "description": "You can do real-time monitoring of API calls by directing CloudTrail logs to CloudWatch Logs and establishing corresponding metric filters and alarms. You can have more than one VPC in an account, and you can create a peer connection between two VPCs, enabling network traffic to route between VPCs. Security Hub recommends that you create a metric filter and alarm for changes to VPCs.",
     "title": "Ensure a log metric filter and alarm exist for VPC changes",
@@ -1133,6 +1172,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
     ],
+    "category_hierarchy_short": "GDPR - Article 25",
     "control_id": "aws_compliance.control.vpc_flow_logs_enabled",
     "description": "The VPC flow logs provide detailed records for information about the IP traffic going to and from network interfaces in your AWS Virtual Private Cloud (AWS VPC.",
     "title": "VPC flow logs should be enabled",
@@ -1171,6 +1211,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
     ],
+    "category_hierarchy_short": "GDPR - Article 30",
     "control_id": "aws_compliance.control.cloudtrail_multi_region_trail_enabled",
     "description": "AWS CloudTrail records AWS Management Console actions and API calls. You can identify which users and accounts called AWS, the source IP address from where the calls were made, and when the calls occurred. CloudTrail will deliver log files from all AWS Regions to your S3 bucket if MULTI_REGION_CLOUD_TRAIL_ENABLED is enabled.",
     "title": "At least one multi-region AWS CloudTrail should be present in an account",
@@ -1209,6 +1250,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
     ],
+    "category_hierarchy_short": "GDPR - Article 30",
     "control_id": "aws_compliance.control.cloudtrail_s3_data_events_enabled",
     "description": "The collection of Simple Storage Service (AWS S3) data events helps in detecting any anomalous activity. The details include AWS account information that accessed an AWS S3 bucket, IP address, and time of event.",
     "title": "All S3 buckets should log S3 data events in CloudTrail",
@@ -1248,6 +1290,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
     ],
+    "category_hierarchy_short": "GDPR - Article 30",
     "control_id": "aws_compliance.control.cloudtrail_security_trail_enabled",
     "description": "This rule helps ensure the use of AWS recommended security best practices for AWS CloudTrail, by checking for the enablement of multiple settings. These include the use of log encryption, log validation, and enabling AWS CloudTrail in multiple regions.",
     "title": "At least one trail should be enabled with security best practices",
@@ -1278,6 +1321,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
     ],
+    "category_hierarchy_short": "GDPR - Article 30",
     "control_id": "aws_compliance.control.cloudtrail_trail_integrated_with_logs",
     "description": "Use AWS CloudWatch to centrally collect and manage log event activity. Inclusion of AWS CloudTrail data provides details of API call activity within your AWS account.",
     "title": "CloudTrail trails should be integrated with CloudWatch logs",
@@ -1316,6 +1360,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
     ],
+    "category_hierarchy_short": "GDPR - Article 30",
     "control_id": "aws_compliance.control.cloudtrail_trail_logs_encrypted_with_kms_cmk",
     "description": "To help protect sensitive data at rest, ensure encryption is enabled for your AWS CloudWatch Log Groups.",
     "title": "CloudTrail trail logs should be encrypted with KMS CMK",
@@ -1354,6 +1399,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
     ],
+    "category_hierarchy_short": "GDPR - Article 30",
     "control_id": "aws_compliance.control.config_enabled_all_regions",
     "description": "This control checks whether AWS Config is enabled in the account for the local Region and is recording all resources.",
     "title": "AWS Config should be enabled",
@@ -1384,6 +1430,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
     ],
+    "category_hierarchy_short": "GDPR - Article 30",
     "control_id": "aws_compliance.control.elb_application_classic_lb_logging_enabled",
     "description": "Elastic Load Balancing activity is a central point of communication within an environment.",
     "title": "ELB application and classic load balancer logging should be enabled",
@@ -1422,6 +1469,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
     ],
+    "category_hierarchy_short": "GDPR - Article 30",
     "control_id": "aws_compliance.control.kms_cmk_rotation_enabled",
     "description": "Enable key rotation to ensure that keys are rotated once they have reached the end of their crypto period.",
     "title": "KMS CMK rotation should be enabled",
@@ -1455,6 +1503,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
     ],
+    "category_hierarchy_short": "GDPR - Article 30",
     "control_id": "aws_compliance.control.redshift_cluster_encryption_logging_enabled",
     "description": "To protect data at rest, ensure that encryption is enabled for your AWS Redshift clusters. You must also ensure that required configurations are deployed on AWS Redshift clusters. The audit logging should be enabled to provide information about connections and user activities in the database.",
     "title": "Redshift cluster audit logging and encryption should be enabled",
@@ -1494,6 +1543,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
     ],
+    "category_hierarchy_short": "GDPR - Article 30",
     "control_id": "aws_compliance.control.vpc_flow_logs_enabled",
     "description": "The VPC flow logs provide detailed records for information about the IP traffic going to and from network interfaces in your AWS Virtual Private Cloud (AWS VPC.",
     "title": "VPC flow logs should be enabled",
@@ -1532,6 +1582,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.acm_certificate_expires_30_days",
     "description": "Ensure network integrity is protected by ensuring X509 certificates are issued by AWS ACM.",
     "title": "ACM certificates should be set to expire within 30 days",
@@ -1568,6 +1619,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.apigateway_stage_cache_encryption_at_rest_enabled",
     "description": "To help protect data at rest, ensure encryption is enabled for your API Gateway stage's cache.",
     "title": "API Gateway stage cache encryption at rest should be enabled",
@@ -1604,6 +1656,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.cloudfront_distribution_encryption_in_transit_enabled",
     "description": "This control checks whether an AWS CloudFront distribution requires viewers to use HTTPS directly or whether it uses redirection. The control fails if ViewerProtocolPolicy is set to allow-all for defaultCacheBehavior or for cacheBehaviors.",
     "title": "CloudFront distributions should require encryption in transit",
@@ -1632,6 +1685,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.cloudtrail_trail_logs_encrypted_with_kms_cmk",
     "description": "To help protect sensitive data at rest, ensure encryption is enabled for your AWS CloudWatch Log Groups.",
     "title": "CloudTrail trail logs should be encrypted with KMS CMK",
@@ -1670,6 +1724,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.cloudtrail_trail_validation_enabled",
     "description": "Utilize AWS CloudTrail log file validation to check the integrity of CloudTrail logs. Log file validation helps determine if a log file was modified or deleted or unchanged after CloudTrail delivered it. This feature is built using industry standard algorithms: SHA-256 for hashing and SHA-256 with RSA for digital signing. This makes it computationally infeasible to modify, delete or forge CloudTrail log files without detection.",
     "title": "CloudTrail trail log file validation should be enabled",
@@ -1706,6 +1761,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.dax_cluster_encryption_at_rest_enabled",
     "description": "This control checks whether a DAX cluster is encrypted at rest. Encrypting data at rest reduces the risk of data stored on disk being accessed by a user not authenticated to AWS. The encryption adds another set of access controls to limit the ability of unauthorized users to access to the data. For example, API permissions are required to decrypt the data before it can be read.",
     "title": "DynamoDB Accelerator (DAX) clusters should be encrypted at rest",
@@ -1734,6 +1790,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.dynamodb_table_encrypted_with_kms",
     "description": "Ensure that encryption is enabled for your AWS DynamoDB tables. Because sensitive data can exist at rest in these tables, enable encryption at rest to help protect that data.",
     "title": "DynamoDB table should be encrypted with AWS KMS",
@@ -1768,6 +1825,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.dynamodb_table_encryption_enabled",
     "description": "Ensure that encryption is enabled for your AWS DynamoDB tables. Because sensitive data can exist at rest in these tables, enable encryption at rest to help protect that data.",
     "title": "DynamoDB table should have encryption enabled",
@@ -1796,6 +1854,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.ebs_attached_volume_encryption_enabled",
     "description": "Because sensitive data can exist and to help protect data at rest, ensure encryption is enabled for your AWS Elastic Block Store (AWS EBS) volumes.",
     "title": "Attached EBS volumes should have encryption enabled",
@@ -1835,6 +1894,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.ebs_volume_encryption_at_rest_enabled",
     "description": "Because sensitive data can exist and to help protect data at rest, ensure encryption is enabled for your AWS Elastic Block Store (AWS EBS) volumes.",
     "title": "EBS volume encryption at rest should be enabled",
@@ -1861,6 +1921,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.efs_file_system_encrypt_data_at_rest",
     "description": "Because sensitive data can exist and to help protect data at rest, ensure encryption is enabled for your AWS Elastic File System (EFS).",
     "title": "EFS file system encryption at rest should be enabled",
@@ -1897,6 +1958,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.elb_application_lb_drop_http_headers",
     "description": "Ensure that your Elastic Load Balancers (ELB) are configured to drop http headers.",
     "title": "ELB application load balancers should be drop HTTP headers",
@@ -1929,6 +1991,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.elb_application_lb_redirect_http_request_to_https",
     "description": "To help protect data in transit, ensure that your Application Load Balancer automatically redirects unencrypted HTTP requests to HTTPS.",
     "title": "ELB application load balancers should redirect HTTP requests to HTTPS",
@@ -1966,6 +2029,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.elb_classic_lb_use_ssl_certificate",
     "description": "Because sensitive data can exist and to help protect data at transit, ensure encryption is enabled for your Elastic Load Balancing.",
     "title": "ELB classic load balancers should use SSL certificates",
@@ -2003,6 +2067,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.elb_classic_lb_use_tls_https_listeners",
     "description": "Ensure that your Elastic Load Balancers (ELBs) are configured with SSL or HTTPS listeners. Because sensitive data can exist, enable encryption in transit to help protect that data.",
     "title": "ELB classic load balancers should only use SSL or HTTPS listeners",
@@ -2040,6 +2105,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.es_domain_encryption_at_rest_enabled",
     "description": "Because sensitive data can exist and to help protect data at rest, ensure encryption is enabled for your AWS Elasticsearch Service (AWS ES) domains.",
     "title": "ES domain encryption at rest should be enabled",
@@ -2077,6 +2143,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.es_domain_node_to_node_encryption_enabled",
     "description": "Ensure node-to-node encryption for AWS Elasticsearch Service is enabled. Node-to-node encryption enables TLS 1.2 encryption for all communications within the AWS Virtual Private Cloud (AWS VPC).",
     "title": "Elasticsearch domain node-to-node encryption should be enabled",
@@ -2114,6 +2181,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.log_group_encryption_at_rest_enabled",
     "description": "To help protect sensitive data at rest, ensure encryption is enabled for your AWS CloudWatch Log Group.",
     "title": "Log group encryption at rest should be enabled",
@@ -2151,6 +2219,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.rds_db_instance_encryption_at_rest_enabled",
     "description": "To help protect data at rest, ensure that encryption is enabled for your AWS Relational Database Service (AWS RDS) instances.",
     "title": "RDS DB instance encryption at rest should be enabled",
@@ -2190,6 +2259,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.rds_db_instance_in_backup_plan",
     "description": "To help with data back-up processes, ensure your AWS Relational Database Service (AWS RDS) instances are a part of an AWS Backup plan.",
     "title": "RDS DB instances should be in a backup plan",
@@ -2227,6 +2297,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.rds_db_instance_logging_enabled",
     "description": "To help with logging and monitoring within your environment, ensure AWS Relational Database Service (AWS RDS) logging is enabled.",
     "title": "Database logging should be enabled",
@@ -2265,6 +2336,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.rds_db_snapshot_encrypted_at_rest",
     "description": "Ensure that encryption is enabled for your AWS Relational Database Service (AWS RDS) snapshots.",
     "title": "RDS DB snapshots should be encrypted at rest",
@@ -2301,6 +2373,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.redshift_cluster_automatic_snapshots_min_7_days",
     "description": "This control checks whether AWS Redshift clusters have automated snapshots enabled. It also checks whether the snapshot retention period is greater than or equal to seven.",
     "title": "AWS Redshift clusters should have automatic snapshots enabled",
@@ -2339,6 +2412,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.redshift_cluster_encryption_in_transit_enabled",
     "description": "Ensure that your AWS Redshift clusters require TLS/SSL encryption to connect to SQL clients.",
     "title": "Redshift cluster encryption in transit should be enabled",
@@ -2376,6 +2450,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.redshift_cluster_encryption_logging_enabled",
     "description": "To protect data at rest, ensure that encryption is enabled for your AWS Redshift clusters. You must also ensure that required configurations are deployed on AWS Redshift clusters. The audit logging should be enabled to provide information about connections and user activities in the database.",
     "title": "Redshift cluster audit logging and encryption should be enabled",
@@ -2415,6 +2490,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.s3_bucket_default_encryption_enabled",
     "description": "To help protect data at rest, ensure encryption is enabled for your AWS Simple Storage Service (AWS S3) buckets.",
     "title": "S3 bucket default encryption should be enabled",
@@ -2452,6 +2528,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.s3_bucket_default_encryption_enabled_kms",
     "description": "To help protect data at rest, ensure encryption is enabled for your AWS Simple Storage Service (AWS S3) buckets.",
     "title": "S3 bucket default encryption should be enabled with KMS",
@@ -2488,6 +2565,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.s3_bucket_enforces_ssl",
     "description": "To help protect data in transit, ensure that your AWS Simple Storage Service (AWS S3) buckets require requests to use Secure Socket Layer (SSL).",
     "title": "S3 buckets should enforce SSL",
@@ -2526,6 +2604,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.sagemaker_endpoint_configuration_encryption_at_rest_enabled",
     "description": "To help protect data at rest, ensure encryption with AWS Key Management Service (AWS KMS) is enabled for your SageMaker endpoint.",
     "title": "SageMaker endpoint configuration encryption should be enabled",
@@ -2563,6 +2642,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.sagemaker_notebook_instance_encryption_at_rest_enabled",
     "description": "To help protect data at rest, ensure encryption with AWS Key Management Service (AWS KMS) is enabled for your SageMaker notebook.",
     "title": "SageMaker notebook instance encryption should be enabled",
@@ -2600,6 +2680,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.sns_topic_encrypted_at_rest",
     "description": "To help protect data at rest, ensure that your AWS Simple Notification Service (AWS SNS) topics require encryption using AWS Key Management Service (AWS KMS).",
     "title": "SNS topics should be encrypted at rest",
@@ -2636,6 +2717,7 @@
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
     ],
+    "category_hierarchy_short": "GDPR - Article 32",
     "control_id": "aws_compliance.control.wafv2_web_acl_logging_enabled",
     "description": "To help with logging and monitoring within your environment, enable AWS WAF (V2) logging on regional and global web ACLs.",
     "title": "Logging should be enabled on AWS WAFv2 regional and global web access control list (ACLs)",

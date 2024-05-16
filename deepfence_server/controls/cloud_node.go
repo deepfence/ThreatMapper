@@ -23,9 +23,6 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, 
 	}
 
 	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return controls, err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -39,7 +36,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, 
 			compliance_type: $compliance_type
 		})
 		WHERE n.disabled = false
-		RETURN n.node_id, n.title, n.description, n.service, n.category_hierarchy, n.active`,
+		RETURN n.node_id, n.title, n.description, n.service, n.category_hierarchy, n.category_hierarchy_short, n.control_id, n.active`,
 		map[string]interface{}{"cloud_provider": cloudProvider, "compliance_type": complianceType})
 
 	if err != nil {
@@ -60,12 +57,14 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, 
 			}
 		}
 		control := model.CloudNodeComplianceControl{
-			ControlID:         rec.Values[0].(string),
-			Title:             rec.Values[1].(string),
-			Description:       rec.Values[2].(string),
-			Service:           rec.Values[3].(string),
-			CategoryHierarchy: categoryHierarchy,
-			Enabled:           rec.Values[5].(bool),
+			NodeID:                 rec.Values[0].(string),
+			Title:                  rec.Values[1].(string),
+			Description:            rec.Values[2].(string),
+			Service:                rec.Values[3].(string),
+			CategoryHierarchy:      categoryHierarchy,
+			CategoryHierarchyShort: rec.Values[5].(string),
+			ControlID:              rec.Values[6].(string),
+			Enabled:                rec.Values[7].(bool),
 		}
 		controls = append(controls, control)
 	}

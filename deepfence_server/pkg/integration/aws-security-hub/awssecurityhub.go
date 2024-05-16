@@ -27,7 +27,7 @@ var compAsff = map[string]string{
 	"gdpr":  "Software and Configuration Checks/Industry and Regulatory Standards/GDPR Controls (Europe)",
 	"pci":   "Software and Configuration Checks/Industry and Regulatory Standards/PCI-DSS",
 	"nist":  "Software and Configuration Checks/Industry and Regulatory Standards/NIST 800-53 Controls (USA)",
-	"aws-foundational-security": "Software and Configuration Checks/Industry and Regulatory Standards/" +
+	"aws_foundational_security": "Software and Configuration Checks/Industry and Regulatory Standards/" +
 		"AWS Foundational Security Best Practices",
 	"cis":  "Software and Configuration Checks/Industry and Regulatory Standards/CIS Host Hardening Benchmarks",
 	"soc2": "Software and Configuration Checks/Industry and Regulatory Standards/SOC 2",

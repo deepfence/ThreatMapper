@@ -168,12 +168,14 @@ type CloudNodeControlResp struct {
 }
 
 type CloudNodeComplianceControl struct {
-	ControlID         string   `json:"control_id"`
-	Title             string   `json:"title"`
-	Description       string   `json:"description"`
-	Service           string   `json:"service"`
-	CategoryHierarchy []string `json:"category_hierarchy"`
-	Enabled           bool     `json:"enabled"`
+	NodeID                 string   `json:"node_id"`
+	Title                  string   `json:"title"`
+	Description            string   `json:"description"`
+	Service                string   `json:"service"`
+	CategoryHierarchy      []string `json:"category_hierarchy"`
+	CategoryHierarchyShort string   `json:"category_hierarchy_short"`
+	ControlID              string   `json:"control_id"`
+	Enabled                bool     `json:"enabled"`
 }
 
 type PostureProvider struct {

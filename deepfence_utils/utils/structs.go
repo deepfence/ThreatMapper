@@ -94,7 +94,7 @@ type ReportFilters struct {
 	ScanID                string                `json:"scan_id"`
 	ScanType              string                `json:"scan_type" validate:"required" required:"true" enum:"vulnerability,secret,malware,compliance,cloud_compliance"`
 	NodeType              string                `json:"node_type" validate:"required" required:"true" enum:"host,container,container_image,linux,cluster,aws,gcp,azure"`
-	SeverityOrCheckType   []string              `json:"severity_or_check_type" enum:"critical,high,medium,low,cis,gdpr,nist,hipaa,pci,soc_2"`
+	SeverityOrCheckType   []string              `json:"severity_or_check_type" enum:"critical,high,medium,low,cis,gdpr,nist,hipaa,pci,soc_2,aws_foundational_security"`
 	IncludeDeadNode       bool                  `json:"include_dead_nodes"`
 	MostExploitableReport bool                  `json:"most_exploitable_report"`
 	AdvancedReportFilters AdvancedReportFilters `json:"advanced_report_filters,omitempty"`

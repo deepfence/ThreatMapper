@@ -5,6 +5,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.1",
     "control_id": "gcp_compliance.control.cis_v200_1_1",
     "description": "Use corporate login credentials instead of personal accounts, such as Gmail accounts.",
     "title": "1.1 Ensure that corporate login credentials are used",
@@ -33,6 +34,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.2",
     "control_id": "gcp_compliance.control.cis_v200_1_2",
     "description": "Setup multi-factor authentication for Google Cloud Platform accounts.",
     "title": "1.2 Ensure that multi-factor authentication is enabled for all non-service accounts",
@@ -61,6 +63,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.3",
     "control_id": "gcp_compliance.control.cis_v200_1_3",
     "description": "Setup Security Key Enforcement for Google Cloud Platform admin accounts.",
     "title": "1.3 Ensure that Security Key Enforcement is enabled for all admin accounts",
@@ -89,6 +92,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.4",
     "control_id": "gcp_compliance.control.cis_v200_1_4",
     "description": "User managed service accounts should not have user-managed keys.",
     "title": "1.4 Ensure that there are only GCP-managed service account keys for each service account",
@@ -117,6 +121,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.5",
     "control_id": "gcp_compliance.control.cis_v200_1_5",
     "description": "A service account is a special Google account that belongs to an application or a VM, instead of to an individual end-user. The application uses the service account to call the service's Google API so that users aren't directly involved. It's recommended not to use admin access for ServiceAccount.",
     "title": "1.5 Ensure that Service Account has no Admin privileges",
@@ -145,6 +150,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.6",
     "control_id": "gcp_compliance.control.cis_v200_1_6",
     "description": "It is recommended to assign the Service Account User (iam.serviceAccountUser) and Service Account Token Creator (iam.serviceAccountTokenCreator) roles to a user for a specific service account rather than assigning the role to a user at project level.",
     "title": "1.6 Ensure that IAM users are not assigned the Service Account User or Service Account Token Creator roles at project level",
@@ -173,6 +179,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.7",
     "control_id": "gcp_compliance.control.cis_v200_1_7",
     "description": "Service Account keys consist of a key ID (Private_key_Id) and Private key, which are used to sign programmatic requests users make to Google cloud services accessible to that particular service account. It is recommended that all Service Account keys are regularly rotated.",
     "title": "1.7 Ensure user-managed/external keys for service accounts are rotated every 90 days or less",
@@ -201,6 +208,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.8",
     "control_id": "gcp_compliance.control.cis_v200_1_8",
     "description": "It is recommended that the principle of 'Separation of Duties' is enforced while assigning service-account related roles to users.",
     "title": "1.8 Ensure that Separation of duties is enforced while assigning service account related roles to users",
@@ -229,6 +237,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.9",
     "control_id": "gcp_compliance.control.cis_v200_1_9",
     "description": "It is recommended that the IAM policy on Cloud KMS cryptokeys should restrict anonymous and/or public access.",
     "title": "1.9 Ensure that Cloud KMS cryptokeys are not anonymously or publicly accessible",
@@ -257,6 +266,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.10",
     "control_id": "gcp_compliance.control.cis_v200_1_10",
     "description": "Google Cloud Key Management Service stores cryptographic keys in a hierarchical structure designed for useful and elegant access control management. The format for the rotation schedule depends on the client library that is used. For the gcloud command-line tool, the next rotation time must be in ISO or RFC3339 format, and the rotation period must be in the form INTEGER[UNIT], where units can be one of seconds (s), minutes (m), hours (h) or days (d).",
     "title": "1.10 Ensure KMS encryption keys are rotated within a period of 90 days",
@@ -285,6 +295,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.11",
     "control_id": "gcp_compliance.control.cis_v200_1_11",
     "description": "It is recommended that the principle of 'Separation of Duties' is enforced while assigning KMS related roles to users.",
     "title": "1.11 Ensure that Separation of duties is enforced while assigning KMS related roles to users",
@@ -313,6 +324,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.12",
     "control_id": "gcp_compliance.control.cis_v200_1_12",
     "description": "API Keys should only be used for services in cases where other authentication methods are unavailable. Unused keys with their permissions in tact may still exist within a project. Keys are insecure because they can be viewed publicly, such as from within a browser, or they can be accessed on a device where the key resides. It is recommended to use standard authentication flow instead.",
     "title": "1.12 Ensure API Keys Only Exist for Active Services",
@@ -341,6 +353,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.13",
     "control_id": "gcp_compliance.control.cis_v200_1_13",
     "description": "Unrestricted keys are insecure because they can be viewed publicly, such as from within a browser, or they can be accessed on a device where the key resides. It is recommended to restrict API key usage to trusted hosts, HTTP referrers and apps.",
     "title": "1.13 Ensure API keys are restricted to use by only specified Hosts and Apps",
@@ -369,6 +382,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.14",
     "control_id": "gcp_compliance.control.cis_v200_1_14",
     "description": "API keys are insecure because they can be viewed publicly, such as from within a browser, or they can be accessed on a device where the key resides. It is recommended to restrict API keys to use (call) only APIs required by an application.",
     "title": "1.14 Ensure API keys are restricted to only APIs that application needs access",
@@ -397,6 +411,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.15",
     "control_id": "gcp_compliance.control.cis_v200_1_15",
     "description": "It is recommended to rotate API keys every 90 days.",
     "title": "1.15 Ensure API keys are rotated every 90 days",
@@ -425,6 +440,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.16",
     "control_id": "gcp_compliance.control.cis_v200_1_16",
     "description": "It is recommended that Essential Contacts is configured to designate email addresses for Google Cloud services to notify of important technical or security information.",
     "title": "1.16 Ensure essential contacts is configured for Organization",
@@ -453,6 +469,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.17",
     "control_id": "gcp_compliance.control.cis_v200_1_17",
     "description": "When you use Dataproc, cluster and job data is stored on Persistent Disks (PDs) associated with the Compute Engine VMs in your cluster and in a Cloud Storage staging bucket. This PD and bucket data is encrypted using a Google-generated data encryption key (DEK) and key encryption key (KEK). The CMEK feature allows you to create, use, and revoke the key encryption key (KEK). Google still controls the data encryption key (DEK).",
     "title": "1.17 Ensure that dataproc cluster is encrypted using customer-managed encryption key",
@@ -481,6 +498,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.18",
     "control_id": "gcp_compliance.control.cis_v200_1_18",
     "description": "Google Cloud Functions allow you to host serverless code that is executed when an event is triggered, without the requiring the management a host operating system. These functions can also store environment variables to be used by the code that may contain authentication or other information that needs to remain confidential.",
     "title": "1.18 Ensure Secrets are Not Stored in Cloud Functions Environment Variables by Using Secret Manager",
@@ -509,6 +527,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1",
     "control_id": "gcp_compliance.control.cis_v200_2_1",
     "description": "It is recommended that Cloud Audit Logging is configured to track all admin activities and read, write access to user data.",
     "title": "2.1 Ensure that Cloud Audit Logging is configured properly",
@@ -537,6 +556,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.2",
     "control_id": "gcp_compliance.control.cis_v200_2_2",
     "description": "It is recommended to create a sink that will export copies of all the log entries. This can help aggregate logs from multiple projects and export them to a Security Information and Event Management (SIEM).",
     "title": "2.2 Ensure that sinks are configured for all log entries",
@@ -565,6 +585,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.3",
     "control_id": "gcp_compliance.control.cis_v200_2_3",
     "description": "Enabling retention policies on log buckets will protect logs stored in cloud storage buckets from being overwritten or accidentally deleted. It is recommended to set up retention policies and configure Bucket Lock on all storage buckets that are used as log sinks.",
     "title": "2.3 Ensure that retention policies on log buckets are configured using Bucket Lock",
@@ -593,6 +614,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.4",
     "control_id": "gcp_compliance.control.cis_v200_2_4",
     "description": "In order to prevent unnecessary project ownership assignments to users/service-accounts and further misuses of projects and resources, all roles/Owner assignments should be monitored. Members (users/Service-Accounts) with a role assignment to primitive role roles/Owner are project owners.",
     "title": "2.4 Ensure log metric filter and alerts exist for project ownership assignments/changes",
@@ -621,6 +643,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.5",
     "control_id": "gcp_compliance.control.cis_v200_2_5",
     "description": "Cloud audit logging records information includes the identity of the API caller, the time of the API call, the source IP address of the API caller, the request parameters, and the response elements returned by GCP services. Cloud audit logging provides a history of GCP API calls for an account, including API calls made via the console, SDKs, command-line tools, and other GCP services.",
     "title": "2.5 Ensure that the log metric filter and alerts exist for Audit Configuration changes",
@@ -649,6 +672,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.6",
     "control_id": "gcp_compliance.control.cis_v200_2_6",
     "description": "It is recommended that a metric filter and alarm be established for changes to Identity and Access Management (IAM) role creation, deletion and updating activities.",
     "title": "2.6 Ensure that the log metric filter and alerts exist for Custom Role changes",
@@ -677,6 +701,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.7",
     "control_id": "gcp_compliance.control.cis_v200_2_7",
     "description": "It is recommended that a metric filter and alarm be established for Virtual Private Cloud (VPC) Network Firewall rule changes.",
     "title": "2.7 Ensure that the log metric filter and alerts exist for VPC Network Firewall rule changes",
@@ -705,6 +730,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.8",
     "control_id": "gcp_compliance.control.cis_v200_2_8",
     "description": "It is recommended that a metric filter and alarm be established for Virtual Private Cloud (VPC) network route changes.",
     "title": "2.8 Ensure that the log metric filter and alerts exist for VPC network route changes",
@@ -733,6 +759,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.9",
     "control_id": "gcp_compliance.control.cis_v200_2_9",
     "description": "It is recommended that a metric filter and alarm be established for Virtual Private Cloud (VPC) network changes.",
     "title": "2.9 Ensure that the log metric filter and alerts exist for VPC network changes",
@@ -761,6 +788,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.10",
     "control_id": "gcp_compliance.control.cis_v200_2_10",
     "description": "It is recommended that a metric filter and alarm be established for Cloud Storage Bucket IAM changes.",
     "title": "2.10 Ensure that the log metric filter and alerts exist for Cloud Storage IAM permission changes",
@@ -789,6 +817,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.11",
     "control_id": "gcp_compliance.control.cis_v200_2_11",
     "description": "It is recommended that a metric filter and alarm be established for SQL instance configuration changes.",
     "title": "2.11 Ensure that the log metric filter and alerts exist for SQL instance configuration changes",
@@ -817,6 +846,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.12",
     "control_id": "gcp_compliance.control.cis_v200_2_12",
     "description": "Cloud DNS logging records the queries from the name servers within your VPC to Stackdriver. Logged queries can come from Compute Engine VMs, GKE containers, or other GCP resources provisioned within the VPC.",
     "title": "2.12 Ensure that Cloud DNS logging is enabled for all VPC networks",
@@ -845,6 +875,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.13",
     "control_id": "gcp_compliance.control.cis_v200_2_13",
     "description": "GCP Cloud Asset Inventory is services that provides a historical view of GCP resources and IAM policies through a time-series database. The information recorded includes metadata on Google Cloud resources, metadata on policies set on Google Cloud projects or resources, and runtime information gathered within a Google Cloud resource.",
     "title": "2.13 Ensure Cloud Asset Inventory Is Enabled",
@@ -873,6 +904,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.14",
     "control_id": "gcp_compliance.control.cis_v200_2_14",
     "description": "GCP Access Transparency provides audit logs for all actions that Google personnel take in your Google Cloud resources.",
     "title": "2.14 Ensure 'Access Transparency' is 'Enabled'",
@@ -901,6 +933,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.15",
     "control_id": "gcp_compliance.control.cis_v200_2_15",
     "description": "GCP Access Approval enables you to require your organizations' explicit approval whenever Google support try to access your projects. You can then select users within your organization who can approve these requests through giving them a security role in IAM. All access requests display which Google Employee requested them in an email or Pub/Sub message that you can choose to Approve. This adds an additional control and logging of who in your organization approved/denied these requests.",
     "title": "2.15 Ensure 'Access Approval' is 'Enabled'",
@@ -929,6 +962,7 @@
       "CIS v2.0.0",
       "2 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.16",
     "control_id": "gcp_compliance.control.cis_v200_2_16",
     "description": "Logging enabled on a HTTPS Load Balancer will show all network traffic and its destination.",
     "title": "2.16 Ensure Logging is enabled for HTTP(S) Load Balancer",
@@ -957,6 +991,7 @@
       "CIS v2.0.0",
       "3 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.1",
     "control_id": "gcp_compliance.control.cis_v200_3_1",
     "description": "To prevent use of default network, a project should not have a default network.",
     "title": "3.1 Ensure that the default network does not exist in a project",
@@ -985,6 +1020,7 @@
       "CIS v2.0.0",
       "3 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.2",
     "control_id": "gcp_compliance.control.cis_v200_3_2",
     "description": "In order to prevent use of legacy networks, a project should not have a legacy network configured.",
     "title": "3.2 Ensure legacy networks do not exist for a project",
@@ -1013,6 +1049,7 @@
       "CIS v2.0.0",
       "3 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.3",
     "control_id": "gcp_compliance.control.cis_v200_3_3",
     "description": "Cloud Domain Name System (DNS) is a fast, reliable and cost-effective domain name system that powers millions of domains on the internet. Domain Name System Security Extensions (DNSSEC) in Cloud DNS enables domain owners to take easy steps to protect their domains against DNS hijacking and man-in-the-middle and other attacks.",
     "title": "3.3 Ensure that DNSSEC is enabled for Cloud DNS",
@@ -1041,6 +1078,7 @@
       "CIS v2.0.0",
       "3 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.4",
     "control_id": "gcp_compliance.control.cis_v200_3_4",
     "description": "DNSSEC algorithm numbers in this registry may be used in CERT RRs. Zone signing (DNSSEC) and transaction security mechanisms (SIG(0) and TSIG) make use of particular subsets of these algorithms. The algorithm used for key signing should be a recommended one and it should be strong.",
     "title": "3.4 Ensure that RSASHA1 is not used for the key-signing key in Cloud DNS DNSSEC",
@@ -1069,6 +1107,7 @@
       "CIS v2.0.0",
       "3 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.5",
     "control_id": "gcp_compliance.control.cis_v200_3_5",
     "description": "DNSSEC algorithm numbers in this registry may be used in CERT RRs. Zone signing (DNSSEC) and transaction security mechanisms (SIG(0) and TSIG) make use of particular subsets of these algorithms. The algorithm used for key signing should be a recommended one and it should be strong.",
     "title": "3.5 Ensure that RSASHA1 is not used for the zone-signing key in Cloud DNS DNSSEC",
@@ -1097,6 +1136,7 @@
       "CIS v2.0.0",
       "3 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.6",
     "control_id": "gcp_compliance.control.cis_v200_3_6",
     "description": "GCP Firewall Rules are specific to a VPC Network. Each rule either allows or denies traffic when its conditions are met. Its conditions allow the user to specify the type of traffic, such as ports and protocols, and the source or destination of the traffic, including IP addresses, subnets, and instances.",
     "title": "3.6 Ensure that SSH access is restricted from the internet",
@@ -1125,6 +1165,7 @@
       "CIS v2.0.0",
       "3 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.7",
     "control_id": "gcp_compliance.control.cis_v200_3_7",
     "description": "GCP Firewall Rules are specific to a VPC Network. Each rule either allows or denies traffic when its conditions are met. Its conditions allow users to specify the type of traffic, such as ports and protocols, and the source or destination of the traffic, including IP addresses, subnets, and instances.",
     "title": "3.7 Ensure that RDP access is restricted from the Internet",
@@ -1153,6 +1194,7 @@
       "CIS v2.0.0",
       "3 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.8",
     "control_id": "gcp_compliance.control.cis_v200_3_8",
     "description": "Flow Logs is a feature that enables users to capture information about the IP traffic going to and from network interfaces in the organization's VPC Subnets. Once a flow log is created, the user can view and retrieve its data in Stackdriver Logging. It is recommended that Flow Logs be enabled for every business-critical VPC subnet.",
     "title": "3.8 Ensure that VPC Flow Logs is enabled for every subnet in a VPC Network",
@@ -1181,6 +1223,7 @@
       "CIS v2.0.0",
       "3 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.9",
     "control_id": "gcp_compliance.control.cis_v200_3_9",
     "description": "Secure Sockets Layer (SSL) policies determine what port Transport Layer Security (TLS) features clients are permitted to use when connecting to load balancers.",
     "title": "3.9 Ensure no HTTPS or SSL proxy load balancers permit SSL policies with weak cipher suites",
@@ -1209,6 +1252,7 @@
       "CIS v2.0.0",
       "3 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.10",
     "control_id": "gcp_compliance.control.cis_v200_3_10",
     "description": "IAP authenticates the user requests to your apps via a Google single sign in. You can then manage these users with permissions to control access. It is recommended to use both IAP permissions and firewalls to restrict this access to your apps with sensitive information.",
     "title": "3.10 Use Identity Aware Proxy (IAP) to Ensure Only Traffic From Google IP Addresses are 'Allowed'",
@@ -1237,6 +1281,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.1",
     "control_id": "gcp_compliance.control.cis_v200_4_1",
     "description": "It is recommended to configure your instance to not use the default Compute Engine service account because it has the Editor role on the project.",
     "title": "4.1 Ensure that instances are not configured to use the default service account",
@@ -1265,6 +1310,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.2",
     "control_id": "gcp_compliance.control.cis_v200_4_2",
     "description": "To support principle of least privileges and prevent potential privilege escalation it is recommended that instances are not assigned to default service account Compute Engine default service account with Scope Allow full access to all Cloud APIs.",
     "title": "4.2 Ensure that instances are not configured to use the default service account with full access to all Cloud APIs",
@@ -1293,6 +1339,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.3",
     "control_id": "gcp_compliance.control.cis_v200_4_3",
     "description": "It is recommended to use Instance specific SSH key(s) instead of using common/shared project-wide SSH key(s) to access Instances.",
     "title": "4.3 Ensure 'Block Project-wide SSH keys' is enabled for VM instances",
@@ -1321,6 +1368,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.4",
     "control_id": "gcp_compliance.control.cis_v200_4_4",
     "description": "Enabling OS login binds SSH certificates to IAM users and facilitates effective SSH certificate management.",
     "title": "4.4 Ensure oslogin is enabled for a Project",
@@ -1349,6 +1397,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.5",
     "control_id": "gcp_compliance.control.cis_v200_4_5",
     "description": "Interacting with a serial port is often referred to as the serial console, which is similar to using a terminal window, in that input and output is entirely in text mode and there is no graphical interface or mouse support.",
     "title": "4.5 Ensure 'Enable connecting to serial ports' is not enabled for VM Instance",
@@ -1377,6 +1426,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.6",
     "control_id": "gcp_compliance.control.cis_v200_4_6",
     "description": "Compute Engine instance cannot forward a packet unless the source IP address of the packet matches the IP address of the instance. Similarly, GCP won't deliver a packet whose destination IP address is different than the IP address of the instance receiving the packet. However, both capabilities are required if you want to use instances to help route packets.",
     "title": "4.6 Ensure that IP forwarding is not enabled on Instances",
@@ -1405,6 +1455,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.7",
     "control_id": "gcp_compliance.control.cis_v200_4_7",
     "description": "Customer-Supplied Encryption Keys (CSEK) are a feature in Google Cloud Storage and Google Compute Engine. If you supply your own encryption keys, Google uses your key to protect the Google-generated keys used to encrypt and decrypt your data. By default, Google Compute Engine encrypts all data at rest. Compute Engine handles and manages this encryption for you without any additional actions on your part. However, if you wanted to control and manage this encryption yourself, you can provide your own encryption keys.",
     "title": "4.7 Ensure VM disks for critical VMs are encrypted with Customer-Supplied Encryption Keys (CSEK)",
@@ -1433,6 +1484,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.8",
     "control_id": "gcp_compliance.control.cis_v200_4_8",
     "description": "To defend against against advanced threats and ensure that the boot loader and firmware on your VMs are signed and untampered, it is recommended that Compute instances are launched with Shielded VM enabled.",
     "title": "4.8 Ensure Compute instances are launched with Shielded VM enabled",
@@ -1461,6 +1513,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.9",
     "control_id": "gcp_compliance.control.cis_v200_4_9",
     "description": "Compute instances should not be configured to have external IP addresses.",
     "title": "4.9 Ensure that Compute instances do not have public IP addresses",
@@ -1489,6 +1542,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.10",
     "control_id": "gcp_compliance.control.cis_v200_4_10",
     "description": "In order to maintain the highest level of security all connections to an application should be secure by default.",
     "title": "4.10 Ensure that App Engine applications enforce HTTPS connections",
@@ -1517,6 +1571,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.11",
     "control_id": "gcp_compliance.control.cis_v200_4_11",
     "description": "Google Cloud encrypts data at-rest and in-transit, but customer data must be decrypted for processing. Confidential Computing is a breakthrough technology which encrypts data in-use—while it is being processed. Confidential Computing environments keep data encrypted in memory and elsewhere outside the central processing unit (CPU).",
     "title": "4.11 Ensure that Compute instances have Confidential Computing enabled",
@@ -1545,6 +1600,7 @@
       "CIS v2.0.0",
       "4 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.12",
     "control_id": "gcp_compliance.control.cis_v200_4_12",
     "description": "For the virtual machines where you manage the operating system in Infrastructure as a Service (IaaS), you are responsible for keeping these operating systems and programs up to date. There are multiple ways to manage updates yourself that would be difficult to fit into one recommendation. Check the CIS Benchmarks for each of your Operating Systems as well for potential solutions there. In this recommendation we will use a feature in Google Cloud via its VM manager API to manage updates called Operating System Patch Management (referred to OS Patch Management from here on out). This may requires installing the OS Config API if it is not already installed. Also if you install custom operating systems, they may not functionally support the local OS config agent required to gather operating system patch information and issue update commands. These update commands are the default Linux and Windows commands to install updates such as yum or apt. This feature allows for a central management to issue those commands. OS Patch management also does not host the updates itself, so your VMs will need to be public or be able to access the internet. This is not the only Patch Management solution available to your organization and you should weigh your needs before committing to using this.",
     "title": "4.12 Ensure the Latest Operating System Updates Are Installed On Your Virtual Machines in All Projects",
@@ -1573,6 +1629,7 @@
       "CIS v2.0.0",
       "5 Storage"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.1",
     "control_id": "gcp_compliance.control.cis_v200_5_1",
     "description": "It is recommended that IAM policy on Cloud Storage bucket does not allows anonymous or public access.",
     "title": "5.1 Ensure that Cloud Storage bucket is not anonymously or publicly accessible",
@@ -1601,6 +1658,7 @@
       "CIS v2.0.0",
       "5 Storage"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2",
     "control_id": "gcp_compliance.control.cis_v200_5_2",
     "description": "It is recommended that uniform bucket-level access is enabled on Cloud Storage buckets.",
     "title": "5.2 Ensure that Cloud Storage buckets have uniform bucket-level access enabled",
@@ -1630,6 +1688,7 @@
       "6 Cloud SQL Database Services",
       "6.1 MySQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.1.1",
     "control_id": "gcp_compliance.control.cis_v200_6_1_1",
     "description": "It is recommended to set a password for the administrative user (root by default) to prevent unauthorized access to the SQL database instances. This recommendation is applicable only for MySQL Instances. PostgreSQL does not offer any setting for No Password from the cloud console.",
     "title": "6.1.1 Ensure that a MySQL database instance does not allow anyone to connect with administrative privileges",
@@ -1660,6 +1719,7 @@
       "6 Cloud SQL Database Services",
       "6.1 MySQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.1.2",
     "control_id": "gcp_compliance.control.cis_v200_6_1_2",
     "description": "It is recommended to set skip_show_database database flag for Cloud SQL Mysql instance to on.",
     "title": "6.1.2 Ensure 'skip_show_database' database flag for Cloud SQL Mysql instance is set to 'on'",
@@ -1690,6 +1750,7 @@
       "6 Cloud SQL Database Services",
       "6.1 MySQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.1.3",
     "control_id": "gcp_compliance.control.cis_v200_6_1_3",
     "description": "It is recommended to set the local_infile database flag for a Cloud SQL MySQL instance to off.",
     "title": "6.1.3 Ensure that the 'local_infile' database flag for a Cloud SQL Mysql instance is set to 'off'",
@@ -1720,6 +1781,7 @@
       "6 Cloud SQL Database Services",
       "6.2 PostgreSQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.2.1",
     "control_id": "gcp_compliance.control.cis_v200_6_2_1",
     "description": "The log_error_verbosity flag controls the verbosity/details of messages logged. Valid values are: 'TERSE', 'DEFAULT', and 'VERBOSE'.",
     "title": "6.2.1 Ensure 'log_error_verbosity' database flag for Cloud SQL PostgreSQL instance is set to 'DEFAULT' or stricter",
@@ -1750,6 +1812,7 @@
       "6 Cloud SQL Database Services",
       "6.2 PostgreSQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.2.2",
     "control_id": "gcp_compliance.control.cis_v200_6_2_2",
     "description": "Enabling the log_connections setting causes each attempted connection to the server to be logged, along with successful completion of client authentication. This parameter cannot be changed after the session starts.",
     "title": "6.2.2 Ensure that the 'log_connections' database flag for Cloud SQL PostgreSQL instance is set to 'on'",
@@ -1780,6 +1843,7 @@
       "6 Cloud SQL Database Services",
       "6.2 PostgreSQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.2.3",
     "control_id": "gcp_compliance.control.cis_v200_6_2_3",
     "description": "Enabling the log_disconnections setting logs the end of each session, including the session duration.",
     "title": "6.2.3 Ensure that the 'log_disconnections' database flag for Cloud SQL PostgreSQL instance is set to 'on'",
@@ -1810,6 +1874,7 @@
       "6 Cloud SQL Database Services",
       "6.2 PostgreSQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.2.4",
     "control_id": "gcp_compliance.control.cis_v200_6_2_4",
     "description": "The value of log_statement flag determined the SQL statements that are logged. Valid values are: 'none', 'ddl', 'mod', and 'all'.",
     "title": "6.2.4 Ensure 'log_statement' database flag for Cloud SQL PostgreSQL instance is set appropriately",
@@ -1840,6 +1905,7 @@
       "6 Cloud SQL Database Services",
       "6.2 PostgreSQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.2.5",
     "control_id": "gcp_compliance.control.cis_v200_6_2_5",
     "description": "The log_min_messages flag defines the minimum message severity level that is considered as an error statement. Messages for error statements are logged with the SQL statement. Valid values include DEBUG5, DEBUG4, DEBUG3, DEBUG2, DEBUG1, INFO, NOTICE, WARNING, ERROR, LOG, FATAL, and PANIC. Each severity level includes the subsequent levels mentioned above.",
     "title": "6.2.5 Ensure that the 'Log_min_messages' Flag for a Cloud SQL PostgreSQL Instance is set at minimum to 'Warning'",
@@ -1870,6 +1936,7 @@
       "6 Cloud SQL Database Services",
       "6.2 PostgreSQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.2.6",
     "control_id": "gcp_compliance.control.cis_v200_6_2_6",
     "description": "The log_min_error_statement flag defines the minimum message severity level that are considered as an error statement. Messages for error statements are logged with the SQL statement. Valid values include DEBUG5, DEBUG4, DEBUG3, DEBUG2, DEBUG1, INFO, NOTICE, WARNING, ERROR, LOG, FATAL, and PANIC. Each severity level includes the subsequent levels mentioned above. Ensure a value of ERROR or stricter is set.",
     "title": "6.2.6 Ensure 'log_min_error_statement' database flag for Cloud SQL PostgreSQL instance is set to 'Error' or stricter",
@@ -1900,6 +1967,7 @@
       "6 Cloud SQL Database Services",
       "6.2 PostgreSQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.2.7",
     "control_id": "gcp_compliance.control.cis_v200_6_2_7",
     "description": "The log_min_duration_statement flag defines the minimum amount of execution time of a statement in milliseconds where the total duration of the statement is logged. Ensure that log_min_duration_statement is disabled, i.e., a value of -1 is set.",
     "title": "6.2.7 Ensure that the 'log_min_duration_statement' database flag for Cloud SQL PostgreSQL instance is set to '-1' (disabled)",
@@ -1930,6 +1998,7 @@
       "6 Cloud SQL Database Services",
       "6.2 PostgreSQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.2.8",
     "control_id": "gcp_compliance.control.cis_v200_6_2_8",
     "description": "Ensure cloudsql.enable_pgaudit database flag for Cloud SQL PostgreSQL instance is set to on to allow for centralized logging.",
     "title": "6.2.8 Ensure That 'cloudsql.enable_pgaudit' Database Flag for each Cloud Sql Postgresql Instance Is Set to 'on' For Centralized Logging",
@@ -1960,6 +2029,7 @@
       "6 Cloud SQL Database Services",
       "6.2 PostgreSQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.2.9",
     "control_id": "gcp_compliance.control.cis_v200_6_2_9",
     "description": "Instance addresses can be public IP or private IP. Public IP means that the instance is accessible through the public internet. In contrast, instances using only private IP are not accessible through the public internet, but are accessible through a Virtual Private Cloud (VPC).",
     "title": "6.2.9 Ensure Instance IP assignment is set to private",
@@ -1990,6 +2060,7 @@
       "6 Cloud SQL Database Services",
       "6.3 SQL Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.3.1",
     "control_id": "gcp_compliance.control.cis_v200_6_3_1",
     "description": "It is recommended to set external scripts enabled database flag for Cloud SQL SQL Server instance to off.",
     "title": "6.3.1 Ensure 'external scripts enabled' database flag for Cloud SQL SQL Server instance is set to 'off'",
@@ -2020,6 +2091,7 @@
       "6 Cloud SQL Database Services",
       "6.3 SQL Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.3.2",
     "control_id": "gcp_compliance.control.cis_v200_6_3_2",
     "description": "It is recommended to set cross db ownership chaining database flag for Cloud SQL SQL Server instance to off.",
     "title": "6.3.2 Ensure that the 'cross db ownership chaining' database flag for Cloud SQL SQL Server instance is set to 'off'",
@@ -2050,6 +2122,7 @@
       "6 Cloud SQL Database Services",
       "6.3 SQL Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.3.3",
     "control_id": "gcp_compliance.control.cis_v200_6_3_3",
     "description": "It is recommended to set user connections database flag for Cloud SQL SQL Server instance according organization-defined value.",
     "title": "6.3.3 Ensure 'user connections' database flag for Cloud SQL SQL Server instance is set as appropriate",
@@ -2080,6 +2153,7 @@
       "6 Cloud SQL Database Services",
       "6.3 SQL Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.3.4",
     "control_id": "gcp_compliance.control.cis_v200_6_3_4",
     "description": "It is recommended that, user options database flag for Cloud SQL SQL Server instance should not be configured.",
     "title": "6.3.4 Ensure 'user options' database flag for Cloud SQL SQL Server instance is not configured",
@@ -2110,6 +2184,7 @@
       "6 Cloud SQL Database Services",
       "6.3 SQL Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.3.5",
     "control_id": "gcp_compliance.control.cis_v200_6_3_5",
     "description": "It is recommended to set remote access database flag for Cloud SQL SQL Server instance to off.",
     "title": "6.3.5 Ensure 'remote access' database flag for Cloud SQL SQL Server instance is set to 'off'",
@@ -2140,6 +2215,7 @@
       "6 Cloud SQL Database Services",
       "6.3 SQL Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.3.6",
     "control_id": "gcp_compliance.control.cis_v200_6_3_6",
     "description": "It is recommended to set 3625 (trace flag) database flag for Cloud SQL SQL Server instance to off.",
     "title": "6.3.6 Ensure '3625 (trace flag)' database flag for Cloud SQL SQL Server instance is set to 'off'",
@@ -2170,6 +2246,7 @@
       "6 Cloud SQL Database Services",
       "6.3 SQL Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.3.7",
     "control_id": "gcp_compliance.control.cis_v200_6_3_7",
     "description": "It is recommended to set contained database authentication database flag for Cloud SQL on the SQL Server instance is set to off.",
     "title": "6.3.7 Ensure that the 'contained database authentication' database flag for Cloud SQL on the SQL Server instance is set to 'off'",
@@ -2199,6 +2276,7 @@
       "CIS v2.0.0",
       "6 Cloud SQL Database Services"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.4",
     "control_id": "gcp_compliance.control.cis_v200_6_4",
     "description": "It is recommended to enforce all incoming connections to SQL database instance to use SSL.",
     "title": "6.4 Ensure that the Cloud SQL database instance requires all incoming connections to use SSL",
@@ -2227,6 +2305,7 @@
       "CIS v2.0.0",
       "6 Cloud SQL Database Services"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.5",
     "control_id": "gcp_compliance.control.cis_v200_6_5",
     "description": "Database Server should accept connections only from trusted Network(s)/IP(s) and restrict access from public IP addresses.",
     "title": "6.5 Ensure That Cloud SQL Database Instances Do Not Implicitly Whitelist All Public IP Addresses",
@@ -2255,6 +2334,7 @@
       "CIS v2.0.0",
       "6 Cloud SQL Database Services"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.6",
     "control_id": "gcp_compliance.control.cis_v200_6_6",
     "description": "It is recommended to configure Second Generation Sql instance to use private IPs instead of public IPs.",
     "title": "6.6 Ensure that Cloud SQL database instances do not have public IPs",
@@ -2283,6 +2363,7 @@
       "CIS v2.0.0",
       "6 Cloud SQL Database Services"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.7",
     "control_id": "gcp_compliance.control.cis_v200_6_7",
     "description": "It is recommended to have all SQL database instances set to enable automated backups.",
     "title": "6.7 Ensure that Cloud SQL database instances are configured with automated backups",
@@ -2311,6 +2392,7 @@
       "CIS v2.0.0",
       "7 BigQuery"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 7.1",
     "control_id": "gcp_compliance.control.cis_v200_7_1",
     "description": "It is recommended that the IAM policy on BigQuery datasets does not allow anonymous and/or public access.",
     "title": "7.1 Ensure that BigQuery datasets are not anonymously or publicly accessible",
@@ -2339,6 +2421,7 @@
       "CIS v2.0.0",
       "7 BigQuery"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 7.2",
     "control_id": "gcp_compliance.control.cis_v200_7_2",
     "description": "BigQuery by default encrypts the data as rest by employing Envelope Encryption using Google managed cryptographic keys. The data is encrypted using the data encryption keys and data encryption keys themselves are further encrypted using key encryption keys. This is seamless and do not require any additional input from the user. However, if you want to have greater control, Customer-managed encryption keys (CMEK) can be used as encryption key management solution for BigQuery Data Sets. If CMEK is used, the CMEK is used to encrypt the data encryption keys instead of using google-managed encryption keys.",
     "title": "7.2 Ensure that all BigQuery Tables are encrypted with Customer-managed encryption key (CMEK)",
@@ -2367,6 +2450,7 @@
       "CIS v2.0.0",
       "7 BigQuery"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 7.3",
     "control_id": "gcp_compliance.control.cis_v200_7_3",
     "description": "BigQuery by default encrypts the data as rest by employing Envelope Encryption using Google managed cryptographic keys. The data is encrypted using the data encryption keys and data encryption keys themselves are further encrypted using key encryption keys. This is seamless and do not require any additional input from the user. However, if you want to have greater control, Customer-managed encryption keys (CMEK) can be used as encryption key management solution for BigQuery Data Sets.",
     "title": "7.3 Ensure that a Default Customer-managed encryption key (CMEK) is specified for all BigQuery Data Sets",

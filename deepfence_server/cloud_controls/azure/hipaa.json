@@ -6,6 +6,7 @@
       "Privilege Management",
       "The organization facilitates information sharing by enabling authorized users"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Privilege Management",
     "control_id": "azure_compliance.control.kubernetes_instance_rbac_enabled",
     "description": "To provide granular filtering on the actions that users can perform, use Role-Based Access Control (RBAC) to manage permissions in Kubernetes Service Clusters and configure relevant authorization policies.",
     "title": "Role-Based Access Control (RBAC) should be used on Kubernetes Services",
@@ -30,6 +31,7 @@
       "Privilege Management",
       "Contractors are provided with minimal system and physical access"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Privilege Management",
     "control_id": "azure_compliance.control.iam_subscription_owner_max_3",
     "description": "It is recommended to designate up to 3 subscription owners in order to reduce the potential for breach by a compromised owner.",
     "title": "A maximum of 3 owners should be designated for your subscription",
@@ -55,6 +57,7 @@
       "User Authentication for External Connections",
       "Remote access by vendors and business partners (e.g., for remote maintenance) is disabled/deactivated when not in use"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - User Authentication for External Connections",
     "control_id": "azure_compliance.control.iam_user_with_write_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with write privileges to prevent a breach of accounts or resources.",
     "title": "Accounts with write permissions on Azure resources should be MFA enabled",
@@ -80,6 +83,7 @@
       "User Authentication for External Connections",
       "If encryption is not used for dial-up connections, the CIO or his/her designated representative provides specific written authorization"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - User Authentication for External Connections",
     "control_id": "azure_compliance.control.iam_user_with_write_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with write privileges to prevent a breach of accounts or resources.",
     "title": "Accounts with write permissions on Azure resources should be MFA enabled",
@@ -105,6 +109,7 @@
       "User Authentication for External Connections",
       "The organization protects wireless access to systems containing sensitive information by authenticating both users and devices"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - User Authentication for External Connections",
     "control_id": "azure_compliance.control.iam_user_with_read_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with read privileges to prevent a breach of accounts or resources.",
     "title": "Accounts with read permissions on Azure resources should be MFA enabled",
@@ -129,6 +134,7 @@
       "User Authentication for External Connections",
       "The organization requires a callback capability with re-authentication to verify dial-up connections from authorized locations"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - User Authentication for External Connections",
     "control_id": "azure_compliance.control.iam_user_with_owner_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with owner permissions to prevent a breach of accounts or resources.",
     "title": "Accounts with owner permissions on Azure resources should be MFA enabled",
@@ -154,6 +160,7 @@
       "User Authentication for External Connections",
       "User IDs assigned to vendors are reviewed in accordance with the organization's access review policy, at a minimum annually"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - User Authentication for External Connections",
     "control_id": "azure_compliance.control.iam_user_with_write_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with write privileges to prevent a breach of accounts or resources.",
     "title": "Accounts with write permissions on Azure resources should be MFA enabled",
@@ -179,6 +186,7 @@
       "User Identification and Authentication",
       "Non-organizational users (all information system users other than organizational users, such as patients, customers, contractors, or foreign nationals), or processes acting on behalf of non-organizational users, determined to need access to information residing on the organization's information systems, are uniquely identified and authenticated"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - User Identification and Authentication",
     "control_id": "azure_compliance.control.iam_user_with_write_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with write privileges to prevent a breach of accounts or resources.",
     "title": "Accounts with write permissions on Azure resources should be MFA enabled",
@@ -204,6 +212,7 @@
       "User Identification and Authentication",
       "The organization requires that electronic signatures, unique to one individual, cannot be reused by, or reassigned to, anyone else"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - User Identification and Authentication",
     "control_id": "azure_compliance.control.iam_subscription_owner_more_than_1",
     "description": "It is recommended to designate more than one subscription owner in order to have administrator access redundancy.",
     "title": "There should be more than one owner assigned to your subscription",
@@ -228,6 +237,7 @@
       "User Identification and Authentication",
       "Electronic signatures and handwritten signatures executed to electronic records shall be linked to their respective electronic records"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - User Identification and Authentication",
     "control_id": "azure_compliance.control.compute_vm_administrators_group_with_specified_members_windows",
     "description": "Requires that prerequisites are deployed to the policy assignment scope. Machines are non-compliant if the local Administrators group contains one or more of the members listed in the policy parameter.",
     "title": "Audit Windows machines that have the specified members in the Administrators group",
@@ -251,6 +261,7 @@
       "User Identification and Authentication",
       "Signed electronic records shall contain information associated with the signing in human-readable format"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - User Identification and Authentication",
     "control_id": "azure_compliance.control.compute_vm_administrators_group_with_no_specified_members_windows",
     "description": "Requires that prerequisites are deployed to the policy assignment scope. Machines are non-compliant if the local Administrators group does not contain one or more members that are listed in the policy parameter.",
     "title": "Audit Windows machines missing any of specified members in the Administrators group",
@@ -274,6 +285,7 @@
       "02 Endpoint Protection",
       "0201.09j1Organizational.124-09.j 09.04 Protection Against Malicious and Mobile Code"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 02 Endpoint Protection",
     "control_id": "azure_compliance.control.compute_vm_adaptive_application_controls_enabled",
     "description": "Enable application controls to define the list of known-safe applications running on your machines, and alert you when other applications run. This helps harden your machines against malware. To simplify the process of configuring and maintaining your rules, Security Center uses machine learning to analyze the applications running on each machine and suggest the list of known-safe applications.",
     "title": "Adaptive application controls for defining safe applications should be enabled on your machines",
@@ -298,6 +310,7 @@
       "02 Endpoint Protection",
       "0201.09j1Organizational.124-09.j 09.04 Protection Against Malicious and Mobile Code"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 02 Endpoint Protection",
     "control_id": "azure_compliance.control.compute_vm_endpoint_protection_agent_installed",
     "description": "Servers without an installed Endpoint Protection agent will be monitored by Azure Security Center as recommendations.",
     "title": "Monitor missing Endpoint Protection in Azure Security Center",
@@ -322,6 +335,7 @@
       "02 Endpoint Protection",
       "0201.09j1Organizational.124-09.j 09.04 Protection Against Malicious and Mobile Code"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 02 Endpoint Protection",
     "control_id": "azure_compliance.control.compute_vm_malware_agent_automatic_upgrade_enabled",
     "description": "This policy audits any Windows virtual machine not configured with automatic update of Microsoft Antimalware protection signatures.",
     "title": "Microsoft Antimalware for Azure should be configured to automatically update protection signatures",
@@ -345,6 +359,7 @@
       "02 Endpoint Protection",
       "0201.09j1Organizational.124-09.j 09.04 Protection Against Malicious and Mobile Code"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 02 Endpoint Protection",
     "control_id": "azure_compliance.control.compute_vm_malware_agent_installed",
     "description": "This policy deploys a Microsoft IaaSAntimalware extension with a default configuration when a VM is not configured with the antimalware extension.",
     "title": "Deploy default Microsoft IaaSAntimalware extension for Windows Server",
@@ -368,6 +383,7 @@
       "02 Endpoint Protection",
       "0201.09j1Organizational.124-09.j 09.04 Protection Against Malicious and Mobile Code"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 02 Endpoint Protection",
     "control_id": "azure_compliance.control.compute_vm_scale_set_endpoint_protection_solution_installed",
     "description": "Audit the existence and health of an endpoint protection solution on your virtual machines scale sets, to protect them from threats and vulnerabilities.",
     "title": "Endpoint protection solution should be installed on virtual machine scale sets",
@@ -392,6 +408,7 @@
       "02 Endpoint Protection",
       "0201.09j1Organizational.124-09.j 09.04 Protection Against Malicious and Mobile Code"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 02 Endpoint Protection",
     "control_id": "azure_compliance.control.compute_vm_system_updates_installed",
     "description": "Missing security system updates on your servers will be monitored by Azure Security Center as recommendations.",
     "title": "System updates should be installed on your machines",
@@ -417,6 +434,7 @@
       "03 Portable Media Security",
       "0301.09o1Organizational.123-09.o 09.07 Media Handling"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 03 Portable Media Security",
     "control_id": "azure_compliance.control.sql_database_transparent_data_encryption_enabled",
     "description": "Transparent data encryption should be enabled to protect data-at-rest and meet compliance requirements.",
     "title": "SQL databases transparent data encryption should be enabled",
@@ -441,6 +459,7 @@
       "03 Portable Media Security",
       "0302.09o2Organizational.1-09.o 09.07 Media Handling"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 03 Portable Media Security",
     "control_id": "azure_compliance.control.compute_vm_temp_disks_cache_and_data_flows_encrypted",
     "description": "By default, a virtual machine's OS and data disks are encrypted-at-rest using platform-managed keys. Temp disks, data caches and data flowing between compute and storage aren't encrypted. Disregard this recommendation if: 1. using encryption-at-host, or 2. server-side encryption on Managed Disks meets your security requirements. Learn more in: Server-side encryption of Azure Disk Storage: https://aka.ms/disksse, Different disk encryption offerings: https://aka.ms/diskencryptioncomparison",
     "title": "Virtual machines should encrypt temp disks, caches, and data flows between Compute and Storage resources",
@@ -466,6 +485,7 @@
       "03 Portable Media Security",
       "0304.09o3Organizational.1-09.o 09.07 Media Handling"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 03 Portable Media Security",
     "control_id": "azure_compliance.control.datalake_store_account_encryption_enabled",
     "description": "This policy ensures encryption is enabled on all Data Lake Store accounts.",
     "title": "Require encryption on Data Lake Store accounts",
@@ -489,6 +509,7 @@
       "03 Portable Media Security",
       "0304.09o3Organizational.1-09.o 09.07 Media Handling"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 03 Portable Media Security",
     "control_id": "azure_compliance.control.mssql_managed_instance_encryption_at_rest_using_cmk",
     "description": "Implementing Transparent Data Encryption (TDE) with your own key provides you with increased transparency and control over the TDE Protector, increased security with an HSM-backed external service, and promotion of separation of duties. This recommendation applies to organizations with a related compliance requirement.",
     "title": "SQL managed instances should use customer-managed keys to encrypt data at rest",
@@ -513,6 +534,7 @@
       "03 Portable Media Security",
       "0304.09o3Organizational.1-09.o 09.07 Media Handling"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 03 Portable Media Security",
     "control_id": "azure_compliance.control.sql_server_tde_protector_cmk_encrypted",
     "description": "Implementing Transparent Data Encryption (TDE) with your own key provides increased transparency and control over the TDE Protector, increased security with an HSM-backed external service, and promotion of separation of duties. This recommendation applies to organizations with a related compliance requirement.",
     "title": "SQL servers should use customer-managed keys to encrypt data at rest",
@@ -537,6 +559,7 @@
       "Identification of Risks Related to External Parties",
       "Access to the organizations information and systems by external parties"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Identification of Risks Related to External Parties",
     "control_id": "azure_compliance.control.storage_account_secure_transfer_required_enabled",
     "description": "Audit requirement of Secure transfer in your storage account. Secure transfer is an option that forces your storage account to accept requests only from secure connections (HTTPS). Use of HTTPS ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Secure transfer to storage accounts should be enabled",
@@ -562,6 +585,7 @@
       "Identification of Risks Related to External Parties",
       "Remote access connections between the organization and external parties are encrypted"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Identification of Risks Related to External Parties",
     "control_id": "azure_compliance.control.appservice_function_app_only_https_accessible",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "Function apps should only be accessible over HTTPS",
@@ -587,6 +611,7 @@
       "Identification of Risks Related to External Parties",
       "Access granted to external parties is limited to the minimum necessary and granted only for the duration required"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Identification of Risks Related to External Parties",
     "control_id": "azure_compliance.control.appservice_api_app_use_https",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "App Service API apps should only be accessible over HTTPS",
@@ -611,6 +636,7 @@
       "Identification of Risks Related to External Parties",
       "The identification of risks related to external party access takes into account a minimal set of specifically defined issues"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Identification of Risks Related to External Parties",
     "control_id": "azure_compliance.control.mysql_ssl_enabled",
     "description": "Azure Database for MySQL supports connecting your Azure Database for MySQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server.",
     "title": "Enforce SSL connection should be enabled for MySQL database servers",
@@ -635,6 +661,7 @@
       "06 Configuration Management",
       "0605.10h1System.12-10.h 10.04 Security of System Files"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_security_option_audit_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'Security Options - Audit' for forcing audit policy subcategory and shutting down if unable to log security audits. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'Security Options - Audit'",
@@ -658,6 +685,7 @@
       "06 Configuration Management",
       "0605.10h1System.12-10.h 10.04 Security of System Files"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -681,6 +709,7 @@
       "06 Configuration Management",
       "0605.10h1System.12-10.h 10.04 Security of System Files"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_security_configuration_vulnerabilities_remediated",
     "description": "Servers which do not satisfy the configured baseline will be monitored by Azure Security Center as recommendations.",
     "title": "Vulnerabilities in security configuration on your machines should be remediated",
@@ -706,6 +735,7 @@
       "06 Configuration Management",
       "0635.10k1Organizational.12-10.k 10.05 Security In Development and Support Processes"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -729,6 +759,7 @@
       "06 Configuration Management",
       "0636.10k2Organizational.1-10.k 10.05 Security In Development and Support Processes"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -752,6 +783,7 @@
       "06 Configuration Management",
       "0637.10k2Organizational.2-10.k 10.05 Security In Development and Support Processes"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -775,6 +807,7 @@
       "06 Configuration Management",
       "0638.10k2Organizational.34569-10.k 10.05 Security In Development and Support Processes"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -798,6 +831,7 @@
       "06 Configuration Management",
       "0639.10k2Organizational.78-10.k 10.05 Security In Development and Support Processes"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -821,6 +855,7 @@
       "06 Configuration Management",
       "0640.10k2Organizational.1012-10.k 10.05 Security In Development and Support Processes"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -844,6 +879,7 @@
       "06 Configuration Management",
       "0641.10k2Organizational.11-10.k 10.05 Security In Development and Support Processes"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -867,6 +903,7 @@
       "06 Configuration Management",
       "0642.10k3Organizational.12-10.k 10.05 Security In Development and Support Processes"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -890,6 +927,7 @@
       "06 Configuration Management",
       "0643.10k3Organizational.3-10.k 10.05 Security In Development and Support Processes"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -913,6 +951,7 @@
       "06 Configuration Management",
       "0644.10k3Organizational.4-10.k 10.05 Security In Development and Support Processes"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.compute_vm_meet_system_audit_policies_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'System Audit Policies - Detailed Tracking' for auditing DPAPI, process creation/termination, RPC events, and PNP activity. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'System Audit Policies - Detailed Tracking'",
@@ -936,6 +975,7 @@
       "06 Configuration Management",
       "0662.09sCSPOrganizational.2-09.s 09.08 Exchange of Information"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 06 Configuration Management",
     "control_id": "azure_compliance.control.appservice_web_app_client_certificates_on",
     "description": "Client certificates allow for the app to request a certificate for incoming requests. Only clients that have a valid certificate will be able to reach the app.",
     "title": "App Service apps should have 'Client Certificates (Incoming client certificates)' enabled",
@@ -959,6 +999,7 @@
       "07 Vulnerability Management",
       "0709.10m1Organizational.1-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.compute_vm_container_security_configurations_vulnerabilities_remediated",
     "description": "Audit vulnerabilities in security configuration on machines with Docker installed and display as recommendations in Azure Security Center.",
     "title": "Vulnerabilities in container security configurations should be remediated",
@@ -983,6 +1024,7 @@
       "07 Vulnerability Management",
       "0709.10m1Organizational.1-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.compute_vm_scale_set_security_configuration_vulnerabilities_remediated",
     "description": "Audit the OS vulnerabilities on your virtual machine scale sets to protect them from attacks.",
     "title": "Vulnerabilities in security configuration on your virtual machine scale sets should be remediated",
@@ -1007,6 +1049,7 @@
       "07 Vulnerability Management",
       "0709.10m1Organizational.1-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.compute_vm_security_configuration_vulnerabilities_remediated",
     "description": "Servers which do not satisfy the configured baseline will be monitored by Azure Security Center as recommendations.",
     "title": "Vulnerabilities in security configuration on your machines should be remediated",
@@ -1032,6 +1075,7 @@
       "07 Vulnerability Management",
       "0709.10m1Organizational.1-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.compute_vm_vulnerability_assessment_solution_enabled",
     "description": "Audits virtual machines to detect whether they are running a supported vulnerability assessment solution. A core component of every cyber risk and security program is the identification and analysis of vulnerabilities. Azure Security Center's standard pricing tier includes vulnerability scanning for your virtual machines at no extra cost. Additionally, Security Center can automatically deploy this tool for you.",
     "title": "A vulnerability assessment solution should be enabled on your virtual machines",
@@ -1057,6 +1101,7 @@
       "07 Vulnerability Management",
       "0709.10m1Organizational.1-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.mssql_managed_instance_vulnerability_assessment_enabled",
     "description": "Audit each SQL Managed Instance which doesn't have recurring vulnerability assessment scans enabled. Vulnerability assessment can discover, track, and help you remediate potential database vulnerabilities.",
     "title": "Vulnerability assessment should be enabled on SQL Managed Instance",
@@ -1081,6 +1126,7 @@
       "07 Vulnerability Management",
       "0709.10m1Organizational.1-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.sql_database_vulnerability_findings_resolved",
     "description": "Monitor vulnerability assessment scan results and recommendations for how to remediate database vulnerabilities.",
     "title": "SQL databases should have vulnerability findings resolved",
@@ -1106,6 +1152,7 @@
       "07 Vulnerability Management",
       "0709.10m1Organizational.1-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.sql_server_and_databases_va_enabled",
     "description": "Audit Azure SQL servers which do not have recurring vulnerability assessment scans enabled. Vulnerability assessment can discover, track, and help you remediate potential database vulnerabilities.",
     "title": "Vulnerability assessment should be enabled on your SQL servers",
@@ -1130,6 +1177,7 @@
       "07 Vulnerability Management",
       "0710.10m2Organizational.1-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.mssql_managed_instance_vulnerability_assessment_enabled",
     "description": "Audit each SQL Managed Instance which doesn't have recurring vulnerability assessment scans enabled. Vulnerability assessment can discover, track, and help you remediate potential database vulnerabilities.",
     "title": "Vulnerability assessment should be enabled on SQL Managed Instance",
@@ -1154,6 +1202,7 @@
       "07 Vulnerability Management",
       "0711.10m2Organizational.23-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.compute_vm_vulnerability_assessment_solution_enabled",
     "description": "Audits virtual machines to detect whether they are running a supported vulnerability assessment solution. A core component of every cyber risk and security program is the identification and analysis of vulnerabilities. Azure Security Center's standard pricing tier includes vulnerability scanning for your virtual machines at no extra cost. Additionally, Security Center can automatically deploy this tool for you.",
     "title": "A vulnerability assessment solution should be enabled on your virtual machines",
@@ -1179,6 +1228,7 @@
       "07 Vulnerability Management",
       "0713.10m2Organizational.5-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.compute_vm_security_configuration_vulnerabilities_remediated",
     "description": "Servers which do not satisfy the configured baseline will be monitored by Azure Security Center as recommendations.",
     "title": "Vulnerabilities in security configuration on your machines should be remediated",
@@ -1204,6 +1254,7 @@
       "07 Vulnerability Management",
       "0714.10m2Organizational.7-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.compute_vm_scale_set_security_configuration_vulnerabilities_remediated",
     "description": "Audit the OS vulnerabilities on your virtual machine scale sets to protect them from attacks.",
     "title": "Vulnerabilities in security configuration on your virtual machine scale sets should be remediated",
@@ -1228,6 +1279,7 @@
       "07 Vulnerability Management",
       "0715.10m2Organizational.8-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.compute_vm_container_security_configurations_vulnerabilities_remediated",
     "description": "Audit vulnerabilities in security configuration on machines with Docker installed and display as recommendations in Azure Security Center.",
     "title": "Vulnerabilities in container security configurations should be remediated",
@@ -1252,6 +1304,7 @@
       "07 Vulnerability Management",
       "0716.10m3Organizational.1-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.sql_database_vulnerability_findings_resolved",
     "description": "Monitor vulnerability assessment scan results and recommendations for how to remediate database vulnerabilities.",
     "title": "SQL databases should have vulnerability findings resolved",
@@ -1277,6 +1330,7 @@
       "07 Vulnerability Management",
       "0717.10m3Organizational.2-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.compute_vm_scale_set_security_configuration_vulnerabilities_remediated",
     "description": "Audit the OS vulnerabilities on your virtual machine scale sets to protect them from attacks.",
     "title": "Vulnerabilities in security configuration on your virtual machine scale sets should be remediated",
@@ -1301,6 +1355,7 @@
       "07 Vulnerability Management",
       "0718.10m3Organizational.34-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.compute_vm_security_configuration_vulnerabilities_remediated",
     "description": "Servers which do not satisfy the configured baseline will be monitored by Azure Security Center as recommendations.",
     "title": "Vulnerabilities in security configuration on your machines should be remediated",
@@ -1326,6 +1381,7 @@
       "07 Vulnerability Management",
       "0719.10m3Organizational.5-10.m 10.06 Technical Vulnerability Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 07 Vulnerability Management",
     "control_id": "azure_compliance.control.mssql_managed_instance_vulnerability_assessment_enabled",
     "description": "Audit each SQL Managed Instance which doesn't have recurring vulnerability assessment scans enabled. Vulnerability assessment can discover, track, and help you remediate potential database vulnerabilities.",
     "title": "Vulnerability assessment should be enabled on SQL Managed Instance",
@@ -1350,6 +1406,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_web_app_use_virtual_service_endpoint",
     "description": "Use virtual network service endpoints to restrict access to your app from selected subnets from an Azure virtual network. To learn more about App Service service endpoints, visit https://aks.ms/appservice-vnet-service-endpoint.",
     "title": "App Service apps should use a virtual network service endpoint",
@@ -1373,6 +1430,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_attached_with_network",
     "description": "This policy audits any virtual machine connected to a virtual network that is not approved.",
     "title": "Virtual machines should be connected to an approved virtual network",
@@ -1396,6 +1454,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_tcp_udp_access_restricted_internet",
     "description": "Protect your virtual machines from potential threats by restricting access to them with network security groups (NSG).",
     "title": "Internet-facing virtual machines should be protected with network security groups",
@@ -1420,6 +1479,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.container_registry_use_virtual_service_endpoint",
     "description": "This policy audits any Container Registry not configured to use a virtual network service endpoint.",
     "title": "Container Registry should use a virtual network service endpoint",
@@ -1443,6 +1503,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.cosmosdb_use_virtual_service_endpoint",
     "description": "This policy audits any Cosmos DB not configured to use a virtual network service endpoint.",
     "title": "Cosmos DB should use a virtual network service endpoint",
@@ -1466,6 +1527,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.eventhub_namespace_use_virtual_service_endpoint",
     "description": "This policy audits any Event Hub not configured to use a virtual network service endpoint.",
     "title": "Event Hub should use a virtual network service endpoint",
@@ -1489,6 +1551,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.keyvault_vault_use_virtual_service_endpoint",
     "description": "This policy audits any Key Vault not configured to use a virtual network service endpoint.",
     "title": "Key Vault should use a virtual network service endpoint",
@@ -1512,6 +1575,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_not_configured_gateway_subnets",
     "description": "Protect your subnet from potential threats by restricting access to it with a Network Security Group (NSG). NSGs contain a list of Access Control List (ACL) rules that allow or deny network traffic to your subnet.",
     "title": "Gateway subnets should not be configured with a network security group",
@@ -1535,6 +1599,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_subnet_associated",
     "description": "This policy denies if a gateway subnet is configured with a network security group. Assigning a network security group to a gateway subnet will cause the gateway to stop functioning.",
     "title": "Subnets should be associated with a Network Security Group",
@@ -1559,6 +1624,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.sql_server_use_virtual_service_endpoint",
     "description": "This policy audits any SQL Server not configured to use a virtual network service endpoint.",
     "title": "SQL Server should use a virtual network service endpoint",
@@ -1582,6 +1648,7 @@
       "08 Network Protection",
       "0805.01m1Organizational.12-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.storage_account_use_virtual_service_endpoint",
     "description": "This policy audits any Storage Account not configured to use a virtual network service endpoint.",
     "title": "Storage Accounts should use a virtual network service endpoint",
@@ -1605,6 +1672,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_web_app_use_virtual_service_endpoint",
     "description": "Use virtual network service endpoints to restrict access to your app from selected subnets from an Azure virtual network. To learn more about App Service service endpoints, visit https://aks.ms/appservice-vnet-service-endpoint.",
     "title": "App Service apps should use a virtual network service endpoint",
@@ -1628,6 +1696,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_attached_with_network",
     "description": "This policy audits any virtual machine connected to a virtual network that is not approved.",
     "title": "Virtual machines should be connected to an approved virtual network",
@@ -1651,6 +1720,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_tcp_udp_access_restricted_internet",
     "description": "Protect your virtual machines from potential threats by restricting access to them with network security groups (NSG).",
     "title": "Internet-facing virtual machines should be protected with network security groups",
@@ -1675,6 +1745,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.container_registry_use_virtual_service_endpoint",
     "description": "This policy audits any Container Registry not configured to use a virtual network service endpoint.",
     "title": "Container Registry should use a virtual network service endpoint",
@@ -1698,6 +1769,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.cosmosdb_use_virtual_service_endpoint",
     "description": "This policy audits any Cosmos DB not configured to use a virtual network service endpoint.",
     "title": "Cosmos DB should use a virtual network service endpoint",
@@ -1721,6 +1793,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.eventhub_namespace_use_virtual_service_endpoint",
     "description": "This policy audits any Event Hub not configured to use a virtual network service endpoint.",
     "title": "Event Hub should use a virtual network service endpoint",
@@ -1744,6 +1817,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.keyvault_vault_use_virtual_service_endpoint",
     "description": "This policy audits any Key Vault not configured to use a virtual network service endpoint.",
     "title": "Key Vault should use a virtual network service endpoint",
@@ -1767,6 +1841,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_not_configured_gateway_subnets",
     "description": "Protect your subnet from potential threats by restricting access to it with a Network Security Group (NSG). NSGs contain a list of Access Control List (ACL) rules that allow or deny network traffic to your subnet.",
     "title": "Gateway subnets should not be configured with a network security group",
@@ -1790,6 +1865,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_subnet_associated",
     "description": "This policy denies if a gateway subnet is configured with a network security group. Assigning a network security group to a gateway subnet will cause the gateway to stop functioning.",
     "title": "Subnets should be associated with a Network Security Group",
@@ -1814,6 +1890,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.sql_server_use_virtual_service_endpoint",
     "description": "This policy audits any SQL Server not configured to use a virtual network service endpoint.",
     "title": "SQL Server should use a virtual network service endpoint",
@@ -1837,6 +1914,7 @@
       "08 Network Protection",
       "0806.01m2Organizational.12356-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.storage_account_use_virtual_service_endpoint",
     "description": "This policy audits any Storage Account not configured to use a virtual network service endpoint.",
     "title": "Storage Accounts should use a virtual network service endpoint",
@@ -1860,6 +1938,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_api_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for App Service apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "App Service apps should use the latest TLS version",
@@ -1884,6 +1963,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_api_app_use_https",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "App Service API apps should only be accessible over HTTPS",
@@ -1908,6 +1988,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_function_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for Function apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "Function apps should use the latest TLS version",
@@ -1932,6 +2013,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_function_app_only_https_accessible",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "Function apps should only be accessible over HTTPS",
@@ -1957,6 +2039,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.redis_cache_ssl_enabled",
     "description": "Audit enabling of only connections via SSL to Azure Cache for Redis. Use of secure connections ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Only secure connections to your Azure Cache for Redis should be enabled",
@@ -1982,6 +2065,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_adaptive_network_hardening_recommendation_applied",
     "description": "Azure Security Center analyzes the traffic patterns of Internet facing virtual machines and provides Network Security Group rule recommendations that reduce the potential attack surface.",
     "title": "Adaptive network hardening recommendations should be applied on internet facing virtual machines",
@@ -2006,6 +2090,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_attached_with_network",
     "description": "This policy audits any virtual machine connected to a virtual network that is not approved.",
     "title": "Virtual machines should be connected to an approved virtual network",
@@ -2029,6 +2114,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_tcp_udp_access_restricted_internet",
     "description": "Protect your virtual machines from potential threats by restricting access to them with network security groups (NSG).",
     "title": "Internet-facing virtual machines should be protected with network security groups",
@@ -2053,6 +2139,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.mysql_ssl_enabled",
     "description": "Azure Database for MySQL supports connecting your Azure Database for MySQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server.",
     "title": "Enforce SSL connection should be enabled for MySQL database servers",
@@ -2077,6 +2164,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_subnet_associated",
     "description": "This policy denies if a gateway subnet is configured with a network security group. Assigning a network security group to a gateway subnet will cause the gateway to stop functioning.",
     "title": "Subnets should be associated with a Network Security Group",
@@ -2101,6 +2189,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.postgres_sql_ssl_enabled",
     "description": "Azure Database for PostgreSQL supports connecting your Azure Database for PostgreSQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server",
     "title": "Enforce SSL connection should be enabled for PostgreSQL database servers",
@@ -2125,6 +2214,7 @@
       "08 Network Protection",
       "0809.01n2Organizational.1234-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.storage_account_secure_transfer_required_enabled",
     "description": "Audit requirement of Secure transfer in your storage account. Secure transfer is an option that forces your storage account to accept requests only from secure connections (HTTPS). Use of HTTPS ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Secure transfer to storage accounts should be enabled",
@@ -2150,6 +2240,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_api_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for App Service apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "App Service apps should use the latest TLS version",
@@ -2174,6 +2265,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_api_app_use_https",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "App Service API apps should only be accessible over HTTPS",
@@ -2198,6 +2290,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_function_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for Function apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "Function apps should use the latest TLS version",
@@ -2222,6 +2315,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_function_app_only_https_accessible",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "Function apps should only be accessible over HTTPS",
@@ -2247,6 +2341,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.redis_cache_ssl_enabled",
     "description": "Audit enabling of only connections via SSL to Azure Cache for Redis. Use of secure connections ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Only secure connections to your Azure Cache for Redis should be enabled",
@@ -2272,6 +2367,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_adaptive_network_hardening_recommendation_applied",
     "description": "Azure Security Center analyzes the traffic patterns of Internet facing virtual machines and provides Network Security Group rule recommendations that reduce the potential attack surface.",
     "title": "Adaptive network hardening recommendations should be applied on internet facing virtual machines",
@@ -2296,6 +2392,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_attached_with_network",
     "description": "This policy audits any virtual machine connected to a virtual network that is not approved.",
     "title": "Virtual machines should be connected to an approved virtual network",
@@ -2319,6 +2416,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_tcp_udp_access_restricted_internet",
     "description": "Protect your virtual machines from potential threats by restricting access to them with network security groups (NSG).",
     "title": "Internet-facing virtual machines should be protected with network security groups",
@@ -2343,6 +2441,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.mysql_ssl_enabled",
     "description": "Azure Database for MySQL supports connecting your Azure Database for MySQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server.",
     "title": "Enforce SSL connection should be enabled for MySQL database servers",
@@ -2367,6 +2466,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_subnet_associated",
     "description": "This policy denies if a gateway subnet is configured with a network security group. Assigning a network security group to a gateway subnet will cause the gateway to stop functioning.",
     "title": "Subnets should be associated with a Network Security Group",
@@ -2391,6 +2491,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.postgres_sql_ssl_enabled",
     "description": "Azure Database for PostgreSQL supports connecting your Azure Database for PostgreSQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server",
     "title": "Enforce SSL connection should be enabled for PostgreSQL database servers",
@@ -2415,6 +2516,7 @@
       "08 Network Protection",
       "0810.01n2Organizational.5-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.storage_account_secure_transfer_required_enabled",
     "description": "Audit requirement of Secure transfer in your storage account. Secure transfer is an option that forces your storage account to accept requests only from secure connections (HTTPS). Use of HTTPS ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Secure transfer to storage accounts should be enabled",
@@ -2440,6 +2542,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_api_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for App Service apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "App Service apps should use the latest TLS version",
@@ -2464,6 +2567,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_api_app_use_https",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "App Service API apps should only be accessible over HTTPS",
@@ -2488,6 +2592,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_function_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for Function apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "Function apps should use the latest TLS version",
@@ -2512,6 +2617,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_function_app_only_https_accessible",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "Function apps should only be accessible over HTTPS",
@@ -2537,6 +2643,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.redis_cache_ssl_enabled",
     "description": "Audit enabling of only connections via SSL to Azure Cache for Redis. Use of secure connections ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Only secure connections to your Azure Cache for Redis should be enabled",
@@ -2562,6 +2669,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_adaptive_network_hardening_recommendation_applied",
     "description": "Azure Security Center analyzes the traffic patterns of Internet facing virtual machines and provides Network Security Group rule recommendations that reduce the potential attack surface.",
     "title": "Adaptive network hardening recommendations should be applied on internet facing virtual machines",
@@ -2586,6 +2694,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_attached_with_network",
     "description": "This policy audits any virtual machine connected to a virtual network that is not approved.",
     "title": "Virtual machines should be connected to an approved virtual network",
@@ -2609,6 +2718,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_tcp_udp_access_restricted_internet",
     "description": "Protect your virtual machines from potential threats by restricting access to them with network security groups (NSG).",
     "title": "Internet-facing virtual machines should be protected with network security groups",
@@ -2633,6 +2743,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.mysql_ssl_enabled",
     "description": "Azure Database for MySQL supports connecting your Azure Database for MySQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server.",
     "title": "Enforce SSL connection should be enabled for MySQL database servers",
@@ -2657,6 +2768,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_subnet_associated",
     "description": "This policy denies if a gateway subnet is configured with a network security group. Assigning a network security group to a gateway subnet will cause the gateway to stop functioning.",
     "title": "Subnets should be associated with a Network Security Group",
@@ -2681,6 +2793,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.postgres_sql_ssl_enabled",
     "description": "Azure Database for PostgreSQL supports connecting your Azure Database for PostgreSQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server",
     "title": "Enforce SSL connection should be enabled for PostgreSQL database servers",
@@ -2705,6 +2818,7 @@
       "08 Network Protection",
       "0811.01n2Organizational.6-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.storage_account_secure_transfer_required_enabled",
     "description": "Audit requirement of Secure transfer in your storage account. Secure transfer is an option that forces your storage account to accept requests only from secure connections (HTTPS). Use of HTTPS ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Secure transfer to storage accounts should be enabled",
@@ -2730,6 +2844,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_api_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for App Service apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "App Service apps should use the latest TLS version",
@@ -2754,6 +2869,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_api_app_use_https",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "App Service API apps should only be accessible over HTTPS",
@@ -2778,6 +2894,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_function_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for Function apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "Function apps should use the latest TLS version",
@@ -2802,6 +2919,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_function_app_only_https_accessible",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "Function apps should only be accessible over HTTPS",
@@ -2827,6 +2945,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.redis_cache_ssl_enabled",
     "description": "Audit enabling of only connections via SSL to Azure Cache for Redis. Use of secure connections ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Only secure connections to your Azure Cache for Redis should be enabled",
@@ -2852,6 +2971,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_adaptive_network_hardening_recommendation_applied",
     "description": "Azure Security Center analyzes the traffic patterns of Internet facing virtual machines and provides Network Security Group rule recommendations that reduce the potential attack surface.",
     "title": "Adaptive network hardening recommendations should be applied on internet facing virtual machines",
@@ -2876,6 +2996,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_attached_with_network",
     "description": "This policy audits any virtual machine connected to a virtual network that is not approved.",
     "title": "Virtual machines should be connected to an approved virtual network",
@@ -2899,6 +3020,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_tcp_udp_access_restricted_internet",
     "description": "Protect your virtual machines from potential threats by restricting access to them with network security groups (NSG).",
     "title": "Internet-facing virtual machines should be protected with network security groups",
@@ -2923,6 +3045,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.mysql_ssl_enabled",
     "description": "Azure Database for MySQL supports connecting your Azure Database for MySQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server.",
     "title": "Enforce SSL connection should be enabled for MySQL database servers",
@@ -2947,6 +3070,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_subnet_associated",
     "description": "This policy denies if a gateway subnet is configured with a network security group. Assigning a network security group to a gateway subnet will cause the gateway to stop functioning.",
     "title": "Subnets should be associated with a Network Security Group",
@@ -2971,6 +3095,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.postgres_sql_ssl_enabled",
     "description": "Azure Database for PostgreSQL supports connecting your Azure Database for PostgreSQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server",
     "title": "Enforce SSL connection should be enabled for PostgreSQL database servers",
@@ -2995,6 +3120,7 @@
       "08 Network Protection",
       "0812.01n2Organizational.8-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.storage_account_secure_transfer_required_enabled",
     "description": "Audit requirement of Secure transfer in your storage account. Secure transfer is an option that forces your storage account to accept requests only from secure connections (HTTPS). Use of HTTPS ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Secure transfer to storage accounts should be enabled",
@@ -3020,6 +3146,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_api_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for App Service apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "App Service apps should use the latest TLS version",
@@ -3044,6 +3171,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_api_app_use_https",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "App Service API apps should only be accessible over HTTPS",
@@ -3068,6 +3196,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_function_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for Function apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "Function apps should use the latest TLS version",
@@ -3092,6 +3221,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_function_app_only_https_accessible",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "Function apps should only be accessible over HTTPS",
@@ -3117,6 +3247,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.redis_cache_ssl_enabled",
     "description": "Audit enabling of only connections via SSL to Azure Cache for Redis. Use of secure connections ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Only secure connections to your Azure Cache for Redis should be enabled",
@@ -3142,6 +3273,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_adaptive_network_hardening_recommendation_applied",
     "description": "Azure Security Center analyzes the traffic patterns of Internet facing virtual machines and provides Network Security Group rule recommendations that reduce the potential attack surface.",
     "title": "Adaptive network hardening recommendations should be applied on internet facing virtual machines",
@@ -3166,6 +3298,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_attached_with_network",
     "description": "This policy audits any virtual machine connected to a virtual network that is not approved.",
     "title": "Virtual machines should be connected to an approved virtual network",
@@ -3189,6 +3322,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_tcp_udp_access_restricted_internet",
     "description": "Protect your virtual machines from potential threats by restricting access to them with network security groups (NSG).",
     "title": "Internet-facing virtual machines should be protected with network security groups",
@@ -3213,6 +3347,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.mysql_ssl_enabled",
     "description": "Azure Database for MySQL supports connecting your Azure Database for MySQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server.",
     "title": "Enforce SSL connection should be enabled for MySQL database servers",
@@ -3237,6 +3372,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_subnet_associated",
     "description": "This policy denies if a gateway subnet is configured with a network security group. Assigning a network security group to a gateway subnet will cause the gateway to stop functioning.",
     "title": "Subnets should be associated with a Network Security Group",
@@ -3261,6 +3397,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.postgres_sql_ssl_enabled",
     "description": "Azure Database for PostgreSQL supports connecting your Azure Database for PostgreSQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server",
     "title": "Enforce SSL connection should be enabled for PostgreSQL database servers",
@@ -3285,6 +3422,7 @@
       "08 Network Protection",
       "0814.01n1Organizational.12-01.n 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.storage_account_secure_transfer_required_enabled",
     "description": "Audit requirement of Secure transfer in your storage account. Secure transfer is an option that forces your storage account to accept requests only from secure connections (HTTPS). Use of HTTPS ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Secure transfer to storage accounts should be enabled",
@@ -3310,6 +3448,7 @@
       "08 Network Protection",
       "0835.09n1Organizational.1-09.n 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_network_traffic_data_collection_windows_agent_installed",
     "description": "Security Center uses the Microsoft Dependency agent to collect network traffic data from your Azure virtual machines to enable advanced network protection features such as traffic visualization on the network map, network hardening recommendations and specific network threats.",
     "title": "Network traffic data collection agent should be installed on Windows virtual machines",
@@ -3334,6 +3473,7 @@
       "08 Network Protection",
       "0835.09n1Organizational.1-09.n 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_uses_azure_resource_manager",
     "description": "Use new Azure Resource Manager for your virtual machines to provide security enhancements such as: stronger access control (RBAC), better auditing, Azure Resource Manager based deployment and governance, access to managed identities, access to key vault for secrets, Azure AD-based authentication and support for tags and resource groups for easier security management.",
     "title": "Virtual machines should be migrated to new Azure Resource Manager resources",
@@ -3359,6 +3499,7 @@
       "08 Network Protection",
       "0836.09.n2Organizational.1-09.n 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_network_traffic_data_collection_linux_agent_installed",
     "description": "Security Center uses the Microsoft Dependency agent to collect network traffic data from your Azure virtual machines to enable advanced network protection features such as traffic visualization on the network map, network hardening recommendations and specific network threats.",
     "title": "Network traffic data collection agent should be installed on Linux virtual machines",
@@ -3383,6 +3524,7 @@
       "08 Network Protection",
       "0837.09.n2Organizational.2-09.n 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_watcher_enabled",
     "description": "Network Watcher is a regional service that enables you to monitor and diagnose conditions at a network scenario level in, to, and from Azure. Scenario level monitoring enables you to diagnose problems at an end to end network level view. It is required to have a network watcher resource group to be created in every region where a virtual network is present. An alert is enabled if a network watcher resource group is not available in a particular region.",
     "title": "Network Watcher should be enabled",
@@ -3407,6 +3549,7 @@
       "08 Network Protection",
       "0858.09m1Organizational.4-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_jit_access_protected",
     "description": "Possible network Just In Time (JIT) access will be monitored by Azure Security Center as recommendations",
     "title": "Management ports of virtual machines should be protected with just-in-time network access control",
@@ -3431,6 +3574,7 @@
       "08 Network Protection",
       "0858.09m1Organizational.4-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_meet_firewall_properties_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'Windows Firewall Properties' for firewall state, connections, rule management, and notifications. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'Windows Firewall Properties'",
@@ -3454,6 +3598,7 @@
       "08 Network Protection",
       "0858.09m1Organizational.4-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_remote_access_restricted_all_ports",
     "description": "Azure Security Center has identified some of your network security groups' inbound rules to be too permissive. Inbound rules should not allow access from 'Any' or 'Internet' ranges. This can potentially enable attackers to target your resources.",
     "title": "All network ports should be restricted on network security groups associated to your virtual machine",
@@ -3479,6 +3624,7 @@
       "08 Network Protection",
       "0859.09m1Organizational.78-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_adaptive_network_hardening_recommendation_applied",
     "description": "Azure Security Center analyzes the traffic patterns of Internet facing virtual machines and provides Network Security Group rule recommendations that reduce the potential attack surface.",
     "title": "Adaptive network hardening recommendations should be applied on internet facing virtual machines",
@@ -3503,6 +3649,7 @@
       "08 Network Protection",
       "0860.09m1Organizational.9-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_diagnostic_setting_deployed",
     "description": "This policy automatically deploys diagnostic settings to network security groups. A storage account with name '{storagePrefixParameter}{NSGLocation}' will be automatically created.",
     "title": "Deploy Diagnostic Settings for Network Security Groups",
@@ -3526,6 +3673,7 @@
       "08 Network Protection",
       "0861.09m2Organizational.67-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_web_app_use_virtual_service_endpoint",
     "description": "Use virtual network service endpoints to restrict access to your app from selected subnets from an Azure virtual network. To learn more about App Service service endpoints, visit https://aks.ms/appservice-vnet-service-endpoint.",
     "title": "App Service apps should use a virtual network service endpoint",
@@ -3549,6 +3697,7 @@
       "08 Network Protection",
       "0861.09m2Organizational.67-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_meet_security_options_network_access_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'Security Options - Network Access' for including access for anonymous users, local accounts, and remote access to the registry. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope. For details, visit https://aka.ms/gcpol.",
     "title": "Windows machines should meet requirements for 'Security Options - Network Access'",
@@ -3572,6 +3721,7 @@
       "08 Network Protection",
       "0862.09m2Organizational.8-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.sql_server_use_virtual_service_endpoint",
     "description": "This policy audits any SQL Server not configured to use a virtual network service endpoint.",
     "title": "SQL Server should use a virtual network service endpoint",
@@ -3595,6 +3745,7 @@
       "08 Network Protection",
       "0863.09m2Organizational.910-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.eventhub_namespace_use_virtual_service_endpoint",
     "description": "This policy audits any Event Hub not configured to use a virtual network service endpoint.",
     "title": "Event Hub should use a virtual network service endpoint",
@@ -3618,6 +3769,7 @@
       "08 Network Protection",
       "0864.09m2Organizational.12-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.cosmosdb_use_virtual_service_endpoint",
     "description": "This policy audits any Cosmos DB not configured to use a virtual network service endpoint.",
     "title": "Cosmos DB should use a virtual network service endpoint",
@@ -3641,6 +3793,7 @@
       "08 Network Protection",
       "0865.09m2Organizational.13-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.keyvault_vault_use_virtual_service_endpoint",
     "description": "This policy audits any Key Vault not configured to use a virtual network service endpoint.",
     "title": "Key Vault should use a virtual network service endpoint",
@@ -3664,6 +3817,7 @@
       "08 Network Protection",
       "0866.09m3Organizational.1516-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.storage_account_default_network_access_rule_denied",
     "description": "Network access to storage accounts should be restricted. Configure network rules so only applications from allowed networks can access the storage account. To allow connections from specific internet or on-premises clients, access can be granted to traffic from specific Azure virtual networks or to public internet IP address ranges.",
     "title": "Storage accounts should restrict network access",
@@ -3689,6 +3843,7 @@
       "08 Network Protection",
       "0868.09m3Organizational.18-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.container_registry_use_virtual_service_endpoint",
     "description": "This policy audits any Container Registry not configured to use a virtual network service endpoint.",
     "title": "Container Registry should use a virtual network service endpoint",
@@ -3712,6 +3867,7 @@
       "08 Network Protection",
       "0869.09m3Organizational.19-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.container_registry_use_virtual_service_endpoint",
     "description": "This policy audits any Container Registry not configured to use a virtual network service endpoint.",
     "title": "Container Registry should use a virtual network service endpoint",
@@ -3735,6 +3891,7 @@
       "08 Network Protection",
       "0870.09m3Organizational.20-09.m 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.container_registry_use_virtual_service_endpoint",
     "description": "This policy audits any Container Registry not configured to use a virtual network service endpoint.",
     "title": "Container Registry should use a virtual network service endpoint",
@@ -3758,6 +3915,7 @@
       "08 Network Protection",
       "0871.09m3Organizational.22-09.m 09.07 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.container_registry_use_virtual_service_endpoint",
     "description": "This policy audits any Container Registry not configured to use a virtual network service endpoint.",
     "title": "Container Registry should use a virtual network service endpoint",
@@ -3781,6 +3939,7 @@
       "08 Network Protection",
       "0885.09n2Organizational.3-09.n 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_network_traffic_data_collection_linux_agent_installed",
     "description": "Security Center uses the Microsoft Dependency agent to collect network traffic data from your Azure virtual machines to enable advanced network protection features such as traffic visualization on the network map, network hardening recommendations and specific network threats.",
     "title": "Network traffic data collection agent should be installed on Linux virtual machines",
@@ -3805,6 +3964,7 @@
       "08 Network Protection",
       "0886.09n2Organizational.4-09.n 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_watcher_enabled",
     "description": "Network Watcher is a regional service that enables you to monitor and diagnose conditions at a network scenario level in, to, and from Azure. Scenario level monitoring enables you to diagnose problems at an end to end network level view. It is required to have a network watcher resource group to be created in every region where a virtual network is present. An alert is enabled if a network watcher resource group is not available in a particular region.",
     "title": "Network Watcher should be enabled",
@@ -3829,6 +3989,7 @@
       "08 Network Protection",
       "0887.09n2Organizational.5-09.n 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_network_traffic_data_collection_windows_agent_installed",
     "description": "Security Center uses the Microsoft Dependency agent to collect network traffic data from your Azure virtual machines to enable advanced network protection features such as traffic visualization on the network map, network hardening recommendations and specific network threats.",
     "title": "Network traffic data collection agent should be installed on Windows virtual machines",
@@ -3853,6 +4014,7 @@
       "08 Network Protection",
       "0888.09n2Organizational.6-09.n 09.06 Network Security Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_watcher_enabled",
     "description": "Network Watcher is a regional service that enables you to monitor and diagnose conditions at a network scenario level in, to, and from Azure. Scenario level monitoring enables you to diagnose problems at an end to end network level view. It is required to have a network watcher resource group to be created in every region where a virtual network is present. An alert is enabled if a network watcher resource group is not available in a particular region.",
     "title": "Network Watcher should be enabled",
@@ -3877,6 +4039,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.appservice_web_app_use_virtual_service_endpoint",
     "description": "Use virtual network service endpoints to restrict access to your app from selected subnets from an Azure virtual network. To learn more about App Service service endpoints, visit https://aks.ms/appservice-vnet-service-endpoint.",
     "title": "App Service apps should use a virtual network service endpoint",
@@ -3900,6 +4063,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_attached_with_network",
     "description": "This policy audits any virtual machine connected to a virtual network that is not approved.",
     "title": "Virtual machines should be connected to an approved virtual network",
@@ -3923,6 +4087,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.compute_vm_tcp_udp_access_restricted_internet",
     "description": "Protect your virtual machines from potential threats by restricting access to them with network security groups (NSG).",
     "title": "Internet-facing virtual machines should be protected with network security groups",
@@ -3947,6 +4112,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.container_registry_use_virtual_service_endpoint",
     "description": "This policy audits any Container Registry not configured to use a virtual network service endpoint.",
     "title": "Container Registry should use a virtual network service endpoint",
@@ -3970,6 +4136,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.cosmosdb_use_virtual_service_endpoint",
     "description": "This policy audits any Cosmos DB not configured to use a virtual network service endpoint.",
     "title": "Cosmos DB should use a virtual network service endpoint",
@@ -3993,6 +4160,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.eventhub_namespace_use_virtual_service_endpoint",
     "description": "This policy audits any Event Hub not configured to use a virtual network service endpoint.",
     "title": "Event Hub should use a virtual network service endpoint",
@@ -4016,6 +4184,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.keyvault_vault_use_virtual_service_endpoint",
     "description": "This policy audits any Key Vault not configured to use a virtual network service endpoint.",
     "title": "Key Vault should use a virtual network service endpoint",
@@ -4039,6 +4208,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_not_configured_gateway_subnets",
     "description": "Protect your subnet from potential threats by restricting access to it with a Network Security Group (NSG). NSGs contain a list of Access Control List (ACL) rules that allow or deny network traffic to your subnet.",
     "title": "Gateway subnets should not be configured with a network security group",
@@ -4062,6 +4232,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_security_group_subnet_associated",
     "description": "This policy denies if a gateway subnet is configured with a network security group. Assigning a network security group to a gateway subnet will cause the gateway to stop functioning.",
     "title": "Subnets should be associated with a Network Security Group",
@@ -4086,6 +4257,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.network_watcher_in_regions_with_virtual_network",
     "description": "This policy creates a network watcher resource in regions with virtual networks. You need to ensure existence of a resource group named networkWatcherRG, which will be used to deploy network watcher instances.",
     "title": "Deploy network watcher when virtual networks are created",
@@ -4109,6 +4281,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.sql_server_use_virtual_service_endpoint",
     "description": "This policy audits any SQL Server not configured to use a virtual network service endpoint.",
     "title": "SQL Server should use a virtual network service endpoint",
@@ -4132,6 +4305,7 @@
       "08 Network Protection",
       "0894.01m2Organizational.7-01.m 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 08 Network Protection",
     "control_id": "azure_compliance.control.storage_account_use_virtual_service_endpoint",
     "description": "This policy audits any Storage Account not configured to use a virtual network service endpoint.",
     "title": "Storage Accounts should use a virtual network service endpoint",
@@ -4155,6 +4329,7 @@
       "Back-up",
       "Workforce members roles and responsibilities in the data backup process are identified and communicated to the workforce; in particular, Bring Your Own Device (BYOD) users are required to perform backups of organizational and/or client data on their devices"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Back-up",
     "control_id": "azure_compliance.control.compute_vm_azure_backup_enabled",
     "description": "Ensure protection of your Azure Virtual Machines by enabling Azure Backup. Azure Backup is a secure and cost effective data protection solution for Azure.",
     "title": "Azure Backup should be enabled for Virtual Machines",
@@ -4178,6 +4353,7 @@
       "Network Controls",
       "Wireless access points are placed in secure areas and shut down when not in use (e.g. nights, weekends)"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Network Controls",
     "control_id": "azure_compliance.control.storage_account_use_virtual_service_endpoint",
     "description": "This policy audits any Storage Account not configured to use a virtual network service endpoint.",
     "title": "Storage Accounts should use a virtual network service endpoint",
@@ -4201,6 +4377,7 @@
       "On-line Transactions",
       "The organization requires the use of encryption between, and the use of electronic signatures by, each of the parties involved in the transaction"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - On-line Transactions",
     "control_id": "azure_compliance.control.redis_cache_ssl_enabled",
     "description": "Audit enabling of only connections via SSL to Azure Cache for Redis. Use of secure connections ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Only secure connections to your Azure Cache for Redis should be enabled",
@@ -4226,6 +4403,7 @@
       "09 Transmission Protection",
       "0901.09s1Organizational.1-09.s 09.08 Exchange of Information"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_api_app_cors_no_star",
     "description": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your app. Allow only required domains to interact with your app.",
     "title": "App Service apps should not have CORS configured to allow every resource to access your apps",
@@ -4250,6 +4428,7 @@
       "09 Transmission Protection",
       "0902.09s2Organizational.13-09.s 09.08 Exchange of Information"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_function_app_cors_no_star",
     "description": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Function app. Allow only required domains to interact with your Function app.",
     "title": "Function apps should not have CORS configured to allow every resource to access your apps",
@@ -4274,6 +4453,7 @@
       "09 Transmission Protection",
       "0912.09s1Organizational.4-09.s 09.08 Exchange of Information"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_api_app_remote_debugging_disabled",
     "description": "Remote debugging requires inbound ports to be opened on an App Service app. Remote debugging should be turned off.",
     "title": "App Service apps should have remote debugging turned off",
@@ -4298,6 +4478,7 @@
       "09 Transmission Protection",
       "0913.09s1Organizational.5-09.s 09.08 Exchange of Information"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_function_app_remote_debugging_disabled",
     "description": "Remote debugging requires inbound ports to be opened on function apps. Remote debugging should be turned off.",
     "title": "Function apps should have remote debugging turned off",
@@ -4322,6 +4503,7 @@
       "09 Transmission Protection",
       "0915.09s2Organizational.2-09.s 09.08 Exchange of Information"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_api_app_client_certificates_on",
     "description": "Client certificates allow for the app to request a certificate for incoming requests. Only clients that have a valid certificate will be able to reach the app.",
     "title": "App Service apps should have 'Client Certificates (Incoming client certificates)' enabled",
@@ -4346,6 +4528,7 @@
       "09 Transmission Protection",
       "0916.09s2Organizational.4-09.s 09.08 Exchange of Information"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_api_app_cors_no_star",
     "description": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your app. Allow only required domains to interact with your app.",
     "title": "App Service apps should not have CORS configured to allow every resource to access your apps",
@@ -4370,6 +4553,7 @@
       "09 Transmission Protection",
       "0943.09y1Organizational.1-09.y 09.09 Electronic Commerce Services"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.storage_account_secure_transfer_required_enabled",
     "description": "Audit requirement of Secure transfer in your storage account. Secure transfer is an option that forces your storage account to accept requests only from secure connections (HTTPS). Use of HTTPS ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Secure transfer to storage accounts should be enabled",
@@ -4395,6 +4579,7 @@
       "09 Transmission Protection",
       "0945.09y1Organizational.3-09.y 09.09 Electronic Commerce Services"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.compute_vm_with_no_specified_certificates_in_trusted_root_windows",
     "description": "Requires that prerequisites are deployed to the policy assignment scope. Machines are non-compliant if the machine Trusted Root certificate store does not contain one or more of the certificates listed by the policy parameter.",
     "title": "Audit Windows machines that do not contain the specified certificates in Trusted Root",
@@ -4418,6 +4603,7 @@
       "09 Transmission Protection",
       "0947.09y2Organizational.2-09.y 09.09 Electronic Commerce Services"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.postgres_sql_ssl_enabled",
     "description": "Azure Database for PostgreSQL supports connecting your Azure Database for PostgreSQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server",
     "title": "Enforce SSL connection should be enabled for PostgreSQL database servers",
@@ -4442,6 +4628,7 @@
       "09 Transmission Protection",
       "0948.09y2Organizational.3-09.y 09.09 Electronic Commerce Services"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.mysql_ssl_enabled",
     "description": "Azure Database for MySQL supports connecting your Azure Database for MySQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server.",
     "title": "Enforce SSL connection should be enabled for MySQL database servers",
@@ -4466,6 +4653,7 @@
       "09 Transmission Protection",
       "0949.09y2Organizational.5-09.y 09.09 Electronic Commerce Services"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_api_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for App Service apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "App Service apps should use the latest TLS version",
@@ -4490,6 +4678,7 @@
       "09 Transmission Protection",
       "0949.09y2Organizational.5-09.y 09.09 Electronic Commerce Services"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_api_app_use_https",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "App Service API apps should only be accessible over HTTPS",
@@ -4514,6 +4703,7 @@
       "09 Transmission Protection",
       "0949.09y2Organizational.5-09.y 09.09 Electronic Commerce Services"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_function_app_latest_tls_version",
     "description": "Periodically, newer versions are released for TLS either due to security flaws, include additional functionality, and enhance speed. Upgrade to the latest TLS version for Function apps to take advantage of security fixes, if any, and/or new functionalities of the latest version.",
     "title": "Function apps should use the latest TLS version",
@@ -4538,6 +4728,7 @@
       "09 Transmission Protection",
       "0949.09y2Organizational.5-09.y 09.09 Electronic Commerce Services"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_function_app_only_https_accessible",
     "description": "Use of HTTPS ensures server/service authentication and protects data in transit from network layer eavesdropping attacks.",
     "title": "Function apps should only be accessible over HTTPS",
@@ -4563,6 +4754,7 @@
       "09 Transmission Protection",
       "0960.09sCSPOrganizational.1-09.s 09.08 Exchange of Information"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 09 Transmission Protection",
     "control_id": "azure_compliance.control.appservice_function_app_cors_no_star",
     "description": "Cross-Origin Resource Sharing (CORS) should not allow all domains to access your Function app. Allow only required domains to interact with your Function app.",
     "title": "Function apps should not have CORS configured to allow every resource to access your apps",
@@ -4587,6 +4779,7 @@
       "Control of Operational Software",
       "Applications and operating systems are successfully tested for usability, security and impact prior to production"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Control of Operational Software",
     "control_id": "azure_compliance.control.compute_vm_container_security_configurations_vulnerabilities_remediated",
     "description": "Audit vulnerabilities in security configuration on machines with Docker installed and display as recommendations in Azure Security Center.",
     "title": "Vulnerabilities in container security configurations should be remediated",
@@ -4611,6 +4804,7 @@
       "Control of Operational Software",
       "The organization uses its configuration control program to maintain control of all implemented software and its system documentation and archive prior versions of implemented software and associated system documentation"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Control of Operational Software",
     "control_id": "azure_compliance.control.compute_vm_adaptive_application_controls_enabled",
     "description": "Enable application controls to define the list of known-safe applications running on your machines, and alert you when other applications run. This helps harden your machines against malware. To simplify the process of configuring and maintaining your rules, Security Center uses machine learning to analyze the applications running on each machine and suggest the list of known-safe applications.",
     "title": "Adaptive application controls for defining safe applications should be enabled on your machines",
@@ -4635,6 +4829,7 @@
       "Control of Operational Software",
       "The organization uses its configuration control program to maintain control of all implemented software and its system documentation and archive prior versions of implemented software and associated system documentation"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - Control of Operational Software",
     "control_id": "azure_compliance.control.compute_vm_scale_set_security_configuration_vulnerabilities_remediated",
     "description": "Audit the OS vulnerabilities on your virtual machine scale sets to protect them from attacks.",
     "title": "Vulnerabilities in security configuration on your virtual machine scale sets should be remediated",
@@ -4659,6 +4854,7 @@
       "11 Access Control",
       "11109.01q1Organizational.57-01.q 01.05 Operating System Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_user_with_owner_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with owner permissions to prevent a breach of accounts or resources.",
     "title": "Accounts with owner permissions on Azure resources should be MFA enabled",
@@ -4684,6 +4880,7 @@
       "11 Access Control",
       "11111.01q2System.4-01.q 01.05 Operating System Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_user_with_read_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with read privileges to prevent a breach of accounts or resources.",
     "title": "Accounts with read permissions on Azure resources should be MFA enabled",
@@ -4708,6 +4905,7 @@
       "11 Access Control",
       "11112.01q2Organizational.67-01.q 01.05 Operating System Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_subscription_owner_max_3",
     "description": "It is recommended to designate up to 3 subscription owners in order to reduce the potential for breach by a compromised owner.",
     "title": "A maximum of 3 owners should be designated for your subscription",
@@ -4733,6 +4931,7 @@
       "11 Access Control",
       "1116.01j1Organizational.145-01.j 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_user_with_owner_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with owner permissions to prevent a breach of accounts or resources.",
     "title": "Accounts with owner permissions on Azure resources should be MFA enabled",
@@ -4758,6 +4957,7 @@
       "11 Access Control",
       "1118.01j2Organizational.124-01.j 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_user_with_read_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with read privileges to prevent a breach of accounts or resources.",
     "title": "Accounts with read permissions on Azure resources should be MFA enabled",
@@ -4782,6 +4982,7 @@
       "11 Access Control",
       "11180.01c3System.6-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.compute_vm_jit_access_protected",
     "description": "Possible network Just In Time (JIT) access will be monitored by Azure Security Center as recommendations",
     "title": "Management ports of virtual machines should be protected with just-in-time network access control",
@@ -4806,6 +5007,7 @@
       "11 Access Control",
       "1119.01j2Organizational.3-01.j 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.compute_vm_jit_access_protected",
     "description": "Possible network Just In Time (JIT) access will be monitored by Azure Security Center as recommendations",
     "title": "Management ports of virtual machines should be protected with just-in-time network access control",
@@ -4830,6 +5032,7 @@
       "11 Access Control",
       "1120.09ab3System.9-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.monitor_log_profile_enabled_for_all_regions",
     "description": "This policy audits the Azure Monitor log profile which does not export activities from all Azure supported regions including global.",
     "title": "Azure Monitor should collect activity logs from all regions",
@@ -4853,6 +5056,7 @@
       "11 Access Control",
       "1121.01j3Organizational.2-01.j 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_user_with_owner_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with owner permissions to prevent a breach of accounts or resources.",
     "title": "Accounts with owner permissions on Azure resources should be MFA enabled",
@@ -4878,6 +5082,7 @@
       "11 Access Control",
       "1123.01q1System.2-01.q 01.05 Operating System Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.compute_vm_administrators_group_with_extra_accounts_windows",
     "description": "Requires that prerequisites are deployed to the policy assignment scope. Machines are non-compliant if the local Administrators group contains members that are not listed in the policy parameter.",
     "title": "Audit Windows machines that have extra accounts in the Administrators group",
@@ -4901,6 +5106,7 @@
       "11 Access Control",
       "1125.01q2System.1-01.q 01.05 Operating System Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.compute_vm_administrators_group_with_specified_members_windows",
     "description": "Requires that prerequisites are deployed to the policy assignment scope. Machines are non-compliant if the local Administrators group contains one or more of the members listed in the policy parameter.",
     "title": "Audit Windows machines that have the specified members in the Administrators group",
@@ -4924,6 +5130,7 @@
       "11 Access Control",
       "1127.01q2System.3-01.q 01.05 Operating System Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.compute_vm_administrators_group_with_no_specified_members_windows",
     "description": "Requires that prerequisites are deployed to the policy assignment scope. Machines are non-compliant if the local Administrators group does not contain one or more members that are listed in the policy parameter.",
     "title": "Audit Windows machines missing any of specified members in the Administrators group",
@@ -4947,6 +5154,7 @@
       "11 Access Control",
       "1143.01c1System.123-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.network_security_group_remote_access_restricted",
     "description": "Open remote management ports are exposing your VM to a high level of risk from Internet-based attacks. These attacks attempt to brute force credentials to gain admin access to the machine.",
     "title": "Management ports should be closed on your virtual machines",
@@ -4971,6 +5179,7 @@
       "11 Access Control",
       "1144.01c1System.4-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_subscription_owner_max_3",
     "description": "It is recommended to designate up to 3 subscription owners in order to reduce the potential for breach by a compromised owner.",
     "title": "A maximum of 3 owners should be designated for your subscription",
@@ -4996,6 +5205,7 @@
       "11 Access Control",
       "1145.01c2System.1-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_subscription_owner_more_than_1",
     "description": "It is recommended to designate more than one subscription owner in order to have administrator access redundancy.",
     "title": "There should be more than one owner assigned to your subscription",
@@ -5020,6 +5230,7 @@
       "11 Access Control",
       "1146.01c2System.23-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_external_user_with_owner_role",
     "description": "External accounts with owner permissions should be removed from your subscription in order to prevent unmonitored access.",
     "title": "Guest accounts with owner permissions on Azure resources should be removed",
@@ -5045,6 +5256,7 @@
       "11 Access Control",
       "1147.01c2System.456-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_deprecated_account_with_owner_roles",
     "description": "Deprecated accounts with owner permissions should be removed from your subscription. Deprecated accounts are accounts that have been blocked from signing in.",
     "title": "Blocked accounts with owner permissions on Azure resources should be removed",
@@ -5070,6 +5282,7 @@
       "11 Access Control",
       "1148.01c2System.78-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_no_custom_role",
     "description": "Audit built-in roles such as 'Owner, Contributor, Reader' instead of custom RBAC roles, which are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling.",
     "title": "Audit usage of custom RBAC roles",
@@ -5095,6 +5308,7 @@
       "11 Access Control",
       "1148.01c2System.78-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.compute_vm_meet_security_option_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'Security Options - Accounts' for limiting local account use of blank passwords and guest account status. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'Security Options - Accounts'",
@@ -5118,6 +5332,7 @@
       "11 Access Control",
       "1150.01c2System.10-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.network_security_group_remote_access_restricted",
     "description": "Open remote management ports are exposing your VM to a high level of risk from Internet-based attacks. These attacks attempt to brute force credentials to gain admin access to the machine.",
     "title": "Management ports should be closed on your virtual machines",
@@ -5142,6 +5357,7 @@
       "11 Access Control",
       "1151.01c3System.1-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_subscription_owner_max_3",
     "description": "It is recommended to designate up to 3 subscription owners in order to reduce the potential for breach by a compromised owner.",
     "title": "A maximum of 3 owners should be designated for your subscription",
@@ -5167,6 +5383,7 @@
       "11 Access Control",
       "1152.01c3System.2-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_subscription_owner_more_than_1",
     "description": "It is recommended to designate more than one subscription owner in order to have administrator access redundancy.",
     "title": "There should be more than one owner assigned to your subscription",
@@ -5191,6 +5408,7 @@
       "11 Access Control",
       "1153.01c3System.35-01.c 01.02 Authorized Access to Information Systems"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.kubernetes_instance_rbac_enabled",
     "description": "To provide granular filtering on the actions that users can perform, use Role-Based Access Control (RBAC) to manage permissions in Kubernetes Service Clusters and configure relevant authorization policies.",
     "title": "Role-Based Access Control (RBAC) should be used on Kubernetes Services",
@@ -5215,6 +5433,7 @@
       "11 Access Control",
       "1175.01j1Organizational.8-01.j 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.compute_vm_jit_access_protected",
     "description": "Possible network Just In Time (JIT) access will be monitored by Azure Security Center as recommendations",
     "title": "Management ports of virtual machines should be protected with just-in-time network access control",
@@ -5239,6 +5458,7 @@
       "11 Access Control",
       "1178.01j2Organizational.7-01.j 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.iam_user_with_read_permission_on_subscription_mfa_enabled",
     "description": "Multi-Factor Authentication (MFA) should be enabled for all subscription accounts with read privileges to prevent a breach of accounts or resources.",
     "title": "Accounts with read permissions on Azure resources should be MFA enabled",
@@ -5263,6 +5483,7 @@
       "11 Access Control",
       "1179.01j3Organizational.1-01.j 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.compute_vm_jit_access_protected",
     "description": "Possible network Just In Time (JIT) access will be monitored by Azure Security Center as recommendations",
     "title": "Management ports of virtual machines should be protected with just-in-time network access control",
@@ -5287,6 +5508,7 @@
       "11 Access Control",
       "1192.01l1Organizational.1-01.l 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.compute_vm_jit_access_protected",
     "description": "Possible network Just In Time (JIT) access will be monitored by Azure Security Center as recommendations",
     "title": "Management ports of virtual machines should be protected with just-in-time network access control",
@@ -5311,6 +5533,7 @@
       "11 Access Control",
       "1193.01l2Organizational.13-01.l 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.network_security_group_remote_access_restricted",
     "description": "Open remote management ports are exposing your VM to a high level of risk from Internet-based attacks. These attacks attempt to brute force credentials to gain admin access to the machine.",
     "title": "Management ports should be closed on your virtual machines",
@@ -5335,6 +5558,7 @@
       "11 Access Control",
       "1194.01l2Organizational.2-01.l 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.appservice_api_app_remote_debugging_disabled",
     "description": "Remote debugging requires inbound ports to be opened on an App Service app. Remote debugging should be turned off.",
     "title": "App Service apps should have remote debugging turned off",
@@ -5359,6 +5583,7 @@
       "11 Access Control",
       "1195.01l3Organizational.1-01.l 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.appservice_function_app_remote_debugging_disabled",
     "description": "Remote debugging requires inbound ports to be opened on function apps. Remote debugging should be turned off.",
     "title": "Function apps should have remote debugging turned off",
@@ -5383,6 +5608,7 @@
       "11 Access Control",
       "1197.01l3Organizational.3-01.l 01.04 Network Access Control"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 11 Access Control",
     "control_id": "azure_compliance.control.compute_vm_adaptive_application_controls_enabled",
     "description": "Enable application controls to define the list of known-safe applications running on your machines, and alert you when other applications run. This helps harden your machines against malware. To simplify the process of configuring and maintaining your rules, Security Center uses machine learning to analyze the applications running on each machine and suggest the list of known-safe applications.",
     "title": "Adaptive application controls for defining safe applications should be enabled on your machines",
@@ -5407,6 +5633,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1202.09aa1System.1-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.compute_vm_scale_set_system_updates_installed",
     "description": "Audit whether there are any missing system security updates and critical updates that should be installed to ensure that your Windows and Linux virtual machine scale sets are secure.",
     "title": "System updates on virtual machine scale sets should be installed",
@@ -5431,6 +5658,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1202.09aa1System.1-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.datalake_store_account_logging_enabled",
     "description": "Audit enabling of resource logs. This enables you to recreate activity trails to use for investigation purposes; when a security incident occurs or when your network is compromised.",
     "title": "Resource logs in Azure Data Lake Store should be enabled",
@@ -5455,6 +5683,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1203.09aa1System.2-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.logic_app_workflow_logging_enabled",
     "description": "Audit enabling of resource logs. This enables you to recreate activity trails to use for investigation purposes; when a security incident occurs or when your network is compromised.",
     "title": "Resource logs in Logic Apps should be enabled",
@@ -5479,6 +5708,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1204.09aa1System.3-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.iot_hub_logging_enabled",
     "description": "Audit enabling of resource logs. This enables you to recreate activity trails to use for investigation purposes; when a security incident occurs or when your network is compromised.",
     "title": "Resource logs in IoT Hub should be enabled",
@@ -5503,6 +5733,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1205.09aa2System.1-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.batch_account_logging_enabled",
     "description": "Audit enabling of resource logs. This enables you to recreate activity trails to use for investigation purposes; when a security incident occurs or when your network is compromised.",
     "title": "Resource logs in Batch accounts should be enabled",
@@ -5527,6 +5758,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1207.09aa2System.4-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.eventhub_namespace_logging_enabled",
     "description": "Audit enabling of resource logs. This enables you to recreate activity trails to use for investigation purposes; when a security incident occurs or when your network is compromised.",
     "title": "Resource logs in Event Hub should be enabled",
@@ -5551,6 +5783,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1207.09aa2System.4-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.stream_analytics_job_logging_enabled",
     "description": "Audit enabling of resource logs. This enables you to recreate activity trails to use for investigation purposes; when a security incident occurs or when your network is compromised.",
     "title": "Resource logs in Azure Stream Analytics should be enabled",
@@ -5575,6 +5808,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1208.09aa3System.1-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.search_service_logging_enabled",
     "description": "Audit enabling of resource logs. This enables you to recreate activity trails to use for investigation purposes; when a security incident occurs or when your network is compromised.",
     "title": "Resource logs in Search services should be enabled",
@@ -5599,6 +5833,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1208.09aa3System.1-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.servicebus_namespace_logging_enabled",
     "description": "Audit enabling of resource logs. This enables you to recreate activity trails to use for investigation purposes; when a security incident occurs or when your network is compromised.",
     "title": "Resource logs in Service Bus should be enabled",
@@ -5623,6 +5858,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1209.09aa3System.2-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.appservice_web_app_diagnostic_logs_enabled",
     "description": "Audit enabling of resource logs on the app. This enables you to recreate activity trails for investigation purposes if a security incident occurs or your network is compromised.",
     "title": "App Service apps should have resource logs enabled",
@@ -5647,6 +5883,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1210.09aa3System.3-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.audit_diagnostic_setting",
     "description": "Audit diagnostic setting for selected resource types. Be sure to select only resource types which support diagnostics settings.",
     "title": "Audit diagnostic setting for selected resource types",
@@ -5671,6 +5908,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1210.09aa3System.3-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.datalake_analytics_account_logging_enabled",
     "description": "Audit enabling of resource logs. This enables you to recreate activity trails to use for investigation purposes; when a security incident occurs or when your network is compromised.",
     "title": "Resource logs in Data Lake Analytics should be enabled",
@@ -5695,6 +5933,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "12100.09ab2System.15-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.compute_vm_log_analytics_agent_installed",
     "description": "This policy audits any Windows/Linux virtual machines if the Log Analytics extension is not installed.",
     "title": "Log Analytics agent should be installed on your virtual machine for Azure Security Center monitoring",
@@ -5719,6 +5958,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "12101.09ab1Organizational.3-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.compute_vm_scale_set_log_analytics_agent_installed",
     "description": "This policy audits any Windows/Linux Virtual Machine Scale Sets if the Log Analytics extension is not installed.",
     "title": "Log Analytics agent should be installed on your virtual machine scale sets for Azure Security Center monitoring",
@@ -5743,6 +5983,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "12102.09ab1Organizational.4-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.compute_vm_log_analytics_agent_installed_windows",
     "description": "Requires that prerequisites are deployed to the policy assignment scope. Machines are non-compliant if the agent is not installed, or if it is installed but the COM object AgentConfigManager.MgmtSvcCfg returns that it is registered to a workspace other than the ID specified in the policy parameter.",
     "title": "Audit Windows machines on which the Log Analytics agent is not connected as expected",
@@ -5766,6 +6007,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1211.09aa3System.4-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.keyvault_logging_enabled",
     "description": "Audit enabling of resource logs. This enables you to recreate activity trails to use for investigation purposes when a security incident occurs or when your network is compromised.",
     "title": "Resource logs in Key Vault should be enabled",
@@ -5790,6 +6032,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1211.09aa3System.4-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.keyvault_managed_hms_logging_enabled",
     "description": "To recreate activity trails for investigation purposes when a security incident occurs or when your network is compromised, you may want to audit by enabling resource logs on Managed HSMs.",
     "title": "Resource logs in Azure Key Vault Managed HSM should be enabled",
@@ -5813,6 +6056,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1211.09aa3System.4-09.aa 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.sql_server_auditing_on",
     "description": "Auditing on your SQL Server should be enabled to track database activities across all databases on the server and save them in an audit log.",
     "title": "Auditing on SQL server should be enabled",
@@ -5838,6 +6082,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1212.09ab1System.1-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.monitor_log_profile_enabled_for_all_categories",
     "description": "This policy ensures that a log profile collects logs for categories 'write,' 'delete,' and 'action'.",
     "title": "Azure Monitor log profile should collect logs for categories 'write,' 'delete,' and 'action'",
@@ -5861,6 +6106,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1213.09ab2System.128-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.securitycenter_automatic_provisioning_monitoring_agent_on",
     "description": "To monitor for security vulnerabilities and threats, Azure Security Center collects data from your Azure virtual machines. Data is collected by the Log Analytics agent, formerly known as the Microsoft Monitoring Agent (MMA), which reads various security-related configurations and event logs from the machine and copies the data to your Log Analytics workspace for analysis. We recommend enabling auto provisioning to automatically deploy the agent to all supported Azure VMs and any new ones that are created.",
     "title": "Auto provisioning of the Log Analytics agent should be enabled on your subscription",
@@ -5885,6 +6131,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1214.09ab2System.3456-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.monitor_log_profile_enabled_for_all_regions",
     "description": "This policy audits the Azure Monitor log profile which does not export activities from all Azure supported regions including global.",
     "title": "Azure Monitor should collect activity logs from all regions",
@@ -5908,6 +6155,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1215.09ab2System.7-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.compute_vm_log_analytics_agent_installed",
     "description": "This policy audits any Windows/Linux virtual machines if the Log Analytics extension is not installed.",
     "title": "Log Analytics agent should be installed on your virtual machine for Azure Security Center monitoring",
@@ -5932,6 +6180,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1216.09ab3System.12-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.compute_vm_scale_set_log_analytics_agent_installed",
     "description": "This policy audits any Windows/Linux Virtual Machine Scale Sets if the Log Analytics extension is not installed.",
     "title": "Log Analytics agent should be installed on your virtual machine scale sets for Azure Security Center monitoring",
@@ -5956,6 +6205,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1217.09ab3System.3-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.compute_vm_log_analytics_agent_installed_windows",
     "description": "Requires that prerequisites are deployed to the policy assignment scope. Machines are non-compliant if the agent is not installed, or if it is installed but the COM object AgentConfigManager.MgmtSvcCfg returns that it is registered to a workspace other than the ID specified in the policy parameter.",
     "title": "Audit Windows machines on which the Log Analytics agent is not connected as expected",
@@ -5979,6 +6229,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1219.09ab3System.10-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.monitor_log_profile_enabled_for_all_categories",
     "description": "This policy ensures that a log profile collects logs for categories 'write,' 'delete,' and 'action'.",
     "title": "Azure Monitor log profile should collect logs for categories 'write,' 'delete,' and 'action'",
@@ -6002,6 +6253,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1220.09ab3System.56-09.ab 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.securitycenter_automatic_provisioning_monitoring_agent_on",
     "description": "To monitor for security vulnerabilities and threats, Azure Security Center collects data from your Azure virtual machines. Data is collected by the Log Analytics agent, formerly known as the Microsoft Monitoring Agent (MMA), which reads various security-related configurations and event logs from the machine and copies the data to your Log Analytics workspace for analysis. We recommend enabling auto provisioning to automatically deploy the agent to all supported Azure VMs and any new ones that are created.",
     "title": "Auto provisioning of the Log Analytics agent should be enabled on your subscription",
@@ -6026,6 +6278,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1229.09c1Organizational.1-09.c 09.01 Documented Operating Procedures"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.kubernetes_instance_rbac_enabled",
     "description": "To provide granular filtering on the actions that users can perform, use Role-Based Access Control (RBAC) to manage permissions in Kubernetes Service Clusters and configure relevant authorization policies.",
     "title": "Role-Based Access Control (RBAC) should be used on Kubernetes Services",
@@ -6050,6 +6303,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1230.09c2Organizational.1-09.c 09.01 Documented Operating Procedures"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.iam_no_custom_role",
     "description": "Audit built-in roles such as 'Owner, Contributor, Reader' instead of custom RBAC roles, which are error prone. Using custom roles is treated as an exception and requires a rigorous review and threat modeling.",
     "title": "Audit usage of custom RBAC roles",
@@ -6075,6 +6329,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1232.09c3Organizational.12-09.c 09.01 Documented Operating Procedures"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.network_security_group_rdp_access_restricted",
     "description": "Windows machines should have the specified Group Policy settings in the category 'User Rights Assignment' for allowing log on locally, RDP, access from the network, and many other user activities. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'User Rights Assignment'",
@@ -6098,6 +6353,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1270.09ad1System.12-09.ad 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.monitor_log_alert_for_administrative_operations",
     "description": "This policy audits specific Administrative operations with no activity log alerts configured.",
     "title": "An activity log alert should exist for specific Administrative operations",
@@ -6121,6 +6377,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1271.09ad1System.1-09.ad 09.10 Monitoring"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.monitor_log_alert_for_administrative_operations",
     "description": "This policy audits specific Administrative operations with no activity log alerts configured.",
     "title": "An activity log alert should exist for specific Administrative operations",
@@ -6144,6 +6401,7 @@
       "12 Audit Logging \u0026 Monitoring",
       "1277.09c2Organizational.4-09.c 09.01 Documented Operating Procedures"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 12 Audit Logging \u0026 Monitoring",
     "control_id": "azure_compliance.control.compute_vm_meet_security_options_user_account_control_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'Security Options - User Account Control' for mode for admins, behavior of elevation prompt, and virtualizing file and registry write failures. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope. For details, visit https://aka.ms/gcpol.",
     "title": "Windows machines should meet requirements for 'Security Options - User Account Control'",
@@ -6167,6 +6425,7 @@
       "13 Education, Training and Awareness",
       "1325.09s1Organizational.3-09.s 09.08 Exchange of Information"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 13 Education, Training and Awareness",
     "control_id": "azure_compliance.control.appservice_function_app_remote_debugging_disabled",
     "description": "Remote debugging requires inbound ports to be opened on function apps. Remote debugging should be turned off.",
     "title": "Function apps should have remote debugging turned off",
@@ -6191,6 +6450,7 @@
       "14 Third Party Assurance",
       "1450.05i2Organizational.2-05.i 05.02 External Parties"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 14 Third Party Assurance",
     "control_id": "azure_compliance.control.postgres_sql_ssl_enabled",
     "description": "Azure Database for PostgreSQL supports connecting your Azure Database for PostgreSQL server to client applications using Secure Sockets Layer (SSL). Enforcing SSL connections between your database server and your client applications helps protect against 'man in the middle' attacks by encrypting the data stream between the server and your application. This configuration enforces that SSL is always enabled for accessing your database server",
     "title": "Enforce SSL connection should be enabled for PostgreSQL database servers",
@@ -6215,6 +6475,7 @@
       "14 Third Party Assurance",
       "1451.05iCSPOrganizational.2-05.i 05.02 External Parties"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 14 Third Party Assurance",
     "control_id": "azure_compliance.control.redis_cache_ssl_enabled",
     "description": "Audit enabling of only connections via SSL to Azure Cache for Redis. Use of secure connections ensures authentication between the server and the service and protects data in transit from network layer attacks such as man-in-the-middle, eavesdropping, and session-hijacking.",
     "title": "Only secure connections to your Azure Cache for Redis should be enabled",
@@ -6240,6 +6501,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1616.09l1Organizational.16-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.sql_database_long_term_geo_redundant_backup_enabled",
     "description": "This policy audits any Azure SQL Database with long-term geo-redundant backup not enabled.",
     "title": "Long-term geo-redundant backup should be enabled for Azure SQL Databases",
@@ -6264,6 +6526,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1617.09l1Organizational.23-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.mysql_db_server_geo_redundant_backup_enabled",
     "description": "Azure Database for MySQL allows you to choose the redundancy option for your database server. It can be set to a geo-redundant backup storage in which the data is not only stored within the region in which your server is hosted, but is also replicated to a paired region to provide recovery option in case of a region failure. Configuring geo-redundant storage for backup is only allowed during server create.",
     "title": "Geo-redundant backup should be enabled for Azure Database for MySQL",
@@ -6288,6 +6551,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1618.09l1Organizational.45-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.postgres_db_server_geo_redundant_backup_enabled",
     "description": "Azure Database for PostgreSQL allows you to choose the redundancy option for your database server. It can be set to a geo-redundant backup storage in which the data is not only stored within the region in which your server is hosted, but is also replicated to a paired region to provide recovery option in case of a region failure. Configuring geo-redundant storage for backup is only allowed during server create.",
     "title": "Geo-redundant backup should be enabled for Azure Database for PostgreSQL",
@@ -6312,6 +6576,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1619.09l1Organizational.7-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.mariadb_server_geo_redundant_backup_enabled",
     "description": "Azure Database for MariaDB allows you to choose the redundancy option for your database server. It can be set to a geo-redundant backup storage in which the data is not only stored within the region in which your server is hosted, but is also replicated to a paired region to provide recovery option in case of a region failure. Configuring geo-redundant storage for backup is only allowed during server create.",
     "title": "Geo-redundant backup should be enabled for Azure Database for MariaDB",
@@ -6336,6 +6601,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1620.09l1Organizational.8-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.compute_vm_azure_backup_enabled",
     "description": "Ensure protection of your Azure Virtual Machines by enabling Azure Backup. Azure Backup is a secure and cost effective data protection solution for Azure.",
     "title": "Azure Backup should be enabled for Virtual Machines",
@@ -6359,6 +6625,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1621.09l2Organizational.1-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.sql_database_long_term_geo_redundant_backup_enabled",
     "description": "This policy audits any Azure SQL Database with long-term geo-redundant backup not enabled.",
     "title": "Long-term geo-redundant backup should be enabled for Azure SQL Databases",
@@ -6383,6 +6650,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1622.09l2Organizational.23-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.mysql_db_server_geo_redundant_backup_enabled",
     "description": "Azure Database for MySQL allows you to choose the redundancy option for your database server. It can be set to a geo-redundant backup storage in which the data is not only stored within the region in which your server is hosted, but is also replicated to a paired region to provide recovery option in case of a region failure. Configuring geo-redundant storage for backup is only allowed during server create.",
     "title": "Geo-redundant backup should be enabled for Azure Database for MySQL",
@@ -6407,6 +6675,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1623.09l2Organizational.4-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.postgres_db_server_geo_redundant_backup_enabled",
     "description": "Azure Database for PostgreSQL allows you to choose the redundancy option for your database server. It can be set to a geo-redundant backup storage in which the data is not only stored within the region in which your server is hosted, but is also replicated to a paired region to provide recovery option in case of a region failure. Configuring geo-redundant storage for backup is only allowed during server create.",
     "title": "Geo-redundant backup should be enabled for Azure Database for PostgreSQL",
@@ -6431,6 +6700,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1624.09l3Organizational.12-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.mariadb_server_geo_redundant_backup_enabled",
     "description": "Azure Database for MariaDB allows you to choose the redundancy option for your database server. It can be set to a geo-redundant backup storage in which the data is not only stored within the region in which your server is hosted, but is also replicated to a paired region to provide recovery option in case of a region failure. Configuring geo-redundant storage for backup is only allowed during server create.",
     "title": "Geo-redundant backup should be enabled for Azure Database for MariaDB",
@@ -6455,6 +6725,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1625.09l3Organizational.34-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.compute_vm_azure_backup_enabled",
     "description": "Ensure protection of your Azure Virtual Machines by enabling Azure Backup. Azure Backup is a secure and cost effective data protection solution for Azure.",
     "title": "Azure Backup should be enabled for Virtual Machines",
@@ -6478,6 +6749,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1626.09l3Organizational.5-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.postgres_db_server_geo_redundant_backup_enabled",
     "description": "Azure Database for PostgreSQL allows you to choose the redundancy option for your database server. It can be set to a geo-redundant backup storage in which the data is not only stored within the region in which your server is hosted, but is also replicated to a paired region to provide recovery option in case of a region failure. Configuring geo-redundant storage for backup is only allowed during server create.",
     "title": "Geo-redundant backup should be enabled for Azure Database for PostgreSQL",
@@ -6502,6 +6774,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1627.09l3Organizational.6-09.l 09.05 Information Back-Up"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.mariadb_server_geo_redundant_backup_enabled",
     "description": "Azure Database for MariaDB allows you to choose the redundancy option for your database server. It can be set to a geo-redundant backup storage in which the data is not only stored within the region in which your server is hosted, but is also replicated to a paired region to provide recovery option in case of a region failure. Configuring geo-redundant storage for backup is only allowed during server create.",
     "title": "Geo-redundant backup should be enabled for Azure Database for MariaDB",
@@ -6526,6 +6799,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1634.12b1Organizational.1-12.b 12.01 Information Security Aspects of Business Continuity Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.compute_vm_disaster_recovery_enabled",
     "description": "Audit virtual machines which do not have disaster recovery configured.",
     "title": "Audit virtual machines without disaster recovery configured",
@@ -6550,6 +6824,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1635.12b1Organizational.2-12.b 12.01 Information Security Aspects of Business Continuity Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.keyvault_managed_hms_purge_protection_enabled",
     "description": "Malicious deletion of an Azure Key Vault Managed HSM can lead to permanent data loss. A malicious insider in your organization can potentially delete and purge Azure Key Vault Managed HSM. Purge protection protects you from insider attacks by enforcing a mandatory retention period for soft deleted Azure Key Vault Managed HSM. No one inside your organization or Microsoft will be able to purge your Azure Key Vault Managed HSM during the soft delete retention period.",
     "title": "Azure Key Vault Managed HSM should have purge protection enabled",
@@ -6573,6 +6848,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1635.12b1Organizational.2-12.b 12.01 Information Security Aspects of Business Continuity Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.keyvault_purge_protection_enabled",
     "description": "Malicious deletion of a key vault can lead to permanent data loss. A malicious insider in your organization can potentially delete and purge key vaults. Purge protection protects you from insider attacks by enforcing a mandatory retention period for soft deleted key vaults. No one inside your organization or Microsoft will be able to purge your key vaults during the soft delete retention period.",
     "title": "Key vaults should have deletion protection enabled",
@@ -6597,6 +6873,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1637.12b2Organizational.2-12.b 12.01 Information Security Aspects of Business Continuity Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.compute_vm_meet_security_options_requirement_windows",
     "description": "Windows machines should have the specified Group Policy settings in the category 'Security Options - Recovery console' for allowing floppy copy and access to all drives and folders. This policy requires that the Guest Configuration prerequisites have been deployed to the policy assignment scope.",
     "title": "Windows machines should meet requirements for 'Security Options - Recovery console'",
@@ -6620,6 +6897,7 @@
       "16 Business Continuity \u0026 Disaster Recovery",
       "1638.12b2Organizational.345-12.b 12.01 Information Security Aspects of Business Continuity Management"
     ],
+    "category_hierarchy_short": "HIPPA 9.2 - 16 Business Continuity \u0026 Disaster Recovery",
     "control_id": "azure_compliance.control.compute_vm_disaster_recovery_enabled",
     "description": "Audit virtual machines which do not have disaster recovery configured.",
     "title": "Audit virtual machines without disaster recovery configured",
