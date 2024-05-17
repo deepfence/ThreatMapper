@@ -58,8 +58,6 @@ export * from './ModelBulkDeleteScansRequest';
 export * from './ModelCloudAccountDeleteReq';
 export * from './ModelCloudAccountRefreshReq';
 export * from './ModelCloudCompliance';
-export * from './ModelCloudComplianceBenchmark';
-export * from './ModelCloudComplianceScanDetails';
 export * from './ModelCloudComplianceScanResult';
 export * from './ModelCloudNodeAccountInfo';
 export * from './ModelCloudNodeAccountRegisterReq';

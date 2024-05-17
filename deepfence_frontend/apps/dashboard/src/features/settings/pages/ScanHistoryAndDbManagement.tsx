@@ -264,7 +264,7 @@ const useGetLink = (version: string, licenseKey?: string) => {
     requestHeaders.set('x-license-key', licenseKey);
     try {
       const response = await fetch(
-        `https://threat-intel.deepfence.io/threat-intel/listing.json?version=v${version}&product=ThreatMapper`,
+        `https://threat-intel.deepfence.io/threat-intel/listing.json?version=${version}&product=ThreatMapper`,
         {
           method: 'GET',
           headers: requestHeaders,
@@ -284,7 +284,7 @@ const useGetLink = (version: string, licenseKey?: string) => {
           }[]
         >
       >;
-      const links = data.available[`v${version}`];
+      const links = data.available[version];
       const sortMap: { [key: string]: number } = {
         vulnerability: 1,
         secret: 2,
