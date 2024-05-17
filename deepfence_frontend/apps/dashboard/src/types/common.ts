@@ -49,13 +49,6 @@ export enum ComplianceScanNodeTypeEnum {
   kubernetes_cluster = 'kubernetes_cluster',
 }
 
-export enum ScanStatusEnum {
-  complete = 'COMPLETE',
-  error = 'ERROR',
-  neverScanned = 'NEVER_SCANNED',
-  stopped = 'CANCELLED',
-}
-
 export const RegistryType = {
   azure_container_registry: 'azure_container_registry',
   docker_hub: 'docker_hub',

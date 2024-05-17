@@ -70,11 +70,10 @@ import {
   isNeverScanned,
   isScanComplete,
   isScanDeletePending,
-  isScanFailed,
   isScanInProgress,
   isScanStopping,
-  SCAN_STATUS_GROUPS,
-  SecretScanGroupedStatus,
+  SCAN_STATUS_FILTER,
+  SCAN_STATUS_FILTER_TYPE,
 } from '@/utils/scan';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
@@ -453,13 +452,7 @@ const Filters = () => {
             })}
         </Combobox>
         <Combobox
-          value={
-            searchParams.get('secretScanStatus')?.length
-              ? SCAN_STATUS_GROUPS.find((groupStatus) => {
-                  return groupStatus.value === searchParams.get('secretScanStatus');
-                })
-              : null
-          }
+          value={searchParams.get('secretScanStatus')}
           nullable
           onQueryChange={(query) => {
             setSecretScanStatusSearchText(query);
@@ -467,7 +460,7 @@ const Filters = () => {
           onChange={(value) => {
             setSearchParams((prev) => {
               if (value) {
-                prev.set('secretScanStatus', value.value);
+                prev.set('secretScanStatus', value);
               } else {
                 prev.delete('secretScanStatus');
               }
@@ -477,21 +470,23 @@ const Filters = () => {
           }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['secretScanStatus']}
         >
-          {SCAN_STATUS_GROUPS.filter((item) => {
-            if (item.value === 'neverScanned') {
-              return false;
-            }
-            if (!secretScanStatusSearchText.length) return true;
-            return item.label
-              .toLowerCase()
-              .includes(secretScanStatusSearchText.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item.value} value={item}>
-                {item.label}
-              </ComboboxOption>
-            );
-          })}
+          {Object.keys(SCAN_STATUS_FILTER)
+            .filter((item) => {
+              if (item === SCAN_STATUS_FILTER['Never scanned']) {
+                return false;
+              }
+              if (!secretScanStatusSearchText.length) return true;
+              return item
+                .toLowerCase()
+                .includes(secretScanStatusSearchText.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {item}
+                </ComboboxOption>
+              );
+            })}
         </Combobox>
 
         <SearchableImageList
@@ -689,7 +684,7 @@ const ScansTable = ({
       page: parseInt(searchParams.get('page') ?? '0', 10),
       order: getOrderFromSearchParams(searchParams),
       secretScanStatus: searchParams.get('secretScanStatus') as
-        | SecretScanGroupedStatus
+        | SCAN_STATUS_FILTER_TYPE
         | undefined,
     }),
     keepPreviousData: true,

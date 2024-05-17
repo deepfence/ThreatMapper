@@ -34,7 +34,7 @@ import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNode
 import { SbomModal } from '@/features/vulnerabilities/components/SBOMModal';
 import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
-import { VulnerabilityScanGroupedStatus } from '@/utils/scan';
+import { SCAN_STATUS_FILTER } from '@/utils/scan';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -43,7 +43,7 @@ function useVulnerabilityScanList() {
   const [searchParams] = useSearchParams();
   return useSuspenseQuery({
     ...queries.vulnerability.scanList({
-      vulnerabilityScanStatus: VulnerabilityScanGroupedStatus.complete,
+      vulnerabilityScanStatus: SCAN_STATUS_FILTER.Complete,
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       clusters: searchParams.getAll('clusters'),
       containers: searchParams.getAll('containers'),
