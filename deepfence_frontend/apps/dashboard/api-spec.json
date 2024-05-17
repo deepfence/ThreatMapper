@@ -13682,19 +13682,7 @@
             "additionalProperties": { "type": "integer" },
             "nullable": true
           },
-          "status": {
-            "enum": [
-              "COMPLETE",
-              "STARTING",
-              "IN_PROGRESS",
-              "ERROR",
-              "CANCEL_PENDING",
-              "CANCELLING",
-              "CANCELLED",
-              "DELETE_PENDING"
-            ],
-            "type": "string"
-          },
+          "status": { "type": "string" },
           "status_message": { "type": "string" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
@@ -15027,19 +15015,7 @@
             "additionalProperties": { "type": "integer" },
             "nullable": true
           },
-          "status": {
-            "enum": [
-              "COMPLETE",
-              "STARTING",
-              "IN_PROGRESS",
-              "ERROR",
-              "CANCEL_PENDING",
-              "CANCELLING",
-              "CANCELLED",
-              "DELETE_PENDING"
-            ],
-            "type": "string"
-          },
+          "status": { "type": "string" },
           "status_message": { "type": "string" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
