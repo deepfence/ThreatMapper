@@ -1123,7 +1123,7 @@ const Filters = () => {
           {benchmarks
             .filter((item) => {
               if (!benchmarkQuery.length) return true;
-              return item.toLowerCase().includes(benchmarkQuery.toLowerCase());
+              return item.includes(benchmarkQuery.toLowerCase());
             })
             .map((item) => {
               return (

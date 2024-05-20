@@ -233,3 +233,37 @@ export const SCAN_STATUS_GROUPS = [
     value: 'cancelling',
   },
 ];
+
+export enum BenchmarkEnum {
+  cis = 'cis',
+  nist = 'nist',
+  pci = 'pci',
+  hippa = 'hippa',
+  soc2 = 'soc_2',
+  gdpr = 'gdpr',
+  'nsa-cisa' = 'nsa-cisa',
+}
+
+export function getBenchmarkPrettyName(backendBenchmark: BenchmarkEnum) {
+  switch (backendBenchmark) {
+    case BenchmarkEnum.cis:
+      return 'CIS';
+    case BenchmarkEnum.nist:
+      return 'NIST';
+    case BenchmarkEnum.pci:
+      return 'PCI';
+    case BenchmarkEnum.hippa:
+      return 'HIPPA';
+    case BenchmarkEnum.soc2:
+      return 'SOC2';
+    case BenchmarkEnum.gdpr:
+      return 'GDPR';
+    case BenchmarkEnum['nsa-cisa']:
+      return 'NSA-CISA';
+
+    default:
+      // eslint-disable-next-line no-case-declarations
+      const _exhaustiveCheck: never = backendBenchmark;
+      throw new Error(`Unhandled case: ${_exhaustiveCheck}`);
+  }
+}

@@ -300,12 +300,7 @@ const useScanResults = () => {
         sortBy: 'status',
         descending: true,
       },
-      benchmarkTypes: searchParams.getAll('benchmarkType').map((type) => {
-        if (type.toLowerCase() === 'soc2') {
-          type = 'soc_2';
-        }
-        return type.toLowerCase();
-      }),
+      benchmarkTypes: searchParams.getAll('benchmarkType'),
       visibility: searchParams.getAll('visibility'),
       status: searchParams.getAll('status'),
       services: searchParams.getAll('services'),
@@ -1125,7 +1120,7 @@ const Filters = () => {
           {benchmarks
             .filter((item) => {
               if (!benchmarkQuery.length) return true;
-              return item.toLowerCase().includes(benchmarkQuery.toLowerCase());
+              return item.includes(benchmarkQuery.toLowerCase());
             })
             .map((item) => {
               return (
