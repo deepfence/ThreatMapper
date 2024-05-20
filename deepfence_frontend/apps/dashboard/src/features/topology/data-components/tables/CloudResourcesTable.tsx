@@ -13,7 +13,7 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { ModelCloudResource } from '@/api/generated';
+import { ModelCloudResource, ModelCloudResourceCloudProviderEnum } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
@@ -313,26 +313,26 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   azure_account_ids: 'Azure account',
 };
 
-const CLOUD_PROVIDERS = [
-  {
-    label: 'AWS',
-    value: 'aws',
-  },
-  {
-    label: 'GCP',
-    value: 'gcp',
-  },
-  {
-    label: 'Azure',
-    value: 'azure',
-  },
-];
-
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
 };
+
+function getCloudResourcePrettyName(provider: ModelCloudResourceCloudProviderEnum) {
+  switch (provider) {
+    case ModelCloudResourceCloudProviderEnum.Aws:
+      return 'AWS';
+    case ModelCloudResourceCloudProviderEnum.Gcp:
+      return 'GCP';
+    case ModelCloudResourceCloudProviderEnum.Azure:
+      return 'AZURE';
+    default:
+      // eslint-disable-next-line no-case-declarations
+      const _exhaustiveCheck: never = provider;
+      throw new Error(`Unhandled case: ${_exhaustiveCheck}`);
+  }
+}
 
 function Filters() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -361,18 +361,20 @@ function Filters() {
           }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['cloudProvider']}
         >
-          {CLOUD_PROVIDERS.filter((item) => {
-            if (!cloudProvidersSearchText.length) return true;
-            return item.label
-              .toLowerCase()
-              .includes(cloudProvidersSearchText.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item.value} value={item.value}>
-                {item.label}
-              </ComboboxOption>
-            );
-          })}
+          {Object.values(ModelCloudResourceCloudProviderEnum)
+            .filter((item) => {
+              if (!cloudProvidersSearchText.length) return true;
+              return item.includes(cloudProvidersSearchText.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {getCloudResourcePrettyName(
+                    item as ModelCloudResourceCloudProviderEnum,
+                  )}
+                </ComboboxOption>
+              );
+            })}
         </Combobox>
         <Combobox
           value={searchParams.getAll('serviceType')}

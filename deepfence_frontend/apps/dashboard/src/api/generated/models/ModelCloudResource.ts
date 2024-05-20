@@ -48,7 +48,7 @@ export interface ModelCloudResource {
      * @type {string}
      * @memberof ModelCloudResource
      */
-    cloud_provider: string;
+    cloud_provider: ModelCloudResourceCloudProviderEnum;
     /**
      * 
      * @type {string}
@@ -80,6 +80,18 @@ export interface ModelCloudResource {
      */
     type_label: string;
 }
+
+
+/**
+ * @export
+ */
+export const ModelCloudResourceCloudProviderEnum = {
+    Aws: 'aws',
+    Gcp: 'gcp',
+    Azure: 'azure'
+} as const;
+export type ModelCloudResourceCloudProviderEnum = typeof ModelCloudResourceCloudProviderEnum[keyof typeof ModelCloudResourceCloudProviderEnum];
+
 
 /**
  * Check if a given object implements the ModelCloudResource interface.

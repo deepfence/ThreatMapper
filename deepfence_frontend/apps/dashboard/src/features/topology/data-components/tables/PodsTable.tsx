@@ -129,10 +129,13 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
 };
+enum KunernetesEnum {
+  Running = 'Running',
+}
 const KUBERNETES_STATUSES = [
   {
     label: 'Running',
-    value: 'Running',
+    value: KunernetesEnum.Running,
   },
   {
     label: 'Not Running',

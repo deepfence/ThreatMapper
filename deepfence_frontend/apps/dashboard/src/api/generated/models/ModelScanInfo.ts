@@ -60,7 +60,7 @@ export interface ModelScanInfo {
      * @type {string}
      * @memberof ModelScanInfo
      */
-    status: string;
+    status: ModelScanInfoStatusEnum;
     /**
      * 
      * @type {string}
@@ -74,6 +74,23 @@ export interface ModelScanInfo {
      */
     updated_at: number;
 }
+
+
+/**
+ * @export
+ */
+export const ModelScanInfoStatusEnum = {
+    Complete: 'COMPLETE',
+    Starting: 'STARTING',
+    InProgress: 'IN_PROGRESS',
+    Error: 'ERROR',
+    CancelPending: 'CANCEL_PENDING',
+    Cancelling: 'CANCELLING',
+    Cancelled: 'CANCELLED',
+    DeletePending: 'DELETE_PENDING'
+} as const;
+export type ModelScanInfoStatusEnum = typeof ModelScanInfoStatusEnum[keyof typeof ModelScanInfoStatusEnum];
+
 
 /**
  * Check if a given object implements the ModelScanInfo interface.
