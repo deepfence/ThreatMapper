@@ -13,7 +13,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "2.2.1"
+    "version": "v2.2.1"
   },
   "externalDocs": {
     "description": "Deepfence Community",
@@ -13230,7 +13230,8 @@
         "type": "object",
         "properties": {
           "available_workload": { "type": "integer" },
-          "node_id": { "type": "string" }
+          "node_id": { "type": "string" },
+          "node_type": { "type": "string" }
         }
       },
       "ModelAgentPluginDisable": {
@@ -13364,36 +13365,6 @@
           "updated_at": { "type": "integer" }
         }
       },
-      "ModelCloudComplianceBenchmark": {
-        "type": "object",
-        "properties": {
-          "compliance_type": { "type": "string" },
-          "controls": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "id": { "type": "string" }
-        }
-      },
-      "ModelCloudComplianceScanDetails": {
-        "type": "object",
-        "properties": {
-          "account_id": { "type": "string" },
-          "benchmarks": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ModelCloudComplianceBenchmark" },
-            "nullable": true
-          },
-          "scan_id": { "type": "string" },
-          "scan_types": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "stop_requested": { "type": "boolean" }
-        }
-      },
       "ModelCloudComplianceScanResult": {
         "required": [
           "docker_container_name",
@@ -13468,6 +13439,7 @@
         "properties": {
           "cloud_account": { "type": "string" },
           "cloud_provider": { "enum": ["aws", "gcp", "azure"], "type": "string" },
+          "host_node_id": { "type": "string" },
           "monitored_account_ids": {
             "type": "object",
             "additionalProperties": { "type": "string" },
@@ -13493,14 +13465,7 @@
             "nullable": true
           },
           "log_action": { "$ref": "#/components/schemas/ControlsAction" },
-          "refresh": { "type": "string" },
-          "scans": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/ModelCloudComplianceScanDetails"
-            },
-            "nullable": true
-          }
+          "refresh": { "type": "string" }
         }
       },
       "ModelCloudNodeAccountsListReq": {
@@ -13696,7 +13661,8 @@
           "node_type",
           "severity_counts",
           "node_name",
-          "benchmark_types"
+          "benchmark_types",
+          "cloud_provider"
         ],
         "type": "object",
         "properties": {
@@ -13705,6 +13671,7 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "cloud_provider": { "type": "string" },
           "created_at": { "type": "integer", "format": "int64" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
@@ -14354,11 +14321,12 @@
         }
       },
       "ModelInitAgentReq": {
-        "required": ["node_id", "available_workload", "version"],
+        "required": ["node_id", "available_workload", "version", "node_type"],
         "type": "object",
         "properties": {
           "available_workload": { "type": "integer" },
           "node_id": { "type": "string" },
+          "node_type": { "type": "string" },
           "version": { "type": "string" }
         }
       },

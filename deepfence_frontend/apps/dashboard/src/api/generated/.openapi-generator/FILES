@@ -84,8 +84,6 @@ models/ModelBulkDeleteScansRequest.ts
 models/ModelCloudAccountDeleteReq.ts
 models/ModelCloudAccountRefreshReq.ts
 models/ModelCloudCompliance.ts
-models/ModelCloudComplianceBenchmark.ts
-models/ModelCloudComplianceScanDetails.ts
 models/ModelCloudComplianceScanResult.ts
 models/ModelCloudNodeAccountInfo.ts
 models/ModelCloudNodeAccountRegisterReq.ts
