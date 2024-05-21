@@ -233,3 +233,11 @@ export const SCAN_STATUS_GROUPS = [
     value: 'cancelling',
   },
 ];
+
+export enum SeverityEnum {
+  Critical = 'critical',
+  High = 'high',
+  Medium = 'medium',
+  Low = 'low',
+  Unknown = 'unknown',
+}
