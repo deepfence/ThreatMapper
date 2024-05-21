@@ -423,7 +423,7 @@ func AddNewCloudComplianceScan(
 	if _, err = tx.Run(ctx, fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
 		MATCH (m:%s{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, scanType, "Node"),
+		MERGE (n)-[:SCHEDULED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
 			"scan_id": scanID,
 			"node_id": hostNodeId,
