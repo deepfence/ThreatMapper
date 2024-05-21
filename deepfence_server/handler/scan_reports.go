@@ -1184,21 +1184,6 @@ func (h *Handler) CountSecretScanResultsHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
-func (h *Handler) CountComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Compliance](w, r, utils.NEO4JComplianceScan)
-	if err != nil {
-		h.respondError(err, w)
-		return
-	}
-
-	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
-		Count: len(entries),
-	})
-	if err != nil {
-		log.Error().Msgf("%v", err)
-	}
-}
-
 func (h *Handler) CountMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
 	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4JMalwareScan)
 	if err != nil {
@@ -1214,6 +1199,78 @@ func (h *Handler) CountMalwareScanResultsHandler(w http.ResponseWriter, r *http.
 	}
 }
 
+func (h *Handler) CountComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Compliance](w, r, utils.NEO4JComplianceScan)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+		Count: len(entries),
+	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
+}
+
+func (h *Handler) CountComplianceScanResultsGroupHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ComplinaceScanResultsGroupReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err: err}, w)
+	}
+
+	ctx := r.Context()
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+	defer tx.Close(ctx)
+
+	query := `
+	MATCH (n:ComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:Compliance)-[:IS]-(r:ComplianceRule)
+	RETURN r.node_id as control_id, count(c) as count
+	`
+
+	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_id": req.ScanID})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	recs, err := res.Collect(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	results := map[string]int64{}
+
+	for _, rec := range recs {
+		results[rec.Values[0].(string)] = rec.Values[1].(int64)
+	}
+
+	err = httpext.JSON(w, http.StatusOK,
+		model.ComplinaceScanResultsGroupResp{Groups: results})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
+}
+
 func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
 	entries, _, err := listScanResultsHandler[model.CloudCompliance](w, r, utils.NEO4JCloudComplianceScan)
 	if err != nil {
@@ -1224,6 +1281,63 @@ func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, 
 	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
 		Count: len(entries),
 	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
+}
+
+func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ComplinaceScanResultsGroupReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err: err}, w)
+	}
+
+	ctx := r.Context()
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+	defer tx.Close(ctx)
+
+	query := `
+	MATCH (n:CloudComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:CloudCompliance)
+	RETURN c.full_control_id as control_id, count(c) as count
+	`
+
+	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_id": req.ScanID})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	recs, err := res.Collect(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	results := map[string]int64{}
+
+	for _, rec := range recs {
+		results[rec.Values[0].(string)] = rec.Values[1].(int64)
+	}
+
+	err = httpext.JSON(w, http.StatusOK,
+		model.ComplinaceScanResultsGroupResp{Groups: results})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 	}

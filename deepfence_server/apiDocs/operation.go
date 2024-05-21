@@ -609,6 +609,14 @@ func (d *OpenAPIDocs) AddScansOperations() {
 		"Group Malware Results By Class", "Group Malware Scans results by severity/class",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, nil, new(ResultGroupResp))
 
+	// compliance and cloud-compliance results count grouped by control_id
+	d.AddOperation("groupResultsCompliance", http.MethodPost, "/deepfence/scan/results/count/group/compliance",
+		"Count Compliance Results by Control ID", "Count Compliance Results grouped by Control ID",
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(ComplinaceScanResultsGroupReq), new(ComplinaceScanResultsGroupResp))
+	d.AddOperation("groupResultsCloudCompliance", http.MethodPost, "/deepfence/scan/results/count/group/cloud-compliance",
+		"Count Cloud Compliance Results by Control ID", "Count Cloud Compliance Results grouped by Control ID",
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(ComplinaceScanResultsGroupReq), new(ComplinaceScanResultsGroupResp))
+
 	d.AddOperation("getAllNodesInScanResults", http.MethodPost, "/deepfence/scan/nodes-in-result",
 		"Get all nodes in given scan result ids", "Get all nodes in given scan result ids",
 		http.StatusOK, []string{tagScanResults}, bearerToken, new(NodesInScanResultRequest), new([]ScanResultBasicNode))

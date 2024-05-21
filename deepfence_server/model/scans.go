@@ -600,3 +600,11 @@ type ScanReportFieldsResponse struct {
 	Malware       []string `json:"malware"`
 	Compliance    []string `json:"compliance"`
 }
+
+type ComplinaceScanResultsGroupReq struct {
+	ScanID string `json:"scan_id" required:"true"`
+}
+
+type ComplinaceScanResultsGroupResp struct {
+	Groups map[string]int64 `json:"groups"`
+}
