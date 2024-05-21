@@ -13503,9 +13503,11 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "category_hierarchy_short": { "type": "string" },
           "control_id": { "type": "string" },
           "description": { "type": "string" },
           "enabled": { "type": "boolean" },
+          "node_id": { "type": "string" },
           "service": { "type": "string" },
           "title": { "type": "string" }
         }
@@ -16008,7 +16010,8 @@
               "nist",
               "hipaa",
               "pci",
-              "soc_2"
+              "soc_2",
+              "aws_foundational_security"
             ],
             "type": "array",
             "items": { "type": "string" },

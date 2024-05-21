@@ -30,6 +30,12 @@ export interface ModelCloudNodeComplianceControl {
      * @type {string}
      * @memberof ModelCloudNodeComplianceControl
      */
+    category_hierarchy_short?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeComplianceControl
+     */
     control_id?: string;
     /**
      * 
@@ -43,6 +49,12 @@ export interface ModelCloudNodeComplianceControl {
      * @memberof ModelCloudNodeComplianceControl
      */
     enabled?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeComplianceControl
+     */
+    node_id?: string;
     /**
      * 
      * @type {string}
@@ -77,9 +89,11 @@ export function ModelCloudNodeComplianceControlFromJSONTyped(json: any, ignoreDi
     return {
         
         'category_hierarchy': !exists(json, 'category_hierarchy') ? undefined : json['category_hierarchy'],
+        'category_hierarchy_short': !exists(json, 'category_hierarchy_short') ? undefined : json['category_hierarchy_short'],
         'control_id': !exists(json, 'control_id') ? undefined : json['control_id'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'enabled': !exists(json, 'enabled') ? undefined : json['enabled'],
+        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'service': !exists(json, 'service') ? undefined : json['service'],
         'title': !exists(json, 'title') ? undefined : json['title'],
     };
@@ -95,9 +109,11 @@ export function ModelCloudNodeComplianceControlToJSON(value?: ModelCloudNodeComp
     return {
         
         'category_hierarchy': value.category_hierarchy,
+        'category_hierarchy_short': value.category_hierarchy_short,
         'control_id': value.control_id,
         'description': value.description,
         'enabled': value.enabled,
+        'node_id': value.node_id,
         'service': value.service,
         'title': value.title,
     };

@@ -344,31 +344,29 @@ const ControlTable = ({
               nodeType={_nodeType}
               checkType={selectedTab.toLowerCase()}
               checked={!!info.row.original.enabled}
-              controlId={
-                info.row.original?.control_id ? [info.row.original.control_id] : ['']
-              }
+              controlId={info.row.original?.node_id ? [info.row.original.node_id] : ['']}
               fetcher={fetcher}
             />
           );
         },
-        maxSize: 40,
-        size: 50,
-        minSize: 60,
+        minSize: 30,
+        size: 40,
+        maxSize: 60,
       }),
-      columnHelper.accessor('category_hierarchy', {
+      columnHelper.accessor('category_hierarchy_short', {
         id: 'category',
-        cell: (info) => <TruncatedText text={info.getValue()?.join(', ') ?? ''} />,
+        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
         header: () => <span>Category</span>,
-        maxSize: 100,
-        size: 120,
-        minSize: 130,
+        maxSize: 130,
+        size: 100,
+        minSize: 80,
       }),
       columnHelper.accessor('title', {
         header: () => 'Description',
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        maxSize: 140,
+        maxSize: 160,
         size: 150,
-        minSize: 160,
+        minSize: 140,
       }),
     ],
     [selectedTab],
