@@ -141,12 +141,16 @@ malwarescanner: bootstrap-agent-plugins
 packagescanner: bootstrap-agent-plugins
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
 
+.PHONY: package-scanner-cli
+package-scanner-cli:
+	docker build --build-arg MAKE_CMD="cli" --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_cli:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
+
 .PHONY: compliancescanner
 compliancescanner:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_compliance_scanner_ce:$(DF_IMG_TAG) -f $(COMPLIANCE_SCANNER_DIR)/Dockerfile $(COMPLIANCE_SCANNER_DIR)
 
 .PHONY: cloudscanner
-cloudscanner: debian_builder deepfenced 
+cloudscanner: debian_builder deepfenced
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
 	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build_cs_agent.sh)
 
@@ -223,6 +227,10 @@ publish-cluster-agent:
 .PHONY: publish-packagescanner
 publish-packagescanner:
 	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-packagescanner-cli
+publish-packagescanner-cli:
+	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_cli:$(DF_IMG_TAG)
 
 .PHONY: publish-secretscanner
 publish-secretscanner:
