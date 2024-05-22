@@ -9,6 +9,7 @@ import {
   ModelNodeIdentifierNodeTypeEnum,
   ModelScanCompareReq,
   ModelScanInfo,
+  ModelScanInfoStatusEnum,
   ModelScanResultsReq,
   ModelSecret,
   SearchSearchNodeReq,
@@ -16,14 +17,9 @@ import {
 } from '@/api/generated';
 import { DF404Error } from '@/components/error/404';
 import { SecretsCountsCardData } from '@/features/secrets/components/landing/SecretsCountsCard';
-import { ScanStatusEnum } from '@/types/common';
 import { getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import {
-  SECRET_SCAN_STATUS_GROUPS,
-  SecretScanGroupedStatus,
-  SeverityEnum,
-} from '@/utils/scan';
+import { SCAN_STATUS_FILTER_TYPE, SCAN_STATUS_GROUPS, SeverityEnum } from '@/utils/scan';
 
 export const secretQueries = createQueryKeys('secret', {
   scanList: (filters: {
@@ -33,7 +29,7 @@ export const secretQueries = createQueryKeys('secret', {
       sortBy: string;
       descending: boolean;
     };
-    secretScanStatus?: SecretScanGroupedStatus;
+    secretScanStatus?: SCAN_STATUS_FILTER_TYPE;
     hosts?: string[];
     containers?: string[];
     images?: string[];
@@ -100,16 +96,7 @@ export const secretQueries = createQueryKeys('secret', {
             : images;
         }
         if (secretScanStatus) {
-          if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
-            nodeFilters.secret_scan_status = [
-              ...SECRET_SCAN_STATUS_GROUPS.complete,
-              ...SECRET_SCAN_STATUS_GROUPS.error,
-              ...SECRET_SCAN_STATUS_GROUPS.inProgress,
-              ...SECRET_SCAN_STATUS_GROUPS.starting,
-            ];
-          } else {
-            nodeFilters.secret_scan_status = SECRET_SCAN_STATUS_GROUPS[secretScanStatus];
-          }
+          nodeFilters.secret_scan_status = SCAN_STATUS_GROUPS[secretScanStatus];
         }
 
         const scanRequestParams: SearchSearchScanReq = {
@@ -391,8 +378,9 @@ export const secretQueries = createQueryKeys('secret', {
         const scanStatus = statusSecretScanResponse.value?.statuses?.[scanId].status;
 
         const isScanRunning =
-          scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
-        const isScanError = scanStatus === ScanStatusEnum.error;
+          scanStatus !== ModelScanInfoStatusEnum.Complete &&
+          scanStatus !== ModelScanInfoStatusEnum.Error;
+        const isScanError = scanStatus === ModelScanInfoStatusEnum.Error;
 
         if (isScanRunning || isScanError) {
           return {
