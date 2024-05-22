@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	SelfID               = "self"
+	SelfID               = "deepfenced"
 	logRootEnv           = "${DF_INSTALL_DIR}/var/log/deepfenced/"
 	ExitCodeBashNotFound = 127
 )
@@ -123,13 +123,13 @@ func (ph *procHandler) start() error {
 				err := cmd.Start()
 				startTime := time.Now()
 				if err != nil {
-					log.Error().Msgf("Failed to start: %v", err)
+					log.Error().Msgf("Failed to start, name:%s, error:%s", ph.name, err.Error())
 					break loop
 				}
 				if ph.cgroup != "" {
 					err = cgroups.AttachProcessToCgroup(ph.cgroup, cmd.Process.Pid)
 					if err != nil {
-						log.Error().Msgf("cgroup failed: %v", err)
+						log.Error().Msgf("cgroup failed, name:%s, error:%s", ph.name, err.Error())
 					}
 				}
 				go func() {
@@ -140,8 +140,9 @@ func (ph *procHandler) start() error {
 								done <- false
 							}
 						}
-						log.Error().Msgf("Done with error: %v", err)
+						log.Error().Msgf("Done with error, name:%s, error:%s", ph.name, err.Error())
 					}
+					log.Info().Msgf("Process: %s exited", ph.name)
 					done <- true
 				}()
 
@@ -197,11 +198,28 @@ func (ph *procHandler) start() error {
 }
 
 func (ph *procHandler) stop() error {
-	_ = ph.kill()
+	if !ph.started {
+		log.Info().Msgf("Process:%s not running", ph.name)
+		return nil
+	}
+
+	log.Info().Msgf("Killing process:%s", ph.name)
+	err := ph.kill()
+	if err != nil {
+		log.Error().Msgf("Error in process kill:%s, error:%s", ph.name, err.Error())
+	}
+
+	log.Info().Msgf("Process kill signal sent: %s", ph.name)
 
 	ph.started = false
 
-	_ = ph.wait()
+	err = ph.wait()
+
+	if err != nil {
+		log.Error().Msgf("Process kill wait error:%s, error:%s", ph.name, err.Error())
+	} else {
+		log.Info().Msgf("Process kill wait complete: %s", ph.name)
+	}
 
 	return nil
 }
@@ -212,8 +230,10 @@ func selfUpgradeFromFile(path string) error {
 	selfAccess.Lock()
 	defer selfAccess.Unlock()
 
+	log.Info().Msgf("Running SelfUpgradeFromFile, path:%s", path)
 	f, err := os.Open(path)
 	if err != nil {
+		log.Error().Msgf("SelfUpgradeFromFile, error:%s", err.Error())
 		return err
 	}
 
@@ -226,8 +246,10 @@ func selfUpgradeFromFile(path string) error {
 
 		err = selfupdate.Apply(f, selfupdate.Options{})
 		if err != nil {
+			log.Error().Msgf("SelfUpgradeFromFile, selfupdate.Apply error:%s", err.Error())
 			rollerr := selfupdate.RollbackError(err)
 			if rollerr != nil {
+				log.Error().Msgf("SelfUpgradeFromFile, error:%s", rollerr.Error())
 				return rollerr
 			}
 		} else {
@@ -288,12 +310,14 @@ func downloadAndWrite(path, url string) error {
 func WriteTo(dst, org string) error {
 	out, err := os.Create(dst)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		return err
 	}
 	defer out.Close()
 
 	in, err := os.Open(org)
 	if err != nil {
+		log.Error().Msgf(err.Error())
 		return err
 	}
 	defer in.Close()
@@ -303,38 +327,40 @@ func WriteTo(dst, org string) error {
 	return err
 }
 
-func UpgradeProcessFromFile(name, path string) error {
+func UpgradeProcessFromFile(name, path string, restartSelf bool) error {
 	if name == SelfID {
 		return selfUpgradeFromFile(path)
 	}
 
 	access.RLock()
 	process, has := processes[name]
+	access.RUnlock()
 	if !has {
-		access.RUnlock()
 		return ErrPath
 	}
-	access.RUnlock()
 	process.access.Lock()
 	defer process.access.Unlock()
 
 	restart := false
 	if process.started {
-		log.Debug().Msg("Stop process")
+		log.Info().Msgf("Stop process started: %s", name)
 		err := process.stop()
 		if err != nil {
 			return err
 		}
+		log.Info().Msgf("Stop process done: %s", name)
 		restart = true
 	}
 
+	//process.path= /home/deepfence/bin/cloud_scanner
+	//path=/tmp/bins1655807479/cloud_scanner
 	err := WriteTo(process.path, path)
 	if err != nil {
 		return err
 	}
 
-	if restart {
-		log.Debug().Msg("Restart process")
+	if restart && !restartSelf {
+		log.Info().Msgf("Restarting process: %s", name)
 		err = process.start()
 	}
 	return err
@@ -380,11 +406,10 @@ func UpgradeProcessFromURL(name, url string) error {
 func StartProcess(name string) error {
 	access.RLock()
 	process, has := processes[name]
+	access.RUnlock()
 	if !has {
-		access.RUnlock()
 		return ErrPath
 	}
-	access.RUnlock()
 	process.access.Lock()
 	defer process.access.Unlock()
 	if process.started {
@@ -396,11 +421,11 @@ func StartProcess(name string) error {
 func StopProcess(name string) error {
 	access.RLock()
 	process, has := processes[name]
+	access.RUnlock()
 	if !has {
-		access.RUnlock()
 		return ErrPath
 	}
-	access.RUnlock()
+
 	process.access.Lock()
 	defer process.access.Unlock()
 	if !process.started {
@@ -410,17 +435,21 @@ func StopProcess(name string) error {
 }
 
 func StopAllProcesses() []error {
-
 	access.RLock()
 	defer access.RUnlock()
 
 	errs := []error{}
 	for _, process := range processes {
+		log.Info().Msgf("Stopping process: %s", process.name)
 		err := process.stop()
 		if err != nil {
+			log.Info().Msgf("Error in Stopping process:%s, error:%s", process.name, err.Error())
 			errs = append(errs, err)
+		} else {
+			log.Info().Msgf("Process stopped:%s", process.name)
 		}
 	}
+	log.Info().Msgf("StopAllProcesses completed")
 	return errs
 }
 

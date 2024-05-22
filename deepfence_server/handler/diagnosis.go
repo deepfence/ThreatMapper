@@ -99,8 +99,15 @@ func (h *Handler) GenerateCloudScannerDiagnosticLogs(w http.ResponseWriter, r *h
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	err = cloudscannerdiagnosis.GenerateCloudScannerDiagnosticLogs(r.Context(), req.NodeIds, strconv.Itoa(req.Tail))
+	hostIDs, err := cloudscannerdiagnosis.GetHostIDs(r.Context(), req.NodeIds)
 	if err != nil {
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	err = agentdiagnosis.GenerateAgentDiagnosticLogs(r.Context(), hostIDs, strconv.Itoa(req.Tail))
+	if err != nil {
+		log.Error().Msgf("Error in GenerateAgentDiagnosticLogs: %s", err.Error())
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}

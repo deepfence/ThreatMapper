@@ -88,6 +88,7 @@ type ScanInfo struct {
 type ComplianceScanInfo struct {
 	ScanInfo
 	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
+	CloudProvider  string   `json:"cloud_provider" required:"true"`
 }
 
 type ScanTriggerResp struct {

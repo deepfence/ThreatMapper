@@ -23,6 +23,10 @@ const (
 	StopComplianceScan
 
 	UpdateAgentThreatIntel
+	RefreshResources
+	StartCloudComplianceScan
+	StopCloudComplianceScan
+	CloudScannerJobCount
 )
 
 type ScanResource int
@@ -35,6 +39,12 @@ const (
 	KubernetesCluster
 	RegistryAccount
 	Pod
+)
+
+const (
+	CLOUD_AGENT = "cloud_agent"
+	K8S         = "k8s"
+	HOST        = "host"
 )
 
 func ResourceTypeToNeo4j(t ScanResource) string {
@@ -123,10 +133,42 @@ type StartMalwareScanRequest struct {
 	BinArgs  map[string]string `json:"bin_args" required:"true"`
 }
 
+type StartCloudComplianceScanRequest struct {
+	NodeID      string                     `json:"node_id" required:"true"`
+	NodeType    ScanResource               `json:"node_type" required:"true"`
+	BinArgs     map[string]string          `json:"bin_args" required:"true"`
+	ScanDetails CloudComplianceScanDetails `json:"scan_details" required:"true"`
+}
+
+type CloudComplianceScanDetails struct {
+	ScanId     string                         `json:"scan_id" required:"true"`
+	AccountId  string                         `json:"account_id" required:"true"`
+	ScanTypes  []string                       `json:"scan_types" required:"true"`
+	Benchmarks []CloudComplianceScanBenchmark `json:"benchmarks" required:"true"`
+}
+
+type CloudScanNodeDetails struct {
+	AgentNodeId   string `json:"agent_node_id"`
+	NodeName      string `json:"node_name"`
+	CloudProvider string `json:"cloud_provider"`
+}
+
+type CloudComplianceScanBenchmark struct {
+	Id             string   `json:"id" required:"true"`
+	ComplianceType string   `json:"compliance_type" required:"true"`
+	Controls       []string `json:"controls" required:"true"`
+}
+
+type RefreshResourcesRequest struct {
+	NodeId   string       `json:"node_id" required:"true"`
+	NodeType ScanResource `json:"node_type" required:"true"`
+}
+
 type StopSecretScanRequest StartSecretScanRequest
 type StopMalwareScanRequest StartSecretScanRequest
 type StopVulnerabilityScanRequest StartSecretScanRequest
 type StopComplianceScanRequest StartSecretScanRequest
+type StopCloudComplianceScanRequest StartSecretScanRequest
 
 type SendAgentDiagnosticLogsRequest struct {
 	NodeID    string       `json:"node_id" required:"true"`
@@ -179,11 +221,15 @@ func GetBinArgs(t interface{}) map[string]string {
 		return val.BinArgs
 	case StartMalwareScanRequest:
 		return val.BinArgs
+	case StartCloudComplianceScanRequest:
+		return val.BinArgs
 	case StopSecretScanRequest:
 		return val.BinArgs
 	case StopMalwareScanRequest:
 		return val.BinArgs
 	case StopVulnerabilityScanRequest:
+		return val.BinArgs
+	case StopCloudComplianceScanRequest:
 		return val.BinArgs
 	}
 	return nil

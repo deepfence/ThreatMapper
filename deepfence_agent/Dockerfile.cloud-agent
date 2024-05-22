@@ -1,0 +1,101 @@
+ARG STEAMPIPE_IMG_TAG=latest
+ARG IMAGE_REPOSITORY=deepfenceio
+FROM $IMAGE_REPOSITORY/steampipe:$STEAMPIPE_IMG_TAG AS steampipe
+
+FROM golang:1.21-bookworm AS build
+ARG VERSION
+
+WORKDIR /home/deepfence/plugins/cloud-scanner
+COPY plugins/cloud-scanner .
+RUN go build -buildvcs=false -ldflags="-s -w -X main.Version=${VERSION}" -o cloud_scanner .
+
+FROM debian:bookworm-slim
+ARG VERSION
+MAINTAINER Deepfence Inc
+LABEL deepfence.role=system
+
+ENV CHECKPOINT_DISABLE=true \
+    DF_TLS_ON="1" \
+    MGMT_CONSOLE_PORT=443 \
+    MGMT_CONSOLE_URL_SCHEMA=https \
+    DEEPFENCE_KEY="" \
+    DF_ENABLE_CLOUD_NODE="true" \
+    HOME_DIR="/home/deepfence" \
+    COMPLIANCE_MOD_PATH="/opt/steampipe"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends bash git ca-certificates nano logrotate sudo supervisor \
+    && useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfence \
+    && mkdir -p /opt/steampipe \
+    && chown deepfence /opt/steampipe
+
+RUN mkdir -p /var/log/fenced/cloud-scanner /var/log/fenced/cloud-scanner-log/
+
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
+RUN chmod 600 /etc/logrotate.d/fenced_logrotate.conf
+
+COPY start_cloud_agent.sh /usr/local/bin/start_agent
+RUN chmod +x /usr/local/bin/start_agent
+
+WORKDIR /opt/steampipe
+
+USER deepfence
+
+ENV DF_INSTALL_DIR=/home/deepfence
+
+COPY supervisord-cloud.conf /home/deepfence/supervisord.conf
+COPY --from=steampipe /usr/local/bin/steampipe /usr/local/bin/steampipe
+
+RUN steampipe service start \
+    && steampipe plugin install steampipe \
+    # plugin version should be in sync with Deepfence fork https://github.com/deepfence/steampipe-plugin-aws
+    && steampipe plugin install aws@0.118.1 gcp@0.43.0 azure@0.49.0 azuread@0.12.0 \
+    && git clone https://github.com/turbot/steampipe-mod-aws-compliance.git --branch v0.79 --depth 1 \
+    && git clone https://github.com/turbot/steampipe-mod-gcp-compliance.git --branch v0.21 --depth 1 \
+    && git clone https://github.com/turbot/steampipe-mod-azure-compliance.git --branch v0.35 --depth 1 \
+    && steampipe service stop
+
+#Copy shipper
+COPY plugins/etc/run_shipper.sh /home/deepfence/
+COPY plugins/deepfence_shipper/deepfence_shipper /home/deepfence/bin/shipper
+COPY plugins/deepfence_shipper/routes_cloudscanner.yaml /home/deepfence/routes.yaml
+
+#Copy deepfenced
+COPY deepfenced /bin/deepfenced
+
+ENV PUBLISH_CLOUD_RESOURCES_INTERVAL_MINUTES=5 \
+    FETCH_CLOUD_RESOURCES_INTERVAL_HOURS=12
+
+EXPOSE 8080
+
+COPY --from=steampipe /usr/local/bin/steampipe-plugin-aws.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/aws@latest/steampipe-plugin-aws.plugin
+COPY --from=steampipe /usr/local/bin/steampipe-plugin-gcp.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/gcp@latest/steampipe-plugin-gcp.plugin
+COPY --from=steampipe /usr/local/bin/steampipe-plugin-azure.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/azure@latest/steampipe-plugin-azure.plugin
+COPY --from=steampipe /usr/local/bin/steampipe-plugin-azuread.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/azuread@latest/steampipe-plugin-azuread.plugin
+
+COPY --from=build /home/deepfence/plugins/cloud-scanner/cloud_scanner /home/deepfence/bin/cloud_scanner
+
+
+
+USER root
+
+RUN mkdir -p $DF_INSTALL_DIR/var/log/supervisor
+RUN mkdir -p $DF_INSTALL_DIR/var/log/deepfenced
+RUN mkdir -p $DF_INSTALL_DIR/var/log/fenced/cloud-scanner 
+RUN mkdir -p $DF_INSTALL_DIR/var/log/fenced/cloud-scanner-log/
+
+
+RUN chmod 700 /home/deepfence/run_shipper.sh
+RUN chown -R deepfence: /home/deepfence
+RUN chown -R deepfence: /home/deepfence/bin/
+RUN chown deepfence /usr/bin
+RUN chown deepfence /bin
+RUN chown -R deepfence:root /opt/ 
+RUN chown -R deepfence /home/deepfence /var/log/fenced /var/run/
+
+RUN ln -s /usr/local/bin/start_agent /usr/local/bin/cloud_compliance_scan \
+    && apt-get -y remove git ca-certificates
+
+ENTRYPOINT ["/usr/local/bin/cloud_compliance_scan"]

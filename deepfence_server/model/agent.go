@@ -4,12 +4,14 @@ import "mime/multipart"
 
 type InitAgentReq struct {
 	AgentID
-	Version string `json:"version" required:"true"`
+	Version  string `json:"version" required:"true"`
+	NodeType string `json:"node_type" required:"true"`
 }
 
 type AgentID struct {
 	NodeID            string `json:"node_id" required:"true"`
 	AvailableWorkload int    `json:"available_workload" required:"true"`
+	NodeType          string `json:"node_type"`
 }
 
 type AgentUpgrade struct {

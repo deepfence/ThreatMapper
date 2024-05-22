@@ -26,7 +26,8 @@ func init() {
 	}
 }
 
-func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent bool) error {
+func (ct *OpenapiClient) StartControlsWatching(nodeId string,
+	isClusterAgent bool, nodeType string) error {
 
 	for i := 0; i < dummyNum; i++ {
 
@@ -44,6 +45,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				*openapi.NewModelInitAgentReq(
 					getMaxAllocatable(),
 					dummyNodeId,
+					nodeType,
 					host.AgentVersionNo,
 				),
 			)

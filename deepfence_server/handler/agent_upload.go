@@ -102,7 +102,7 @@ func PrepareAgentBinariesReleases(ctx context.Context, versionedTarball map[stri
 		res, err := fileServerClient.UploadFile(ctx,
 			version,
 			b.Bytes(),
-			false,
+			true,
 			m.PutObjectOptions{ContentType: "application/gzip"})
 		key := ""
 		if err != nil {
@@ -235,7 +235,9 @@ func ScheduleAutoUpgradeForPatchChanges(ctx context.Context, latest map[string]s
 		MATCH (v:AgentVersion) <-[:VERSIONED]- (n:Node)
 		WHERE v.node_id STARTS WITH row.major_minor
 		AND v.node_id <> row.latest
-		MERGE (vnew) -[:SCHEDULED{status: $status, retries: 0, trigger_action: row.action, updated_at: TIMESTAMP()}]-> (n)`,
+		MERGE (vnew) -[s:SCHEDULED]-> (n)
+		ON CREATE SET s.status=$status, s.retries=0, s.trigger_action=row.action, s.updated_at=TIMESTAMP() 
+		ON MATCH SET s.trigger_action=CASE WHEN s.status=$status THEN row.action END`,
 		map[string]interface{}{
 			"status": utils.ScanStatusStarting,
 			"batch":  tagsToIngest}); err != nil {

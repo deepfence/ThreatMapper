@@ -38,6 +38,7 @@ const (
 	ScanSBOMTask                      = "tasks_scan_sbom"
 	GenerateSBOMTask                  = "tasks_generate_sbom"
 	CheckAgentUpgradeTask             = "tasks_check_agent_upgrade"
+	CheckCloudScannerAgentUpgradeTask = "tasks_check_cloud_scanner_agent_upgrade"
 	SyncRegistryTask                  = "task_sync_registry"
 	SyncRegistryPostgresNeo4jTask     = "task_sync_registry_postgres_neo4j"
 	TriggerConsoleActionsTask         = "trigger_console_actions"

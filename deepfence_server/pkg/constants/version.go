@@ -14,7 +14,7 @@ var (
 )
 
 func init() {
-	if !semver.IsValid(fmt.Sprintf("v%s", Version)) {
+	if !semver.IsValid(fmt.Sprintf("%s", Version)) {
 		log.Warn().Msgf("Provided console version %s is not valid", Version)
 	}
 }

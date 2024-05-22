@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	ctls "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -50,7 +51,11 @@ func (c ConsoleController) TriggerConsoleControls(ctx context.Context, t *asynq.
 		return nil
 	}
 
-	actions, errs := controls.GetAgentActions(ctx, ConsoleAgentId, int(allocatable), "", c.TTLCache)
+	agentID := model.AgentID{}
+	agentID.NodeID = ConsoleAgentId
+	agentID.AvailableWorkload = int(allocatable)
+
+	actions, errs := controls.GetAgentActions(ctx, agentID, "", c.TTLCache)
 	for _, e := range errs {
 		if e != nil {
 			log.Error().Msgf(e.Error())

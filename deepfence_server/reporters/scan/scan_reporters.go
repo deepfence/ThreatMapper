@@ -121,7 +121,7 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 	query := fmt.Sprintf(`
 	MATCH (m:%s) -[:SCANNED]-> (n:CloudNode)
 	WHERE m.node_id IN $scan_ids
-	RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.created_at, m.updated_at, n.node_name`, scanType)
+	RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.created_at, m.updated_at, n.node_name, n.cloud_provider`, scanType)
 
 	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_ids": scanIDs})
 	if err != nil {
@@ -157,6 +157,7 @@ func extractStatusesWithBenchmarks(recs []*db.Record) []model.ComplianceScanInfo
 				NodeName:      rec.Values[7].(string),
 			},
 			BenchmarkTypes: benchmarkTypes,
+			CloudProvider:  rec.Values[7].(string),
 		}
 		statuses = append(statuses, tmp)
 	}
@@ -573,7 +574,8 @@ func processScansListQuery(ctx context.Context, query string, nodeIds []string, 
 	return scansInfo, nil
 }
 
-func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeID string) (model.CloudComplianceScanListResp, error) {
+func GetCloudCompliancePendingScansList(ctx context.Context,
+	scanType utils.Neo4jScanType, nodeID string) (model.CloudComplianceScanListResp, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-cloudcompliance-pending-scans-list")
 	defer span.End()
@@ -595,7 +597,7 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 	res, err := tx.Run(ctx, `
 		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode{node_id: $node_id})
 		WHERE m.status = $starting
-		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.created_at, m.updated_at, n.node_name ORDER BY m.updated_at`,
+		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.created_at, m.updated_at, n.node_name, n.cloud_provider ORDER BY m.updated_at`,
 		map[string]interface{}{"node_id": nodeID, "starting": utils.ScanStatusStarting})
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
@@ -616,7 +618,7 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 		SET m.status = $cancelling, m.updated_at = TIMESTAMP()
 		WITH m,n
         RETURN m.node_id, m.status, m.status_message,
-		n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
+		n.node_id, m.updated_at, n.node_name, n.cloud_provider ORDER BY m.updated_at`,
 			map[string]interface{}{"node_id": nodeID,
 				"cancel_pending": utils.ScanStatusCancelPending,
 				"cancelling":     utils.ScanStatusCancelling})
@@ -1247,7 +1249,7 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 
 	neoRes, err := tx.Run(ctx, `
 		MATCH (m:Bulk`+string(scanType)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode)
-		RETURN d.node_id, d.benchmark_types, d.status, d.status_message, n.node_id, d.created_at, d.updated_at, n.node_name`,
+		RETURN d.node_id, d.benchmark_types, d.status, d.status_message, n.node_id, d.created_at, d.updated_at, n.node_name, n.cloud_provider`,
 		map[string]interface{}{"scan_id": scanID})
 	if err != nil {
 		log.Error().Msgf("Compliance bulk scans status query failed: %+v", err)
