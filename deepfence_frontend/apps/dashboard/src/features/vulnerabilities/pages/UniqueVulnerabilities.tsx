@@ -36,6 +36,7 @@ import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum, VulnerabilitySeverityType } from '@/types/common';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
+import { SeverityEnumList } from '@/utils/scan';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -119,18 +120,16 @@ const Filters = () => {
             });
           }}
         >
-          {['critical', 'high', 'medium', 'low', 'unknown']
-            .filter((item) => {
-              if (!severity.length) return true;
-              return item.includes(severity.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
-                </ComboboxOption>
-              );
-            })}
+          {SeverityEnumList.filter((item) => {
+            if (!severity.length) return true;
+            return item.includes(severity.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item} value={item}>
+                {capitalize(item)}
+              </ComboboxOption>
+            );
+          })}
         </Combobox>
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['liveConnection']}

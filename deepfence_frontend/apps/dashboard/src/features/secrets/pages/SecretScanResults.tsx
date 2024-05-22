@@ -102,6 +102,7 @@ import {
   isScanStopped,
   isScanStopping,
   SeverityEnum,
+  SeverityEnumList,
 } from '@/utils/scan';
 import {
   getOrderFromSearchParams,
@@ -1287,18 +1288,16 @@ const Filters = () => {
             });
           }}
         >
-          {['critical', 'high', 'medium', 'low', 'unknown']
-            .filter((item) => {
-              if (!severityQuery.length) return true;
-              return item.includes(severityQuery.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
-                </ComboboxOption>
-              );
-            })}
+          {SeverityEnumList.filter((item) => {
+            if (!severityQuery.length) return true;
+            return item.includes(severityQuery.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item} value={item}>
+                {capitalize(item)}
+              </ComboboxOption>
+            );
+          })}
         </Combobox>
       </div>
       {appliedFilterCount > 0 ? (

@@ -1,5 +1,10 @@
 import { generatePath } from 'react-router-dom';
 
+import {
+  ModelMalwareFileSeverityEnum,
+  ModelSecretLevelEnum,
+  ModelVulnerabilityCveSeverityEnum,
+} from '@/api/generated';
 import { ScanStatusEnum, ScanTypeEnum } from '@/types/common';
 
 export const isScanComplete = (status: string): boolean => {
@@ -234,10 +239,16 @@ export const SCAN_STATUS_GROUPS = [
   },
 ];
 
-export enum SeverityEnum {
-  Critical = 'critical',
-  High = 'high',
-  Medium = 'medium',
-  Low = 'low',
-  Unknown = 'unknown',
-}
+export const SeverityEnum = {
+  ...ModelSecretLevelEnum,
+  ...ModelVulnerabilityCveSeverityEnum,
+  ...ModelMalwareFileSeverityEnum,
+} as const;
+
+export const SeverityEnumList = [
+  SeverityEnum.Critical,
+  SeverityEnum.High,
+  SeverityEnum.Medium,
+  SeverityEnum.Low,
+  SeverityEnum.Unknown,
+] as const;

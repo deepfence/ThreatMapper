@@ -1,25 +1,15 @@
-import { ModelScanResultsActionRequestScanTypeEnum } from '@/api/generated';
+import {
+  ModelMalwareFileSeverityEnum,
+  ModelScanResultsActionRequestScanTypeEnum,
+  ModelSecretLevelEnum,
+  ModelVulnerabilityCveSeverityEnum,
+} from '@/api/generated';
 import { SeverityEnum } from '@/utils/scan';
 
-export type VulnerabilitySeverityType =
-  | SeverityEnum.Critical
-  | SeverityEnum.High
-  | SeverityEnum.Low
-  | SeverityEnum.Medium
-  | SeverityEnum.Unknown;
+export type VulnerabilitySeverityType = ModelVulnerabilityCveSeverityEnum;
 
-export type SecretSeverityType =
-  | SeverityEnum.Critical
-  | SeverityEnum.High
-  | SeverityEnum.Low
-  | SeverityEnum.Medium
-  | SeverityEnum.Unknown;
-export type MalwareSeverityType =
-  | SeverityEnum.Critical
-  | SeverityEnum.High
-  | SeverityEnum.Low
-  | SeverityEnum.Medium
-  | SeverityEnum.Unknown;
+export type SecretSeverityType = ModelSecretLevelEnum;
+export type MalwareSeverityType = ModelMalwareFileSeverityEnum;
 export type PostureSeverityType =
   | 'alarm'
   | 'info'
