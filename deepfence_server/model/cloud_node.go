@@ -155,7 +155,7 @@ type PendingCloudComplianceScan struct {
 type CloudNodeControlReq struct {
 	NodeID         string `json:"node_id"`
 	CloudProvider  string `json:"cloud_provider" required:"true" enum:"aws,gcp,azure,linux,kubernetes"`
-	ComplianceType string `json:"compliance_type" enum:"hipaa,gdpr,pci,nist,cis,soc_2,nsa-cisa" required:"true"`
+	ComplianceType string `json:"compliance_type" enum:"hipaa,gdpr,pci,nist,cis,soc_2,nsa-cisa,aws_foundational_security" required:"true"`
 }
 
 type CloudNodeEnableDisableReq struct {
@@ -176,6 +176,7 @@ type CloudNodeComplianceControl struct {
 	CategoryHierarchyShort string   `json:"category_hierarchy_short"`
 	ControlID              string   `json:"control_id"`
 	Enabled                bool     `json:"enabled"`
+	ComplianceType         string   `json:"compliance_type"`
 }
 
 type PostureProvider struct {

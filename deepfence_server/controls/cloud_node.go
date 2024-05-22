@@ -10,7 +10,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, complianceType string) ([]model.CloudNodeComplianceControl, error) {
+func GetCloudNodeComplianceControls(ctx context.Context, nodeID string, cloudProvider string, complianceType []string) ([]model.CloudNodeComplianceControl, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "get-cloudnode-compliance-controls")
 	defer span.End()
@@ -31,14 +31,20 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, 
 	}
 	defer tx.Close(ctx)
 
-	r, err := tx.Run(ctx, `MATCH (n:CloudComplianceControl {
-			cloud_provider: $cloud_provider,
-			compliance_type: $compliance_type
-		})
-		WHERE n.disabled = false
-		RETURN n.node_id, n.title, n.description, n.service, n.category_hierarchy, n.category_hierarchy_short, n.control_id, n.active`,
-		map[string]interface{}{"cloud_provider": cloudProvider, "compliance_type": complianceType})
+	query := `
+	MATCH (n:CloudComplianceControl{cloud_provider: $cloud_provider})
+	WHERE n.disabled = false
+	AND n.compliance_type in $compliance_type
+	RETURN n.node_id, n.title, n.description, n.service, n.category_hierarchy, n.category_hierarchy_short, n.control_id, n.active, n.compliance_type`
 
+	r, err := tx.Run(
+		ctx,
+		query,
+		map[string]interface{}{
+			"cloud_provider":  cloudProvider,
+			"compliance_type": complianceType,
+		},
+	)
 	if err != nil {
 		return controls, err
 	}
@@ -65,6 +71,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID, cloudProvider, 
 			CategoryHierarchyShort: rec.Values[5].(string),
 			ControlID:              rec.Values[6].(string),
 			Enabled:                rec.Values[7].(bool),
+			ComplianceType:         rec.Values[8].(string),
 		}
 		controls = append(controls, control)
 	}

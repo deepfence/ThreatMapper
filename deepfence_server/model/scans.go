@@ -565,7 +565,7 @@ type CloudCompliance struct {
 	Group               string      `json:"group" required:"true"`
 	Service             string      `json:"service" required:"true"`
 	Title               string      `json:"title" required:"true"`
-	ComplianceCheckType string      `json:"compliance_check_type" required:"true" enum:"hipaa,gdpr,pci,nist,cis,soc_2,nsa-cisa"`
+	ComplianceCheckType string      `json:"compliance_check_type" required:"true" enum:"hipaa,gdpr,pci,nist,cis,soc_2,nsa-cisa,aws_foundational_security"`
 	CloudProvider       string      `json:"cloud_provider" required:"true"`
 	NodeName            string      `json:"node_name" required:"true"`
 	NodeID              string      `json:"node_id" required:"true"`
