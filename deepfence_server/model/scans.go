@@ -606,5 +606,5 @@ type ComplinaceScanResultsGroupReq struct {
 }
 
 type ComplinaceScanResultsGroupResp struct {
-	Groups map[string]int64 `json:"groups"`
+	Groups map[string]map[string]int64 `json:"groups"`
 }

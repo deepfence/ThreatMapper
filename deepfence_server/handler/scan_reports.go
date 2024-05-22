@@ -1243,7 +1243,7 @@ func (h *Handler) CountComplianceScanResultsGroupHandler(w http.ResponseWriter, 
 
 	query := `
 	MATCH (n:ComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:Compliance)-[:IS]-(r:ComplianceRule)
-	RETURN r.node_id as control_id, count(c) as count
+	RETURN r.node_id as control_id, collect(c.status) as status
 	`
 
 	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_id": req.ScanID})
@@ -1258,10 +1258,10 @@ func (h *Handler) CountComplianceScanResultsGroupHandler(w http.ResponseWriter, 
 		h.respondError(err, w)
 	}
 
-	results := map[string]int64{}
+	results := map[string]map[string]int64{}
 
 	for _, rec := range recs {
-		results[rec.Values[0].(string)] = rec.Values[1].(int64)
+		results[rec.Values[0].(string)] = groupArrayToMap(rec.Values[1].([]interface{}))
 	}
 
 	err = httpext.JSON(w, http.StatusOK,
@@ -1315,7 +1315,7 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 
 	query := `
 	MATCH (n:CloudComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:CloudCompliance)
-	RETURN c.full_control_id as control_id, count(c) as count
+	RETURN c.full_control_id as control_id, collect(c.status) as status
 	`
 
 	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_id": req.ScanID})
@@ -1330,10 +1330,10 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 		h.respondError(err, w)
 	}
 
-	results := map[string]int64{}
+	results := map[string]map[string]int64{}
 
 	for _, rec := range recs {
-		results[rec.Values[0].(string)] = rec.Values[1].(int64)
+		results[rec.Values[0].(string)] = groupArrayToMap(rec.Values[1].([]interface{}))
 	}
 
 	err = httpext.JSON(w, http.StatusOK,
@@ -1341,6 +1341,24 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 	if err != nil {
 		log.Error().Msgf("%v", err)
 	}
+}
+
+func groupArrayToMap(array []interface{}) map[string]int64 {
+
+	result := map[string]int64{}
+
+	for _, n := range array {
+		s := n.(string)
+		val, found := result[s]
+		if found {
+			result[s] = val + 1
+		} else {
+			result[s] = 1
+		}
+	}
+
+	return result
+
 }
 
 func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
