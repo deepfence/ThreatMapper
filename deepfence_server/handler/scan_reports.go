@@ -31,6 +31,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/samber/lo"
+	"github.com/samber/mo"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -1241,10 +1242,11 @@ func (h *Handler) CountComplianceScanResultsGroupHandler(w http.ResponseWriter, 
 	}
 	defer tx.Close(ctx)
 
-	query := `
-	MATCH (n:ComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:Compliance)-[:IS]-(r:ComplianceRule)
-	RETURN r.node_id as control_id, collect(c.status) as status
-	`
+	query := `MATCH (n:ComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:Compliance)-[:IS]-(r:ComplianceRule) ` +
+		reporters.ParseFieldFilters2CypherWhereConditions("c", mo.Some(req.FieldsFilter), true) +
+		` RETURN r.node_id as control_id, collect(c.status) as status`
+
+	log.Debug().Msgf("CountComplianceScanResultsGroupHandler query: %s", query)
 
 	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_id": req.ScanID})
 	if err != nil {
@@ -1313,10 +1315,11 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 	}
 	defer tx.Close(ctx)
 
-	query := `
-	MATCH (n:CloudComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:CloudCompliance)
-	RETURN c.full_control_id as control_id, collect(c.status) as status
-	`
+	query := `MATCH (n:CloudComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:CloudCompliance) ` +
+		reporters.ParseFieldFilters2CypherWhereConditions("c", mo.Some(req.FieldsFilter), true) +
+		` RETURN c.full_control_id as control_id, collect(c.status) as status`
+
+	log.Debug().Msgf("CountCloudComplianceScanResultsGroupHandler query: %s", query)
 
 	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_id": req.ScanID})
 	if err != nil {

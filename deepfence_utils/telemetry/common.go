@@ -28,8 +28,12 @@ func (sw SpanWrapper) End() {
 	}
 }
 
-func (sw SpanWrapper) EndWithErr(err error) {
+func (sw SpanWrapper) RecordErr(err error) {
 	sw.impl.RecordError(err)
+}
+
+func (sw SpanWrapper) EndWithErr(err error) {
+	sw.RecordErr(err)
 	sw.impl.SetStatus(codes.Error, err.Error())
 	sw.impl.End()
 }

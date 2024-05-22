@@ -119,8 +119,9 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 			controlsJson, err := os.ReadFile(controlFilePath)
 			if err != nil {
 				log.Error().Msgf("error reading controls file %s: %s", controlFilePath, err.Error())
-				span.EndWithErr(err)
-				return nil
+				span.RecordErr(err)
+				// skip loading control
+				continue
 			}
 			var controlList []Control
 			if err := json.Unmarshal(controlsJson, &controlList); err != nil {

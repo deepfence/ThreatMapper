@@ -602,7 +602,8 @@ type ScanReportFieldsResponse struct {
 }
 
 type ComplinaceScanResultsGroupReq struct {
-	ScanID string `json:"scan_id" required:"true"`
+	ScanID       string                  `json:"scan_id" required:"true"`
+	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
 }
 
 type ComplinaceScanResultsGroupResp struct {
