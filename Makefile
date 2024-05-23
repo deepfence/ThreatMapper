@@ -147,8 +147,7 @@ compliancescanner:
 
 .PHONY: cloudscanner
 cloudscanner: debian_builder deepfenced 
-	(cd $(DEEPFENCE_AGENT_DIR) &&\
-	IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build_cs_agent.sh)
+	(cd $(DEEPFENCE_AGENT_DIR) && IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build_cs_agent.sh)
 
 .PHONY: openapi
 openapi: server
@@ -239,6 +238,10 @@ publish-graphdb:
 .PHONY: publish-jaeger
 publish-jaeger:
 	docker push $(IMAGE_REPOSITORY)/deepfence_telemetry_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-cloudscanner
+publish-cloudscanner:
+	docker push $(IMAGE_REPOSITORY)/cloud-scanner:$(DF_IMG_TAG)
 
 .PHONY: clean
 clean:
