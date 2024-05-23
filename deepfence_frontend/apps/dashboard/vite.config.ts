@@ -81,6 +81,7 @@ export default defineConfig(({ mode }) => {
       commonjsOptions: {
         include: [/tailwind-preset/, /node_modules/],
       },
+      assetsInlineLimit: 0,
     },
     server: {
       host: true,
