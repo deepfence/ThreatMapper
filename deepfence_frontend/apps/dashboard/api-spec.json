@@ -14505,7 +14505,10 @@
           "date": { "type": "string" },
           "description": { "type": "string" },
           "file_sev_score": { "type": "integer" },
-          "file_severity": { "type": "string" },
+          "file_severity": {
+            "enum": ["critical", "high", "medium", "low", "unknown"],
+            "type": "string"
+          },
           "filetype": { "type": "string" },
           "image_layer_id": { "type": "string" },
           "info": { "type": "string" },
@@ -15241,7 +15244,10 @@
         "type": "object",
         "properties": {
           "full_filename": { "type": "string" },
-          "level": { "type": "string" },
+          "level": {
+            "enum": ["critical", "high", "medium", "low", "unknown"],
+            "type": "string"
+          },
           "masked": { "type": "boolean" },
           "matched_content": { "type": "string" },
           "name": { "type": "string" },
@@ -15545,7 +15551,10 @@
           "cve_id": { "type": "string" },
           "cve_link": { "type": "string" },
           "cve_overall_score": { "type": "number" },
-          "cve_severity": { "type": "string" },
+          "cve_severity": {
+            "enum": ["critical", "high", "medium", "low", "unknown"],
+            "type": "string"
+          },
           "cve_type": { "type": "string" },
           "exploit_poc": { "type": "string" },
           "has_live_connection": { "type": "boolean" },

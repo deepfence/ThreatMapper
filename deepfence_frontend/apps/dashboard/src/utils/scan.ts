@@ -1,16 +1,22 @@
 import { generatePath } from 'react-router-dom';
 
-import { ScanStatusEnum, ScanTypeEnum } from '@/types/common';
+import {
+  ModelMalwareFileSeverityEnum,
+  ModelScanInfoStatusEnum,
+  ModelSecretLevelEnum,
+  ModelVulnerabilityCveSeverityEnum,
+} from '@/api/generated';
+import { ScanTypeEnum } from '@/types/common';
 
 export const isScanComplete = (status: string): boolean => {
-  if (status.length && ScanStatusEnum.complete === status) {
+  if (status.length && ModelScanInfoStatusEnum.Complete === status) {
     return true;
   }
   return false;
 };
 
 export const isScanFailed = (status: string): boolean => {
-  if (status.length && ScanStatusEnum.error === status) {
+  if (status.length && ModelScanInfoStatusEnum.Error === status) {
     return true;
   }
   return false;
@@ -38,21 +44,21 @@ export const isScanInProgress = (status: string): boolean => {
 };
 
 export const isScanStopped = (status: string): boolean => {
-  if (status.length && ScanStatusEnum.stopped === status) {
+  if (status.length && ModelScanInfoStatusEnum.Cancelled === status) {
     return true;
   }
   return false;
 };
 
 export const isScanStopping = (status: string): boolean => {
-  if (status.length && VULNERABILITY_SCAN_STATUS_GROUPS.cancelling.includes(status)) {
+  if (status.length && SCAN_STATUS_GROUPS.Cancelling.includes(status)) {
     return true;
   }
   return false;
 };
 
 export const isScanDeletePending = (status: string): boolean => {
-  if (status.length && VULNERABILITY_SCAN_STATUS_GROUPS.deleting.includes(status)) {
+  if (status.length && SCAN_STATUS_GROUPS.Deleting.includes(status)) {
     return true;
   }
   return false;
@@ -103,133 +109,44 @@ export const getScanLink = ({
   throw new Error('Invalid scan type');
 };
 
-export enum VulnerabilityScanGroupedStatus {
-  'neverScanned' = 'neverScanned',
-  'starting' = 'starting',
-  'inProgress' = 'inProgress',
-  'error' = 'error',
-  'complete' = 'complete',
-  'cancelled' = 'cancelled',
-  'cancelling' = 'cancelling',
-  'deleting' = 'deleting',
-}
-
-export const VULNERABILITY_SCAN_STATUS_GROUPS: Record<
-  VulnerabilityScanGroupedStatus,
-  Array<string>
-> = {
-  neverScanned: ['NEVER_SCANNED'],
-  starting: ['STARTING'],
-  inProgress: ['IN_PROGRESS', 'GENERATING_SBOM', 'GENERATED_SBOM', 'SCAN_IN_PROGRESS'],
-  error: ['ERROR'],
-  complete: ['COMPLETE'],
-  cancelled: ['CANCELLED'],
-  cancelling: ['CANCEL_PENDING', 'CANCELLING'],
-  deleting: ['DELETE_PENDING'],
+export const SCAN_STATUS_GROUPS: Record<SCAN_STATUS_FILTER_TYPE, Array<string>> = {
+  'Never scanned': [
+    ModelScanInfoStatusEnum.Complete,
+    ModelScanInfoStatusEnum.Error,
+    ModelScanInfoStatusEnum.InProgress,
+    ModelScanInfoStatusEnum.Starting,
+  ],
+  Starting: [ModelScanInfoStatusEnum.Starting],
+  'In progress': [ModelScanInfoStatusEnum.InProgress],
+  Error: [ModelScanInfoStatusEnum.Error],
+  Complete: [ModelScanInfoStatusEnum.Complete],
+  Cancelled: [ModelScanInfoStatusEnum.Cancelled],
+  Cancelling: [ModelScanInfoStatusEnum.CancelPending, ModelScanInfoStatusEnum.Cancelling],
+  Deleting: [ModelScanInfoStatusEnum.DeletePending],
 };
 
-export enum SecretScanGroupedStatus {
-  'neverScanned' = 'neverScanned',
-  'starting' = 'starting',
-  'inProgress' = 'inProgress',
-  'error' = 'error',
-  'complete' = 'complete',
-  'cancelled' = 'cancelled',
-  'cancelling' = 'cancelling',
-  'deleting' = 'deleting',
-}
+export type SCAN_STATUS_FILTER_TYPE = keyof typeof SCAN_STATUS_FILTER;
+export const SCAN_STATUS_FILTER = {
+  'Never scanned': 'Never scanned',
+  Starting: 'Starting',
+  'In progress': 'In progress',
+  Error: 'Error',
+  Complete: 'Complete',
+  Cancelled: 'Cancelled',
+  Cancelling: 'Cancelling',
+  Deleting: 'Deleting',
+} as const;
 
-export const SECRET_SCAN_STATUS_GROUPS: Record<
-  VulnerabilityScanGroupedStatus,
-  Array<string>
-> = {
-  neverScanned: ['NEVER_SCANNED'],
-  starting: ['STARTING'],
-  inProgress: ['IN_PROGRESS'],
-  error: ['ERROR'],
-  complete: ['COMPLETE'],
-  cancelled: ['CANCELLED'],
-  cancelling: ['CANCEL_PENDING', 'CANCELLING'],
-  deleting: ['DELETE_PENDING'],
-};
+export const SeverityEnum = {
+  ...ModelSecretLevelEnum,
+  ...ModelVulnerabilityCveSeverityEnum,
+  ...ModelMalwareFileSeverityEnum,
+} as const;
 
-export enum MalwareScanGroupedStatus {
-  'neverScanned' = 'neverScanned',
-  'starting' = 'starting',
-  'inProgress' = 'inProgress',
-  'error' = 'error',
-  'complete' = 'complete',
-  'cancelled' = 'cancelled',
-  'cancelling' = 'cancelling',
-  'deleting' = 'deleting',
-}
-
-export const MALWARE_SCAN_STATUS_GROUPS: Record<
-  VulnerabilityScanGroupedStatus,
-  Array<string>
-> = {
-  neverScanned: ['NEVER_SCANNED'],
-  starting: ['STARTING'],
-  inProgress: ['IN_PROGRESS'],
-  error: ['ERROR'],
-  complete: ['COMPLETE'],
-  cancelled: ['CANCELLED'],
-  cancelling: ['CANCEL_PENDING', 'CANCELLING'],
-  deleting: ['DELETE_PENDING'],
-};
-
-export enum ComplianceScanGroupedStatus {
-  'neverScanned' = 'neverScanned',
-  'starting' = 'starting',
-  'inProgress' = 'inProgress',
-  'error' = 'error',
-  'complete' = 'complete',
-  'cancelled' = 'cancelled',
-  'cancelling' = 'cancelling',
-  'deleting' = 'deleting',
-}
-
-export const COMPLIANCE_SCAN_STATUS_GROUPS: Record<
-  VulnerabilityScanGroupedStatus,
-  Array<string>
-> = {
-  neverScanned: ['NEVER_SCANNED'],
-  starting: ['STARTING'],
-  inProgress: ['IN_PROGRESS', 'SCAN_IN_PROGRESS'],
-  error: ['ERROR'],
-  complete: ['COMPLETE'],
-  cancelled: ['CANCELLED'],
-  cancelling: ['CANCEL_PENDING', 'CANCELLING'],
-  deleting: ['DELETE_PENDING'],
-};
-
-export const SCAN_STATUS_GROUPS = [
-  {
-    label: 'Never scanned',
-    value: 'neverScanned',
-  },
-  {
-    label: 'Starting',
-    value: 'starting',
-  },
-  {
-    label: 'In progress',
-    value: 'inProgress',
-  },
-  {
-    label: 'Error',
-    value: 'error',
-  },
-  {
-    label: 'Complete',
-    value: 'complete',
-  },
-  {
-    label: 'Cancelled',
-    value: 'cancelled',
-  },
-  {
-    label: 'Cancelling',
-    value: 'cancelling',
-  },
-];
+export const SeverityEnumList = [
+  SeverityEnum.Critical,
+  SeverityEnum.High,
+  SeverityEnum.Medium,
+  SeverityEnum.Low,
+  SeverityEnum.Unknown,
+] as const;
