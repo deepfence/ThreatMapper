@@ -27,10 +27,10 @@ export interface ModelCloudNodeControlReq {
     cloud_provider: ModelCloudNodeControlReqCloudProviderEnum;
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof ModelCloudNodeControlReq
      */
-    compliance_type: string;
+    compliance_type: Array<string> | null;
     /**
      * 
      * @type {string}

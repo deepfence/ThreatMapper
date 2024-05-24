@@ -12,8 +12,7 @@ export const Accordion = React.forwardRef<
     className={cn(
       'w-full overflow-hidden',
       'rounded-b-lg rounded-t-lg',
-      'border border-gray-200 dark:border-gray-700 dark:border-opacity-50', // border of container
-      'drop-shadow-[0px_1px_2px_rgba(0,_0,_0,_0.8),_0px_1px_2px_-1px_rgba(0,_0,_0,_0.1)]',
+      'border border-bg-grid-border',
       className,
     )}
     ref={forwardedRef}
@@ -34,8 +33,8 @@ export const AccordionItem = (props: AccordionItemProps) => {
     <AccordionPrimitive.Item
       value={value}
       className={cn(
-        'w-full overflow-hidden text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 border-b last:border-b-0', // border bottom on each header trigger except last
-        'border-gray-200 dark:border-gray-700 dark:border-opacity-50',
+        'w-full overflow-hidden text-text-text-and-icon border-b last:border-b-0', // border bottom on each header trigger except last
+        'border-bg-grid-border',
         className,
       )}
       {...rest}
@@ -52,13 +51,11 @@ export const AccordionTrigger = React.forwardRef<
   <AccordionPrimitive.Header>
     <AccordionPrimitive.Trigger
       className={cn(
-        'flex outline-none p-5 place-items-center',
-        'w-full group',
+        'flex outline-none p-2 place-items-center',
+        'w-full group dark:bg-bg-grid-header bg-white',
         'text-p2',
-        'data-[state=open]:text-gray-900',
-        'data-[state=closed]:text-gray-500',
-        'dark:data-[state=open]:text-white',
-        'dark:data-[state=closed]:text-gray-400',
+        'data-[state=open]:text-text-input-value',
+        'data-[state=closed]:text-text-text-and-icon',
         className,
       )}
       {...props}
@@ -66,11 +63,11 @@ export const AccordionTrigger = React.forwardRef<
     >
       <span
         aria-hidden
-        className="group-data-[state=closed]:first:-rotate-90 transition duration-550 ease-out h-4 w-4 inline-block"
+        className="shrink-0 group-data-[state=closed]:first:-rotate-90 transition duration-550 ease-out h-4 w-4 inline-block"
       >
         <CaretDown />
       </span>
-      <span className="ml-[6px] text-left">{children}</span>
+      <span className="ml-[6px] text-left flex-1">{children}</span>
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));
@@ -81,8 +78,8 @@ export const AccordionContent = React.forwardRef<
 >(({ children, className, ...props }, forwardedRef) => (
   <AccordionPrimitive.Content
     className={cn(
-      'bg-white dark:bg-gray-900 w-full text-gray-500 dark:text-gray-400 leading-6',
-      'data-[state=open:border-t dark:data-[state=open]:border-gray-700 dark:data-[state=open]:border-opacity-50', // border top of its content
+      'w-full',
+      'data-[state=open]:border-t data-[state=open]:border-bg-grid-border', // border top of its content
       'data-[state=open]:animate-accordion-open',
       'data-[state=closed]:animate-accordion-closed',
       className,

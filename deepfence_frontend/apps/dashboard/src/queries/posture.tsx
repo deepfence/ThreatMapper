@@ -14,6 +14,7 @@ import {
   ModelCompliance,
   ModelScanCompareReq,
   ModelScanResultsReq,
+  ReportersFieldsFilters,
   SearchSearchNodeReq,
 } from '@/api/generated';
 import { DF404Error } from '@/components/error/404';
@@ -207,6 +208,7 @@ export const postureQueries = createQueryKeys('posture', {
     visibility: string[];
     benchmarkTypes: string[];
     nodeType: string;
+    controlId?: string;
     order?: {
       sortBy: string;
       descending: boolean;
@@ -222,6 +224,7 @@ export const postureQueries = createQueryKeys('posture', {
           status,
           benchmarkTypes,
           testNumber,
+          controlId,
           order,
           page = 1,
           pageSize,
@@ -290,6 +293,11 @@ export const postureQueries = createQueryKeys('posture', {
         if (testNumber.length) {
           scanResultsReq.fields_filter.contains_filter.filter_in!['test_number'] =
             testNumber;
+        }
+        if (controlId?.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['full_control_id'] = [
+            controlId,
+          ];
         }
         if (order) {
           scanResultsReq.fields_filter.order_filter.order_fields?.push({
@@ -382,6 +390,7 @@ export const postureQueries = createQueryKeys('posture', {
                 : clusterComplianceStatus,
             timestamp: result.value.updated_at,
             compliances: result.value.compliances ?? [],
+            checkTypes: result.value.benchmark_type,
             pagination: {
               currentPage: page,
               totalRows: page * pageSize + resultCounts.value.count,
@@ -398,7 +407,7 @@ export const postureQueries = createQueryKeys('posture', {
     status: string[];
     visibility: string[];
     benchmarkTypes: string[];
-    control: string[];
+    controls: string[];
     services: string[];
     resources: string[];
     nodeType: string;
@@ -420,7 +429,7 @@ export const postureQueries = createQueryKeys('posture', {
           resources,
           page = 1,
           pageSize,
-          control,
+          controls,
         } = filters;
         const statusCloudComplianceScanApi = apiWrapper({
           fn: getCloudComplianceApiClient().statusCloudComplianceScan,
@@ -488,8 +497,9 @@ export const postureQueries = createQueryKeys('posture', {
           ] = benchmarkTypes.map((type) => type.toLowerCase());
         }
 
-        if (control.length) {
-          scanResultsReq.fields_filter.contains_filter.filter_in!['control_id'] = control;
+        if (controls.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['full_control_id'] =
+            controls;
         }
 
         if (services.length) {
@@ -580,6 +590,7 @@ export const postureQueries = createQueryKeys('posture', {
             statusCounts: cloudComplianceStatus,
             timestamp: result.value.updated_at,
             compliances: result.value.compliances ?? [],
+            checkTypes: result.value.benchmark_type,
             pagination: {
               currentPage: page,
               totalRows: page * pageSize + resultCounts.value.count,
@@ -589,12 +600,12 @@ export const postureQueries = createQueryKeys('posture', {
       },
     };
   },
-  listControls: (filters: { nodeType: string; checkType: string }) => {
-    const { nodeType, checkType } = filters;
+  listControls: (filters: { nodeType: string; checkTypes: string[] }) => {
+    const { nodeType, checkTypes } = filters;
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
-        if (!nodeType || !checkType) {
+        if (!nodeType || !checkTypes.length) {
           return {
             controls: [],
             message: '',
@@ -607,7 +618,7 @@ export const postureQueries = createQueryKeys('posture', {
         const result = await listControlsApi({
           modelCloudNodeControlReq: {
             cloud_provider: nodeType as ModelCloudNodeControlReqCloudProviderEnum,
-            compliance_type: checkType,
+            compliance_type: checkTypes,
             node_id: '',
           },
         });
@@ -638,6 +649,79 @@ export const postureQueries = createQueryKeys('posture', {
         }
 
         return { controls: result.value.controls ?? [], message: '' };
+      },
+    };
+  },
+  scanResultCloudComplianceCountsByControls: (filters: {
+    scanId: string;
+    status: string[];
+    visibility: string[];
+    benchmarkTypes: string[];
+    controls: string[];
+    resources: string[];
+    services: string[];
+  }) => {
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const {
+          scanId,
+          status,
+          visibility,
+          benchmarkTypes,
+          controls,
+          services,
+          resources,
+        } = filters;
+
+        const fieldsFilter: ReportersFieldsFilters = {
+          contains_filter: {
+            filter_in: {},
+          },
+          match_filter: { filter_in: {} },
+          order_filter: { order_fields: [] },
+          compare_filter: null,
+        };
+        if (status.length) {
+          fieldsFilter.contains_filter.filter_in!['status'] = status;
+        }
+        if (visibility.length === 1) {
+          fieldsFilter.contains_filter.filter_in!['masked'] = [
+            visibility.includes('masked') ? true : false,
+          ];
+        }
+        if (benchmarkTypes.length) {
+          fieldsFilter.contains_filter.filter_in!['compliance_check_type'] =
+            benchmarkTypes.map((type) => type.toLowerCase());
+        }
+
+        if (controls?.length) {
+          fieldsFilter.contains_filter.filter_in!['full_control_id'] = controls;
+        }
+
+        if (services.length) {
+          fieldsFilter.contains_filter.filter_in!['service'] = services;
+        }
+
+        if (resources.length) {
+          fieldsFilter.contains_filter.filter_in!['resource'] = resources;
+        }
+
+        const scanResultCloudComplianceCountsByControls = apiWrapper({
+          fn: getComplianceApiClient().scanResultCloudComplianceCountsByControls,
+        });
+        const results = await scanResultCloudComplianceCountsByControls({
+          modelComplinaceScanResultsGroupReq: {
+            scan_id: scanId,
+            fields_filter: fieldsFilter,
+          },
+        });
+
+        if (!results.ok) {
+          console.error(results);
+          throw new Error("Couldn't get summary");
+        }
+        return results.value.groups ?? {};
       },
     };
   },

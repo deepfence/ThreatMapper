@@ -36,6 +36,12 @@ export interface ModelCloudNodeComplianceControl {
      * @type {string}
      * @memberof ModelCloudNodeComplianceControl
      */
+    compliance_type?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeComplianceControl
+     */
     control_id?: string;
     /**
      * 
@@ -90,6 +96,7 @@ export function ModelCloudNodeComplianceControlFromJSONTyped(json: any, ignoreDi
         
         'category_hierarchy': !exists(json, 'category_hierarchy') ? undefined : json['category_hierarchy'],
         'category_hierarchy_short': !exists(json, 'category_hierarchy_short') ? undefined : json['category_hierarchy_short'],
+        'compliance_type': !exists(json, 'compliance_type') ? undefined : json['compliance_type'],
         'control_id': !exists(json, 'control_id') ? undefined : json['control_id'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'enabled': !exists(json, 'enabled') ? undefined : json['enabled'],
@@ -110,6 +117,7 @@ export function ModelCloudNodeComplianceControlToJSON(value?: ModelCloudNodeComp
         
         'category_hierarchy': value.category_hierarchy,
         'category_hierarchy_short': value.category_hierarchy_short,
+        'compliance_type': value.compliance_type,
         'control_id': value.control_id,
         'description': value.description,
         'enabled': value.enabled,

@@ -20,7 +20,7 @@ const Items = [
 
 const DefaultTemplate: StoryFn<typeof Accordion> = (args) => {
   return (
-    <Accordion {...args} className="w-1/2">
+    <Accordion {...args}>
       {Items.map((item: string) => {
         return (
           <AccordionItem value={item} key={item}>
