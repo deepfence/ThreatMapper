@@ -124,7 +124,7 @@ graphdb:
 .PHONY: ui
 ui:
 	git log --format="%h" -n 1 > $(DEEPFENCE_FRONTEND_DIR)/console_version.txt && \
-	echo ${VERSION/v} > $(DEEPFENCE_FRONTEND_DIR)/product_version.txt && \
+	echo $(subst v,,$(VERSION)) > $(DEEPFENCE_FRONTEND_DIR)/product_version.txt && \
 	docker run --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:18-bullseye-slim -c "cd /app && corepack enable && corepack prepare pnpm@7.17.1 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install --frozen-lockfile --prefer-offline && ENABLE_ANALYTICS=true pnpm run build" && \
 	docker build -f $(DEEPFENCE_FRONTEND_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
 	rm -rf $(DEEPFENCE_FRONTEND_DIR)/console_version.txt $(DEEPFENCE_FRONTEND_DIR)/product_version.txt
@@ -146,7 +146,7 @@ compliancescanner:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_compliance_scanner_ce:$(DF_IMG_TAG) -f $(COMPLIANCE_SCANNER_DIR)/Dockerfile $(COMPLIANCE_SCANNER_DIR)
 
 .PHONY: cloudscanner
-cloudscanner: debian_builder deepfenced 
+cloudscanner: debian_builder deepfenced
 	(cd $(DEEPFENCE_AGENT_DIR) && IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build_cs_agent.sh)
 
 .PHONY: openapi
