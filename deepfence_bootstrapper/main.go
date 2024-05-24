@@ -54,10 +54,14 @@ func init() {
 		nodeMode = ctl.HOST
 	}
 	binaryOnly = os.Getenv("DF_SERVERLESS") != ""
-	if hostname = os.Getenv("SCOPE_HOSTNAME"); hostname == "" {
-		hostname, err = os.Hostname()
-		if err != nil {
-			hostname = "(unknown)"
+	if nodeMode == ctl.CLOUD_AGENT {
+		hostname = fmt.Sprintf("cloud-node-%s-%s", os.Getenv("CLOUD_PROVIDER"), os.Getenv("CLOUD_ACCOUNT_ID"))
+	} else {
+		if hostname = os.Getenv("SCOPE_HOSTNAME"); hostname == "" {
+			hostname, err = os.Hostname()
+			if err != nil {
+				hostname = "(unknown)"
+			}
 		}
 	}
 	err = os.Setenv("DF_HOST_ID", hostname)
@@ -85,24 +89,6 @@ func main() {
 	case ctl.K8S:
 		cfg, err = config.NewIniConfig(configClusterFile)
 	case ctl.CLOUD_AGENT:
-		for i := 0; i < 10; i++ {
-			log.Info().Msgf("Getting the GetCloudNodeID")
-			hostname, err = router.GetCloudNodeID()
-			if err == nil && len(hostname) != 0 {
-				log.Info().Msgf("Cloud mode, setting hostname as: %s", hostname)
-				break
-			}
-			log.Error().Msgf("Error getting CloudNode ID: %s, RetryCount: %d, error: %v", hostname, i, err)
-			time.Sleep(10 * time.Second)
-		}
-		if err != nil || len(hostname) == 0 {
-			log.Fatal().Msgf("Failed to get CloudNode, error: %s", err.Error())
-		}
-		err = os.Setenv("DF_HOST_ID", hostname)
-		if err != nil {
-			log.Error().Msgf("Failed to set DF_HOST_ID: %v", err)
-		}
-		log.Info().Msgf("cloud agent mode: %s", hostname)
 		cfg, err = config.NewIniConfig(configCloudFile)
 	case ctl.HOST:
 		cfg, err = config.NewIniConfig(configFile)
