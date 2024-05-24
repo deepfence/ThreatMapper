@@ -1131,61 +1131,38 @@ const AccountTable = ({
   const columnHelper = createColumnHelper<ModelCloudNodeAccountInfo>();
 
   const accounts = data?.accounts ?? [];
-  const columnWidth = nodeType?.endsWith('_org')
-    ? {
-        node_name: {
-          minSize: 40,
-          size: 60,
-          maxSize: 100,
-        },
-        compliance_percentage: {
-          minSize: 30,
-          size: 40,
-          maxSize: 60,
-        },
-        active: {
-          minSize: 40,
-          size: 40,
-          maxSize: 40,
-        },
-        last_scan_status: {
-          minSize: 120,
-          size: 140,
-          maxSize: 160,
-        },
-        version: {
-          minSize: 30,
-          size: 40,
-          maxSize: 60,
-        },
-      }
-    : {
-        node_name: {
-          minSize: 80,
-          size: 90,
-          maxSize: 100,
-        },
-        compliance_percentage: {
-          minSize: 60,
-          size: 60,
-          maxSize: 70,
-        },
-        active: {
-          minSize: 40,
-          size: 40,
-          maxSize: 40,
-        },
-        last_scan_status: {
-          minSize: 50,
-          size: 70,
-          maxSize: 80,
-        },
-        version: {
-          minSize: 50,
-          size: 70,
-          maxSize: 80,
-        },
-      };
+  const columnWidth = {
+    node_name: {
+      minSize: 80,
+      size: 90,
+      maxSize: 100,
+    },
+    compliance_percentage: {
+      minSize: 60,
+      size: 60,
+      maxSize: 70,
+    },
+    active: {
+      minSize: 40,
+      size: 40,
+      maxSize: 40,
+    },
+    last_scan_status: {
+      minSize: 50,
+      size: 70,
+      maxSize: 80,
+    },
+    version: {
+      minSize: 50,
+      size: 70,
+      maxSize: 80,
+    },
+    tracer: {
+      minSize: 50,
+      size: 70,
+      maxSize: 80,
+    },
+  };
 
   const columns = useMemo(() => {
     const columns: ColumnDef<ModelCloudNodeAccountInfo, any>[] = [
