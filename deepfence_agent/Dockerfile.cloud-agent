@@ -1,8 +1,8 @@
 ARG STEAMPIPE_IMG_TAG=latest
-ARG IMAGE_REPOSITORY=deepfenceio
+ARG IMAGE_REPOSITORY=quay.io/deepfenceio
 FROM $IMAGE_REPOSITORY/steampipe:$STEAMPIPE_IMG_TAG AS steampipe
 
-FROM golang:1.21-bookworm AS build
+FROM golang:1.22-bookworm AS build
 ARG VERSION
 
 WORKDIR /home/deepfence/plugins/cloud-scanner
@@ -29,15 +29,8 @@ RUN apt-get update \
     && mkdir -p /opt/steampipe \
     && chown deepfence /opt/steampipe
 
-RUN mkdir -p /var/log/fenced/cloud-scanner /var/log/fenced/cloud-scanner-log/
-
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
-RUN chmod 600 /etc/logrotate.d/fenced_logrotate.conf
-
-COPY start_cloud_agent.sh /usr/local/bin/start_agent
-RUN chmod +x /usr/local/bin/start_agent
+RUN mkdir -p /var/log/fenced/cloud-scanner /var/log/fenced/cloud-scanner-log/ \
+    && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 WORKDIR /opt/steampipe
 
@@ -78,24 +71,24 @@ COPY --from=steampipe /usr/local/bin/steampipe-plugin-azuread.plugin /home/deepf
 COPY --from=build /home/deepfence/plugins/cloud-scanner/cloud_scanner /home/deepfence/bin/cloud_scanner
 
 
-
 USER root
 
-RUN mkdir -p $DF_INSTALL_DIR/var/log/supervisor
-RUN mkdir -p $DF_INSTALL_DIR/var/log/deepfenced
-RUN mkdir -p $DF_INSTALL_DIR/var/log/fenced/cloud-scanner 
-RUN mkdir -p $DF_INSTALL_DIR/var/log/fenced/cloud-scanner-log/
+COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
+COPY start_cloud_agent.sh /usr/local/bin/start_agent
 
+RUN chmod 600 /etc/logrotate.d/fenced_logrotate.conf \
+    && chmod +x /usr/local/bin/start_agent \
+    && mkdir -p $DF_INSTALL_DIR/var/log/supervisor $DF_INSTALL_DIR/var/log/deepfenced \
+    && mkdir -p $DF_INSTALL_DIR/var/log/fenced/cloud-scanner $DF_INSTALL_DIR/var/log/fenced/cloud-scanner-log/ \
+    && chmod 700 /home/deepfence/run_shipper.sh \
+    && chown -R deepfence: /home/deepfence \
+    && chown -R deepfence: /home/deepfence/bin/ \
+    && chown deepfence /usr/bin \
+    && chown deepfence /bin \
+    && chown -R deepfence:root /opt/ \
+    && chown -R deepfence /home/deepfence /var/log/fenced /var/run/ \
+    && ln -s /usr/local/bin/start_agent /usr/local/bin/cloud_scanner
 
-RUN chmod 700 /home/deepfence/run_shipper.sh
-RUN chown -R deepfence: /home/deepfence
-RUN chown -R deepfence: /home/deepfence/bin/
-RUN chown deepfence /usr/bin
-RUN chown deepfence /bin
-RUN chown -R deepfence:root /opt/ 
-RUN chown -R deepfence /home/deepfence /var/log/fenced /var/run/
+RUN apt-get -y remove git ca-certificates
 
-RUN ln -s /usr/local/bin/start_agent /usr/local/bin/cloud_compliance_scan \
-    && apt-get -y remove git ca-certificates
-
-ENTRYPOINT ["/usr/local/bin/cloud_compliance_scan"]
+ENTRYPOINT ["/usr/local/bin/cloud_scanner"]
