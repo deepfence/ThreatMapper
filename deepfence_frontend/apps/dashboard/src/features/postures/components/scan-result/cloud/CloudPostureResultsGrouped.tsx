@@ -103,7 +103,7 @@ const CloudPostureResultsGroupedCheckTypeList = () => {
   const tabs = useMemo(() => {
     return (statusData.benchmark_types ?? []).map((value) => {
       return {
-        label: value,
+        label: value.replaceAll('_', ' '),
         value: value,
       };
     });
@@ -318,39 +318,30 @@ const PostureTableForControl = ({
                 <PostureIcon />
               </div>
               <TruncatedText
-                text={info.row.original.control_id ?? info.row.original.node_id}
+                text={info.row.original.reason ?? info.row.original.control_id}
               />
             </DFLink>
           );
         },
         header: () => 'ID',
-        minSize: 80,
-        size: 80,
-        maxSize: 90,
-      }),
-      columnHelper.accessor('compliance_check_type', {
-        enableSorting: true,
-        enableResizing: false,
-        cell: (info) => <TruncatedText text={info.getValue().toUpperCase()} />,
-        header: () => 'Benchmark type',
-        minSize: 40,
-        size: 50,
-        maxSize: 60,
+        minSize: 120,
+        size: 150,
+        maxSize: 180,
       }),
       columnHelper.accessor('service', {
         enableSorting: true,
         enableResizing: false,
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => 'Service',
-        minSize: 40,
-        size: 50,
-        maxSize: 60,
+        minSize: 90,
+        size: 100,
+        maxSize: 120,
       }),
       columnHelper.accessor('status', {
         enableResizing: false,
-        minSize: 60,
-        size: 60,
-        maxSize: 65,
+        minSize: 90,
+        size: 100,
+        maxSize: 130,
         header: () => <div>Status</div>,
         cell: (info) => {
           return (
@@ -364,26 +355,15 @@ const PostureTableForControl = ({
           );
         },
       }),
-      columnHelper.accessor('reason', {
+      columnHelper.accessor('control_id', {
         enableResizing: false,
-        minSize: 60,
-        size: 70,
-        maxSize: 80,
-        header: () => <div>Reason</div>,
+        minSize: 100,
+        size: 110,
+        maxSize: 130,
+        header: () => <div>Control ID</div>,
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;
         },
-      }),
-      columnHelper.accessor('description', {
-        enableResizing: false,
-        enableSorting: false,
-        minSize: 140,
-        size: 150,
-        maxSize: 160,
-        header: () => 'Description',
-        cell: (info) => (
-          <TruncatedText text={info.getValue() || 'No description available'} />
-        ),
       }),
     ];
 
