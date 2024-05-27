@@ -14,11 +14,13 @@ import {
   RowSelectionState,
   SortingState,
   Table,
+  TableNoDataElement,
   TableSkeleton,
 } from 'ui-components';
 
 import { ModelCloudCompliance } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { CaretDown } from '@/components/icons/common/CaretDown';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { PostureStatusBadgeIcon } from '@/components/SeverityBadge';
@@ -40,7 +42,10 @@ import {
 } from '@/features/postures/components/scan-result/cloud/hooks';
 import { DeleteConfirmationModal } from '@/features/postures/components/scan-result/cloud/Modals';
 import { TablePlaceholder } from '@/features/postures/components/scan-result/cloud/TablePlaceholder';
-import { GroupedResultsSkeleton } from '@/features/postures/components/scan-result/GroupedResultsSkeleton';
+import {
+  GroupedResultsBenchmarkSkeleton,
+  GroupedResultsSkeleton,
+} from '@/features/postures/components/scan-result/GroupedResultsSkeleton';
 import { useTheme } from '@/theme/ThemeContext';
 import {
   isAlarmStatus,
@@ -54,6 +59,7 @@ import {
   PostureSeverityType,
 } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
+import { isScanComplete } from '@/utils/scan';
 
 export const CloudPostureResultsGrouped = () => {
   const [searchParams] = useSearchParams();
@@ -93,65 +99,108 @@ export const CloudPostureResultsGrouped = () => {
 };
 
 const CloudPostureResultsGroupedCheckTypeList = () => {
-  const { nodeType } = usePageParams();
-  const { data } = useScanStatus();
+  const { data: statusData } = useScanStatus();
+  const [benchmarkAccordionValue, setBenchmarkAccordionValue] = useState<string>(
+    statusData.benchmark_types?.[0] ?? '',
+  );
 
-  const { mode } = useTheme();
-
-  const controls = useGetControls({ checkTypes: data.benchmark_types ?? [], nodeType });
+  if (!isScanComplete(statusData.status)) {
+    return (
+      <TablePlaceholder
+        scanStatus={statusData.status ?? ''}
+        message={statusData.status_message ?? ''}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 pb-4 -mt-4">
-      {data.benchmark_types?.map((checkType) => {
+      {statusData.benchmark_types?.map((checkType) => {
         return (
           <div key={checkType}>
-            <div className="uppercase text-t4 text-text-text-and-icon py-2">
-              {checkType}
-            </div>
-            <Accordion type="single" collapsible>
-              {controls[checkType].map((control) => {
-                return (
-                  <AccordionItem
-                    value={`${checkType}-${control.node_id}`}
-                    key={control.node_id}
-                    disabled={control.totalCount === 0}
-                  >
-                    <AccordionTrigger>
-                      <div className="flex">
-                        <div>
-                          {control.category_hierarchy_short ?? ''} -{' '}
-                          {control.description ?? ''}
-                        </div>
-                        <div className="ml-auto flex gap-2 pl-4">
-                          {Object.keys(control.counts).map((key) => {
-                            return (
-                              <div key={key} className="flex items-center gap-x-1">
-                                <PostureStatusBadgeIcon
-                                  theme={mode}
-                                  status={key.toLowerCase() as PostureSeverityType}
-                                />
-                                <span className="text-p3 text-text-input-value">
-                                  {abbreviateNumber(control.counts[key])}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <PostureTableForControlWrapper
-                        controlId={control.control_id ?? ''}
-                      />
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
+            <button
+              type="button"
+              className={cn(
+                'text-start w-full uppercase text-t4 text-text-text-and-icon py-2',
+                {
+                  'text-white': benchmarkAccordionValue === checkType,
+                },
+              )}
+              onClick={(e) => {
+                e.preventDefault();
+                if (benchmarkAccordionValue === checkType) {
+                  setBenchmarkAccordionValue('');
+                } else {
+                  setBenchmarkAccordionValue(checkType);
+                }
+              }}
+            >
+              <div className="flex gap-2 items-center">
+                <div
+                  className={cn('h-4 w-4 shrink-0', {
+                    '-rotate-90': benchmarkAccordionValue !== checkType,
+                  })}
+                >
+                  <CaretDown />
+                </div>
+                <div>{checkType.replace('_', ' ')}</div>
+              </div>
+            </button>
+            {benchmarkAccordionValue === checkType && (
+              <Suspense fallback={<GroupedResultsBenchmarkSkeleton />}>
+                <CloudPostureResultsGroupedCheckType checkType={checkType} />
+              </Suspense>
+            )}
           </div>
         );
       })}
     </div>
+  );
+};
+
+const CloudPostureResultsGroupedCheckType = ({ checkType }: { checkType: string }) => {
+  const { nodeType } = usePageParams();
+  const controls = useGetControls({ checkType, nodeType });
+  const { mode } = useTheme();
+
+  return (
+    <Accordion type="single" collapsible>
+      {controls[checkType].map((control) => {
+        return (
+          <AccordionItem
+            value={`${checkType}-${control.node_id}`}
+            key={control.node_id}
+            disabled={control.totalCount === 0}
+          >
+            <AccordionTrigger>
+              <div className="flex">
+                <div>
+                  {control.category_hierarchy_short ?? ''} - {control.description ?? ''}
+                </div>
+                <div className="ml-auto flex gap-2 pl-4">
+                  {Object.keys(control.counts).map((key) => {
+                    return (
+                      <div key={key} className="flex items-center gap-x-1">
+                        <PostureStatusBadgeIcon
+                          theme={mode}
+                          status={key.toLowerCase() as PostureSeverityType}
+                        />
+                        <span className="text-p3 text-text-input-value">
+                          {abbreviateNumber(control.counts[key])}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <PostureTableForControlWrapper controlId={control.control_id ?? ''} />
+            </AccordionContent>
+          </AccordionItem>
+        );
+      })}
+    </Accordion>
   );
 };
 
@@ -237,7 +286,7 @@ const PostureTableForControl = ({
     order: sort,
     page: pageNo,
   });
-  const { data: scanResultData, scanStatusResult } = data;
+  const { data: scanResultData } = data;
 
   const columns = useMemo(() => {
     const columns = [
@@ -416,12 +465,7 @@ const PostureTableForControl = ({
         });
         setPageNo(0);
       }}
-      noDataElement={
-        <TablePlaceholder
-          scanStatus={scanStatusResult?.status ?? ''}
-          message={scanStatusResult?.status_message ?? ''}
-        />
-      }
+      noDataElement={<TableNoDataElement text="No data available" />}
       getTdProps={(cell) => {
         const status = cell.row.original.status;
         return {

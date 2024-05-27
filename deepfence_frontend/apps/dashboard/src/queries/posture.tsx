@@ -427,6 +427,103 @@ export const postureQueries = createQueryKeys('posture', {
       },
     };
   },
+  postureCloudScanResultStatusCounts: (filters: {
+    scanId: string;
+    status: string[];
+    visibility: string[];
+    benchmarkTypes: string[];
+    controls: string[];
+    services: string[];
+    resources: string[];
+    nodeType: string;
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        const {
+          scanId,
+          visibility,
+          status,
+          services,
+          benchmarkTypes,
+          resources,
+          controls,
+        } = filters;
+        const scanResultsReq: ModelScanResultsReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          scan_id: scanId,
+          window: {
+            offset: 0,
+            size: 0,
+          },
+        };
+        if (status.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['status'] = status;
+        }
+        if (visibility.length === 1) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['masked'] = [
+            visibility.includes('masked') ? true : false,
+          ];
+        }
+        if (benchmarkTypes.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in![
+            'compliance_check_type'
+          ] = benchmarkTypes.map((type) => type.toLowerCase());
+        }
+
+        if (controls.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['full_control_id'] =
+            controls;
+        }
+
+        if (services.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['service'] = services;
+        }
+        if (resources.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['resource'] = resources;
+        }
+
+        const resultCloudComplianceScanApi = apiWrapper({
+          fn: getCloudComplianceApiClient().resultCloudComplianceScan,
+        });
+        const result = await resultCloudComplianceScanApi({
+          modelScanResultsReq: scanResultsReq,
+        });
+
+        if (!result.ok) {
+          throw result.error;
+        }
+
+        const totalStatus = Object.values(result.value.status_counts ?? {}).reduce(
+          (acc, value) => {
+            acc = acc + value;
+            return acc;
+          },
+          0,
+        );
+
+        const cloudComplianceStatus = {
+          alarm: result.value.status_counts?.['alarm'] ?? 0,
+          info: result.value.status_counts?.['info'] ?? 0,
+          ok: result.value.status_counts?.['ok'] ?? 0,
+          skip: result.value.status_counts?.['skip'] ?? 0,
+          delete: result.value.status_counts?.['delete'] ?? 0,
+        };
+
+        return {
+          totalStatus,
+          statusCounts: cloudComplianceStatus,
+        };
+      },
+    };
+  },
   postureCloudScanResults: (filters: {
     scanId: string;
     page?: number;
@@ -458,43 +555,6 @@ export const postureQueries = createQueryKeys('posture', {
           pageSize,
           controls,
         } = filters;
-        const statusCloudComplianceScanApi = apiWrapper({
-          fn: getCloudComplianceApiClient().statusCloudComplianceScan,
-        });
-        const statusResult = await statusCloudComplianceScanApi({
-          modelScanStatusReq: {
-            scan_ids: [scanId],
-            bulk_scan_id: '',
-          },
-        });
-
-        if (!statusResult.ok) {
-          if (statusResult.error.response.status === 400) {
-            const { message } = await getResponseErrors(statusResult.error);
-            return {
-              message,
-            };
-          } else if (statusResult.error.response.status === 404) {
-            throw new DF404Error('Scan not found');
-          }
-          throw statusResult.error;
-        }
-        if (!statusResult.value?.statuses?.length) {
-          throw new DF404Error('Scan not found');
-        }
-        const statuses = statusResult.value?.statuses?.[0];
-
-        const scanStatus = statuses?.status;
-
-        const isScanRunning =
-          scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
-        const isScanError = scanStatus === ScanStatusEnum.error;
-
-        if (isScanRunning || isScanError) {
-          return {
-            scanStatusResult: statuses,
-          };
-        }
         const scanResultsReq: ModelScanResultsReq = {
           fields_filter: {
             contains_filter: {
@@ -593,31 +653,9 @@ export const postureQueries = createQueryKeys('posture', {
           throw resultCounts.error;
         }
 
-        const totalStatus = Object.values(result.value.status_counts ?? {}).reduce(
-          (acc, value) => {
-            acc = acc + value;
-            return acc;
-          },
-          0,
-        );
-
-        const cloudComplianceStatus = {
-          alarm: result.value.status_counts?.['alarm'] ?? 0,
-          info: result.value.status_counts?.['info'] ?? 0,
-          ok: result.value.status_counts?.['ok'] ?? 0,
-          skip: result.value.status_counts?.['skip'] ?? 0,
-          delete: result.value.status_counts?.['delete'] ?? 0,
-        };
-
         return {
-          scanStatusResult: statuses,
           data: {
-            totalStatus,
-            nodeName: result.value.node_id,
-            statusCounts: cloudComplianceStatus,
-            timestamp: result.value.updated_at,
             compliances: result.value.compliances ?? [],
-            checkTypes: result.value.benchmark_type,
             pagination: {
               currentPage: page,
               totalRows: page * pageSize + resultCounts.value.count,

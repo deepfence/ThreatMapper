@@ -15,10 +15,13 @@ import {
 } from '@/components/ScanStatusMessage';
 import { PostureStatusBadgeIcon } from '@/components/SeverityBadge';
 import { FILTER_SEARCHPARAMS } from '@/features/postures/components/scan-result/cloud/Filters';
-import { useScanResults } from '@/features/postures/components/scan-result/cloud/hooks';
+import {
+  useScanStatus,
+  useStatusCounts,
+} from '@/features/postures/components/scan-result/cloud/hooks';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
 import { useTheme } from '@/theme/ThemeContext';
-import { PostureSeverityType } from '@/types/common';
+import { PostureSeverityType, ScanStatusEnum } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 import {
   isScanComplete,
@@ -48,16 +51,14 @@ export const Widgets = () => {
 };
 
 const SeverityCountWidget = () => {
-  const {
-    data: { data, scanStatusResult },
-  } = useScanResults();
+  const { data: scanStatusResult } = useScanStatus();
+  const { data: scanCountResults } = useStatusCounts({
+    enabled: scanStatusResult.status === ScanStatusEnum.complete,
+  });
 
-  const statusCounts: Record<string, number> = data?.statusCounts ?? {};
+  const statusCounts: Record<string, number> = scanCountResults?.statusCounts ?? {};
 
-  const total = Object.values(statusCounts).reduce((acc, v) => {
-    acc = acc + v;
-    return acc;
-  }, 0);
+  const total = scanCountResults?.totalStatus ?? 0;
 
   const [, setSearchParams] = useSearchParams();
 

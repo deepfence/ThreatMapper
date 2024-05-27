@@ -24,7 +24,31 @@ export const useScanStatus = () => {
   });
 };
 
-export const useScanResults = () => {
+export const useStatusCounts = (options?: { enabled?: boolean }) => {
+  const { scanId, nodeType } = usePageParams();
+  const [searchParams] = useSearchParams();
+  return useSuspenseQuery({
+    ...queries.posture.postureCloudScanResultStatusCounts({
+      scanId,
+      nodeType,
+      benchmarkTypes: searchParams.getAll('benchmarkType').map((type) => {
+        if (type.toLowerCase() === 'soc2') {
+          type = 'soc_2';
+        }
+        return type.toLowerCase();
+      }),
+      visibility: searchParams.getAll('visibility'),
+      status: searchParams.getAll('status'),
+      services: searchParams.getAll('services'),
+      resources: searchParams.getAll('resources'),
+      controls: searchParams.getAll('controlId'),
+    }),
+    keepPreviousData: true,
+    enabled: options?.enabled ?? true,
+  });
+};
+
+export const useScanResults = (options?: { enabled?: boolean }) => {
   const [searchParams] = useSearchParams();
   const params = useParams() as {
     scanId: string;
@@ -55,6 +79,7 @@ export const useScanResults = () => {
       controls: searchParams.getAll('controlId'),
     }),
     keepPreviousData: true,
+    enabled: options?.enabled ?? true,
   });
 };
 
@@ -97,10 +122,10 @@ export const useScanResultsByControl = (options: {
 };
 
 export const useGetControls = ({
-  checkTypes,
+  checkType,
   nodeType,
 }: {
-  checkTypes: string[];
+  checkType: string;
   nodeType: string;
 }) => {
   const params = useParams() as {
@@ -117,7 +142,7 @@ export const useGetControls = ({
   > = {};
 
   const { data: listControlsData } = useSuspenseQuery({
-    ...queries.posture.listControls({ checkTypes, nodeType }),
+    ...queries.posture.listControls({ checkTypes: [checkType], nodeType }),
   });
 
   const { data: countsByControlsData } = useSuspenseQuery({

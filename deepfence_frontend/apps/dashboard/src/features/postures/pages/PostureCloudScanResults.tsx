@@ -27,6 +27,8 @@ const PostureCloudScanResults = () => {
                 setSearchParams((prev) => {
                   if (checked) {
                     prev.set('groupByControls', 'true');
+                    prev.delete('controlId');
+                    prev.delete('benchmarkType');
                   } else {
                     prev.set('groupByControls', 'false');
                   }

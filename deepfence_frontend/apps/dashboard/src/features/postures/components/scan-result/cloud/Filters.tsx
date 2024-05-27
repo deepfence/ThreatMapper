@@ -38,6 +38,8 @@ export const Filters = () => {
     scanId: string;
   };
 
+  const isGroupedView = searchParams.get('groupByControls') === 'true';
+
   if (!params.scanId) {
     console.warn('No scan id found');
   }
@@ -129,45 +131,48 @@ export const Filters = () => {
               );
             })}
         </Combobox>
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['benchmarkType']}
-          multiple
-          value={searchParams.getAll('benchmarkType')}
-          onChange={(values) => {
-            setSearchParams((prev) => {
-              prev.delete('benchmarkType');
-              values.forEach((value) => {
-                prev.append('benchmarkType', value);
+        {!isGroupedView && (
+          <Combobox
+            getDisplayValue={() => FILTER_SEARCHPARAMS['benchmarkType']}
+            multiple
+            value={searchParams.getAll('benchmarkType')}
+            onChange={(values) => {
+              setSearchParams((prev) => {
+                prev.delete('benchmarkType');
+                values.forEach((value) => {
+                  prev.append('benchmarkType', value);
+                });
+                prev.delete('page');
+                return prev;
               });
-              prev.delete('page');
-              return prev;
-            });
-          }}
-          onQueryChange={(query) => {
-            setBenchmarkQuery(query);
-          }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('benchmarkType');
-              prev.delete('page');
-              return prev;
-            });
-          }}
-        >
-          {benchmarks
-            .filter((item) => {
-              if (!benchmarkQuery.length) return true;
-              return item.toLowerCase().includes(benchmarkQuery.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
+            }}
+            onQueryChange={(query) => {
+              setBenchmarkQuery(query);
+            }}
+            clearAllElement="Clear"
+            onClearAll={() => {
+              setSearchParams((prev) => {
+                prev.delete('benchmarkType');
+                prev.delete('page');
+                return prev;
+              });
+            }}
+          >
+            {benchmarks
+              .filter((item) => {
+                if (!benchmarkQuery.length) return true;
+                return item.toLowerCase().includes(benchmarkQuery.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxOption key={item} value={item}>
+                    {item}
+                  </ComboboxOption>
+                );
+              })}
+          </Combobox>
+        )}
+
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['services']}
           multiple
@@ -208,27 +213,29 @@ export const Filters = () => {
               );
             })}
         </Combobox>
-        <SearchableControl
-          scanId={params.scanId}
-          defaultSelectedControl={searchParams.getAll('controlId')}
-          onChange={(values) => {
-            setSearchParams((prev) => {
-              prev.delete('controlId');
-              values.forEach((value) => {
-                prev.append('controlId', value);
+        {!isGroupedView && (
+          <SearchableControl
+            scanId={params.scanId}
+            defaultSelectedControl={searchParams.getAll('controlId')}
+            onChange={(values) => {
+              setSearchParams((prev) => {
+                prev.delete('controlId');
+                values.forEach((value) => {
+                  prev.append('controlId', value);
+                });
+                prev.delete('page');
+                return prev;
               });
-              prev.delete('page');
-              return prev;
-            });
-          }}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('controlId');
-              prev.delete('page');
-              return prev;
-            });
-          }}
-        />
+            }}
+            onClearAll={() => {
+              setSearchParams((prev) => {
+                prev.delete('controlId');
+                prev.delete('page');
+                return prev;
+              });
+            }}
+          />
+        )}
       </div>
 
       {appliedFilterCount > 0 ? (

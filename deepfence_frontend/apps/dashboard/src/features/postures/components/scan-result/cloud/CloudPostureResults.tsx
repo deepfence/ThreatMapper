@@ -30,6 +30,7 @@ import {
 import {
   DEFAULT_PAGE_SIZE,
   useScanResults,
+  useScanStatus,
 } from '@/features/postures/components/scan-result/cloud/hooks';
 import { DeleteConfirmationModal } from '@/features/postures/components/scan-result/cloud/Modals';
 import { TablePlaceholder } from '@/features/postures/components/scan-result/cloud/TablePlaceholder';
@@ -45,6 +46,7 @@ import {
   isWarnStatus,
   PostureSeverityType,
 } from '@/types/common';
+import { isScanComplete } from '@/utils/scan';
 import { useSortingState } from '@/utils/table';
 
 export const CloudPostureResults = () => {
@@ -143,7 +145,10 @@ const CloudPostureTable = ({
 }) => {
   const { mode } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data } = useScanResults();
+  const { data: statusResultData } = useScanStatus();
+  const { data: scanResultData } = useScanResults({
+    enabled: isScanComplete(statusResultData.status),
+  });
   const columnHelper = createColumnHelper<ModelCloudCompliance>();
   const [sort, setSort] = useSortingState();
 
@@ -267,12 +272,10 @@ const CloudPostureTable = ({
     return columns;
   }, [setSearchParams, mode]);
 
-  const { data: scanResultData, scanStatusResult } = data;
-
   return (
     <Table
       size="default"
-      data={scanResultData?.compliances ?? []}
+      data={scanResultData?.data?.compliances ?? []}
       columns={columns}
       enableRowSelection
       rowSelectionState={rowSelectionState}
@@ -281,9 +284,9 @@ const CloudPostureTable = ({
       manualPagination
       approximatePagination
       enableColumnResizing
-      totalRows={scanResultData?.pagination?.totalRows}
+      totalRows={scanResultData?.data?.pagination?.totalRows}
       pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
-      pageIndex={scanResultData?.pagination?.currentPage}
+      pageIndex={scanResultData?.data?.pagination?.currentPage}
       enableSorting
       manualSorting
       sortingState={sort}
@@ -294,7 +297,7 @@ const CloudPostureTable = ({
         let newPageIndex = 0;
         if (typeof updaterOrValue === 'function') {
           newPageIndex = updaterOrValue({
-            pageIndex: scanResultData?.pagination.currentPage ?? 0,
+            pageIndex: scanResultData?.data?.pagination.currentPage ?? 0,
             pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
           }).pageIndex;
         } else {
@@ -342,8 +345,8 @@ const CloudPostureTable = ({
       }}
       noDataElement={
         <TablePlaceholder
-          scanStatus={scanStatusResult?.status ?? ''}
-          message={scanStatusResult?.status_message ?? ''}
+          scanStatus={statusResultData?.status ?? ''}
+          message={statusResultData?.status_message ?? ''}
         />
       }
       getTdProps={(cell) => {
