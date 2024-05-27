@@ -1,5 +1,5 @@
 import { upperFirst } from 'lodash-es';
-import { Suspense, useCallback, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useFetcher, useSearchParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 import {
@@ -104,6 +104,10 @@ const CloudPostureResultsGroupedCheckTypeList = () => {
     statusData.benchmark_types?.[0] ?? '',
   );
 
+  useEffect(() => {
+    setBenchmarkAccordionValue(statusData.benchmark_types?.[0] ?? '');
+  }, [statusData.scan_id]);
+
   if (!isScanComplete(statusData.status)) {
     return (
       <TablePlaceholder
@@ -123,7 +127,7 @@ const CloudPostureResultsGroupedCheckTypeList = () => {
               className={cn(
                 'text-start w-full uppercase text-t4 text-text-text-and-icon py-2',
                 {
-                  'text-white': benchmarkAccordionValue === checkType,
+                  'dark:text-white text-black': benchmarkAccordionValue === checkType,
                 },
               )}
               onClick={(e) => {
@@ -227,7 +231,7 @@ const PostureTableForControlWrapper = ({ controlId }: { controlId: string }) => 
   }, [rowSelectionState]);
 
   return (
-    <div className="p-4">
+    <div className="px-4 pb-4 pt-1">
       <div className="h-12 flex items-center">
         <BulkActions
           ids={selectedIds}
