@@ -16,7 +16,14 @@ export const usePageParams = () => {
   };
 };
 
-// #region hooks table view
+export const useScanStatus = () => {
+  const { scanId } = usePageParams();
+  return useSuspenseQuery({
+    ...queries.posture.postureCloudScanStatus({ scanId }),
+    keepPreviousData: true,
+  });
+};
+
 export const useScanResults = () => {
   const [searchParams] = useSearchParams();
   const params = useParams() as {
@@ -50,9 +57,7 @@ export const useScanResults = () => {
     keepPreviousData: true,
   });
 };
-// #endregion
 
-// #region hooks scan results by control
 export const useScanResultsByControl = (options: {
   controlId: string;
   page?: number;
@@ -152,4 +157,3 @@ export const useGetControls = ({
   });
   return results;
 };
-// #endregion

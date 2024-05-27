@@ -7,7 +7,7 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import {
   usePageParams,
-  useScanResults,
+  useScanStatus,
 } from '@/features/postures/components/scan-result/cloud/hooks';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 
@@ -36,10 +36,7 @@ export const Header = () => {
   );
 };
 const DynamicBreadcrumbs = () => {
-  const { data } = useScanResults();
-  const { scanStatusResult } = data;
-
-  const { node_name } = scanStatusResult ?? {};
+  const { data } = useScanStatus();
   const params = usePageParams();
 
   return (
@@ -55,7 +52,7 @@ const DynamicBreadcrumbs = () => {
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink isLast>
-        <span className="inherit cursor-auto">{node_name}</span>
+        <span className="inherit cursor-auto">{data.node_name}</span>
       </BreadcrumbLink>
     </>
   );

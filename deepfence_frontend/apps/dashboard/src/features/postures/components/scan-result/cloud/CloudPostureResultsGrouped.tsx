@@ -35,8 +35,8 @@ import {
   DEFAULT_PAGE_SIZE,
   useGetControls,
   usePageParams,
-  useScanResults,
   useScanResultsByControl,
+  useScanStatus,
 } from '@/features/postures/components/scan-result/cloud/hooks';
 import { DeleteConfirmationModal } from '@/features/postures/components/scan-result/cloud/Modals';
 import { TablePlaceholder } from '@/features/postures/components/scan-result/cloud/TablePlaceholder';
@@ -94,16 +94,15 @@ export const CloudPostureResultsGrouped = () => {
 
 const CloudPostureResultsGroupedCheckTypeList = () => {
   const { nodeType } = usePageParams();
-  const { data } = useScanResults();
-  const checkTypes = data.data?.checkTypes ?? [];
+  const { data } = useScanStatus();
 
   const { mode } = useTheme();
 
-  const controls = useGetControls({ checkTypes, nodeType });
+  const controls = useGetControls({ checkTypes: data.benchmark_types ?? [], nodeType });
 
   return (
     <div className="flex flex-col gap-4 pb-4 -mt-4">
-      {checkTypes.map((checkType) => {
+      {data.benchmark_types?.map((checkType) => {
         return (
           <div key={checkType}>
             <div className="uppercase text-t4 text-text-text-and-icon py-2">

@@ -400,6 +400,33 @@ export const postureQueries = createQueryKeys('posture', {
       },
     };
   },
+  postureCloudScanStatus: (filters: { scanId: string }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        const { scanId } = filters;
+        const statusCloudComplianceScanApi = apiWrapper({
+          fn: getCloudComplianceApiClient().statusCloudComplianceScan,
+        });
+        const statusResult = await statusCloudComplianceScanApi({
+          modelScanStatusReq: {
+            scan_ids: [scanId],
+            bulk_scan_id: '',
+          },
+        });
+        if (!statusResult.ok) {
+          if (statusResult.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
+          }
+          throw statusResult.error;
+        }
+        if (!statusResult.value?.statuses?.length) {
+          throw new DF404Error('Scan not found');
+        }
+        return statusResult.value.statuses![0];
+      },
+    };
+  },
   postureCloudScanResults: (filters: {
     scanId: string;
     page?: number;

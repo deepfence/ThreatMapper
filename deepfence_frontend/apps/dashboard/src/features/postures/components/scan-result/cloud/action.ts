@@ -160,6 +160,7 @@ export const action = async ({
       }
       throw result.error;
     }
+    invalidateAllQueries();
     return {
       action: actionType,
       success: true,

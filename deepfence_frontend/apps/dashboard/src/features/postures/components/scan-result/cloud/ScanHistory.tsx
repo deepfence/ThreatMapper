@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { generatePath, useParams } from 'react-router-dom';
 import { Button } from 'ui-components';
 
@@ -16,7 +16,7 @@ import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
-import { useScanResults } from '@/features/postures/components/scan-result/cloud/hooks';
+import { useScanStatus } from '@/features/postures/components/scan-result/cloud/hooks';
 import { DeleteScanConfirmationModal } from '@/features/postures/components/scan-result/cloud/Modals';
 import { PosturesCloudCompare } from '@/features/postures/components/scan-result/PosturesCloudCompare';
 import { queries } from '@/queries';
@@ -25,7 +25,6 @@ import { formatMilliseconds } from '@/utils/date';
 import { isScanComplete, isScanDeletePending, isScanInProgress } from '@/utils/scan';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-// #region history
 export const ScanHistory = () => {
   return (
     <div className="flex items-center h-12">
@@ -47,16 +46,15 @@ export const ScanHistory = () => {
 };
 const HistoryControls = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data, fetchStatus } = useScanResults();
+  const { data, fetchStatus } = useScanStatus();
   const { nodeType = '' } = useParams();
-  const { scanStatusResult } = data;
   const { navigate, goBack } = usePageNavigation();
   const { downloadScan } = useDownloadScan((state) => {
     setIsSubmitting(state === 'submitting');
   });
 
   const [openStopScanModal, setOpenStopScanModal] = useState(false);
-  const { scan_id, node_id, node_type, created_at, status } = scanStatusResult ?? {};
+  const { scan_id, node_id, node_type, created_at, status } = data;
 
   const [showScanCompareModal, setShowScanCompareModal] = useState<boolean>(false);
 
@@ -76,7 +74,7 @@ const HistoryControls = () => {
     showScanTimeModal: false,
   });
 
-  const { data: historyData, refetch } = useSuspenseQuery({
+  const { data: historyData } = useSuspenseQuery({
     ...queries.common.scanHistories({
       scanType: ScanTypeEnum.CloudComplianceScan,
       nodeId: node_id ?? '',
@@ -84,10 +82,6 @@ const HistoryControls = () => {
       size: Number.MAX_SAFE_INTEGER,
     }),
   });
-
-  useEffect(() => {
-    refetch();
-  }, [scan_id]);
 
   if (!node_id || !node_type || !scan_id) {
     throw new Error('Scan id, Node type and Node id are required');
@@ -282,4 +276,3 @@ const HistoryControls = () => {
     </div>
   );
 };
-// #endregion
