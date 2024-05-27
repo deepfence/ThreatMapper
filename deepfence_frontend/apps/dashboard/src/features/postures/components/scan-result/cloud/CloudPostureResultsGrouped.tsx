@@ -1,5 +1,5 @@
 import { upperFirst } from 'lodash-es';
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
 import { useFetcher, useSearchParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 import {
@@ -16,11 +16,11 @@ import {
   Table,
   TableNoDataElement,
   TableSkeleton,
+  Tabs,
 } from 'ui-components';
 
 import { ModelCloudCompliance } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { CaretDown } from '@/components/icons/common/CaretDown';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { PostureStatusBadgeIcon } from '@/components/SeverityBadge';
@@ -100,64 +100,38 @@ export const CloudPostureResultsGrouped = () => {
 
 const CloudPostureResultsGroupedCheckTypeList = () => {
   const { data: statusData } = useScanStatus();
-  const [benchmarkAccordionValue, setBenchmarkAccordionValue] = useState<string>(
-    statusData.benchmark_types?.[0] ?? '',
-  );
-
-  useEffect(() => {
-    setBenchmarkAccordionValue(statusData.benchmark_types?.[0] ?? '');
-  }, [statusData.scan_id]);
-
-  if (!isScanComplete(statusData.status)) {
-    return (
-      <TablePlaceholder
-        scanStatus={statusData.status ?? ''}
-        message={statusData.status_message ?? ''}
-      />
-    );
-  }
+  const tabs = useMemo(() => {
+    return (statusData.benchmark_types ?? []).map((value) => {
+      return {
+        label: value,
+        value: value,
+      };
+    });
+  }, [statusData.benchmark_types]);
+  const [selectedTab, setSelectedTab] = useState(tabs[0].value);
 
   return (
     <div className="flex flex-col gap-4 pb-4 -mt-4">
-      {statusData.benchmark_types?.map((checkType) => {
-        return (
-          <div key={checkType}>
-            <button
-              type="button"
-              className={cn(
-                'text-start w-full uppercase text-t4 text-text-text-and-icon py-2',
-                {
-                  'dark:text-white text-black': benchmarkAccordionValue === checkType,
-                },
-              )}
-              onClick={(e) => {
-                e.preventDefault();
-                if (benchmarkAccordionValue === checkType) {
-                  setBenchmarkAccordionValue('');
-                } else {
-                  setBenchmarkAccordionValue(checkType);
-                }
-              }}
-            >
-              <div className="flex gap-2 items-center">
-                <div
-                  className={cn('h-4 w-4 shrink-0', {
-                    '-rotate-90': benchmarkAccordionValue !== checkType,
-                  })}
-                >
-                  <CaretDown />
-                </div>
-                <div>{checkType.replace('_', ' ')}</div>
-              </div>
-            </button>
-            {benchmarkAccordionValue === checkType && (
-              <Suspense fallback={<GroupedResultsBenchmarkSkeleton />}>
-                <CloudPostureResultsGroupedCheckType checkType={checkType} />
-              </Suspense>
+      <Tabs value={selectedTab} tabs={tabs} onValueChange={(v) => setSelectedTab(v)}>
+        <Suspense
+          fallback={
+            <div className="mt-4">
+              <GroupedResultsBenchmarkSkeleton />
+            </div>
+          }
+        >
+          <div className="mt-4">
+            {!isScanComplete(statusData.status) ? (
+              <TablePlaceholder
+                scanStatus={statusData.status ?? ''}
+                message={statusData.status_message ?? ''}
+              />
+            ) : (
+              <CloudPostureResultsGroupedCheckType checkType={selectedTab} />
             )}
           </div>
-        );
-      })}
+        </Suspense>
+      </Tabs>
     </div>
   );
 };
@@ -166,6 +140,10 @@ const CloudPostureResultsGroupedCheckType = ({ checkType }: { checkType: string 
   const { nodeType } = usePageParams();
   const controls = useGetControls({ checkType, nodeType });
   const { mode } = useTheme();
+
+  if (!controls[checkType] || controls[checkType].length === 0) {
+    return <TablePlaceholder scanStatus={'No data'} message={''} />;
+  }
 
   return (
     <Accordion type="single" collapsible>
@@ -176,7 +154,7 @@ const CloudPostureResultsGroupedCheckType = ({ checkType }: { checkType: string 
             key={control.node_id}
             disabled={control.totalCount === 0}
           >
-            <AccordionTrigger>
+            <AccordionTrigger disabled={control.totalCount === 0}>
               <div className="flex">
                 <div>
                   {control.category_hierarchy_short ?? ''} - {control.description ?? ''}

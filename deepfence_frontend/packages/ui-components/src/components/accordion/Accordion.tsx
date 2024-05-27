@@ -53,9 +53,11 @@ export const AccordionTrigger = React.forwardRef<
       className={cn(
         'flex outline-none p-2 place-items-center',
         'w-full group dark:bg-bg-grid-header bg-white',
-        'text-p2',
+        'text-p4',
         'data-[state=open]:text-text-input-value',
         'data-[state=closed]:text-text-text-and-icon',
+        'disabled:dark:text-opacity-40 disabled:text-opacity-40',
+        'disabled:data-[state=closed]:text-opacity-40',
         className,
       )}
       {...props}
