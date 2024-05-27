@@ -119,5 +119,5 @@ export const SecretScanResultsPieChart = ({
     return null;
   }
   const options = getChartOptions({ data, theme: mode });
-  return <ReactECharts theme="dark" option={options} onChartClick={onChartClick} />;
+  return <ReactECharts option={options} onChartClick={onChartClick} />;
 };

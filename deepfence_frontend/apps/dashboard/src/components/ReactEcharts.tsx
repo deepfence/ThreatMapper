@@ -48,7 +48,6 @@ export interface ReactEChartsProps {
   style?: CSSProperties;
   settings?: SetOptionOpts;
   loading?: boolean;
-  theme?: Mode; // TODO: Remove theme prop
   onChartClick?: (data: {
     name: string;
     value: string | number | Date;

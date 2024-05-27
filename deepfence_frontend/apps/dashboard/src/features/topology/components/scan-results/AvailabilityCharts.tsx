@@ -120,10 +120,7 @@ export const AvailabilityCharts = ({
         <div className="flex flex-col justify-center">
           <div className="h-[220px]">
             {cpuMax ? (
-              <ReactECharts
-                theme="dark"
-                option={getChartOption(mode, cpuUsage, cpuMax, 'cpu')}
-              />
+              <ReactECharts option={getChartOption(mode, cpuUsage, cpuMax, 'cpu')} />
             ) : (
               <div className="flex items-center justify-center h-full w-full gap-2">
                 <div className="h-6 w-6 shrink-0 text-text-icon">
@@ -139,7 +136,6 @@ export const AvailabilityCharts = ({
           <div className="h-[220px]">
             {memoryMax ? (
               <ReactECharts
-                theme="dark"
                 option={getChartOption(mode, memoryUsage, memoryMax, 'memory')}
               />
             ) : (
