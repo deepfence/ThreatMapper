@@ -16,7 +16,7 @@ export DEEPFENCED=$(PWD)/deepfence_bootstrapper
 export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/agent-binary
 export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
-export STEAMPIPE_IMG_TAG?=latest
+export STEAMPIPE_IMG_TAG?=0.20.x
 export IS_DEV_BUILD?=false
 export VERSION?=v2.2.1
 export AGENT_BINARY_BUILD=$(DEEPFENCE_FARGATE_DIR)/build
@@ -147,7 +147,7 @@ compliancescanner:
 
 .PHONY: cloudscanner
 cloudscanner: debian_builder deepfenced
-	(cd $(DEEPFENCE_AGENT_DIR) && IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build_cs_agent.sh)
+	(cd $(DEEPFENCE_AGENT_DIR) && IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build_cloud_agent.sh)
 
 .PHONY: openapi
 openapi: server

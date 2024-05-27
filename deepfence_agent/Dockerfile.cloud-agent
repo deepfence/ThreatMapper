@@ -1,4 +1,4 @@
-ARG STEAMPIPE_IMG_TAG=latest
+ARG STEAMPIPE_IMG_TAG=0.20.x
 ARG IMAGE_REPOSITORY=quay.io/deepfenceio
 FROM $IMAGE_REPOSITORY/steampipe:$STEAMPIPE_IMG_TAG AS steampipe
 
@@ -87,8 +87,8 @@ RUN chmod 600 /etc/logrotate.d/fenced_logrotate.conf \
     && chown deepfence /bin \
     && chown -R deepfence:root /opt/ \
     && chown -R deepfence /home/deepfence /var/log/fenced /var/run/ \
-    && ln -s /usr/local/bin/start_agent /usr/local/bin/cloud_scanner
+    && ln -s /usr/local/bin/start_agent /usr/local/bin/start_cloud_agent
 
 RUN apt-get -y remove git ca-certificates
 
-ENTRYPOINT ["/usr/local/bin/cloud_scanner"]
+ENTRYPOINT ["/usr/local/bin/start_cloud_agent"]
