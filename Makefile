@@ -141,9 +141,9 @@ malwarescanner: bootstrap-agent-plugins
 packagescanner: bootstrap-agent-plugins
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
 
-.PHONY: package-scanner-cli
-package-scanner-cli:
-	docker build --build-arg MAKE_CMD="cli" --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_cli:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
+.PHONY: packagescanner-cli
+packagescanner-cli:
+	(cd $(PACKAGE_SCANNER_DIR) && make docker-cli)
 
 .PHONY: compliancescanner
 compliancescanner:
@@ -230,7 +230,7 @@ publish-packagescanner:
 
 .PHONY: publish-packagescanner-cli
 publish-packagescanner-cli:
-	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_cli:$(DF_IMG_TAG)
+	(cd $(PACKAGE_SCANNER_DIR) && make publish-docker-cli)
 
 .PHONY: publish-secretscanner
 publish-secretscanner:
