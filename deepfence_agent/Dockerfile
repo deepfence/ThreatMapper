@@ -130,7 +130,7 @@ RUN apt-get update && \
     apt-get -y autoremove && \
     rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /etc/license/ /usr/local/bin /usr/local/lib /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ && \
+RUN mkdir -p /etc/license/ /usr/local/bin /usr/local/lib /deepfenced /var/tmp/layers && \
     chown root:root /deepfenced && \
     chmod 0744 /deepfenced && \
     mkdir -p /usr/local/bin/compliance_check && \
