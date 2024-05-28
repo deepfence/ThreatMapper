@@ -464,7 +464,6 @@ export const secretQueries = createQueryKeys('secret', {
         }
 
         if (resultSecretScanResponse.value === null) {
-          // TODO: handle this case with 404 status maybe
           throw new Error('Error getting scan results');
         }
         const totalSeverity = Object.values(
@@ -563,7 +562,6 @@ export const secretQueries = createQueryKeys('secret', {
         }
 
         if (resultSecretScanResponse.value === null) {
-          // TODO: handle this case with 404 status maybe
           throw new Error('Error getting scan results');
         }
 
@@ -755,8 +753,7 @@ export const secretQueries = createQueryKeys('secret', {
         });
 
         if (!uniqueSecretsCounts.ok) {
-          // TODO handle error
-          return defaultResults;
+          throw new Error('Error getting unique secret count');
         }
 
         return {
@@ -820,8 +817,7 @@ export const secretQueries = createQueryKeys('secret', {
           },
         });
         if (!mostExploitableSecretCounts.ok) {
-          // TODO handle error
-          return defaultResults;
+          throw new Error('Error getting most exploitable count');
         }
 
         return {

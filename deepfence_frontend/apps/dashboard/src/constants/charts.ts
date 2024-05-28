@@ -24,7 +24,6 @@ export const getSeverityChartInnerColorMap = (theme: Mode) => {
   };
 };
 
-// TODO: take theme into account
 export function getColorForCVSSScore(theme: Mode, score: number | undefined): string {
   const color = colors[theme === 'light' ? 'variables' : 'darkVariables'].DEFAULT;
   if (!score) return color['df-gray']['600'];

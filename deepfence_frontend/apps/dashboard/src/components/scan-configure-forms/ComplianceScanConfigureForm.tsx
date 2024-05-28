@@ -269,16 +269,14 @@ const ToggleControl = ({
   nodeId,
   nodeType,
   checkType,
-  fetcher,
 }: {
   checked: boolean;
   controlId: string[];
   nodeId: string;
   nodeType: string;
   checkType: string;
-  fetcher: FetcherWithComponents<ControlActionDta>;
 }) => {
-  // TODO: should show loader indicator here
+  const fetcher = useFetcher();
   if (fetcher.state !== 'idle') {
     return <CircleSpinner size="sm" />;
   }
@@ -340,6 +338,7 @@ const ControlTable = ({
         cell: (info) => {
           return (
             <ToggleControl
+              key={info.row.original?.control_id}
               nodeId={nodeIds[0]}
               nodeType={_nodeType}
               checkType={selectedTab.toLowerCase()}
@@ -347,7 +346,6 @@ const ControlTable = ({
               controlId={
                 info.row.original?.control_id ? [info.row.original.control_id] : ['']
               }
-              fetcher={fetcher}
             />
           );
         },
