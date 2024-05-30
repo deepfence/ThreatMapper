@@ -46,7 +46,7 @@ backup_db() {
     touch /backups/.inprogress
     neo4j stop
     NOW=$(date +"%Y-%m-%d_%H-%M-%S")
-    neo4j-admin dump --database=neo4j --to="/backups/neo4j_$NOW.dump"
+    neo4j-admin database dump neo4j --to-stdout > /backups/neo4j_$NOW.dump
     ls -tr /backups/*.dump | head -n -${MAX_NUM_BACKUPS:-5} | xargs --no-run-if-empty rm
     start_db
     rm /backups/.inprogress
@@ -75,7 +75,7 @@ else
         echo "Backup already loaded, skipping"
     else
         echo "Start using backup: $USE_BACKUP"
-        neo4j-admin load --database=neo4j --from=$USE_BACKUP --force
+        cat $USE_BACKUP | neo4j-admin database load --from-stdin neo4j --overwrite-destination=true
         mv $USE_BACKUP $USE_BACKUP.used
     fi
 fi
