@@ -100,7 +100,6 @@ const TopRisksContent = ({
     <div className="flex-1 flex flex-col items-center py-1.5">
       <div className="max-w-[162px] max-h-[162px] h-[162px] w-[162px]">
         <ReactECharts
-          theme="dark"
           option={chartOptions}
           onChartClick={({ name }: { name: string; value: string | number | Date }) => {
             navigate(`${to}?severity=${name.toLowerCase()}`);
