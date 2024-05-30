@@ -14,7 +14,7 @@ if [ $retVal -ne 0 ]; then
     exit
 fi
 
-neo4j-admin dump --database='neo4j' --to=$BACKUP_FILE
+neo4j-admin database dump neo4j --to-stdout > $BACKUP_FILE
 retVal=$?
 if [ $retVal -ne 0 ]; then
     echo "Failed to create the backup file"
