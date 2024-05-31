@@ -1,9 +1,9 @@
 #!/bin/bash
 
 dt=$(date '+%Y-%m-%d_%H-%M-%S');
-BACKUP_FILE="/backups/neo4j_backup_"$dt
+BACKUP_FILE="/backups/neo4j_backup_$dt.dump"
 
-echo "Backup file is:$BACKUP_FILE"
+echo "Backup file is: $BACKUP_FILE"
 
 mkdir -p /backups/
 
