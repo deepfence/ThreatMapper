@@ -68,7 +68,7 @@ type NodeIdentifier struct {
 }
 
 type ComplianceBenchmarkTypes struct {
-	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
+	BenchmarkTypes []string `json:"benchmark_types" enum:"hipaa,gdpr,pci,nist,cis,soc_2,nsa-cisa" required:"true"`
 }
 
 type ScanStatus string
@@ -484,8 +484,8 @@ type Compliance struct {
 	TestRationale       string      `json:"test_rationale" required:"true"`
 	TestSeverity        string      `json:"test_severity" required:"true"`
 	TestDesc            string      `json:"test_desc" required:"true"`
-	Status              string      `json:"status" required:"true"`
-	ComplianceCheckType string      `json:"compliance_check_type" required:"true"`
+	Status              string      `json:"status" required:"true" enum:"pass,fail,warn,info,note"`
+	ComplianceCheckType string      `json:"compliance_check_type" required:"true" enum:"hipaa,gdpr,pci,nist"`
 	ComplianceNodeID    string      `json:"node_id" required:"true"`
 	ComplianceNodeType  string      `json:"node_type" required:"true"`
 	Masked              bool        `json:"masked" required:"true"`
@@ -541,13 +541,13 @@ type CloudCompliance struct {
 	Count               int32       `json:"count,omitempty" required:"true"`
 	Reason              string      `json:"reason" required:"true"`
 	Resource            string      `json:"resource" required:"true"`
-	Status              string      `json:"status" required:"true"`
+	Status              string      `json:"status" required:"true" enum:"alarm,skip,ok,info"`
 	Region              string      `json:"region" required:"true"`
 	AccountID           string      `json:"account_id" required:"true"`
 	Group               string      `json:"group" required:"true"`
 	Service             string      `json:"service" required:"true"`
 	Title               string      `json:"title" required:"true"`
-	ComplianceCheckType string      `json:"compliance_check_type" required:"true"`
+	ComplianceCheckType string      `json:"compliance_check_type" required:"true" enum:"hipaa,gdpr,pci,nist,cis,soc_2,nsa-cisa"`
 	CloudProvider       string      `json:"cloud_provider" required:"true"`
 	NodeName            string      `json:"node_name" required:"true"`
 	NodeID              string      `json:"node_id" required:"true"`
