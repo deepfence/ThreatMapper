@@ -78,6 +78,8 @@ export * from './ModelComplianceScanInfo';
 export * from './ModelComplianceScanResult';
 export * from './ModelComplianceScanStatusResp';
 export * from './ModelComplianceScanTriggerReq';
+export * from './ModelComplinaceScanResultsGroupReq';
+export * from './ModelComplinaceScanResultsGroupResp';
 export * from './ModelConnection';
 export * from './ModelContainer';
 export * from './ModelContainerImage';
