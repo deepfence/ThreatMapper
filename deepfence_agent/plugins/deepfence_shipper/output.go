@@ -122,7 +122,7 @@ func (p *Publisher) validateTokens() error {
 
 	var err error
 
-	if !dfUtils.IsJWTExpired(p.AccessToken) {
+	if len(p.AccessToken) != 0 && len(p.RefreshToken) != 0 && !dfUtils.IsJWTExpired(p.AccessToken) {
 		return nil
 	} else {
 		p.AccessToken, p.RefreshToken, err = RefreshToken(p.ConsoleURL, p.RefreshToken)
@@ -130,7 +130,11 @@ func (p *Publisher) validateTokens() error {
 			p.AccessToken, p.RefreshToken, err = Authenticate(p.ConsoleURL, p.Key)
 			if err != nil {
 				return err
+			} else {
+				log.Print("tokens refreshed using auth")
 			}
+		} else {
+			log.Print("tokens refreshed")
 		}
 	}
 
@@ -187,7 +191,7 @@ func NewPublisher(cfg PublisherConfig, maxRetries int, batchSize int) *Publisher
 	}
 
 	if err := pub.validateTokens(); err != nil {
-		log.Fatal(err.Error())
+		log.Print(err.Error())
 	}
 
 	return pub

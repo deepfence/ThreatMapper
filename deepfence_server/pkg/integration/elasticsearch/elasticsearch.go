@@ -50,24 +50,20 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	// send message to this elasticsearch using http
 	// Set up the HTTP request.
 	endpointURL := strings.TrimRight(e.Config.EndpointURL, "/")
-	req, err = http.NewRequest("POST", endpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
+	req, err = http.NewRequest(http.MethodPost, endpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
 	if err != nil {
 		span.EndWithErr(err)
 		return err
 	}
 
+	req.Header.Set("Content-Type", "application/x-ndjson")
+
 	if e.Config.AuthHeader != "" {
 		req.Header.Set("Authorization", e.Config.AuthHeader)
 	}
 
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/x-ndjson")
-
 	// Make the HTTP request.
-	client := utils.GetHTTPClient()
-	resp, err := client.Do(req)
+	resp, err := utils.GetHTTPClient().Do(req)
 	if err != nil {
 		span.EndWithErr(err)
 		return err
@@ -89,7 +85,16 @@ func (e ElasticSearch) IsValidCredential(ctx context.Context) (bool, error) {
 	url = fmt.Sprintf("%s/%s", url, e.Config.Index)
 
 	// Send a HEAD request to check if the index exists
-	resp, err := http.Head(url)
+	req, err := http.NewRequest(http.MethodHead, url, nil)
+	if err != nil {
+		return false, err
+	}
+
+	if e.Config.AuthHeader != "" {
+		req.Header.Set("Authorization", e.Config.AuthHeader)
+	}
+
+	resp, err := utils.GetHTTPClient().Do(req)
 	if err != nil {
 		log.Error().Msgf("Error connecting to Elasticsearch: %v", err)
 		return false, fmt.Errorf("error connecting to Elasticsearch: %v", err)

@@ -6,13 +6,70 @@ FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS package_build
 FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS malware_build
 FROM $IMAGE_REPOSITORY/deepfence_compliance_scanner_ce:$DF_IMG_TAG AS compliance_build
 
+FROM debian:12-slim as downloads
+
+ENV DOCKERVERSION="24.0.2" \
+    VESSEL_VERSION="0.12.3"\
+    NERDCTL_VERSION="1.6.0" \
+    CRICTL_VERSION="v1.28.0"
+
+ARG TARGETARCH
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates
+
+# for docker 
+RUN <<EOF
+set -eux
+
+if [ "$TARGETARCH" = "arm64" ]; then
+    echo "export ARCHITECTURE=aarch64" >> /envfile
+elif [ "$TARGETARCH" = "amd64" ]; then
+    echo "export ARCHITECTURE=x86_64" >> /envfile
+else
+    echo "Unsupported architecture $TARGETARCH" && exit 1;
+fi
+
+EOF
+
+RUN . /envfile; curl -fsSLO https://download.docker.com/linux/static/stable/${ARCHITECTURE}/docker-${DOCKERVERSION}.tgz && \
+    tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker && \
+    rm docker-${DOCKERVERSION}.tgz
+
+# for other binary tools
+RUN <<EOF
+set -eux
+
+if [ "$TARGETARCH" = "arm64" ]; then
+    echo "export ARCHITECTURE=arm64" >> /envfile
+elif [ "$TARGETARCH" = "amd64" ]; then
+    echo "export ARCHITECTURE=amd64" >> /envfile
+else
+    echo "Unsupported architecture $TARGETARCH" && exit 1
+fi
+
+EOF
+
+RUN . /envfile; curl -fsSLO https://github.com/deepfence/vessel/releases/download/v${VESSEL_VERSION}/vessel_v${VESSEL_VERSION}_linux_${ARCHITECTURE}.tar.gz && \
+    tar -xzf vessel_v${VESSEL_VERSION}_linux_${ARCHITECTURE}.tar.gz && \
+    mv vessel /usr/local/bin/ && \
+    rm -rf vessel_v${VESSEL_VERSION}_linux_${ARCHITECTURE}.tar.gz
+
+RUN . /envfile; curl -fsSLO https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/nerdctl-${NERDCTL_VERSION}-linux-${ARCHITECTURE}.tar.gz && \
+    tar Cxzvvf /usr/local/bin nerdctl-${NERDCTL_VERSION}-linux-${ARCHITECTURE}.tar.gz && \
+    rm nerdctl-${NERDCTL_VERSION}-linux-${ARCHITECTURE}.tar.gz
+
+RUN . /envfile; curl -fsSLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-linux-${ARCHITECTURE}.tar.gz && \
+    tar zxvf crictl-${CRICTL_VERSION}-linux-${ARCHITECTURE}.tar.gz -C /usr/local/bin && \
+    rm -f crictl-${CRICTL_VERSION}-linux-${ARCHITECTURE}.tar.gz
+
+
 FROM debian:12-slim
 
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true \
-    DOCKERVERSION=24.0.2 \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N" \
@@ -73,29 +130,11 @@ RUN apt-get update && \
     apt-get -y autoremove && \
     rm -rf /var/lib/apt/lists/*
 
-ARG TARGETARCH
-
-RUN <<EOF
-set -eux
-
-if [ "$TARGETARCH" = "arm64" ]; then
-    ARCHITECTURE="aarch64"
-elif [ "$TARGETARCH" = "amd64" ]; then
-    ARCHITECTURE="x86_64"
-else
-    echo "Unsupported architecture $TARGETARCH" && exit 1;
-fi
-
-curl -fsSLO https://download.docker.com/linux/static/stable/${ARCHITECTURE}/docker-${DOCKERVERSION}.tgz
-tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker
-rm docker-${DOCKERVERSION}.tgz
-
-mkdir -p /etc/license/ /usr/local/bin /usr/local/lib \
-    /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/
-chown root:root /deepfenced && chmod 0744 /deepfenced
-mkdir /usr/local/bin/compliance_check && mkdir /usr/local/discovery
-
-EOF
+RUN mkdir -p /etc/license/ /usr/local/bin /usr/local/lib /deepfenced /var/tmp/layers && \
+    chown root:root /deepfenced && \
+    chmod 0744 /deepfenced && \
+    mkdir -p /usr/local/bin/compliance_check && \
+    mkdir -p /usr/local/discovery
 
 COPY tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
@@ -124,65 +163,16 @@ COPY --from=malware_build /home/deepfence/usr/config.yaml /home/deepfence/bin/ya
 COPY --from=compliance_build /usr/bin/compliance /usr/local/bin/compliance_check/compliance
 COPY --from=compliance_build /usr/bin/compliance /home/deepfence/bin/compliance
 
+# copy bins 
+COPY --from=downloads /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=downloads /usr/local/bin/vessel /usr/local/bin/vessel
+COPY --from=downloads /usr/local/bin/nerdctl /usr/local/bin/nerdctl
+COPY --from=downloads /usr/local/bin/crictl /usr/local/bin/crictl
+
 RUN chmod 700 /usr/local/bin/getCloudInstanceId \
     && chmod 700 /usr/local/discovery/deepfence-discovery /home/deepfence/run_discovery.sh \
     && chmod +x /home/deepfence/*.sh \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_agent
-
-RUN <<EOF
-set -eux
-
-vessel_version="0.12.3"
-if [ "$TARGETARCH" = "arm64" ]; then
-    ARCHITECTURE="arm64"
-elif [ "$TARGETARCH" = "amd64" ]; then
-    ARCHITECTURE="amd64"
-else
-    echo "Unsupported architecture $TARGETARCH" && exit 1
-fi
-
-curl -fsSLO https://github.com/deepfence/vessel/releases/download/v${vessel_version}/vessel_v${vessel_version}_linux_${ARCHITECTURE}.tar.gz
-tar -xzf vessel_v${vessel_version}_linux_${ARCHITECTURE}.tar.gz
-mv vessel /usr/local/bin/
-rm -rf vessel_v${vessel_version}_linux_${ARCHITECTURE}.tar.gz
-
-EOF
-
-RUN <<EOF
-set -eux
-
-nerdctl_version="1.6.0"
-if [ "$TARGETARCH" = "arm64" ]; then
-    ARCHITECTURE="arm64"
-elif [ "$TARGETARCH" = "amd64" ]; then
-    ARCHITECTURE="amd64"
-else
-    echo "Unsupported architecture $TARGETARCH" && exit 1
-fi
-
-curl -fsSLO https://github.com/containerd/nerdctl/releases/download/v${nerdctl_version}/nerdctl-${nerdctl_version}-linux-${ARCHITECTURE}.tar.gz
-tar Cxzvvf /usr/local/bin nerdctl-${nerdctl_version}-linux-${ARCHITECTURE}.tar.gz
-rm nerdctl-${nerdctl_version}-linux-${ARCHITECTURE}.tar.gz
-
-EOF
-
-RUN <<EOF
-set -eux
-
-crictl_version="v1.28.0"
-if [ "$TARGETARCH" = "arm64" ]; then
-    ARCHITECTURE="arm64"
-elif [ "$TARGETARCH" = "amd64" ]; then
-    ARCHITECTURE="amd64"
-else
-    echo "Unsupported architecture $TARGETARCH" && exit 1
-fi
-
-curl -fsSLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${crictl_version}/crictl-${crictl_version}-linux-${ARCHITECTURE}.tar.gz
-tar zxvf crictl-${crictl_version}-linux-${ARCHITECTURE}.tar.gz -C /usr/local/bin
-rm -f crictl-${crictl_version}-linux-${ARCHITECTURE}.tar.gz
-
-EOF
 
 ENTRYPOINT ["/usr/local/bin/start_agent"]

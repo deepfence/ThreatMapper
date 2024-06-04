@@ -33,7 +33,8 @@ export const SeverityBadge = ({
           'bg-severity-high': severity === 'high',
           'bg-severity-medium': severity === 'medium',
           'bg-severity-low': severity === 'low',
-          'bg-severity-unknown': !severity || severity === 'unknown',
+          'bg-severity-unknown':
+            !severity || severity === 'unknown' || severity === 'info',
         },
         className,
       )}
