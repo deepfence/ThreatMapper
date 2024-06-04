@@ -33,7 +33,7 @@ export const complianceType: {
   [key in ComplianceScanNodeTypeEnum]: ModelBenchmarkType[];
 } = {
   aws: [
-    ModelBenchmarkType.Hipaa,
+    ModelBenchmarkType.Cis,
     ModelBenchmarkType.Nist,
     ModelBenchmarkType.Pci,
     ModelBenchmarkType.Hipaa,
@@ -108,7 +108,7 @@ export const scanPostureApiAction = async ({
   const nodeIds = body._nodeIds.toString().split(',');
   let nodeType = body._nodeType.toString();
   const checkTypes = body._checkTypes.toString()?.split(',') as Array<ModelBenchmarkType>;
-
+  debugger;
   const isCloudScan = CLOUDS.includes(nodeType as ComplianceScanNodeTypeEnum);
   if (isKubernetesNode(nodeType as ComplianceScanNodeTypeEnum)) {
     nodeType = 'cluster';
