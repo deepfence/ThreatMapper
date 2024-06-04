@@ -237,7 +237,7 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			log.Warn().Msgf("Invalid benchmarkType for compliance scan, job id: %d", scheduleJobId)
 			return nil
 		}
-		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, payload.BenchmarkTypes, false)
+		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, model.BenchmarkTypeToArray(payload.BenchmarkTypes), false)
 		if err != nil {
 			return err
 		}

@@ -67,8 +67,26 @@ type NodeIdentifier struct {
 	NodeType string `json:"node_type" required:"true" enum:"image,host,container,cloud_account,cluster,registry,pod"`
 }
 
+// required to generate proper openapi spec
+type BenchmarkType string
+
+// TODO: add new compliance type here
+func (bt BenchmarkType) Enum() []interface{} {
+	return []interface{}{"hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"}
+}
+
+func BenchmarkTypeToArray(bt []BenchmarkType) []string {
+	bs := []string{}
+	if len(bt) > 0 {
+		for _, b := range bt {
+			bs = append(bs, string(b))
+		}
+	}
+	return bs
+}
+
 type ComplianceBenchmarkTypes struct {
-	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
+	BenchmarkTypes []BenchmarkType `json:"benchmark_types" required:"true"`
 }
 
 type ScanStatus string
