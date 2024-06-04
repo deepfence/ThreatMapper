@@ -375,7 +375,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersSecretScanStatus?.map(IngestersSecretScanStatusToJSON),
+            body: requestParameters.ingestersSecretScanStatus.map(IngestersSecretScanStatusToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -413,7 +413,7 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersSecret?.map(IngestersSecretToJSON),
+            body: requestParameters.ingestersSecret.map(IngestersSecretToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

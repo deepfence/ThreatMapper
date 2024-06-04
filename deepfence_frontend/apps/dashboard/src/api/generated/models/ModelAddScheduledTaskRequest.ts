@@ -49,7 +49,7 @@ export interface ModelAddScheduledTaskRequest {
      * @type {Array<string>}
      * @memberof ModelAddScheduledTaskRequest
      */
-    benchmark_types: Array<string> | null;
+    benchmark_types: ModelAddScheduledTaskRequestBenchmarkTypesEnum;
     /**
      * 
      * @type {string}
@@ -106,6 +106,13 @@ export const ModelAddScheduledTaskRequestActionEnum = {
     CloudComplianceScan: 'CloudComplianceScan'
 } as const;
 export type ModelAddScheduledTaskRequestActionEnum = typeof ModelAddScheduledTaskRequestActionEnum[keyof typeof ModelAddScheduledTaskRequestActionEnum];
+
+/**
+ * @export
+ */
+export const ModelAddScheduledTaskRequestBenchmarkTypesEnum = {
+} as const;
+export type ModelAddScheduledTaskRequestBenchmarkTypesEnum = typeof ModelAddScheduledTaskRequestBenchmarkTypesEnum[keyof typeof ModelAddScheduledTaskRequestBenchmarkTypesEnum];
 
 
 /**

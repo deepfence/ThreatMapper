@@ -86,7 +86,7 @@ export class CloudResourcesApi extends runtime.BaseAPI implements CloudResources
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersCloudResource?.map(IngestersCloudResourceToJSON),
+            body: requestParameters.ingestersCloudResource.map(IngestersCloudResourceToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
