@@ -1456,21 +1456,18 @@ const PostureTable = ({
         ),
       }),
     ];
+    const resourceColumn = columnHelper.accessor('resource', {
+      enableResizing: false,
+      minSize: 60,
+      size: 70,
+      maxSize: 80,
+      header: () => <div>Resource (ID)</div>,
+      cell: (info) => {
+        return <TruncatedText text={info.getValue()} />;
+      },
+    });
     if (params.nodeType && params.nodeType === 'kubernetes') {
-      columns.splice(
-        columns.length - 1,
-        0,
-        columnHelper.accessor('resource', {
-          enableResizing: false,
-          minSize: 60,
-          size: 70,
-          maxSize: 80,
-          header: () => <div>Resource (ID)</div>,
-          cell: (info) => {
-            return <TruncatedText text={info.getValue()} />;
-          },
-        }),
-      );
+      columns.splice(columns.length - 1, 0, resourceColumn);
     }
     return columns;
   }, [setSearchParams, params.nodeType, mode]);

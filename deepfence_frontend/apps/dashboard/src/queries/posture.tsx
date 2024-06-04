@@ -9,6 +9,7 @@ import {
   getSearchApiClient,
 } from '@/api/api';
 import {
+  ModelBenchmarkType,
   ModelCloudCompliance,
   ModelCloudNodeControlReqCloudProviderEnum,
   ModelCompliance,
@@ -589,7 +590,7 @@ export const postureQueries = createQueryKeys('posture', {
       },
     };
   },
-  listControls: (filters: { nodeType: string; checkType: string }) => {
+  listControls: (filters: { nodeType: string; checkType: ModelBenchmarkType }) => {
     const { nodeType, checkType } = filters;
     return {
       queryKey: [{ filters }],

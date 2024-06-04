@@ -1,5 +1,6 @@
 import { generatePath } from 'react-router-dom';
 
+import { ModelBenchmarkType } from '@/api/generated';
 import { ScanStatusEnum, ScanTypeEnum } from '@/types/common';
 
 export const isScanComplete = (status: string): boolean => {
@@ -234,31 +235,21 @@ export const SCAN_STATUS_GROUPS = [
   },
 ];
 
-export enum BenchmarkEnum {
-  cis = 'cis',
-  nist = 'nist',
-  pci = 'pci',
-  hippa = 'hippa',
-  soc2 = 'soc_2',
-  gdpr = 'gdpr',
-  'nsa-cisa' = 'nsa-cisa',
-}
-
-export function getBenchmarkPrettyName(backendBenchmark: BenchmarkEnum) {
+export function getBenchmarkPrettyName(backendBenchmark: ModelBenchmarkType) {
   switch (backendBenchmark) {
-    case BenchmarkEnum.cis:
+    case ModelBenchmarkType.Cis:
       return 'CIS';
-    case BenchmarkEnum.nist:
+    case ModelBenchmarkType.Nist:
       return 'NIST';
-    case BenchmarkEnum.pci:
+    case ModelBenchmarkType.Pci:
       return 'PCI';
-    case BenchmarkEnum.hippa:
+    case ModelBenchmarkType.Hipaa:
       return 'HIPPA';
-    case BenchmarkEnum.soc2:
+    case ModelBenchmarkType.Soc2:
       return 'SOC2';
-    case BenchmarkEnum.gdpr:
+    case ModelBenchmarkType.Gdpr:
       return 'GDPR';
-    case BenchmarkEnum['nsa-cisa']:
+    case ModelBenchmarkType.NsaCisa:
       return 'NSA-CISA';
 
     default:
