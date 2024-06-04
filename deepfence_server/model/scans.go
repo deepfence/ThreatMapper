@@ -68,7 +68,7 @@ type NodeIdentifier struct {
 }
 
 type ComplianceBenchmarkTypes struct {
-	BenchmarkTypes []string `json:"benchmark_types" enum:"hipaa,gdpr,pci,nist,cis,soc_2,nsa-cisa" required:"true"`
+	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
 
 type ScanStatus string
