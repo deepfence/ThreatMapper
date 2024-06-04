@@ -265,6 +265,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/vulnerability", dfHandler.CompleteVulnerabilityInfo)
 				r.Post("/host", dfHandler.CompleteHostInfo)
 				r.Post("/cloud-compliance", dfHandler.CompleteCloudComplianceInfo)
+				r.Post("/cloud-resources", dfHandler.CompleteCloudResource)
 				r.Post("/compliance", dfHandler.CompleteComplianceInfo)
 				r.Post("/pod", dfHandler.CompletePodInfo)
 				r.Post("/container", dfHandler.CompleteContainerInfo)
