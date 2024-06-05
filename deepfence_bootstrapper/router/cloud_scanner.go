@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"time"
 
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
@@ -14,18 +13,6 @@ import (
 var (
 	CloudScannerSocketPath = "/tmp/cloud-scanner.sock"
 )
-
-var (
-	CloudScannerMgmtConsoleUrl string
-)
-
-func init() {
-	CloudScannerMgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL")
-	consolePort := os.Getenv("MGMT_CONSOLE_PORT")
-	if consolePort != "" && consolePort != "443" {
-		CloudScannerMgmtConsoleUrl += ":" + consolePort
-	}
-}
 
 func StartCloudComplianceScan(req ctl.StartCloudComplianceScanRequest) error {
 	log.Info().Msgf("Start Cloud Compliance scan: %s, scan id: %s, scan types:%v\n", req.ScanDetails.AccountId, req.ScanDetails.ScanId, req.ScanDetails.ScanTypes)

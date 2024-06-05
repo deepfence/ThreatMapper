@@ -330,10 +330,10 @@ func AddNewCloudComplianceScan(
 		nt = controls.Host
 	}
 	var action []byte
-	var hostNodeId, hostNeo4jNodeType string
+	var hostNodeID, hostNeo4jNodeType string
 
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || nodeType == controls.ResourceTypeToString(controls.Host) {
-		hostNodeId = nodeID
+		hostNodeID = nodeID
 		hostNeo4jNodeType = neo4jNodeType
 		internalReq, _ := json.Marshal(controls.StartComplianceScanRequest{
 			NodeID:   nodeID,
@@ -366,7 +366,7 @@ func AddNewCloudComplianceScan(
 			CloudProvider: rec.Values[1].(string),
 			NodeName:      rec.Values[2].(string),
 		}
-		hostNodeId = scanNodeDetails.AgentNodeId
+		hostNodeID = scanNodeDetails.AgentNodeId
 		benchmarks, err := GetActiveCloudControls(ctx, tx, benchmarkTypes, scanNodeDetails.CloudProvider)
 		if err != nil {
 			log.Error().Msgf("Error getting controls for compliance type: %+v", benchmarkTypes)
@@ -431,7 +431,7 @@ func AddNewCloudComplianceScan(
 		MERGE (n)-[:SCHEDULED]->(m)`, scanType, nodeType),
 		map[string]interface{}{
 			"scan_id": scanID,
-			"node_id": hostNodeId,
+			"node_id": hostNodeID,
 		}); err != nil {
 		return err
 	}
