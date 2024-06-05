@@ -16,7 +16,7 @@ building_image(){
     fi
 
     echo "Building Cloud Agent Image"
-    docker build --network host --rm=true --build-arg VERSION="$VERSION" --build-arg IMAGE_REPOSITORY="$IMAGE_REPOSITORY" --build-arg STEAMPIPE_IMG_TAG="$STEAMPIPE_IMG_TAG" --tag="$IMAGE_REPOSITORY/cloud-scanner:$DF_IMG_TAG" -f Dockerfile.cloud-agent .
+    docker build --network host --rm=true --build-arg VERSION="$VERSION" --build-arg IMAGE_REPOSITORY="$IMAGE_REPOSITORY" --build-arg STEAMPIPE_IMG_TAG="$STEAMPIPE_IMG_TAG" --tag="$IMAGE_REPOSITORY/cloud_scanner_ce:$DF_IMG_TAG" -f Dockerfile.cloud-agent .
     build_result=$?
     if [ $build_result -ne 0 ]
     then

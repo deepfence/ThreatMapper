@@ -249,7 +249,7 @@ publish-jaeger:
 
 .PHONY: publish-cloudscanner
 publish-cloudscanner:
-	docker push $(IMAGE_REPOSITORY)/cloud-scanner:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/cloud_scanner_ce:$(DF_IMG_TAG)
 
 .PHONY: clean
 clean:
