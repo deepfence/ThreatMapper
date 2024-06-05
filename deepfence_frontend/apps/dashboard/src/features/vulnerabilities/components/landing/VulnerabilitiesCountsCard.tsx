@@ -203,7 +203,6 @@ const CardContent = ({
     <div className="flex-1 flex flex-col items-center min-h-[180px] ">
       <div className="h-[180px] w-[180px]">
         <ReactECharts
-          theme={mode}
           option={chartOptions}
           onChartClick={({ name }: { name: string; value: string | number | Date }) => {
             navigate(`${to}?severity=${name.toLowerCase()}`);

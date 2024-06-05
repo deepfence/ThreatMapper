@@ -105,5 +105,5 @@ const DummyDonutChart = () => {
       },
     ],
   };
-  return <ReactECharts theme={mode} option={option} />;
+  return <ReactECharts option={option} />;
 };

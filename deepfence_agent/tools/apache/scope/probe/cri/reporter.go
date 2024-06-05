@@ -201,7 +201,7 @@ func (r *Reporter) getImage(image *client.Image) (*report.TopologyNode, *ImageMe
 		NodeID:                 imageID,
 		DockerImageSize:        humanize.Bytes(uint64(image.Size())),
 		DockerImageVirtualSize: humanize.Bytes(uint64(image.Size())),
-		DockerImageCreatedAt:   time.Unix(0, 0).Format("2006-01-02T15:04:05") + "Z",
+		DockerImageCreatedAt:   "",
 		HostName:               r.hostID,
 		KubernetesClusterId:    r.kubernetesClusterId,
 		KubernetesClusterName:  r.kubernetesClusterName,
