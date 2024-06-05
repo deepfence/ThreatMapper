@@ -922,3 +922,18 @@ func (d *OpenAPIDocs) AddCompletionOperations() {
 		"Get Completion for Container fields", "Complete Container info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 }
+
+func (d *OpenAPIDocs) AddNotificationOperations() {
+	d.AddOperation("getNotificationScans", http.MethodGet, "/deepfence/notification/scans",
+		"Get Notification", "Get Scans for Notification",
+		http.StatusOK, []string{tagNotification}, bearerToken, new(NotificationGetScanRequest), new(NotificationGetScanResponse))
+	d.AddOperation("markNotificationScansRead", http.MethodPost, "/deepfence/notification/scans/mark-read",
+		"Mark Notification Scans Read", "Mark Notification Scans Read",
+		http.StatusNoContent, []string{tagNotification}, bearerToken, new(NotificationMarkScanReadRequest), nil)
+	d.AddOperation("getNotificationRegistrySync", http.MethodGet, "/deepfence/notification/registry-sync",
+		"Get Notification", "Get Registry Sync for Notification",
+		http.StatusOK, []string{tagNotification}, bearerToken, nil, new([]RegistryAccount))
+	d.AddOperation("getNotificationIntegrationFailures", http.MethodGet, "/deepfence/notification/integration",
+		"Get Notification", "Get Integration Failures for Notification",
+		http.StatusOK, []string{tagNotification}, bearerToken, nil, new([]IntegrationListResp))
+}

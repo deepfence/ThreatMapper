@@ -176,6 +176,11 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 			integrationStatus = integration.ErrorMsg.String
 		}
 
+		var lastSentTime string
+		if integration.LastSentTime.Valid {
+			lastSentTime = integration.LastSentTime.Time.String()
+		}
+
 		newIntegration := model.IntegrationListResp{
 			ID:               integration.ID,
 			IntegrationType:  integration.IntegrationType,
@@ -183,6 +188,7 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 			Config:           config,
 			Filters:          filters,
 			LastErrorMsg:     integrationStatus,
+			LastSentTime:     lastSentTime,
 		}
 
 		newIntegration.RedactSensitiveFieldsInConfig()

@@ -92,3 +92,10 @@ p, admin, license, read
 p, admin, license, write
 p, admin, license, delete
 p, standard-user, license, read
+
+p, admin, notification, read
+p, admin, notification, write
+p, admin, notification, delete
+p, standard-user, notification, read
+p, standard-user, notification, write
+p, read-only-user, notification, read

@@ -39,19 +39,20 @@ const (
 
 	//	API RBAC Resources
 
-	ResourceUser        = "user"
-	ResourceSettings    = "settings"
-	ResourceAllUsers    = "all-users"
-	ResourceAgentReport = "agent-report"
-	ResourceCloudReport = "cloud-report"
-	ResourceScanReport  = "scan-report"
-	ResourceScan        = "scan"
-	ResourceDiagnosis   = "diagnosis"
-	ResourceCloudNode   = "cloud-node"
-	ResourceRegistry    = "container-registry"
-	ResourceIntegration = "integration"
-	ResourceReport      = "report"
-	ResourceLicense     = "license"
+	ResourceUser         = "user"
+	ResourceSettings     = "settings"
+	ResourceAllUsers     = "all-users"
+	ResourceAgentReport  = "agent-report"
+	ResourceCloudReport  = "cloud-report"
+	ResourceScanReport   = "scan-report"
+	ResourceScan         = "scan"
+	ResourceDiagnosis    = "diagnosis"
+	ResourceCloudNode    = "cloud-node"
+	ResourceRegistry     = "container-registry"
+	ResourceIntegration  = "integration"
+	ResourceReport       = "report"
+	ResourceLicense      = "license"
+	ResourceNotification = "notification"
 )
 
 // func telemetryInjector(next http.Handler) http.Handler {
@@ -575,6 +576,24 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/", dfHandler.AuthHandler(ResourceLicense, PermissionWrite, dfHandler.RegisterLicenseHandler))
 				r.Get("/", dfHandler.AuthHandler(ResourceLicense, PermissionRead, dfHandler.GetLicenseHandler))
 				r.Delete("/", dfHandler.AuthHandler(ResourceLicense, PermissionDelete, dfHandler.DeleteLicenseHandler))
+			})
+
+			// notification apis
+			r.Route("/notification", func(r chi.Router) {
+				r.Route("/scans", func(r chi.Router) {
+					r.Get("/", dfHandler.AuthHandler(ResourceNotification, PermissionRead, dfHandler.GetScansHandler))
+					// todo: implement this
+					// r.Get("/count", dfHandler.AuthHandler(ResourceNotification, PermissionRead, dfHandler.GetScansCountHandler))
+					// mark-read or acknowledge can only be done on scans which are not IN_PROGRESS
+					r.Post("/mark-read", dfHandler.AuthHandler(ResourceNotification, PermissionWrite, dfHandler.MarkScansReadHandler))
+				})
+				r.Route("/registry-sync", func(r chi.Router) {
+					r.Get("/", dfHandler.AuthHandler(ResourceNotification, PermissionRead, dfHandler.GetRegistrySyncHandler))
+				})
+				// integration failures
+				r.Route("/integration", func(r chi.Router) {
+					r.Get("/", dfHandler.AuthHandler(ResourceNotification, PermissionRead, dfHandler.GetIntegrationFailuresHandler))
+				})
 			})
 		})
 	})
