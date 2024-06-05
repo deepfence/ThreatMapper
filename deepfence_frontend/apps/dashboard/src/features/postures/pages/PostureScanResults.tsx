@@ -1440,11 +1440,7 @@ const PostureTable = ({
       columnHelper.accessor('compliance_check_type', {
         enableSorting: true,
         enableResizing: false,
-        cell: (info) => (
-          <TruncatedText
-            text={getBenchmarkPrettyName(info.getValue() as ModelBenchmarkType)}
-          />
-        ),
+        cell: (info) => <TruncatedText text={getBenchmarkPrettyName(info.getValue())} />,
         header: () => 'Benchmark type',
         minSize: 60,
         size: 60,
