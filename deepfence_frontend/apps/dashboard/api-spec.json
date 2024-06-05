@@ -13260,7 +13260,7 @@
           "benchmark_types": {
             "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelBenchmarkType" },
             "nullable": true
           },
           "cron_expr": { "type": "string" },
@@ -13329,6 +13329,10 @@
           "node_id": { "type": "string" },
           "node_type": { "type": "string" }
         }
+      },
+      "ModelBenchmarkType": {
+        "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
+        "type": "string"
       },
       "ModelBulkDeleteReportReq": {
         "required": ["report_ids"],
@@ -13838,7 +13842,7 @@
           "benchmark_types": {
             "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelBenchmarkType" },
             "nullable": true
           },
           "deepfence_system_scan": { "type": "boolean" },

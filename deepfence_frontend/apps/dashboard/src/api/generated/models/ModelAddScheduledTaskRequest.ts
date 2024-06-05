@@ -13,6 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelBenchmarkType } from './ModelBenchmarkType';
+import {
+    ModelBenchmarkTypeFromJSON,
+    ModelBenchmarkTypeFromJSONTyped,
+    ModelBenchmarkTypeToJSON,
+} from './ModelBenchmarkType';
 import type { ModelNodeIdentifier } from './ModelNodeIdentifier';
 import {
     ModelNodeIdentifierFromJSON,
@@ -46,10 +52,10 @@ export interface ModelAddScheduledTaskRequest {
     action: ModelAddScheduledTaskRequestActionEnum;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<ModelBenchmarkType>}
      * @memberof ModelAddScheduledTaskRequest
      */
-    benchmark_types: ModelAddScheduledTaskRequestBenchmarkTypesEnum;
+    benchmark_types: Array<ModelBenchmarkType> | null;
     /**
      * 
      * @type {string}
@@ -140,7 +146,7 @@ export function ModelAddScheduledTaskRequestFromJSONTyped(json: any, ignoreDiscr
     return {
         
         'action': json['action'],
-        'benchmark_types': json['benchmark_types'],
+        'benchmark_types': (json['benchmark_types'] === null ? null : (json['benchmark_types'] as Array<any>).map(ModelBenchmarkTypeFromJSON)),
         'cron_expr': !exists(json, 'cron_expr') ? undefined : json['cron_expr'],
         'deepfence_system_scan': !exists(json, 'deepfence_system_scan') ? undefined : json['deepfence_system_scan'],
         'description': !exists(json, 'description') ? undefined : json['description'],
@@ -161,7 +167,7 @@ export function ModelAddScheduledTaskRequestToJSON(value?: ModelAddScheduledTask
     return {
         
         'action': value.action,
-        'benchmark_types': value.benchmark_types,
+        'benchmark_types': (value.benchmark_types === null ? null : (value.benchmark_types as Array<any>).map(ModelBenchmarkTypeToJSON)),
         'cron_expr': value.cron_expr,
         'deepfence_system_scan': value.deepfence_system_scan,
         'description': value.description,

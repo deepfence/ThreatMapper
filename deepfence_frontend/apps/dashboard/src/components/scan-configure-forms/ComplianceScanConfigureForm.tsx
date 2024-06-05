@@ -14,6 +14,7 @@ import { CircleSpinner, createColumnHelper, Switch, Table } from 'ui-components'
 
 import { getComplianceApiClient, getSettingsApiClient } from '@/api/api';
 import {
+  ModelBenchmarkType,
   ModelComplianceScanTriggerReq,
   ModelNodeIdentifierNodeTypeEnum,
   ModelScanResultsActionRequestScanTypeEnum,
@@ -26,17 +27,37 @@ import { invalidateAllQueries, queries } from '@/queries';
 import { ComplianceScanNodeTypeEnum, isCloudNode, isCloudOrgNode } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
+import { getBenchmarkPrettyName } from '@/utils/scan';
 
 export const complianceType: {
-  [key in ComplianceScanNodeTypeEnum]: string[];
+  [key in ComplianceScanNodeTypeEnum]: ModelBenchmarkType[];
 } = {
-  aws: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
-  aws_org: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
-  gcp: ['CIS'],
-  gcp_org: ['CIS'],
-  azure: ['CIS', 'NIST', 'HIPAA'],
-  host: ['HIPAA', 'GDPR', 'PCI', 'NIST'],
-  kubernetes_cluster: ['NSA-CISA'],
+  aws: [
+    ModelBenchmarkType.Cis,
+    ModelBenchmarkType.Nist,
+    ModelBenchmarkType.Pci,
+    ModelBenchmarkType.Hipaa,
+    ModelBenchmarkType.Soc2,
+    ModelBenchmarkType.Gdpr,
+  ],
+  aws_org: [
+    ModelBenchmarkType.Cis,
+    ModelBenchmarkType.Nist,
+    ModelBenchmarkType.Pci,
+    ModelBenchmarkType.Hipaa,
+    ModelBenchmarkType.Soc2,
+    ModelBenchmarkType.Gdpr,
+  ],
+  gcp: [ModelBenchmarkType.Cis],
+  gcp_org: [ModelBenchmarkType.Cis],
+  azure: [ModelBenchmarkType.Cis, ModelBenchmarkType.Nist, ModelBenchmarkType.Hipaa],
+  host: [
+    ModelBenchmarkType.Hipaa,
+    ModelBenchmarkType.Gdpr,
+    ModelBenchmarkType.Pci,
+    ModelBenchmarkType.Nist,
+  ],
+  kubernetes_cluster: [ModelBenchmarkType.NsaCisa],
 };
 export type ComplianceScanConfigureFormProps = {
   showAdvancedOptions: boolean;
@@ -65,7 +86,7 @@ type ControlActionDta = {
 
 type TabsType = {
   label: string;
-  value: string;
+  value: ModelBenchmarkType;
 };
 
 export const CLOUDS = [
@@ -86,8 +107,8 @@ export const scanPostureApiAction = async ({
   const body = Object.fromEntries(formData);
   const nodeIds = body._nodeIds.toString().split(',');
   let nodeType = body._nodeType.toString();
-  const checkTypes = body._checkTypes.toString().replace('SOC2', 'soc_2');
-
+  const checkTypes = body._checkTypes.toString()?.split(',') as Array<ModelBenchmarkType>;
+  debugger;
   const isCloudScan = CLOUDS.includes(nodeType as ComplianceScanNodeTypeEnum);
   if (isKubernetesNode(nodeType as ComplianceScanNodeTypeEnum)) {
     nodeType = 'cluster';
@@ -103,7 +124,7 @@ export const scanPostureApiAction = async ({
   const isPriorityScan = formData.get('isPriorityScan') === 'on';
 
   const requestBody: ModelComplianceScanTriggerReq = {
-    benchmark_types: checkTypes.toLowerCase().split(','),
+    benchmark_types: checkTypes,
     filters: {
       cloud_account_scan_filter: { filter_in: null },
       kubernetes_cluster_scan_filter: { filter_in: null },
@@ -255,7 +276,7 @@ const useGetControls = ({
   checkType,
   nodeType,
 }: {
-  checkType: string;
+  checkType: ModelBenchmarkType;
   nodeType: string;
 }) => {
   return useSuspenseQuery({
@@ -306,7 +327,7 @@ const ControlTable = ({
   nodeIds,
 }: {
   nodeType: string;
-  selectedTab: string;
+  selectedTab: ModelBenchmarkType;
   nodeIds: string[];
 }) => {
   // TODO: remove this once we have correct type from api
@@ -328,7 +349,7 @@ const ControlTable = ({
   const fetcher = useFetcher();
   const [pageSize, setPageSize] = useState(10);
   const { data } = useGetControls({
-    checkType: selectedTab === 'SOC2' ? 'soc_2' : selectedTab.toLowerCase(),
+    checkType: selectedTab,
     nodeType: _nodeType,
   });
   const columnHelper = createColumnHelper<ModelCloudNodeComplianceControl>();
@@ -409,12 +430,12 @@ export const ControlsTable = memo(
     const tabs = useMemo<TabsType[] | []>(() => {
       return complianceType[nodeType as keyof typeof complianceType]?.map((value) => {
         return {
-          label: value,
+          label: getBenchmarkPrettyName(value),
           value: value,
         };
       });
     }, [nodeType]);
-    const [selectedTab, setSelectedTab] = useState(tabs[0].value);
+    const [selectedTab, setSelectedTab] = useState<ModelBenchmarkType>(tabs[0].value);
 
     const isCheckTypeEnabled = useMemo(() => {
       return selectedCheckTypes.includes(selectedTab);
@@ -427,7 +448,7 @@ export const ControlsTable = memo(
             <Tabs
               value={selectedTab}
               tabs={tabs}
-              onValueChange={(v) => setSelectedTab(v)}
+              onValueChange={(v) => setSelectedTab(v as ModelBenchmarkType)}
             >
               <>
                 <div className="mt-4">
@@ -444,7 +465,7 @@ export const ControlsTable = memo(
                         setSelectedCheckTypes(types);
                       }
                     }}
-                    label={`Enable ${selectedTab}`}
+                    label={`Enable ${getBenchmarkPrettyName(selectedTab)}`}
                   />
                 </div>
                 <div

@@ -35,6 +35,7 @@ import {
 
 import { getScanResultsApiClient } from '@/api/api';
 import {
+  ModelBenchmarkType,
   ModelCompliance,
   ModelScanInfo,
   ModelScanResultsMaskRequestMaskActionEnum,
@@ -101,6 +102,7 @@ import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { abbreviateNumber } from '@/utils/number';
 import {
+  getBenchmarkPrettyName,
   isScanComplete,
   isScanDeletePending,
   isScanFailed,
@@ -974,6 +976,11 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   benchmarkType: 'Benchmark',
   testNumber: 'ID',
 };
+enum FILTER_SEARCHPARAMS_KEYS_ENUM {
+  benchmarkType = 'benchmarkType',
+}
+const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [FILTER_SEARCHPARAMS_KEYS_ENUM.benchmarkType];
+
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
     return prev + searchParams.getAll(curr).length;
@@ -1012,6 +1019,20 @@ const Filters = () => {
   } else {
     statuses = ['alarm', 'info', 'ok', 'skip', 'delete'];
   }
+
+  const onFilterRemove = ({ key, value }: { key: string; value: string }) => {
+    return () => {
+      setSearchParams((prev) => {
+        const existingValues = prev.getAll(key);
+        prev.delete(key);
+        existingValues.forEach((existingValue) => {
+          if (existingValue !== value) prev.append(key, existingValue);
+        });
+        prev.delete('page');
+        return prev;
+      });
+    };
+  };
 
   return (
     <FilterWrapper>
@@ -1123,12 +1144,12 @@ const Filters = () => {
           {benchmarks
             .filter((item) => {
               if (!benchmarkQuery.length) return true;
-              return item.toLowerCase().includes(benchmarkQuery.toLowerCase());
+              return item.includes(benchmarkQuery);
             })
             .map((item) => {
               return (
                 <ComboboxOption key={item} value={item}>
-                  {item}
+                  {getBenchmarkPrettyName(item)}
                 </ComboboxOption>
               );
             })}
@@ -1158,29 +1179,29 @@ const Filters = () => {
 
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
-          {Array.from(searchParams)
-            .filter(([key]) => {
+          {(
+            Array.from(searchParams).filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
-            })
-            .map(([key, value]) => {
+            }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
+          ).map(([key, value]) => {
+            if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
               return (
                 <FilterBadge
                   key={`${key}-${value}`}
-                  onRemove={() => {
-                    setSearchParams((prev) => {
-                      const existingValues = prev.getAll(key);
-                      prev.delete(key);
-                      existingValues.forEach((existingValue) => {
-                        if (existingValue !== value) prev.append(key, existingValue);
-                      });
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }}
-                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                  onRemove={onFilterRemove({ key, value })}
+                  text={getBenchmarkPrettyName(value as ModelBenchmarkType)}
+                  label={FILTER_SEARCHPARAMS[key]}
                 />
               );
-            })}
+            }
+            return (
+              <FilterBadge
+                key={`${key}-${value}`}
+                onRemove={onFilterRemove({ key, value })}
+                text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+              />
+            );
+          })}
           <Button
             variant="flat"
             color="default"
@@ -1419,8 +1440,12 @@ const PostureTable = ({
       columnHelper.accessor('compliance_check_type', {
         enableSorting: true,
         enableResizing: false,
-        cell: (info) => info.getValue().toUpperCase(),
-        header: () => 'Check type',
+        cell: (info) => (
+          <TruncatedText
+            text={getBenchmarkPrettyName(info.getValue() as ModelBenchmarkType)}
+          />
+        ),
+        header: () => 'Benchmark type',
         minSize: 60,
         size: 60,
         maxSize: 70,
@@ -1456,21 +1481,18 @@ const PostureTable = ({
         ),
       }),
     ];
+    const resourceColumn = columnHelper.accessor('resource', {
+      enableResizing: false,
+      minSize: 60,
+      size: 70,
+      maxSize: 80,
+      header: () => <div>Resource (ID)</div>,
+      cell: (info) => {
+        return <TruncatedText text={info.getValue()} />;
+      },
+    });
     if (params.nodeType && params.nodeType === 'kubernetes') {
-      columns.splice(
-        columns.length - 1,
-        0,
-        columnHelper.accessor('resource', {
-          enableResizing: false,
-          minSize: 60,
-          size: 70,
-          maxSize: 80,
-          header: () => <div>Resource (ID)</div>,
-          cell: (info) => {
-            return <TruncatedText text={info.getValue()} />;
-          },
-        }),
-      );
+      columns.splice(columns.length - 1, 0, resourceColumn);
     }
     return columns;
   }, [setSearchParams, params.nodeType, mode]);

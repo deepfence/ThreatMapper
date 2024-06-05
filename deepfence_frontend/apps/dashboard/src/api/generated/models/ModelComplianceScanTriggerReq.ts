@@ -13,6 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelBenchmarkType } from './ModelBenchmarkType';
+import {
+    ModelBenchmarkTypeFromJSON,
+    ModelBenchmarkTypeFromJSONTyped,
+    ModelBenchmarkTypeToJSON,
+} from './ModelBenchmarkType';
 import type { ModelNodeIdentifier } from './ModelNodeIdentifier';
 import {
     ModelNodeIdentifierFromJSON,
@@ -34,10 +40,10 @@ import {
 export interface ModelComplianceScanTriggerReq {
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<ModelBenchmarkType>}
      * @memberof ModelComplianceScanTriggerReq
      */
-    benchmark_types: ModelComplianceScanTriggerReqBenchmarkTypesEnum;
+    benchmark_types: Array<ModelBenchmarkType> | null;
     /**
      * 
      * @type {boolean}
@@ -95,7 +101,7 @@ export function ModelComplianceScanTriggerReqFromJSONTyped(json: any, ignoreDisc
     }
     return {
         
-        'benchmark_types': json['benchmark_types'],
+        'benchmark_types': (json['benchmark_types'] === null ? null : (json['benchmark_types'] as Array<any>).map(ModelBenchmarkTypeFromJSON)),
         'deepfence_system_scan': !exists(json, 'deepfence_system_scan') ? undefined : json['deepfence_system_scan'],
         'filters': ModelScanFilterFromJSON(json['filters']),
         'is_priority': !exists(json, 'is_priority') ? undefined : json['is_priority'],
@@ -112,7 +118,7 @@ export function ModelComplianceScanTriggerReqToJSON(value?: ModelComplianceScanT
     }
     return {
         
-        'benchmark_types': value.benchmark_types,
+        'benchmark_types': (value.benchmark_types === null ? null : (value.benchmark_types as Array<any>).map(ModelBenchmarkTypeToJSON)),
         'deepfence_system_scan': value.deepfence_system_scan,
         'filters': ModelScanFilterToJSON(value.filters),
         'is_priority': value.is_priority,

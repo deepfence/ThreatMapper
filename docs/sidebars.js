@@ -144,6 +144,7 @@ const sidebars = {
         id: 'integrations/index'
       },
       items: [
+        'integrations/threatrx',
         'integrations/pagerduty',
         'integrations/slack',
         'integrations/microsoft-teams',

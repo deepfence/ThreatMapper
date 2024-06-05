@@ -16,7 +16,7 @@ if [ $retVal -ne 0 ]; then
     exit
 fi
 
-neo4j-admin load --from=$BACKUP_FILE --database='neo4j' --force
+cat $BACKUP_FILE | neo4j-admin database load --from-stdin neo4j --overwrite-destination=true
 retVal=$?
 if [ $retVal -ne 0 ]; then
     echo "Failed to load the db file"

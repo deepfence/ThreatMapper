@@ -34,9 +34,7 @@ var configClusterFile []byte
 //go:embed assets/config-cloud.ini
 var configCloudFile []byte
 
-var enableClusterDiscovery bool
-
-var enableCloudNode bool
+var nodeMode string
 
 var binaryOnly bool
 
@@ -48,18 +46,23 @@ var Version string
 
 func init() {
 	var err error
-	enableClusterDiscovery = os.Getenv("DF_ENABLE_CLUSTER_DISCOVERY") != ""
-	enableCloudNode = os.Getenv("DF_ENABLE_CLOUD_NODE") != ""
-	binaryOnly = os.Getenv("DF_SERVERLESS") != ""
-	if hostname = os.Getenv("SCOPE_HOSTNAME"); hostname == "" {
-		hostname, err = os.Hostname()
-		if err != nil {
-			hostname = "(unknown)"
-		}
+	if os.Getenv("DF_ENABLE_CLUSTER_DISCOVERY") != "" {
+		nodeMode = ctl.K8S
+	} else if os.Getenv("DF_ENABLE_CLOUD_NODE") != "" {
+		nodeMode = ctl.CLOUD_AGENT
+	} else {
+		nodeMode = ctl.HOST
 	}
-
-	if enableCloudNode {
-		hostname = "cloud-agent-" + hostname
+	binaryOnly = os.Getenv("DF_SERVERLESS") != ""
+	if nodeMode == ctl.CLOUD_AGENT {
+		hostname = fmt.Sprintf("cloud-node-%s-%s", os.Getenv("CLOUD_PROVIDER"), os.Getenv("CLOUD_ACCOUNT_ID"))
+	} else {
+		if hostname = os.Getenv("SCOPE_HOSTNAME"); hostname == "" {
+			hostname, err = os.Hostname()
+			if err != nil {
+				hostname = "(unknown)"
+			}
+		}
 	}
 	err = os.Setenv("DF_HOST_ID", hostname)
 	if err != nil {
@@ -80,40 +83,35 @@ func init() {
 func main() {
 	log.Info().Msgf("Starting bootstrapper, version: %s", Version)
 
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer cancel()
-
 	var err error
 	var cfg config.Config
-	var nodeType string
-	if enableClusterDiscovery {
-		nodeType = ctl.K8S
+	switch nodeMode {
+	case ctl.K8S:
 		cfg, err = config.NewIniConfig(configClusterFile)
-	} else if enableCloudNode {
-		nodeType = ctl.CLOUD_AGENT
+	case ctl.CLOUD_AGENT:
 		cfg, err = config.NewIniConfig(configCloudFile)
-	} else {
-		nodeType = ctl.HOST
+	case ctl.HOST:
 		cfg, err = config.NewIniConfig(configFile)
 	}
 
 	if err != nil {
-		log.Panic().Msgf("%v", err)
+		log.Fatal().Msgf("%v", err)
 	}
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
 
 	err = server.StartRPCServer(ctx, "/tmp/deepfence_boot.sock")
 	if err != nil {
 		log.Panic().Msgf("%v", err)
 	}
 
-	if !enableClusterDiscovery && !binaryOnly {
-		for _, entry := range cfg.Cgroups {
-			err := cgroups.LoadCgroup(entry.Name, int64(entry.MaxCPU), int64(entry.MaxMem))
-			if err != nil {
-				log.Error().Err(err).Str("entry_name", entry.Name).Msg("Error on cgroup")
-				if errors.Is(err, cgroups.ErrFailCreate) {
-					panic(cgroups.ErrFailCreate)
-				}
+	for _, entry := range cfg.Cgroups {
+		err := cgroups.LoadCgroup(entry.Name, int64(entry.MaxCPU), int64(entry.MaxMem))
+		if err != nil {
+			log.Error().Err(err).Str("entry_name", entry.Name).Msg("Error on cgroup")
+			if errors.Is(err, cgroups.ErrFailCreate) {
+				panic(cgroups.ErrFailCreate)
 			}
 		}
 	}
@@ -144,15 +142,16 @@ func main() {
 	log.Info().Msgf("Failed processes:%s", strings.Join(failedProcess, ","))
 
 	//Setup the controls for respective agent mode
-	if enableClusterDiscovery {
+	switch nodeMode {
+	case ctl.K8S:
 		k8sClusterID, k8sClusterName, _, _, _ := dfUtils.GetKubernetesDetails()
 		controls.SetClusterAgentControls(k8sClusterName)
 		hostname = k8sClusterID
 		log.Info().Msgf("cluster agent mode: %s", hostname)
-	} else if enableCloudNode {
+	case ctl.CLOUD_AGENT:
 		controls.SetCloudScannerControls()
 		time.Sleep(1 * time.Minute)
-	} else {
+	case ctl.HOST:
 		log.Info().Msgf("regular agent mode: %s", hostname)
 		controls.SetAgentControls()
 	}
@@ -173,38 +172,11 @@ func main() {
 		}
 	}
 
-	//If cloud agent, Get the node id from the cloudscanner
-	cloudNodeID := ""
-	if enableCloudNode {
-		for i := 0; i < 10; i++ {
-			log.Info().Msgf("Getting the GetCloudNodeID")
-			cloudNodeID, err = router.GetCloudNodeID()
-			if err != nil {
-				log.Error().Msgf("Error getting CloudNode ID, RetryCount: %d, error: %v", i, err)
-			} else if len(cloudNodeID) == 0 {
-				err = fmt.Errorf("Empty CloudNode ID received")
-				log.Error().Msgf("Error: %s, RetryCount: %d", err.Error(), i)
-			} else {
-				err = nil
-				hostname = cloudNodeID
-				log.Info().Msgf("Cloud mode, setting hostname as: %s", cloudNodeID)
-				break
-			}
-			time.Sleep(10 * time.Second)
-		}
-		if err != nil {
-			//Fatal Failed to get the CloudNodeID
-			supervisor.StopAllProcesses()
-			log.Fatal().Msgf("Failed to get CloudNode, error: %s", err.Error())
-		}
-		log.Info().Msgf("cloud agent mode: %s", hostname)
-	}
-
 	//Start the controls watching.....
 	for {
-		err = consoleClient.StartControlsWatching(hostname, enableClusterDiscovery, Version, nodeType)
+		err = consoleClient.StartControlsWatching(hostname, nodeMode == ctl.K8S, Version, nodeMode)
 		if err == nil {
-			log.Info().Msgf("Controls watching started, node type: %s", nodeType)
+			log.Info().Msgf("Controls watching started, node type: %s", nodeMode)
 			break
 		}
 		log.Error().Msgf("Failed to get init controls %v. Retrying...\n", err)

@@ -23,8 +23,6 @@ const defaultStyle = cn(
   // border
   'border rounded-[5px]',
   'border-bg-grid-border',
-  // bg styles
-  'bg-bg-card',
   // text styles
   'dark:text-text-input-value text-text-text-and-icon',
   // disabled text color
@@ -52,7 +50,7 @@ const defaultUnderlineStyle = cn(
 const defaultUnderlineJErrorStyle = cn(
   'focus-visible:outline-none',
   'border-transparent border-b rounded-none',
-  'dark:border-b-text-text-and-icon border-b-bg-border-form <dark:disabled:border-b-gray-600/60></dark:disabled:border-b-gray-600/60> disabled:border-b-severity-unknown',
+  'dark:border-b-text-text-and-icon border-b-bg-border-form dark:disabled:border-b-gray-600/60 disabled:border-b-severity-unknown/60',
   // active
   'transition-[background-size] duration-[0.2s] ease-[ease]',
   'bg-[length:0%_100%] focus:bg-[length:100%_100%]',

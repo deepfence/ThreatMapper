@@ -298,7 +298,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersComplianceScanStatus.map(IngestersComplianceScanStatusToJSON),
+            body: requestParameters.ingestersComplianceScanStatus?.map(IngestersComplianceScanStatusToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -336,7 +336,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersCompliance.map(IngestersComplianceToJSON),
+            body: requestParameters.ingestersCompliance?.map(IngestersComplianceToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
