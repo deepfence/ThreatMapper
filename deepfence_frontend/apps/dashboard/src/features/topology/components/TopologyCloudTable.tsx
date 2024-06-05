@@ -238,7 +238,7 @@ function useTableDataManager() {
     searchParams.set('action', JSON.stringify(action));
     searchParams.set('skipConnections', 'true');
     searchParams.set('filters', JSON.stringify(storageManager.getFilters()));
-    fetcher.load(`/data-component/topology?${searchParams.toString()}`);
+    fetcher.load(`/data-component/inventory?${searchParams.toString()}`);
     setAction(action);
   };
   useEffect(() => {

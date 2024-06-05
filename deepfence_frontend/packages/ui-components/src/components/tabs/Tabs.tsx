@@ -22,6 +22,7 @@ export type TabProps = TabsPrimitive.TabsProps & {
   value: string;
   children: React.ReactNode;
   variant?: keyof TabVariantProps;
+  fullWidth?: boolean;
 };
 
 const labelCva = cva(['cursor-pointer uppercase'], {
@@ -36,6 +37,9 @@ const tabListCva = cva(
   {
     variants: {
       underline: {
+        true: ['border-b border-bg-grid-border'],
+      },
+      button: {
         true: ['border-b border-bg-grid-border'],
       },
     },
@@ -66,6 +70,23 @@ const tabItemCva = cva(['text-t3 cursor-pointer'], {
         ),
       ],
     },
+    button: {
+      true: [
+        cn(
+          'pb-[9px] pt-[15px] px-3 flex items-center justify-center box-border',
+          'text-text-text-and-icon data-[state=active]:text-text-input-value',
+          'data-[state=active]:border-text-link dark:data-[state=active]:border-accent-accent',
+          // selected
+          'transition-shadow duration-[0.2s] ease-[ease-in]',
+          'data-[state=active]:shadow-[0_-3px_0_#185FEC_inset] dark:data-[state=active]:shadow-[0_-3px_0_#489CFF_inset]',
+          'dark:data-[state=active]:bg-bg-active-selection data-[state=inactive]:bg-bg-breadcrumb-bar',
+          // hover
+          'transition-shadow duration-[0.2s] ease-[ease-in]',
+          'dark:hover:shadow-[0_-1px_0_#489CFF_inset] hover:shadow-[0_-1px_0_#185FEC_inset]',
+          'disabled:hover:shadow-none',
+        ),
+      ],
+    },
   },
   defaultVariants: {
     underline: true,
@@ -74,13 +95,27 @@ const tabItemCva = cva(['text-t3 cursor-pointer'], {
 });
 
 const Tabs = (props: TabProps) => {
-  const { tabs, value, size = 'md', children, variant = 'underline', ...rest } = props;
+  const {
+    tabs,
+    value,
+    size = 'md',
+    children,
+    variant = 'underline',
+    fullWidth,
+    ...rest
+  } = props;
   return (
     <TabsPrimitive.Root {...rest} data-testid={'tabs-testid'} value={value}>
       <TabsPrimitive.List
-        className={tabListCva({
-          underline: variant === 'underline',
-        })}
+        className={cn(
+          tabListCva({
+            underline: variant === 'underline',
+            button: variant === 'button',
+          }),
+          {
+            'w-full': fullWidth,
+          },
+        )}
       >
         {tabs.map(({ label, value, id, icon, disabled }) => {
           const _id = id ? id.toString() : value;
@@ -92,6 +127,7 @@ const Tabs = (props: TabProps) => {
                 data-testid={`tab-item-${_id}`}
                 className={tabItemCva({
                   underline: variant === 'underline',
+                  button: variant === 'button',
                   size,
                 })}
                 disabled={disabled}

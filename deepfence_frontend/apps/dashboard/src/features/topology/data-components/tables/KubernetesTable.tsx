@@ -405,7 +405,7 @@ const DataTable = ({
                   <>
                     <DropdownItem>
                       <DFLink
-                        to={`../table/host?clusters=${info.row.original.node_id}`}
+                        to={`../compute/host/table?clusters=${info.row.original.node_id}`}
                         unstyled
                       >
                         Go to hosts
@@ -413,14 +413,14 @@ const DataTable = ({
                     </DropdownItem>
                     <DropdownItem>
                       <DFLink
-                        to={`../table/container?clusters=${info.row.original.node_id}`}
+                        to={`../compute/container/table?clusters=${info.row.original.node_id}`}
                         unstyled
                       >
                         Go to containers
                       </DFLink>
                     </DropdownItem>
                     <DropdownItem>
-                      <DFLink to={`../table/pod?clusters=${name}`} unstyled>
+                      <DFLink to={`../compute/pod/table?clusters=${name}`} unstyled>
                         Go to pods
                       </DFLink>
                     </DropdownItem>
