@@ -35,8 +35,8 @@ import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum, VulnerabilitySeverityType } from '@/types/common';
-import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 import { SeverityEnumList } from '@/utils/scan';
+import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
 
