@@ -16,7 +16,7 @@ building_image(){
     fi
 
     echo "Building Cloud Agent"
-    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host -e VERSION=${VERSION} $IMAGE_REPOSITORY/deepfence_builder_ce:$DF_IMG_TAG bash -c "cd plugins/cloud-scanner && go mod tidy && go mod vendor && go build -buildvcs=false -ldflags='-s -w -X main.Version=${VERSION}' -o cloud_scanner"
+    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host -e VERSION=${VERSION} $IMAGE_REPOSITORY/deepfence_builder_ce:$DF_IMG_TAG bash -c "cd plugins/cloud-scanner && go mod tidy && go mod vendor && CGO_ENABLED=0 go build -buildvcs=false -ldflags='-s -w -X main.Version=${VERSION} -extldflags=-static' -o cloud_scanner"
     build_result=$?
     if [ $build_result -ne 0 ]
     then
