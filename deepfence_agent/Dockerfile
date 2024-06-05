@@ -23,16 +23,17 @@ RUN <<EOF
 set -eux
 
 if [ "$TARGETARCH" = "arm64" ]; then
-    echo "export ARCHITECTURE=aarch64" >> /envfile
+    echo "export ARCHITECTURE=aarch64" >> /envfile-docker
 elif [ "$TARGETARCH" = "amd64" ]; then
-    echo "export ARCHITECTURE=x86_64" >> /envfile
+    echo "export ARCHITECTURE=x86_64" >> /envfile-docker
 else
     echo "Unsupported architecture $TARGETARCH" && exit 1;
 fi
 
 EOF
 
-RUN . /envfile; curl -fsSLO https://download.docker.com/linux/static/stable/${ARCHITECTURE}/docker-${DOCKERVERSION}.tgz && \
+RUN . /envfile-docker; cat /envfile-docker && \
+    curl -fsSLO https://download.docker.com/linux/static/stable/${ARCHITECTURE}/docker-${DOCKERVERSION}.tgz && \
     tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker && \
     rm docker-${DOCKERVERSION}.tgz
 
@@ -41,25 +42,28 @@ RUN <<EOF
 set -eux
 
 if [ "$TARGETARCH" = "arm64" ]; then
-    echo "export ARCHITECTURE=arm64" >> /envfile
+    echo "export ARCHITECTURE=arm64" >> /envfile-tools
 elif [ "$TARGETARCH" = "amd64" ]; then
-    echo "export ARCHITECTURE=amd64" >> /envfile
+    echo "export ARCHITECTURE=amd64" >> /envfile-tools
 else
     echo "Unsupported architecture $TARGETARCH" && exit 1
 fi
 
 EOF
 
-RUN . /envfile; curl -fsSLO https://github.com/deepfence/vessel/releases/download/v${VESSEL_VERSION}/vessel_v${VESSEL_VERSION}_linux_${ARCHITECTURE}.tar.gz && \
+RUN . /envfile-tools; cat /envfile-tools && \
+    curl -fsSLO https://github.com/deepfence/vessel/releases/download/v${VESSEL_VERSION}/vessel_v${VESSEL_VERSION}_linux_${ARCHITECTURE}.tar.gz && \
     tar -xzf vessel_v${VESSEL_VERSION}_linux_${ARCHITECTURE}.tar.gz && \
     mv vessel /usr/local/bin/ && \
     rm -rf vessel_v${VESSEL_VERSION}_linux_${ARCHITECTURE}.tar.gz
 
-RUN . /envfile; curl -fsSLO https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/nerdctl-${NERDCTL_VERSION}-linux-${ARCHITECTURE}.tar.gz && \
+RUN . /envfile-tools; cat /envfile-tools && \
+    curl -fsSLO https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/nerdctl-${NERDCTL_VERSION}-linux-${ARCHITECTURE}.tar.gz && \
     tar Cxzvvf /usr/local/bin nerdctl-${NERDCTL_VERSION}-linux-${ARCHITECTURE}.tar.gz && \
     rm nerdctl-${NERDCTL_VERSION}-linux-${ARCHITECTURE}.tar.gz
 
-RUN . /envfile; curl -fsSLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-linux-${ARCHITECTURE}.tar.gz && \
+RUN . /envfile-tools; cat /envfile-tools && \
+    curl -fsSLO https://github.com/kubernetes-sigs/cri-tools/releases/download/${CRICTL_VERSION}/crictl-${CRICTL_VERSION}-linux-${ARCHITECTURE}.tar.gz && \
     tar zxvf crictl-${CRICTL_VERSION}-linux-${ARCHITECTURE}.tar.gz -C /usr/local/bin && \
     rm -f crictl-${CRICTL_VERSION}-linux-${ARCHITECTURE}.tar.gz
 
