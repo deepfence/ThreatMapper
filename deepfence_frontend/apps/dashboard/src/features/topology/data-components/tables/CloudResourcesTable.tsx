@@ -107,7 +107,7 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   }, 0);
 };
 
-function getCloudResourcePrettyName(provider: ModelCloudResourceCloudProviderEnum) {
+function getCloudProviderPrettyName(provider: ModelCloudResourceCloudProviderEnum) {
   switch (provider) {
     case ModelCloudResourceCloudProviderEnum.Aws:
       return 'AWS';
@@ -258,7 +258,7 @@ function Filters() {
             .map((item) => {
               return (
                 <ComboboxOption key={item} value={item}>
-                  {getCloudResourcePrettyName(
+                  {getCloudProviderPrettyName(
                     item as ModelCloudResourceCloudProviderEnum,
                   )}
                 </ComboboxOption>
