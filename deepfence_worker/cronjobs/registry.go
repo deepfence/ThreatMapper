@@ -77,12 +77,6 @@ func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registri
 
 	log := log.WithCtx(ctx)
 
-	enqueuer, err := directory.Worker(ctx)
-	if err != nil {
-		return err
-	}
-
-	toRetry := []int32{}
 	for _, row := range registries {
 		r, err := registry.GetRegistryWithRegistryRow(row)
 		if err != nil {
@@ -92,21 +86,11 @@ func syncRegistry(ctx context.Context, pgClient *postgresql_db.Queries, registri
 
 		err = sync.SyncRegistry(ctx, pgClient, r, row)
 		if err != nil {
-			log.Error().Msgf("unable to sync registry: %s (%s): %v", row.RegistryType, row.Name, err)
-			toRetry = append(toRetry, row.ID)
+			log.Error().Msgf("(skipping) unable to sync registry: %s (%s): %v", row.RegistryType, row.Name, err)
 			continue
 		}
 	}
 
-	for i := range toRetry {
-		payload, err := json.Marshal(utils.RegistrySyncParams{
-			PgID: toRetry[i],
-		})
-		if err != nil {
-			log.Error().Msgf("unable to retry sync registry: %v", err)
-		}
-		enqueuer.Enqueue(utils.SyncRegistryTask, payload)
-	}
 	return nil
 }
 
