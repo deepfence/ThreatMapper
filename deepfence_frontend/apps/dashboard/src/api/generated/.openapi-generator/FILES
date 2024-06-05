@@ -79,6 +79,7 @@ models/ModelAgentPluginDisable.ts
 models/ModelAgentPluginEnable.ts
 models/ModelAgentUpgrade.ts
 models/ModelBasicNode.ts
+models/ModelBenchmarkType.ts
 models/ModelBulkDeleteReportReq.ts
 models/ModelBulkDeleteScansRequest.ts
 models/ModelCloudAccountDeleteReq.ts

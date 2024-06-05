@@ -224,7 +224,6 @@ const TopNCardContent = ({ type }: { type: 'host' | 'container' | 'image' }) => 
     <div className="px-2 h-[300px] flex items-center justify-center">
       {data.length ? (
         <ReactECharts
-          theme="dark"
           option={chartOptions}
           onChartClick={({ id }: { id?: string }) => {
             if (!id) {

@@ -30,7 +30,7 @@ export interface ModelCloudNodeControlReq {
      * @type {string}
      * @memberof ModelCloudNodeControlReq
      */
-    compliance_type: string;
+    compliance_type: ModelCloudNodeControlReqComplianceTypeEnum;
     /**
      * 
      * @type {string}
@@ -51,6 +51,20 @@ export const ModelCloudNodeControlReqCloudProviderEnum = {
     Kubernetes: 'kubernetes'
 } as const;
 export type ModelCloudNodeControlReqCloudProviderEnum = typeof ModelCloudNodeControlReqCloudProviderEnum[keyof typeof ModelCloudNodeControlReqCloudProviderEnum];
+
+/**
+ * @export
+ */
+export const ModelCloudNodeControlReqComplianceTypeEnum = {
+    Hipaa: 'hipaa',
+    Gdpr: 'gdpr',
+    Pci: 'pci',
+    Nist: 'nist',
+    Cis: 'cis',
+    Soc2: 'soc_2',
+    NsaCisa: 'nsa-cisa'
+} as const;
+export type ModelCloudNodeControlReqComplianceTypeEnum = typeof ModelCloudNodeControlReqComplianceTypeEnum[keyof typeof ModelCloudNodeControlReqComplianceTypeEnum];
 
 
 /**

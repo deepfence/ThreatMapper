@@ -1454,6 +1454,9 @@ func listScanResultsHandlerWithSeverityCounts[T any](w http.ResponseWriter, r *h
 		return nil, model.ScanResultsCommon{}, severityCounts, err
 	}
 
+	// order filter doesnot have meaning when getting sev counts
+	req.FieldsFilter.OrderFilter.OrderFields = []reporters.OrderSpec{}
+
 	severityCounts, err = reportersScan.GetSevCounts(r.Context(), req.FieldsFilter, scanType, req.ScanID)
 	if err != nil {
 		return nil, model.ScanResultsCommon{}, severityCounts, err

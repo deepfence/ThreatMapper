@@ -31,7 +31,7 @@ export interface ModelCompliance {
      * @type {string}
      * @memberof ModelCompliance
      */
-    compliance_check_type: string;
+    compliance_check_type: ModelComplianceComplianceCheckTypeEnum;
     /**
      * 
      * @type {string}
@@ -97,7 +97,7 @@ export interface ModelCompliance {
      * @type {string}
      * @memberof ModelCompliance
      */
-    status: string;
+    status: ModelComplianceStatusEnum;
     /**
      * 
      * @type {string}
@@ -135,6 +135,31 @@ export interface ModelCompliance {
      */
     updated_at: number;
 }
+
+
+/**
+ * @export
+ */
+export const ModelComplianceComplianceCheckTypeEnum = {
+    Hipaa: 'hipaa',
+    Gdpr: 'gdpr',
+    Pci: 'pci',
+    Nist: 'nist'
+} as const;
+export type ModelComplianceComplianceCheckTypeEnum = typeof ModelComplianceComplianceCheckTypeEnum[keyof typeof ModelComplianceComplianceCheckTypeEnum];
+
+/**
+ * @export
+ */
+export const ModelComplianceStatusEnum = {
+    Pass: 'pass',
+    Fail: 'fail',
+    Warn: 'warn',
+    Info: 'info',
+    Note: 'note'
+} as const;
+export type ModelComplianceStatusEnum = typeof ModelComplianceStatusEnum[keyof typeof ModelComplianceStatusEnum];
+
 
 /**
  * Check if a given object implements the ModelCompliance interface.

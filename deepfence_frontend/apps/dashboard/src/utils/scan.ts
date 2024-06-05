@@ -6,6 +6,7 @@ import {
   ModelSecretLevelEnum,
   ModelVulnerabilityCveSeverityEnum,
 } from '@/api/generated';
+import { ModelBenchmarkType } from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
 
 export const isScanComplete = (status: string): boolean => {
@@ -150,3 +151,26 @@ export const SeverityEnumList = [
   SeverityEnum.Low,
   SeverityEnum.Unknown,
 ] as const;
+export function getBenchmarkPrettyName(backendBenchmark: ModelBenchmarkType) {
+  switch (backendBenchmark) {
+    case ModelBenchmarkType.Cis:
+      return 'CIS';
+    case ModelBenchmarkType.Nist:
+      return 'NIST';
+    case ModelBenchmarkType.Pci:
+      return 'PCI';
+    case ModelBenchmarkType.Hipaa:
+      return 'HIPPA';
+    case ModelBenchmarkType.Soc2:
+      return 'SOC2';
+    case ModelBenchmarkType.Gdpr:
+      return 'GDPR';
+    case ModelBenchmarkType.NsaCisa:
+      return 'NSA-CISA';
+
+    default:
+      // eslint-disable-next-line no-case-declarations
+      const _exhaustiveCheck: never = backendBenchmark;
+      throw new Error(`Unhandled case: ${_exhaustiveCheck}`);
+  }
+}
