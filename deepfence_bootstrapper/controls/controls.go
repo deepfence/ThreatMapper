@@ -280,11 +280,10 @@ func SetCloudScannerControls() {
 			log.Info().Msg("Generate Agent Diagnostic Logs")
 			return SendAgentDiagnosticLogs(req,
 				[]string{dfUtils.GetDfInstallDir() + "/var/log/supervisor",
-					dfUtils.GetDfInstallDir() + "/var/log/fenced",
-					dfUtils.GetDfInstallDir() + "/var/log/deepfenced"},
-				[]string{dfUtils.GetDfInstallDir() + "/var/log/fenced/compliance/",
-					dfUtils.GetDfInstallDir() + "/var/log/fenced/malware-scan/",
-					dfUtils.GetDfInstallDir() + "/var/log/fenced/secret-scan/"})
+					dfUtils.GetDfInstallDir() + "/var/log/fenced/cloud-scanner-log",
+					dfUtils.GetDfInstallDir() + "/var/log/deepfenced",
+					dfUtils.GetDfInstallDir() + "/.steampipe/logs"},
+				[]string{})
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("set controls")
