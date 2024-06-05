@@ -15,8 +15,17 @@ building_image(){
         exit 1
     fi
 
+    echo "Building Cloud Agent"
+    docker run --rm --workdir /go/src/github.com/deepfence/deepfence_agent -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host -e VERSION=${VERSION} $IMAGE_REPOSITORY/deepfence_builder_ce:$DF_IMG_TAG bash -c "cd plugins/cloud-scanner && go mod tidy && go mod vendor && go build -buildvcs=false -ldflags='-s -w -X main.Version=${VERSION}' -o cloud_scanner"
+    build_result=$?
+    if [ $build_result -ne 0 ]
+    then
+        echo "Shipper build failed, bailing out"
+        exit 1
+    fi
+
     echo "Building Cloud Agent Image"
-    docker build --network host --rm=true --build-arg VERSION="$VERSION" --build-arg IMAGE_REPOSITORY="$IMAGE_REPOSITORY" --build-arg STEAMPIPE_IMG_TAG="$STEAMPIPE_IMG_TAG" -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils --tag="$IMAGE_REPOSITORY/cloud_scanner_ce:$DF_IMG_TAG" -f Dockerfile.cloud-agent .
+    docker build --network host --rm=true --build-arg VERSION="$VERSION" --build-arg IMAGE_REPOSITORY="$IMAGE_REPOSITORY" --build-arg STEAMPIPE_IMG_TAG="$STEAMPIPE_IMG_TAG" --tag="$IMAGE_REPOSITORY/cloud_scanner_ce:$DF_IMG_TAG" -f Dockerfile.cloud-agent .
     build_result=$?
     if [ $build_result -ne 0 ]
     then

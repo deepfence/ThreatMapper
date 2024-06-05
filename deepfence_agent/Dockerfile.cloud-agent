@@ -2,13 +2,6 @@ ARG STEAMPIPE_IMG_TAG=0.20.x
 ARG IMAGE_REPOSITORY=quay.io/deepfenceio
 FROM $IMAGE_REPOSITORY/steampipe:$STEAMPIPE_IMG_TAG AS steampipe
 
-FROM golang:1.22-bookworm AS build
-ARG VERSION
-
-WORKDIR /home/deepfence/plugins/cloud-scanner
-COPY plugins/cloud-scanner .
-RUN go build -buildvcs=false -ldflags="-s -w -X main.Version=${VERSION}" -o cloud_scanner .
-
 FROM debian:bookworm-slim
 ARG VERSION
 MAINTAINER Deepfence Inc
@@ -68,7 +61,7 @@ COPY --from=steampipe /usr/local/bin/steampipe-plugin-gcp.plugin /home/deepfence
 COPY --from=steampipe /usr/local/bin/steampipe-plugin-azure.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/azure@latest/steampipe-plugin-azure.plugin
 COPY --from=steampipe /usr/local/bin/steampipe-plugin-azuread.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/azuread@latest/steampipe-plugin-azuread.plugin
 
-COPY --from=build /home/deepfence/plugins/cloud-scanner/cloud_scanner /home/deepfence/bin/cloud_scanner
+COPY plugins/cloud-scanner/cloud_scanner /home/deepfence/bin/cloud_scanner
 
 
 USER root
