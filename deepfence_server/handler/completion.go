@@ -30,6 +30,10 @@ func (h *Handler) CompleteCloudComplianceInfo(w http.ResponseWriter, r *http.Req
 	genericCompleteInfoHandler[model.CloudCompliance](w, r, h)
 }
 
+func (h *Handler) CompleteCloudResource(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.CloudResource](w, r, h)
+}
+
 func (h *Handler) CompletePodInfo(w http.ResponseWriter, r *http.Request) {
 	genericCompleteInfoHandler[model.Pod](w, r, h)
 }

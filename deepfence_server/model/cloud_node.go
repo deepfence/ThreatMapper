@@ -50,7 +50,7 @@ type CloudNodeAccountRegisterReq struct {
 }
 
 type CloudNodeAccountsListReq struct {
-	CloudProvider string      `json:"cloud_provider"`
+	CloudProvider string      `json:"cloud_provider" enum:"aws,gcp,azure,linux,kubernetes,aws_org,gcp_org" required:"true"`
 	Window        FetchWindow `json:"window" required:"true"`
 }
 
@@ -155,7 +155,7 @@ type PendingCloudComplianceScan struct {
 type CloudNodeControlReq struct {
 	NodeID         string `json:"node_id"`
 	CloudProvider  string `json:"cloud_provider" required:"true" enum:"aws,gcp,azure,linux,kubernetes"`
-	ComplianceType string `json:"compliance_type" required:"true"`
+	ComplianceType string `json:"compliance_type" enum:"hipaa,gdpr,pci,nist,cis,soc_2,nsa-cisa" required:"true"`
 }
 
 type CloudNodeEnableDisableReq struct {

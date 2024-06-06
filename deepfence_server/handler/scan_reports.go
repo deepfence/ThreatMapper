@@ -460,9 +460,9 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
-		scanIds, bulkID, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes, reqs.IsPriority)
+		scanIds, bulkID, err = StartMultiCloudComplianceScan(ctx, nodes, model.BenchmarkTypeToArray(reqs.BenchmarkTypes), reqs.IsPriority)
 	} else {
-		scanIds, bulkID, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
+		scanIds, bulkID, err = startMultiComplianceScan(ctx, nodes, model.BenchmarkTypeToArray(reqs.BenchmarkTypes))
 		scanStatusType = utils.ComplianceScanStatus
 	}
 	if err != nil {

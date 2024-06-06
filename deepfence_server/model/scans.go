@@ -67,15 +67,33 @@ type NodeIdentifier struct {
 	NodeType string `json:"node_type" required:"true" enum:"image,host,container,cloud_account,cluster,registry,pod"`
 }
 
+// required to generate proper openapi spec
+type BenchmarkType string
+
+// TODO: add new compliance type here
+func (bt BenchmarkType) Enum() []interface{} {
+	return []interface{}{"hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"}
+}
+
+func BenchmarkTypeToArray(bt []BenchmarkType) []string {
+	bs := []string{}
+	if len(bt) > 0 {
+		for _, b := range bt {
+			bs = append(bs, string(b))
+		}
+	}
+	return bs
+}
+
 type ComplianceBenchmarkTypes struct {
-	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
+	BenchmarkTypes []BenchmarkType `json:"benchmark_types" required:"true"`
 }
 
 type ScanStatus string
 
 type ScanInfo struct {
 	ScanID         string           `json:"scan_id" required:"true"`
-	Status         string           `json:"status" required:"true"`
+	Status         string           `json:"status" validate:"required,oneof=COMPLETE STARTING IN_PROGRESS ERROR CANCEL_PENDING CANCELLING CANCELLED DELETE_PENDING" required:"true" enum:"COMPLETE,STARTING,IN_PROGRESS,ERROR,CANCEL_PENDING,CANCELLING,CANCELLED,DELETE_PENDING"`
 	StatusMessage  string           `json:"status_message" required:"true"`
 	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
 	CreatedAt      int64            `json:"created_at" required:"true" format:"int64"`
@@ -277,7 +295,7 @@ type Secret struct {
 	MatchedContent        string      `json:"matched_content" required:"true"`
 	Masked                bool        `json:"masked" required:"true"`
 	UpdatedAt             int64       `json:"updated_at" required:"true"`
-	Level                 string      `json:"level" required:"true"`
+	Level                 string      `json:"level" validate:"required,oneof=critical high medium low unknown" required:"true" enum:"critical,high,medium,low,unknown"`
 	Score                 float64     `json:"score" required:"true"`
 	RuleID                int32       `json:"rule_id" required:"true"`
 	Name                  string      `json:"name" required:"true"`
@@ -331,7 +349,7 @@ func (SecretRule) GetJSONCategory() string {
 type Vulnerability struct {
 	NodeID                 string        `json:"node_id" required:"true"`
 	CveID                  string        `json:"cve_id" required:"true"`
-	CveSeverity            string        `json:"cve_severity" required:"true"`
+	CveSeverity            string        `json:"cve_severity" validate:"required,oneof=critical high medium low unknown" required:"true" enum:"critical,high,medium,low,unknown"`
 	CveCausedByPackage     string        `json:"cve_caused_by_package" required:"true"`
 	CveCausedByPackagePath string        `json:"cve_caused_by_package_path" required:"true"`
 	CveContainerLayer      string        `json:"cve_container_layer" required:"true"`
@@ -408,7 +426,7 @@ type Malware struct {
 	Class            string        `json:"class" required:"true"`
 	CompleteFilename string        `json:"complete_filename" required:"true"`
 	FileSevScore     int           `json:"file_sev_score" required:"true"`
-	FileSeverity     string        `json:"file_severity" required:"true"`
+	FileSeverity     string        `json:"file_severity" validate:"required,oneof=critical high medium low unknown" required:"true" enum:"critical,high,medium,low,unknown"`
 	ImageLayerID     string        `json:"image_layer_id" required:"true"`
 	NodeID           string        `json:"node_id" required:"true"`
 	RuleID           string        `json:"rule_id" required:"true"`
@@ -484,8 +502,8 @@ type Compliance struct {
 	TestRationale       string      `json:"test_rationale" required:"true"`
 	TestSeverity        string      `json:"test_severity" required:"true"`
 	TestDesc            string      `json:"test_desc" required:"true"`
-	Status              string      `json:"status" required:"true"`
-	ComplianceCheckType string      `json:"compliance_check_type" required:"true"`
+	Status              string      `json:"status" required:"true" enum:"pass,fail,warn,info,note"`
+	ComplianceCheckType string      `json:"compliance_check_type" required:"true" enum:"hipaa,gdpr,pci,nist"`
 	ComplianceNodeID    string      `json:"node_id" required:"true"`
 	ComplianceNodeType  string      `json:"node_type" required:"true"`
 	Masked              bool        `json:"masked" required:"true"`
@@ -541,13 +559,13 @@ type CloudCompliance struct {
 	Count               int32       `json:"count,omitempty" required:"true"`
 	Reason              string      `json:"reason" required:"true"`
 	Resource            string      `json:"resource" required:"true"`
-	Status              string      `json:"status" required:"true"`
+	Status              string      `json:"status" required:"true" enum:"alarm,skip,ok,info"`
 	Region              string      `json:"region" required:"true"`
 	AccountID           string      `json:"account_id" required:"true"`
 	Group               string      `json:"group" required:"true"`
 	Service             string      `json:"service" required:"true"`
 	Title               string      `json:"title" required:"true"`
-	ComplianceCheckType string      `json:"compliance_check_type" required:"true"`
+	ComplianceCheckType string      `json:"compliance_check_type" required:"true" enum:"hipaa,gdpr,pci,nist,cis,soc_2,nsa-cisa"`
 	CloudProvider       string      `json:"cloud_provider" required:"true"`
 	NodeName            string      `json:"node_name" required:"true"`
 	NodeID              string      `json:"node_id" required:"true"`
