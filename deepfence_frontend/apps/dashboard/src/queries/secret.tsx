@@ -19,8 +19,7 @@ import { DF404Error } from '@/components/error/404';
 import { SecretsCountsCardData } from '@/features/secrets/components/landing/SecretsCountsCard';
 import { getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import { SeverityEnum } from '@/utils/enum';
-import { SCAN_STATUS_FILTER_TYPE, SCAN_STATUS_GROUPS } from '@/utils/scan';
+import { SCAN_STATUS_FILTER_TYPE, SCAN_STATUS_GROUPS, SeverityEnum } from '@/utils/scan';
 
 export const secretQueries = createQueryKeys('secret', {
   scanList: (filters: {

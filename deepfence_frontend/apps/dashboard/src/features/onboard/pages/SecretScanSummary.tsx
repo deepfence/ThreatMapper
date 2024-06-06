@@ -10,7 +10,7 @@ import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
-import { SeverityEnum } from '@/utils/enum';
+import { SeverityEnum } from '@/utils/scan';
 
 const DEFAULT_PAGE_SIZE = 10;
 

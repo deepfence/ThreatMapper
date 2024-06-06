@@ -4,7 +4,7 @@ import { Listbox, ListboxOption } from 'ui-components';
 
 import { UtilsReportFiltersNodeTypeEnum } from '@/api/generated';
 import { getReportNodeType } from '@/features/integrations/pages/DownloadReport';
-import { SeverityEnumList } from '@/utils/enum';
+import { SeverityEnumList } from '@/utils/scan';
 
 const getDisplayNodeTypeValue = (nodeType: string) => {
   if (nodeType === UtilsReportFiltersNodeTypeEnum.ContainerImage) {

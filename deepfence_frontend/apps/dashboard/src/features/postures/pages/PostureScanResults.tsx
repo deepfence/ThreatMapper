@@ -100,9 +100,9 @@ import {
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-import { getBenchmarkPrettyName } from '@/utils/enum';
 import { abbreviateNumber } from '@/utils/number';
 import {
+  getBenchmarkPrettyName,
   isScanComplete,
   isScanDeletePending,
   isScanFailed,

@@ -4,7 +4,7 @@ import {
   ModelSecretLevelEnum,
   ModelVulnerabilityCveSeverityEnum,
 } from '@/api/generated';
-import { SeverityEnum } from '@/utils/enum';
+import { SeverityEnum } from '@/utils/scan';
 
 export type VulnerabilitySeverityType = ModelVulnerabilityCveSeverityEnum;
 

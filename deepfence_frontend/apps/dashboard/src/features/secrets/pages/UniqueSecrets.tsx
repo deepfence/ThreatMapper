@@ -34,7 +34,7 @@ import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
-import { SeverityEnumList } from '@/utils/enum';
+import { SeverityEnumList } from '@/utils/scan';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;

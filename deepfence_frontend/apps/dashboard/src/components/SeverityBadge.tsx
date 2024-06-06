@@ -15,7 +15,7 @@ import {
 } from '@/constants/charts';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType, VulnerabilitySeverityType } from '@/types/common';
-import { SeverityEnum } from '@/utils/enum';
+import { SeverityEnum } from '@/utils/scan';
 
 export const SeverityBadge = ({
   severity,
