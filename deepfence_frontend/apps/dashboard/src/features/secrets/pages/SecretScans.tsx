@@ -74,6 +74,7 @@ import {
   isScanStopping,
   SCAN_STATUS_FILTER,
   SCAN_STATUS_FILTER_TYPE,
+  SeverityEnum,
 } from '@/utils/scan';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
@@ -796,17 +797,17 @@ const ScansTable = ({
         size: 80,
         maxSize: 80,
       }),
-      columnHelper.accessor('critical', {
+      columnHelper.accessor(SeverityEnum.Critical, {
         enableSorting: false,
         cell: (info) => {
           if (!isScanComplete(info.row.original.status)) {
             return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
-          params.set('severity', 'critical');
+          params.set('severity', SeverityEnum.Critical);
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <SeverityBadgeIcon severity="critical" theme={theme} />
+              <SeverityBadgeIcon severity={SeverityEnum.Critical} theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -822,17 +823,17 @@ const ScansTable = ({
         size: 80,
         maxSize: 80,
       }),
-      columnHelper.accessor('high', {
+      columnHelper.accessor(SeverityEnum.High, {
         enableSorting: false,
         cell: (info) => {
           if (!isScanComplete(info.row.original.status)) {
             return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
-          params.set('severity', 'high');
+          params.set('severity', SeverityEnum.High);
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <SeverityBadgeIcon severity="high" theme={theme} />
+              <SeverityBadgeIcon severity={SeverityEnum.High} theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -848,17 +849,17 @@ const ScansTable = ({
         size: 80,
         maxSize: 80,
       }),
-      columnHelper.accessor('medium', {
+      columnHelper.accessor(SeverityEnum.Medium, {
         enableSorting: false,
         cell: (info) => {
           if (!isScanComplete(info.row.original.status)) {
             return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
-          params.set('severity', 'medium');
+          params.set('severity', SeverityEnum.Medium);
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <SeverityBadgeIcon severity="medium" theme={theme} />
+              <SeverityBadgeIcon severity={SeverityEnum.Medium} theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -874,17 +875,17 @@ const ScansTable = ({
         size: 80,
         maxSize: 80,
       }),
-      columnHelper.accessor('low', {
+      columnHelper.accessor(SeverityEnum.Low, {
         enableSorting: false,
         cell: (info) => {
           if (!isScanComplete(info.row.original.status)) {
             return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
-          params.set('severity', 'low');
+          params.set('severity', SeverityEnum.Low);
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <SeverityBadgeIcon severity="low" theme={theme} />
+              <SeverityBadgeIcon severity={SeverityEnum.Low} theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),
@@ -900,17 +901,17 @@ const ScansTable = ({
         size: 80,
         maxSize: 80,
       }),
-      columnHelper.accessor('unknown', {
+      columnHelper.accessor(SeverityEnum.Unknown, {
         enableSorting: false,
         cell: (info) => {
           if (!isScanComplete(info.row.original.status)) {
             return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
           }
           const params = new URLSearchParams();
-          params.set('severity', 'unknown');
+          params.set('severity', SeverityEnum.Unknown);
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
-              <SeverityBadgeIcon severity="unknown" theme={theme} />
+              <SeverityBadgeIcon severity={SeverityEnum.Unknown} theme={theme} />
               <DFLink
                 to={generatePath(`/secret/scan-results/:scanId/?${params.toString()}`, {
                   scanId: encodeURIComponent(info.row.original.scan_id),

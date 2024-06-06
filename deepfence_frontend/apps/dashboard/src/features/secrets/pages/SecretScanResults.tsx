@@ -101,6 +101,8 @@ import {
   isScanInProgress,
   isScanStopped,
   isScanStopping,
+  SeverityEnum,
+  SeverityEnumList,
 } from '@/utils/scan';
 import {
   getOrderFromSearchParams,
@@ -1286,18 +1288,16 @@ const Filters = () => {
             });
           }}
         >
-          {['critical', 'high', 'medium', 'low', 'unknown']
-            .filter((item) => {
-              if (!severityQuery.length) return true;
-              return item.includes(severityQuery.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
-                </ComboboxOption>
-              );
-            })}
+          {SeverityEnumList.filter((item) => {
+            if (!severityQuery.length) return true;
+            return item.includes(severityQuery.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item} value={item}>
+                {capitalize(item)}
+              </ComboboxOption>
+            );
+          })}
         </Combobox>
       </div>
       {appliedFilterCount > 0 ? (
@@ -1947,12 +1947,12 @@ const Top5Widget = () => {
                   <div className="flex gap-x-[8px] items-center">
                     <div
                       className={cn('w-[3px] h-[18px] rounded shrink-0', {
-                        'bg-severity-critical': secret.level === 'critical',
-                        'bg-severity-high': secret.level === 'high',
-                        'bg-severity-medium': secret.level === 'medium',
-                        'bg-severity-low': secret.level === 'low',
+                        'bg-severity-critical': secret.level === SeverityEnum.Critical,
+                        'bg-severity-high': secret.level === SeverityEnum.High,
+                        'bg-severity-medium': secret.level === SeverityEnum.Medium,
+                        'bg-severity-low': secret.level === SeverityEnum.Low,
                         'bg-severity-unknown':
-                          !secret.level || secret.level === 'unknown',
+                          !secret.level || secret.level === SeverityEnum.Unknown,
                       })}
                     ></div>
                     <div className="w-[14px] h-[14px] shrink-0">

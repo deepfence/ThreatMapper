@@ -129,6 +129,7 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
 };
+
 const KUBERNETES_STATUSES = [
   {
     label: 'Running',

@@ -1,6 +1,11 @@
 import { generatePath } from 'react-router-dom';
 
-import { ModelScanInfoStatusEnum } from '@/api/generated';
+import {
+  ModelMalwareFileSeverityEnum,
+  ModelScanInfoStatusEnum,
+  ModelSecretLevelEnum,
+  ModelVulnerabilityCveSeverityEnum,
+} from '@/api/generated';
 import { ModelBenchmarkType } from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
 
@@ -133,6 +138,19 @@ export const SCAN_STATUS_FILTER = {
   Deleting: 'Deleting',
 } as const;
 
+export const SeverityEnum = {
+  ...ModelSecretLevelEnum,
+  ...ModelVulnerabilityCveSeverityEnum,
+  ...ModelMalwareFileSeverityEnum,
+} as const;
+
+export const SeverityEnumList = [
+  SeverityEnum.Critical,
+  SeverityEnum.High,
+  SeverityEnum.Medium,
+  SeverityEnum.Low,
+  SeverityEnum.Unknown,
+] as const;
 export function getBenchmarkPrettyName(backendBenchmark: ModelBenchmarkType) {
   switch (backendBenchmark) {
     case ModelBenchmarkType.Cis:

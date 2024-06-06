@@ -19,7 +19,7 @@ import { DF404Error } from '@/components/error/404';
 import { SecretsCountsCardData } from '@/features/secrets/components/landing/SecretsCountsCard';
 import { getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import { SCAN_STATUS_FILTER_TYPE, SCAN_STATUS_GROUPS } from '@/utils/scan';
+import { SCAN_STATUS_FILTER_TYPE, SCAN_STATUS_GROUPS, SeverityEnum } from '@/utils/scan';
 
 export const secretQueries = createQueryKeys('secret', {
   scanList: (filters: {
@@ -475,11 +475,19 @@ export const secretQueries = createQueryKeys('secret', {
           data: {
             totalSeverity,
             severityCounts: {
-              critical: resultSecretScanResponse.value.severity_counts?.['critical'] ?? 0,
-              high: resultSecretScanResponse.value.severity_counts?.['high'] ?? 0,
-              medium: resultSecretScanResponse.value.severity_counts?.['medium'] ?? 0,
-              low: resultSecretScanResponse.value.severity_counts?.['low'] ?? 0,
-              unknown: resultSecretScanResponse.value.severity_counts?.['unknown'] ?? 0,
+              critical:
+                resultSecretScanResponse.value.severity_counts?.[SeverityEnum.Critical] ??
+                0,
+              high:
+                resultSecretScanResponse.value.severity_counts?.[SeverityEnum.High] ?? 0,
+              medium:
+                resultSecretScanResponse.value.severity_counts?.[SeverityEnum.Medium] ??
+                0,
+              low:
+                resultSecretScanResponse.value.severity_counts?.[SeverityEnum.Low] ?? 0,
+              unknown:
+                resultSecretScanResponse.value.severity_counts?.[SeverityEnum.Unknown] ??
+                0,
             },
             tableData: resultSecretScanResponse.value.secrets ?? [],
             dockerImageName: resultSecretScanResponse.value.docker_image_name,
@@ -754,11 +762,11 @@ export const secretQueries = createQueryKeys('secret', {
         return {
           total: uniqueSecretsCounts.value.count,
           severityBreakdown: {
-            critical: uniqueSecretsCounts.value.categories?.['critical'] ?? 0,
-            high: uniqueSecretsCounts.value.categories?.['high'] ?? 0,
-            medium: uniqueSecretsCounts.value.categories?.['medium'] ?? 0,
-            low: uniqueSecretsCounts.value.categories?.['low'] ?? 0,
-            unknown: uniqueSecretsCounts.value.categories?.['unknown'] ?? 0,
+            critical: uniqueSecretsCounts.value.categories?.[SeverityEnum.Critical] ?? 0,
+            high: uniqueSecretsCounts.value.categories?.[SeverityEnum.High] ?? 0,
+            medium: uniqueSecretsCounts.value.categories?.[SeverityEnum.Medium] ?? 0,
+            low: uniqueSecretsCounts.value.categories?.[SeverityEnum.Low] ?? 0,
+            unknown: uniqueSecretsCounts.value.categories?.[SeverityEnum.Unknown] ?? 0,
           },
         };
       },
@@ -819,11 +827,14 @@ export const secretQueries = createQueryKeys('secret', {
         return {
           total: mostExploitableSecretCounts.value.count,
           severityBreakdown: {
-            critical: mostExploitableSecretCounts.value.categories?.['critical'] ?? 0,
-            high: mostExploitableSecretCounts.value.categories?.['high'] ?? 0,
-            medium: mostExploitableSecretCounts.value.categories?.['medium'] ?? 0,
-            low: mostExploitableSecretCounts.value.categories?.['low'] ?? 0,
-            unknown: mostExploitableSecretCounts.value.categories?.['unknown'] ?? 0,
+            critical:
+              mostExploitableSecretCounts.value.categories?.[SeverityEnum.Critical] ?? 0,
+            high: mostExploitableSecretCounts.value.categories?.[SeverityEnum.High] ?? 0,
+            medium:
+              mostExploitableSecretCounts.value.categories?.[SeverityEnum.Medium] ?? 0,
+            low: mostExploitableSecretCounts.value.categories?.[SeverityEnum.Low] ?? 0,
+            unknown:
+              mostExploitableSecretCounts.value.categories?.[SeverityEnum.Unknown] ?? 0,
           },
         };
       },
