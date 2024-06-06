@@ -208,7 +208,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 
 	if parentNodeID == "" {
 		if _, err := tx.Run(ctx, `
-			MATCH (r:Node{node_id:$host_node_id, node_type: "cloud_agent"})
+			MERGE (r:Node{node_id:$host_node_id, node_type: "cloud_agent"})
 			WITH $param as row, r
 			MERGE (n:CloudNode{node_id:row.node_id})
 			MERGE (r) -[:HOSTS]-> (n)
@@ -222,7 +222,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		}
 	} else {
 		if _, err := tx.Run(ctx, `
-			MATCH (r:Node{node_id:$host_node_id, node_type: "cloud_agent"})
+			MERGE (r:Node{node_id:$host_node_id, node_type: "cloud_agent"})
 			MERGE (m:CloudNode{node_id: $parent_node_id})
 			WITH $param as row, r, m
 			MERGE (n:CloudNode{node_id:row.node_id})
