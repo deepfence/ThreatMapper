@@ -14,15 +14,18 @@ import {
   ModelCloudNodeControlReqCloudProviderEnum,
   ModelCompliance,
   ModelScanCompareReq,
+  ModelScanInfoStatusEnum,
   ModelScanResultsReq,
   SearchSearchNodeReq,
 } from '@/api/generated';
 import { DF404Error } from '@/components/error/404';
-import { ScanStatusEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import { ComplianceScanGroupedStatus } from '@/utils/scan';
-import { COMPLIANCE_SCAN_STATUS_GROUPS } from '@/utils/scan';
+import {
+  SCAN_STATUS_FILTER,
+  SCAN_STATUS_FILTER_TYPE,
+  SCAN_STATUS_GROUPS,
+} from '@/utils/scan';
 
 export const postureQueries = createQueryKeys('posture', {
   postureSummary: () => {
@@ -47,7 +50,7 @@ export const postureQueries = createQueryKeys('posture', {
     page?: number;
     pageSize: number;
     status: string[];
-    complianceScanStatus?: ComplianceScanGroupedStatus;
+    complianceScanStatus?: SCAN_STATUS_FILTER_TYPE;
     nodeType: string;
     order?: {
       sortBy: string;
@@ -139,7 +142,7 @@ export const postureQueries = createQueryKeys('posture', {
         }
 
         if (complianceScanStatus) {
-          if (complianceScanStatus === ComplianceScanGroupedStatus.neverScanned) {
+          if (complianceScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             searchReq.node_filter.filters.contains_filter!.filter_in = {
               ...searchReq.node_filter.filters.contains_filter!.filter_in,
               last_scan_status: [''],
@@ -147,7 +150,7 @@ export const postureQueries = createQueryKeys('posture', {
           } else {
             searchReq.node_filter.filters.contains_filter.filter_in = {
               ...searchReq.node_filter.filters.contains_filter.filter_in,
-              last_scan_status: COMPLIANCE_SCAN_STATUS_GROUPS[complianceScanStatus],
+              last_scan_status: SCAN_STATUS_GROUPS[complianceScanStatus],
             };
           }
         }
@@ -252,8 +255,9 @@ export const postureQueries = createQueryKeys('posture', {
         }
         const scanStatus = statusResult?.value.statuses?.[scanId].status;
         const isScanRunning =
-          scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
-        const isScanError = scanStatus === ScanStatusEnum.error;
+          scanStatus !== ModelScanInfoStatusEnum.Complete &&
+          scanStatus !== ModelScanInfoStatusEnum.Error;
+        const isScanError = scanStatus === ModelScanInfoStatusEnum.Error;
 
         if (isScanRunning || isScanError) {
           return {
@@ -452,8 +456,9 @@ export const postureQueries = createQueryKeys('posture', {
         const scanStatus = statuses?.status;
 
         const isScanRunning =
-          scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
-        const isScanError = scanStatus === ScanStatusEnum.error;
+          scanStatus !== ModelScanInfoStatusEnum.Complete &&
+          scanStatus !== ModelScanInfoStatusEnum.Error;
+        const isScanError = scanStatus === ModelScanInfoStatusEnum.Error;
 
         if (isScanRunning || isScanError) {
           return {

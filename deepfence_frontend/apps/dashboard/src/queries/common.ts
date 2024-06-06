@@ -305,4 +305,42 @@ export const commonQueries = createQueryKeys('common', {
       },
     };
   },
+  searchCloudService: (filters: { searchText: string; size: number }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async ({ pageParam = 0 }) => {
+        const { searchText, size } = filters;
+
+        const scanResultsReq: CompletionCompletionNodeFieldReq = {
+          scan_id: '',
+          completion: searchText,
+          field_name: 'node_type',
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+
+        const api = apiWrapper({
+          fn: getScanResultCompletionApiClient().completeCloudResources,
+        });
+        const response = await api({
+          completionCompletionNodeFieldReq: scanResultsReq,
+        });
+
+        if (!response.ok) {
+          throw response.error;
+        }
+
+        if (response.value === null) {
+          // TODO: handle this case with 404 status maybe
+          throw new Error('Error getting cloud service');
+        }
+
+        return {
+          data: response.value.possible_values?.slice(0, size) || [],
+        };
+      },
+    };
+  },
 });

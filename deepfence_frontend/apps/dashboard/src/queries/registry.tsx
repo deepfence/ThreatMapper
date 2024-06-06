@@ -9,12 +9,9 @@ import {
 } from '@/api/generated';
 import { apiWrapper } from '@/utils/api';
 import {
-  MALWARE_SCAN_STATUS_GROUPS,
-  MalwareScanGroupedStatus,
-  SECRET_SCAN_STATUS_GROUPS,
-  SecretScanGroupedStatus,
-  VULNERABILITY_SCAN_STATUS_GROUPS,
-  VulnerabilityScanGroupedStatus,
+  SCAN_STATUS_FILTER,
+  SCAN_STATUS_FILTER_TYPE,
+  SCAN_STATUS_GROUPS,
 } from '@/utils/scan';
 
 export const registryQueries = createQueryKeys('registry', {
@@ -210,9 +207,9 @@ export const registryQueries = createQueryKeys('registry', {
   registryScanResults: (filters: {
     registryId: string;
     imageId: string;
-    vulnerabilityScanStatus?: VulnerabilityScanGroupedStatus;
-    secretScanStatus?: SecretScanGroupedStatus;
-    malwareScanStatus?: MalwareScanGroupedStatus;
+    vulnerabilityScanStatus?: SCAN_STATUS_FILTER_TYPE;
+    secretScanStatus?: SCAN_STATUS_FILTER_TYPE;
+    malwareScanStatus?: SCAN_STATUS_FILTER_TYPE;
     page?: number;
     pageSize: number;
     order?: {
@@ -274,57 +271,41 @@ export const registryQueries = createQueryKeys('registry', {
         };
 
         if (vulnerabilityScanStatus) {
-          if (vulnerabilityScanStatus === VulnerabilityScanGroupedStatus.neverScanned) {
+          if (vulnerabilityScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             imageTagsRequest.image_filter.not_contains_filter!.filter_in = {
               ...imageTagsRequest.image_filter.not_contains_filter!.filter_in,
-              vulnerability_scan_status: [
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.complete,
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.error,
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.inProgress,
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.starting,
-              ],
+              vulnerability_scan_status: SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
             };
           } else {
             imageTagsRequest.image_filter.contains_filter.filter_in = {
               ...imageTagsRequest.image_filter.contains_filter.filter_in,
-              vulnerability_scan_status:
-                VULNERABILITY_SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
+              vulnerability_scan_status: SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
             };
           }
         }
         if (secretScanStatus) {
-          if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
+          if (secretScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             imageTagsRequest.image_filter.not_contains_filter!.filter_in = {
               ...imageTagsRequest.image_filter.not_contains_filter!.filter_in,
-              secret_scan_status: [
-                ...SECRET_SCAN_STATUS_GROUPS.complete,
-                ...SECRET_SCAN_STATUS_GROUPS.error,
-                ...SECRET_SCAN_STATUS_GROUPS.inProgress,
-                ...SECRET_SCAN_STATUS_GROUPS.starting,
-              ],
+              secret_scan_status: SCAN_STATUS_GROUPS[secretScanStatus],
             };
           } else {
             imageTagsRequest.image_filter.contains_filter.filter_in = {
               ...imageTagsRequest.image_filter.contains_filter.filter_in,
-              secret_scan_status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
+              secret_scan_status: SCAN_STATUS_GROUPS[secretScanStatus],
             };
           }
         }
         if (malwareScanStatus) {
-          if (malwareScanStatus === MalwareScanGroupedStatus.neverScanned) {
+          if (malwareScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             imageTagsRequest.image_filter.not_contains_filter!.filter_in = {
               ...imageTagsRequest.image_filter.not_contains_filter!.filter_in,
-              malware_scan_status: [
-                ...MALWARE_SCAN_STATUS_GROUPS.complete,
-                ...MALWARE_SCAN_STATUS_GROUPS.error,
-                ...MALWARE_SCAN_STATUS_GROUPS.inProgress,
-                ...MALWARE_SCAN_STATUS_GROUPS.starting,
-              ],
+              malware_scan_status: SCAN_STATUS_GROUPS[malwareScanStatus],
             };
           } else {
             imageTagsRequest.image_filter.contains_filter.filter_in = {
               ...imageTagsRequest.image_filter.contains_filter.filter_in,
-              malware_scan_status: MALWARE_SCAN_STATUS_GROUPS[malwareScanStatus],
+              malware_scan_status: SCAN_STATUS_GROUPS[malwareScanStatus],
             };
           }
         }

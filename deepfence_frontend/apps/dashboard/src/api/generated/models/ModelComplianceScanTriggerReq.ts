@@ -70,6 +70,15 @@ export interface ModelComplianceScanTriggerReq {
     node_ids: Array<ModelNodeIdentifier> | null;
 }
 
+
+/**
+ * @export
+ */
+export const ModelComplianceScanTriggerReqBenchmarkTypesEnum = {
+} as const;
+export type ModelComplianceScanTriggerReqBenchmarkTypesEnum = typeof ModelComplianceScanTriggerReqBenchmarkTypesEnum[keyof typeof ModelComplianceScanTriggerReqBenchmarkTypesEnum];
+
+
 /**
  * Check if a given object implements the ModelComplianceScanTriggerReq interface.
  */

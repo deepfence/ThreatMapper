@@ -13258,6 +13258,7 @@
             "type": "string"
           },
           "benchmark_types": {
+            "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelBenchmarkType" },
             "nullable": true
@@ -13839,6 +13840,7 @@
         "type": "object",
         "properties": {
           "benchmark_types": {
+            "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelBenchmarkType" },
             "nullable": true
