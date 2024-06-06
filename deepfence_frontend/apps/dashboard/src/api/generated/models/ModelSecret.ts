@@ -37,7 +37,7 @@ export interface ModelSecret {
      * @type {string}
      * @memberof ModelSecret
      */
-    level: string;
+    level: ModelSecretLevelEnum;
     /**
      * 
      * @type {boolean}
@@ -117,6 +117,20 @@ export interface ModelSecret {
      */
     updated_at: number;
 }
+
+
+/**
+ * @export
+ */
+export const ModelSecretLevelEnum = {
+    Critical: 'critical',
+    High: 'high',
+    Medium: 'medium',
+    Low: 'low',
+    Unknown: 'unknown'
+} as const;
+export type ModelSecretLevelEnum = typeof ModelSecretLevelEnum[keyof typeof ModelSecretLevelEnum];
+
 
 /**
  * Check if a given object implements the ModelSecret interface.

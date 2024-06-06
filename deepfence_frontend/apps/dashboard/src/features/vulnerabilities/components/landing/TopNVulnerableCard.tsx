@@ -13,6 +13,7 @@ import { getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
 import { queries } from '@/queries';
 import { Mode, useTheme } from '@/theme/ThemeContext';
+import { SeverityEnum } from '@/utils/enum';
 import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -49,23 +50,23 @@ function getChartOptions({
           displayName: 'Container Name',
         },
         {
-          name: 'critical',
+          name: SeverityEnum.Critical,
           displayName: 'Critical',
         },
         {
-          name: 'high',
+          name: SeverityEnum.High,
           displayName: 'High',
         },
         {
-          name: 'medium',
+          name: SeverityEnum.Medium,
           displayName: 'Medium',
         },
         {
-          name: 'low',
+          name: SeverityEnum.Low,
           displayName: 'Low',
         },
         {
-          name: 'unknown',
+          name: SeverityEnum.Unknown,
           displayName: 'Unknown',
         },
       ],
@@ -134,35 +135,35 @@ function getChartOptions({
       {
         type: 'bar',
         stack: 'total',
-        color: getSeverityColorMap(theme)['critical'],
+        color: getSeverityColorMap(theme)[SeverityEnum.Critical],
         cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: getSeverityColorMap(theme)['high'],
+        color: getSeverityColorMap(theme)[SeverityEnum.High],
         cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: getSeverityColorMap(theme)['medium'],
+        color: getSeverityColorMap(theme)[SeverityEnum.Medium],
         cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: getSeverityColorMap(theme)['low'],
+        color: getSeverityColorMap(theme)[SeverityEnum.Low],
         cursor: 'pointer',
         barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
-        color: getSeverityColorMap(theme)['unknown'],
+        color: getSeverityColorMap(theme)[SeverityEnum.Unknown],
         cursor: 'pointer',
         barMaxWidth: 20,
       },

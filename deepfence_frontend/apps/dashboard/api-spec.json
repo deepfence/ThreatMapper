@@ -571,6 +571,62 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/complete/cloud-resources": {
+      "post": {
+        "tags": ["Completion"],
+        "summary": "Get Completion for cloud resources fields",
+        "description": "Complete cloud resources info",
+        "operationId": "completeCloudResources",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionCompletionNodeFieldReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionCompletionNodeFieldRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/complete/compliance": {
       "post": {
         "tags": ["Completion"],
@@ -13202,8 +13258,9 @@
             "type": "string"
           },
           "benchmark_types": {
+            "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelBenchmarkType" },
             "nullable": true
           },
           "cron_expr": { "type": "string" },
@@ -13273,6 +13330,10 @@
           "node_type": { "type": "string" }
         }
       },
+      "ModelBenchmarkType": {
+        "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
+        "type": "string"
+      },
       "ModelBulkDeleteReportReq": {
         "required": ["report_ids"],
         "type": "object",
@@ -13341,7 +13402,10 @@
         "properties": {
           "account_id": { "type": "string" },
           "cloud_provider": { "type": "string" },
-          "compliance_check_type": { "type": "string" },
+          "compliance_check_type": {
+            "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
+            "type": "string"
+          },
           "control_id": { "type": "string" },
           "count": { "type": "integer" },
           "description": { "type": "string" },
@@ -13359,7 +13423,7 @@
           },
           "service": { "type": "string" },
           "severity": { "type": "string" },
-          "status": { "type": "string" },
+          "status": { "enum": ["alarm", "skip", "ok", "info"], "type": "string" },
           "title": { "type": "string" },
           "type": { "type": "string" },
           "updated_at": { "type": "integer" }
@@ -13469,10 +13533,13 @@
         }
       },
       "ModelCloudNodeAccountsListReq": {
-        "required": ["window"],
+        "required": ["cloud_provider", "window"],
         "type": "object",
         "properties": {
-          "cloud_provider": { "type": "string" },
+          "cloud_provider": {
+            "enum": ["aws", "gcp", "azure", "linux", "kubernetes", "aws_org", "gcp_org"],
+            "type": "string"
+          },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
@@ -13518,7 +13585,10 @@
             "enum": ["aws", "gcp", "azure", "linux", "kubernetes"],
             "type": "string"
           },
-          "compliance_type": { "type": "string" },
+          "compliance_type": {
+            "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
+            "type": "string"
+          },
           "node_id": { "type": "string" }
         }
       },
@@ -13573,7 +13643,7 @@
           "cloud_compliance_latest_scan_id": { "type": "string" },
           "cloud_compliance_scan_status": { "type": "string" },
           "cloud_compliances_count": { "type": "integer" },
-          "cloud_provider": { "type": "string" },
+          "cloud_provider": { "enum": ["aws", "gcp", "azure"], "type": "string" },
           "cloud_region": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
@@ -13603,7 +13673,10 @@
         ],
         "type": "object",
         "properties": {
-          "compliance_check_type": { "type": "string" },
+          "compliance_check_type": {
+            "enum": ["hipaa", "gdpr", "pci", "nist"],
+            "type": "string"
+          },
           "description": { "type": "string" },
           "masked": { "type": "boolean" },
           "node_id": { "type": "string" },
@@ -13618,7 +13691,10 @@
             "nullable": true
           },
           "rule_id": { "type": "string" },
-          "status": { "type": "string" },
+          "status": {
+            "enum": ["pass", "fail", "warn", "info", "note"],
+            "type": "string"
+          },
           "test_category": { "type": "string" },
           "test_desc": { "type": "string" },
           "test_number": { "type": "string" },
@@ -13682,7 +13758,19 @@
             "additionalProperties": { "type": "integer" },
             "nullable": true
           },
-          "status": { "type": "string" },
+          "status": {
+            "enum": [
+              "COMPLETE",
+              "STARTING",
+              "IN_PROGRESS",
+              "ERROR",
+              "CANCEL_PENDING",
+              "CANCELLING",
+              "CANCELLED",
+              "DELETE_PENDING"
+            ],
+            "type": "string"
+          },
           "status_message": { "type": "string" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
@@ -13752,8 +13840,9 @@
         "type": "object",
         "properties": {
           "benchmark_types": {
+            "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelBenchmarkType" },
             "nullable": true
           },
           "deepfence_system_scan": { "type": "boolean" },
@@ -14493,7 +14582,10 @@
           "date": { "type": "string" },
           "description": { "type": "string" },
           "file_sev_score": { "type": "integer" },
-          "file_severity": { "type": "string" },
+          "file_severity": {
+            "enum": ["critical", "high", "medium", "low", "unknown"],
+            "type": "string"
+          },
           "filetype": { "type": "string" },
           "image_layer_id": { "type": "string" },
           "info": { "type": "string" },
@@ -15015,7 +15107,19 @@
             "additionalProperties": { "type": "integer" },
             "nullable": true
           },
-          "status": { "type": "string" },
+          "status": {
+            "enum": [
+              "COMPLETE",
+              "STARTING",
+              "IN_PROGRESS",
+              "ERROR",
+              "CANCEL_PENDING",
+              "CANCELLING",
+              "CANCELLED",
+              "DELETE_PENDING"
+            ],
+            "type": "string"
+          },
           "status_message": { "type": "string" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
@@ -15217,7 +15321,10 @@
         "type": "object",
         "properties": {
           "full_filename": { "type": "string" },
-          "level": { "type": "string" },
+          "level": {
+            "enum": ["critical", "high", "medium", "low", "unknown"],
+            "type": "string"
+          },
           "masked": { "type": "boolean" },
           "matched_content": { "type": "string" },
           "name": { "type": "string" },
@@ -15521,7 +15628,10 @@
           "cve_id": { "type": "string" },
           "cve_link": { "type": "string" },
           "cve_overall_score": { "type": "number" },
-          "cve_severity": { "type": "string" },
+          "cve_severity": {
+            "enum": ["critical", "high", "medium", "low", "unknown"],
+            "type": "string"
+          },
           "cve_type": { "type": "string" },
           "exploit_poc": { "type": "string" },
           "has_live_connection": { "type": "boolean" },

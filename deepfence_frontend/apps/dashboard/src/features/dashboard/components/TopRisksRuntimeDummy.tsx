@@ -10,6 +10,7 @@ import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { RuntimeIncidentsCheckIcon } from '@/features/dashboard/components/images/RuntimeIncidentCheck';
 import { RuntimeIncidentsLight } from '@/features/dashboard/components/images/RuntimeIncidentLight';
 import { THEME_DARK, useTheme } from '@/theme/ThemeContext';
+import { SeverityEnum } from '@/utils/enum';
 
 export const TopRisksRuntimeDummy = () => {
   const { mode } = useTheme();
@@ -96,11 +97,11 @@ const DummyDonutChart = () => {
         },
         silent: true,
         color: [
-          getSeverityColorMap(mode)['critical'],
-          getSeverityColorMap(mode)['high'],
-          getSeverityColorMap(mode)['medium'],
-          getSeverityColorMap(mode)['low'],
-          getSeverityColorMap(mode)['unknown'],
+          getSeverityColorMap(mode)[SeverityEnum.Critical],
+          getSeverityColorMap(mode)[SeverityEnum.High],
+          getSeverityColorMap(mode)[SeverityEnum.Medium],
+          getSeverityColorMap(mode)[SeverityEnum.Low],
+          getSeverityColorMap(mode)[SeverityEnum.Unknown],
         ],
       },
     ],
