@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 const BatchSize = 5
@@ -215,7 +215,7 @@ func (s Slack) IsValidCredential(ctx context.Context) (bool, error) {
 
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		log.Errorf(err.Error())
+		log.Error().Msg(err.Error())
 		return false, nil
 	}
 
@@ -223,7 +223,7 @@ func (s Slack) IsValidCredential(ctx context.Context) (bool, error) {
 	// Set up the HTTP request.
 	req, err := http.NewRequest("POST", s.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		log.Errorf(err.Error())
+		log.Error().Msg(err.Error())
 		return false, err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -232,13 +232,13 @@ func (s Slack) IsValidCredential(ctx context.Context) (bool, error) {
 	client := utils.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Errorf(err.Error())
+		log.Error().Msg(err.Error())
 		return false, err
 	}
 
 	// Check the response status code.
 	if resp.StatusCode != http.StatusOK {
-		log.Errorf("failed to send notification, status code: %d", resp.StatusCode)
+		log.Error().Err(err).Msgf("failed to send notification, status code: %d", resp.StatusCode)
 		return false, errors.New(fmt.Sprintf("failed to send test notification, status code: %d", resp.StatusCode))
 	}
 	resp.Body.Close()

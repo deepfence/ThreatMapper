@@ -69,12 +69,17 @@ func init() {
 		log.Error().Msgf("Failed to set DF_HOST_ID: %v", err)
 	}
 
-	verbosity := "info"
-	enableDebug = os.Getenv("DF_ENABLE_DEBUG") != ""
-	if enableDebug {
-		verbosity = "debug"
+	logLevel := os.Getenv("DF_LOG_LEVEL")
+	if logLevel != "" {
+		err = log.Initialize(logLevel)
+	} else {
+		verbosity := "info"
+		enableDebug = os.Getenv("DF_ENABLE_DEBUG") != ""
+		if enableDebug {
+			verbosity = "debug"
+		}
+		err = log.Initialize(verbosity)
 	}
-	err = log.Initialize(verbosity)
 	if err != nil {
 		fmt.Println("Error in log.Initialize:", err)
 	}

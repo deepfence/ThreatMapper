@@ -28,27 +28,25 @@ const (
 	PostureProviderKubernetes = "kubernetes"
 )
 
+var (
+	PostureProviderOrgMap = map[string]string{
+		PostureProviderAWS: PostureProviderAWSOrg,
+		PostureProviderGCP: PostureProviderGCPOrg,
+	}
+)
+
 var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderGCP,
 	PostureProviderAzure, PostureProviderLinux, PostureProviderKubernetes}
 
 type CloudNodeAccountRegisterReq struct {
-	NodeID              string            `json:"node_id" required:"true"`
-	HostNodeId          string            `json:"host_node_id"`
-	CloudAccount        string            `json:"cloud_account" required:"true"`
-	CloudProvider       string            `json:"cloud_provider" required:"true"  enum:"aws,gcp,azure"`
-	MonitoredAccountIDs map[string]string `json:"monitored_account_ids"`
-	OrgAccountID        string            `json:"org_acc_id"`
-	Version             string            `json:"version"`
-}
-
-type CloudNodeAccountRegisterResp struct {
-	Data CloudNodeAccountRegisterRespData `json:"data"`
-}
-
-type CloudNodeAccountRegisterRespData struct {
-	CloudtrailTrails []CloudNodeCloudtrailTrail `json:"cloudtrail_trails"`
-	Refresh          string                     `json:"refresh"`
-	LogAction        ctl.Action                 `json:"log_action"`
+	NodeID                   string            `json:"node_id" validate:"required" required:"true"`
+	HostNodeID               string            `json:"host_node_id" validate:"required" required:"true"`
+	AccountID                string            `json:"account_id" validate:"required" required:"true"`
+	CloudProvider            string            `json:"cloud_provider" validate:"required,oneof=aws gcp azure" enum:"aws,gcp,azure" required:"true"`
+	IsOrganizationDeployment bool              `json:"is_organization_deployment"`
+	MonitoredAccountIDs      map[string]string `json:"monitored_account_ids"`
+	OrganizationAccountID    string            `json:"organization_account_id"`
+	Version                  string            `json:"version" validate:"required" required:"true"`
 }
 
 type CloudNodeAccountsListReq struct {
@@ -147,11 +145,6 @@ type CloudComplianceScanDetails struct {
 	StopRequested bool                               `json:"stop_requested"`
 }
 
-type CloudNodeCloudtrailTrail struct {
-	AccountID string `json:"account_id"`
-	TrailName string `json:"trail_name"`
-}
-
 type PendingCloudComplianceScan struct {
 	ScanID    string   `json:"scan_id"`
 	ScanType  string   `json:"scan_type"`
@@ -194,7 +187,7 @@ type PostureProvider struct {
 }
 
 func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{},
-	parentNodeID string, hostNodeId string) error {
+	parentNodeID string, hostNodeID string) error {
 
 	ctx, span := telemetry.NewSpan(ctx, "model", "upsert-cloud-compliance-node")
 	defer span.End()
@@ -223,7 +216,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			r.node_name=$host_node_id, r.active = true, r.agent_running=true, r.updated_at = TIMESTAMP()`,
 			map[string]interface{}{
 				"param":        nodeDetails,
-				"host_node_id": hostNodeId,
+				"host_node_id": hostNodeID,
 			}); err != nil {
 			return err
 		}
@@ -240,7 +233,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			map[string]interface{}{
 				"param":          nodeDetails,
 				"parent_node_id": parentNodeID,
-				"host_node_id":   hostNodeId,
+				"host_node_id":   hostNodeID,
 			}); err != nil {
 			return err
 		}
