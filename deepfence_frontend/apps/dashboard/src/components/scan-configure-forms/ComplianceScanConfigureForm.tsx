@@ -27,7 +27,7 @@ import { invalidateAllQueries, queries } from '@/queries';
 import { ComplianceScanNodeTypeEnum, isCloudNode, isCloudOrgNode } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import { getBenchmarkPrettyName } from '@/utils/scan';
+import { getBenchmarkPrettyName } from '@/utils/enum';
 
 export const complianceType: {
   [key in ComplianceScanNodeTypeEnum]: ModelBenchmarkType[];
