@@ -27,7 +27,7 @@ import { invalidateAllQueries, queries } from '@/queries';
 import { ComplianceScanNodeTypeEnum, isCloudNode, isCloudOrgNode } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import { getBenchmarkPrettyName } from '@/utils/scan';
+import { getBenchmarkPrettyName } from '@/utils/enum';
 
 export const complianceType: {
   [key in ComplianceScanNodeTypeEnum]: ModelBenchmarkType[];
@@ -108,7 +108,7 @@ export const scanPostureApiAction = async ({
   const nodeIds = body._nodeIds.toString().split(',');
   let nodeType = body._nodeType.toString();
   const checkTypes = body._checkTypes.toString()?.split(',') as Array<ModelBenchmarkType>;
-  debugger;
+
   const isCloudScan = CLOUDS.includes(nodeType as ComplianceScanNodeTypeEnum);
   if (isKubernetesNode(nodeType as ComplianceScanNodeTypeEnum)) {
     nodeType = 'cluster';

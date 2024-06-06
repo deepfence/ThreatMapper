@@ -10,7 +10,7 @@ import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { RuntimeIncidentsCheckIcon } from '@/features/dashboard/components/images/RuntimeIncidentCheck';
 import { RuntimeIncidentsLight } from '@/features/dashboard/components/images/RuntimeIncidentLight';
 import { THEME_DARK, useTheme } from '@/theme/ThemeContext';
-import { SeverityEnum } from '@/utils/scan';
+import { SeverityEnum } from '@/utils/enum';
 
 export const TopRisksRuntimeDummy = () => {
   const { mode } = useTheme();

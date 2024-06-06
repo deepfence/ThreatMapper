@@ -93,6 +93,7 @@ import {
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
+import { SeverityEnum, SeverityEnumList } from '@/utils/enum';
 import { abbreviateNumber } from '@/utils/number';
 import {
   isScanComplete,
@@ -101,8 +102,6 @@ import {
   isScanInProgress,
   isScanStopped,
   isScanStopping,
-  SeverityEnum,
-  SeverityEnumList,
 } from '@/utils/scan';
 import {
   getOrderFromSearchParams,

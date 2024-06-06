@@ -66,6 +66,7 @@ import { ScanTypeEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
+import { SeverityEnum } from '@/utils/enum';
 import {
   isNeverScanned,
   isScanComplete,
@@ -74,7 +75,6 @@ import {
   isScanStopping,
   SCAN_STATUS_FILTER,
   SCAN_STATUS_FILTER_TYPE,
-  SeverityEnum,
 } from '@/utils/scan';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
