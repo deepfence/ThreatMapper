@@ -21,20 +21,20 @@ var agentUpgradeSubCmd = &cobra.Command{
 	Short: "Upgrade agent",
 	Long:  `This subcommand triggers an upgrade on agent`,
 	Run: func(cmd *cobra.Command, args []string) {
-		node_ids, _ := cmd.Flags().GetString("node-ids")
-		if node_ids == "" {
+		node_ids, _ := cmd.Flags().GetStringSlice("node-ids")
+		if len(node_ids) == 0 {
 			log.Fatal().Msg("Please provide some ids")
 		}
 
 		version, _ := cmd.Flags().GetString("version")
-		if node_ids == "" {
+		if len(node_ids) == 0 {
 			log.Fatal().Msg("Please provide a version")
 		}
 
 		var err error
 		req := http.Client().ControlsAPI.UpgradeAgentVersion(context.Background())
 		req = req.ModelAgentUpgrade(deepfence_server_client.ModelAgentUpgrade{
-			NodeId:  node_ids,
+			NodeIds: node_ids,
 			Version: version,
 		})
 		_, err = http.Client().ControlsAPI.UpgradeAgentVersionExecute(req)
@@ -115,7 +115,7 @@ func init() {
 	agentCmd.AddCommand(agentEnableSubCmd)
 	agentCmd.AddCommand(agentDisableSubCmd)
 
-	agentUpgradeSubCmd.PersistentFlags().String("node-ids", "", "Agent IDs")
+	agentUpgradeSubCmd.PersistentFlags().StringSlice("node-ids", nil, "Agent IDs")
 	agentUpgradeSubCmd.PersistentFlags().String("version", "", "Agent version to upgrade to")
 
 	agentEnableSubCmd.PersistentFlags().String("node-ids", "", "Agent IDs")
