@@ -37,12 +37,6 @@ export interface DiagnosisGetDiagnosticLogsResponse {
      * @type {Array<DiagnosisDiagnosticLogsLink>}
      * @memberof DiagnosisGetDiagnosticLogsResponse
      */
-    cloud_scanner_logs?: Array<DiagnosisDiagnosticLogsLink> | null;
-    /**
-     * 
-     * @type {Array<DiagnosisDiagnosticLogsLink>}
-     * @memberof DiagnosisGetDiagnosticLogsResponse
-     */
     console_logs?: Array<DiagnosisDiagnosticLogsLink> | null;
 }
 
@@ -66,7 +60,6 @@ export function DiagnosisGetDiagnosticLogsResponseFromJSONTyped(json: any, ignor
     return {
         
         'agent_logs': !exists(json, 'agent_logs') ? undefined : (json['agent_logs'] === null ? null : (json['agent_logs'] as Array<any>).map(DiagnosisDiagnosticLogsLinkFromJSON)),
-        'cloud_scanner_logs': !exists(json, 'cloud_scanner_logs') ? undefined : (json['cloud_scanner_logs'] === null ? null : (json['cloud_scanner_logs'] as Array<any>).map(DiagnosisDiagnosticLogsLinkFromJSON)),
         'console_logs': !exists(json, 'console_logs') ? undefined : (json['console_logs'] === null ? null : (json['console_logs'] as Array<any>).map(DiagnosisDiagnosticLogsLinkFromJSON)),
     };
 }
@@ -81,7 +74,6 @@ export function DiagnosisGetDiagnosticLogsResponseToJSON(value?: DiagnosisGetDia
     return {
         
         'agent_logs': value.agent_logs === undefined ? undefined : (value.agent_logs === null ? null : (value.agent_logs as Array<any>).map(DiagnosisDiagnosticLogsLinkToJSON)),
-        'cloud_scanner_logs': value.cloud_scanner_logs === undefined ? undefined : (value.cloud_scanner_logs === null ? null : (value.cloud_scanner_logs as Array<any>).map(DiagnosisDiagnosticLogsLinkToJSON)),
         'console_logs': value.console_logs === undefined ? undefined : (value.console_logs === null ? null : (value.console_logs as Array<any>).map(DiagnosisDiagnosticLogsLinkToJSON)),
     };
 }

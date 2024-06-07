@@ -16,7 +16,7 @@ export DEEPFENCED=$(PWD)/deepfence_bootstrapper
 export DEEPFENCE_FARGATE_DIR=$(DEEPFENCE_AGENT_DIR)/agent-binary
 export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
-export STEAMPIPE_IMG_TAG?=latest
+export STEAMPIPE_IMG_TAG?=0.20.x
 export IS_DEV_BUILD?=false
 export VERSION?=v2.2.1
 export AGENT_BINARY_BUILD=$(DEEPFENCE_FARGATE_DIR)/build
@@ -141,13 +141,17 @@ malwarescanner: bootstrap-agent-plugins
 packagescanner: bootstrap-agent-plugins
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
 
+.PHONY: packagescanner-cli
+packagescanner-cli:
+	(cd $(PACKAGE_SCANNER_DIR) && make docker-cli)
+
 .PHONY: compliancescanner
 compliancescanner:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_compliance_scanner_ce:$(DF_IMG_TAG) -f $(COMPLIANCE_SCANNER_DIR)/Dockerfile $(COMPLIANCE_SCANNER_DIR)
 
 .PHONY: cloudscanner
 cloudscanner: debian_builder deepfenced
-	(cd $(DEEPFENCE_AGENT_DIR) && IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build_cs_agent.sh)
+	(cd $(DEEPFENCE_AGENT_DIR) && IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) DF_IMG_TAG=$(DF_IMG_TAG) VERSION=$(VERSION) bash build_cloud_agent.sh)
 
 .PHONY: openapi
 openapi: server
@@ -223,6 +227,10 @@ publish-cluster-agent:
 publish-packagescanner:
 	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG)
 
+.PHONY: publish-packagescanner-cli
+publish-packagescanner-cli:
+	(cd $(PACKAGE_SCANNER_DIR) && make publish-docker-cli)
+
 .PHONY: publish-secretscanner
 publish-secretscanner:
 	docker push $(IMAGE_REPOSITORY)/deepfence_secret_scanner_ce:$(DF_IMG_TAG)
@@ -241,7 +249,7 @@ publish-jaeger:
 
 .PHONY: publish-cloudscanner
 publish-cloudscanner:
-	docker push $(IMAGE_REPOSITORY)/cloud-scanner:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/cloud_scanner_ce:$(DF_IMG_TAG)
 
 .PHONY: clean
 clean:

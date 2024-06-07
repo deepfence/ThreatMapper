@@ -5,14 +5,9 @@ import { getSearchApiClient } from '@/api/api';
 import { SearchSearchNodeReq } from '@/api/generated';
 import { apiWrapper } from '@/utils/api';
 import {
-  COMPLIANCE_SCAN_STATUS_GROUPS,
-  ComplianceScanGroupedStatus,
-  MALWARE_SCAN_STATUS_GROUPS,
-  MalwareScanGroupedStatus,
-  SECRET_SCAN_STATUS_GROUPS,
-  SecretScanGroupedStatus,
-  VULNERABILITY_SCAN_STATUS_GROUPS,
-  VulnerabilityScanGroupedStatus,
+  SCAN_STATUS_FILTER,
+  SCAN_STATUS_FILTER_TYPE,
+  SCAN_STATUS_GROUPS,
 } from '@/utils/scan';
 
 export const searchQueries = createQueryKeys('search', {
@@ -113,17 +108,17 @@ export const searchQueries = createQueryKeys('search', {
         if (isScannedForVulnerabilities) {
           searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in![
             'vulnerability_scan_status'
-          ] = [...VULNERABILITY_SCAN_STATUS_GROUPS.neverScanned, ''];
+          ] = [''];
         }
         if (isScannedForSecrets) {
           searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in![
             'secret_scan_status'
-          ] = [...SECRET_SCAN_STATUS_GROUPS.neverScanned, ''];
+          ] = [''];
         }
         if (isScannedForMalware) {
           searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in![
             'malware_scan_status'
-          ] = [...MALWARE_SCAN_STATUS_GROUPS.neverScanned, ''];
+          ] = [''];
         }
         const searchHostsApi = apiWrapper({
           fn: getSearchApiClient().searchHosts,
@@ -418,17 +413,17 @@ export const searchQueries = createQueryKeys('search', {
         if (isScannedForVulnerabilities) {
           scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
             'vulnerability_scan_status'
-          ] = [...VULNERABILITY_SCAN_STATUS_GROUPS.neverScanned, ''];
+          ] = [''];
         }
         if (isScannedForSecrets) {
           scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
             'secret_scan_status'
-          ] = [...SECRET_SCAN_STATUS_GROUPS.neverScanned, ''];
+          ] = [''];
         }
         if (isScannedForMalware) {
           scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
             'malware_scan_status'
-          ] = [...MALWARE_SCAN_STATUS_GROUPS.neverScanned, ''];
+          ] = [''];
         }
         if (order) {
           scanRequestParams.node_filter.filters.order_filter.order_fields = [
@@ -557,17 +552,17 @@ export const searchQueries = createQueryKeys('search', {
         if (isScannedForVulnerabilities) {
           scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
             'vulnerability_scan_status'
-          ] = [...VULNERABILITY_SCAN_STATUS_GROUPS.neverScanned, ''];
+          ] = [''];
         }
         if (isScannedForSecrets) {
           scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
             'secret_scan_status'
-          ] = [...SECRET_SCAN_STATUS_GROUPS.neverScanned, ''];
+          ] = [''];
         }
         if (isScannedForMalware) {
           scanRequestParams.node_filter.filters.not_contains_filter!.filter_in![
             'malware_scan_status'
-          ] = [...MALWARE_SCAN_STATUS_GROUPS.neverScanned, ''];
+          ] = [''];
         }
 
         if (order) {
@@ -784,10 +779,10 @@ export const searchQueries = createQueryKeys('search', {
   hostsWithPagination: (filters: {
     page: number;
     pageSize: number;
-    vulnerabilityScanStatus?: VulnerabilityScanGroupedStatus;
-    secretScanStatus?: SecretScanGroupedStatus;
-    malwareScanStatus?: MalwareScanGroupedStatus;
-    complianceScanStatus?: ComplianceScanGroupedStatus;
+    vulnerabilityScanStatus?: SCAN_STATUS_FILTER_TYPE;
+    secretScanStatus?: SCAN_STATUS_FILTER_TYPE;
+    malwareScanStatus?: SCAN_STATUS_FILTER_TYPE;
+    complianceScanStatus?: SCAN_STATUS_FILTER_TYPE;
     cloudProvider?: string[];
     order?: {
       sortBy: string;
@@ -844,75 +839,54 @@ export const searchQueries = createQueryKeys('search', {
           window: { offset: page * pageSize, size: pageSize },
         };
         if (vulnerabilityScanStatus) {
-          if (vulnerabilityScanStatus === VulnerabilityScanGroupedStatus.neverScanned) {
+          if (vulnerabilityScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
-              vulnerability_scan_status: [
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.complete,
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.error,
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.inProgress,
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.starting,
-              ],
+              vulnerability_scan_status: SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
             };
           } else {
             searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-              vulnerability_scan_status:
-                VULNERABILITY_SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
+              vulnerability_scan_status: SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
             };
           }
         }
         if (secretScanStatus) {
-          if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
+          if (secretScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
-              secret_scan_status: [
-                ...SECRET_SCAN_STATUS_GROUPS.complete,
-                ...SECRET_SCAN_STATUS_GROUPS.error,
-                ...SECRET_SCAN_STATUS_GROUPS.inProgress,
-                ...SECRET_SCAN_STATUS_GROUPS.starting,
-              ],
+              secret_scan_status: SCAN_STATUS_GROUPS[secretScanStatus],
             };
           } else {
             searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-              secret_scan_status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
+              secret_scan_status: SCAN_STATUS_GROUPS[secretScanStatus],
             };
           }
         }
         if (malwareScanStatus) {
-          if (malwareScanStatus === MalwareScanGroupedStatus.neverScanned) {
+          if (malwareScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
-              malware_scan_status: [
-                ...MALWARE_SCAN_STATUS_GROUPS.complete,
-                ...MALWARE_SCAN_STATUS_GROUPS.error,
-                ...MALWARE_SCAN_STATUS_GROUPS.inProgress,
-                ...MALWARE_SCAN_STATUS_GROUPS.starting,
-              ],
+              malware_scan_status: SCAN_STATUS_GROUPS[malwareScanStatus],
             };
           } else {
             searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-              malware_scan_status: MALWARE_SCAN_STATUS_GROUPS[malwareScanStatus],
+              malware_scan_status: SCAN_STATUS_GROUPS[malwareScanStatus],
             };
           }
         }
         if (complianceScanStatus) {
-          if (complianceScanStatus === ComplianceScanGroupedStatus.neverScanned) {
+          if (complianceScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
-              compliance_scan_status: [
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.complete,
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.error,
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.inProgress,
-                ...COMPLIANCE_SCAN_STATUS_GROUPS.starting,
-              ],
+              compliance_scan_status: SCAN_STATUS_GROUPS[complianceScanStatus],
             };
           } else {
             searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-              compliance_scan_status: COMPLIANCE_SCAN_STATUS_GROUPS[complianceScanStatus],
+              compliance_scan_status: SCAN_STATUS_GROUPS[complianceScanStatus],
             };
           }
         }
@@ -1101,9 +1075,9 @@ export const searchQueries = createQueryKeys('search', {
   containersWithPagination: (filters: {
     page: number;
     pageSize: number;
-    vulnerabilityScanStatus?: VulnerabilityScanGroupedStatus;
-    secretScanStatus?: SecretScanGroupedStatus;
-    malwareScanStatus?: MalwareScanGroupedStatus;
+    vulnerabilityScanStatus?: SCAN_STATUS_FILTER_TYPE;
+    secretScanStatus?: SCAN_STATUS_FILTER_TYPE;
+    malwareScanStatus?: SCAN_STATUS_FILTER_TYPE;
     hosts: string[];
     order?: {
       sortBy: string;
@@ -1160,57 +1134,41 @@ export const searchQueries = createQueryKeys('search', {
           window: { offset: page * pageSize, size: pageSize },
         };
         if (vulnerabilityScanStatus) {
-          if (vulnerabilityScanStatus === VulnerabilityScanGroupedStatus.neverScanned) {
+          if (vulnerabilityScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
-              vulnerability_scan_status: [
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.complete,
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.error,
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.inProgress,
-                ...VULNERABILITY_SCAN_STATUS_GROUPS.starting,
-              ],
+              vulnerability_scan_status: SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
             };
           } else {
             searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-              vulnerability_scan_status:
-                VULNERABILITY_SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
+              vulnerability_scan_status: SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
             };
           }
         }
         if (secretScanStatus) {
-          if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
+          if (secretScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
-              secret_scan_status: [
-                ...SECRET_SCAN_STATUS_GROUPS.complete,
-                ...SECRET_SCAN_STATUS_GROUPS.error,
-                ...SECRET_SCAN_STATUS_GROUPS.inProgress,
-                ...SECRET_SCAN_STATUS_GROUPS.starting,
-              ],
+              secret_scan_status: SCAN_STATUS_GROUPS[secretScanStatus],
             };
           } else {
             searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-              secret_scan_status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
+              secret_scan_status: SCAN_STATUS_GROUPS[secretScanStatus],
             };
           }
         }
         if (malwareScanStatus) {
-          if (malwareScanStatus === MalwareScanGroupedStatus.neverScanned) {
+          if (malwareScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
-              malware_scan_status: [
-                ...MALWARE_SCAN_STATUS_GROUPS.complete,
-                ...MALWARE_SCAN_STATUS_GROUPS.error,
-                ...MALWARE_SCAN_STATUS_GROUPS.inProgress,
-                ...MALWARE_SCAN_STATUS_GROUPS.starting,
-              ],
+              malware_scan_status: SCAN_STATUS_GROUPS[malwareScanStatus],
             };
           } else {
             searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
               ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-              malware_scan_status: MALWARE_SCAN_STATUS_GROUPS[malwareScanStatus],
+              malware_scan_status: SCAN_STATUS_GROUPS[malwareScanStatus],
             };
           }
         }

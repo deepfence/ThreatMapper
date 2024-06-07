@@ -1,6 +1,10 @@
 import { upperFirst } from 'lodash-es';
 import { cn } from 'tailwind-preset';
 
+import {
+  ModelCloudComplianceStatusEnum,
+  ModelComplianceStatusEnum,
+} from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { SeverityCritical } from '@/components/icons/common/SeverityCritical';
 import { SeverityHigh } from '@/components/icons/common/SeverityHigh';
@@ -15,6 +19,7 @@ import {
 } from '@/constants/charts';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType, VulnerabilitySeverityType } from '@/types/common';
+import { SeverityEnum } from '@/utils/enum';
 
 export const SeverityBadge = ({
   severity,
@@ -29,11 +34,11 @@ export const SeverityBadge = ({
         'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] text-text-text-inverse py-0.5 max-w-[62px] min-w-[62px]',
         ' rounded-[5px]',
         {
-          'bg-severity-critical': severity === 'critical',
-          'bg-severity-high': severity === 'high',
-          'bg-severity-medium': severity === 'medium',
-          'bg-severity-low': severity === 'low',
-          'bg-severity-unknown': !severity || severity === 'unknown',
+          'bg-severity-critical': severity === SeverityEnum.Critical,
+          'bg-severity-high': severity === SeverityEnum.High,
+          'bg-severity-medium': severity === SeverityEnum.Medium,
+          'bg-severity-low': severity === SeverityEnum.Low,
+          'bg-severity-unknown': !severity || severity === SeverityEnum.Unknown,
         },
         className,
       )}
@@ -81,14 +86,18 @@ export const PostureStatusBadgeIcon = ({
       className={cn('w-[18px] h-[18px] shrink-0', className)}
       style={{ color: getPostureColor(theme)[status] }}
     >
-      {status === 'alarm' && <SeverityCritical theme={theme} />}
-      {status === 'info' && <SeverityHigh theme={theme} />}
-      {status === 'ok' && <SeverityLow theme={theme} />}
-      {status === 'skip' && <SeverityUnknown />}
-      {status === 'pass' && <SeverityLow theme={theme} />}
-      {status === 'warn' && <SeverityMedium theme={theme} />}
-      {status === 'note' && <SeverityLow theme={theme} />}
-      {status === 'delete' && <SeverityMedium theme={theme} />}
+      {status === ModelCloudComplianceStatusEnum.Alarm && (
+        <SeverityCritical theme={theme} />
+      )}
+      {status === ModelCloudComplianceStatusEnum.Info && <SeverityHigh theme={theme} />}
+      {status === ModelCloudComplianceStatusEnum.Ok && <SeverityLow theme={theme} />}
+      {status === ModelCloudComplianceStatusEnum.Skip && <SeverityUnknown />}
+      {status === ModelComplianceStatusEnum.Pass && <SeverityLow theme={theme} />}
+      {status === ModelComplianceStatusEnum.Warn && <SeverityMedium theme={theme} />}
+      {status === ModelComplianceStatusEnum.Note && <SeverityLow theme={theme} />}
+      {status === ModelCloudComplianceStatusEnum.Delete && (
+        <SeverityMedium theme={theme} />
+      )}
     </div>
   );
 };
@@ -140,11 +149,11 @@ export const SeverityLegend = ({
         className={cn(
           'rounded-full h-3 w-3 shrink-0',
           {
-            'bg-severity-critical': severity === 'critical',
-            'bg-severity-high': severity === 'high',
-            'bg-severity-medium': severity === 'medium',
-            'bg-severity-low': severity === 'low',
-            'bg-severity-unknown': !severity || severity === 'unknown',
+            'bg-severity-critical': severity === SeverityEnum.Critical,
+            'bg-severity-high': severity === SeverityEnum.High,
+            'bg-severity-medium': severity === SeverityEnum.Medium,
+            'bg-severity-low': severity === SeverityEnum.Low,
+            'bg-severity-unknown': !severity || severity === SeverityEnum.Unknown,
           },
           iconClassName,
         )}
@@ -174,11 +183,11 @@ export const SeverityBadgeIcon = ({
       className={cn('w-[18px] h-[18px] shrink-0', className)}
       style={{ color: getSeverityColorMap(theme)[severity] }}
     >
-      {severity === 'critical' && <SeverityCritical theme={theme} />}
-      {severity === 'high' && <SeverityHigh theme={theme} />}
-      {severity === 'medium' && <SeverityMedium theme={theme} />}
-      {severity === 'low' && <SeverityLow theme={theme} />}
-      {(!severity || severity === 'unknown') && <SeverityUnknown />}
+      {severity === SeverityEnum.Critical && <SeverityCritical theme={theme} />}
+      {severity === SeverityEnum.High && <SeverityHigh theme={theme} />}
+      {severity === SeverityEnum.Medium && <SeverityMedium theme={theme} />}
+      {severity === SeverityEnum.Low && <SeverityLow theme={theme} />}
+      {(!severity || severity === SeverityEnum.Unknown) && <SeverityUnknown />}
     </div>
   );
 };

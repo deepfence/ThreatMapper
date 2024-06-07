@@ -1,23 +1,20 @@
-import { ModelScanResultsActionRequestScanTypeEnum } from '@/api/generated';
+import {
+  ModelCloudComplianceStatusEnum,
+  ModelComplianceStatusEnum,
+  ModelMalwareFileSeverityEnum,
+  ModelScanResultsActionRequestScanTypeEnum,
+  ModelSecretLevelEnum,
+  ModelVulnerabilityCveSeverityEnum,
+} from '@/api/generated';
+import { SeverityEnum } from '@/utils/enum';
 
-export type VulnerabilitySeverityType =
-  | 'critical'
-  | 'high'
-  | 'low'
-  | 'medium'
-  | 'unknown';
+export type VulnerabilitySeverityType = ModelVulnerabilityCveSeverityEnum;
 
-export type SecretSeverityType = 'critical' | 'high' | 'low' | 'medium' | 'unknown';
-export type MalwareSeverityType = 'critical' | 'high' | 'low' | 'medium' | 'unknown';
+export type SecretSeverityType = ModelSecretLevelEnum;
+export type MalwareSeverityType = ModelMalwareFileSeverityEnum;
 export type PostureSeverityType =
-  | 'alarm'
-  | 'info'
-  | 'skip'
-  | 'ok'
-  | 'pass'
-  | 'warn'
-  | 'delete'
-  | 'note';
+  | ModelComplianceStatusEnum
+  | ModelCloudComplianceStatusEnum;
 
 export type AllSeverityType =
   | VulnerabilitySeverityType
@@ -47,13 +44,6 @@ export enum ComplianceScanNodeTypeEnum {
   azure = 'azure',
   host = 'host',
   kubernetes_cluster = 'kubernetes_cluster',
-}
-
-export enum ScanStatusEnum {
-  complete = 'COMPLETE',
-  error = 'ERROR',
-  neverScanned = 'NEVER_SCANNED',
-  stopped = 'CANCELLED',
 }
 
 export const RegistryType = {
@@ -88,41 +78,46 @@ export const isCloudOrgNode = (nodeType?: string) =>
 export type GenerativeAIIntegrationType = 'openai' | 'amazon-bedrock';
 
 export const isCriticalSeverity = (severity: string) => {
-  return severity?.toLowerCase() === 'critical';
+  return severity?.toLowerCase() === SeverityEnum.Critical;
 };
 export const isHighSeverity = (severity: string) => {
-  return severity?.toLowerCase() === 'high';
+  return severity?.toLowerCase() === SeverityEnum.High;
 };
 export const isMediumSeverity = (severity: string) => {
-  return severity?.toLowerCase() === 'medium';
+  return severity?.toLowerCase() === SeverityEnum.Medium;
 };
 export const isLowSeverity = (severity: string) => {
-  return severity?.toLowerCase() === 'low';
+  return severity?.toLowerCase() === SeverityEnum.Low;
 };
 export const isUnknownSeverity = (severity: string) => {
-  return severity?.toLowerCase() === 'unknown' || severity?.toLowerCase() === '';
+  return (
+    severity?.toLowerCase() === SeverityEnum.Unknown || severity?.toLowerCase() === ''
+  );
 };
 export const isAlarmStatus = (status: string) => {
-  return status?.toLowerCase() === 'alarm';
+  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Alarm;
 };
 export const isInfoStatus = (status: string) => {
-  return status?.toLowerCase() === 'info';
+  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Info;
 };
 export const isOkStatus = (status: string) => {
-  return status?.toLowerCase() === 'ok';
+  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Ok;
 };
 export const isSkipStatus = (status: string) => {
-  return status?.toLowerCase() === 'skip';
+  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Skip;
 };
 export const isPassStatus = (status: string) => {
-  return status?.toLowerCase() === 'pass';
+  return status?.toLowerCase() === ModelComplianceStatusEnum.Pass;
 };
 export const isWarnStatus = (status: string) => {
-  return status?.toLowerCase() === 'warn';
+  return status?.toLowerCase() === ModelComplianceStatusEnum.Warn;
 };
 export const isNoteStatus = (status: string) => {
-  return status?.toLowerCase() === 'note';
+  return status?.toLowerCase() === ModelComplianceStatusEnum.Note;
 };
 export const isDeleteStatus = (status: string) => {
-  return status?.toLowerCase() === 'delete' || status?.toLowerCase() === '';
+  return (
+    status?.toLowerCase() === ModelCloudComplianceStatusEnum.Delete ||
+    status?.toLowerCase() === ''
+  );
 };

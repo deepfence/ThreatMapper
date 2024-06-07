@@ -39,7 +39,6 @@ require (
 	github.com/samber/lo v1.39.0
 	github.com/samber/mo v1.11.0
 	github.com/sashabaranov/go-openai v1.17.10
-	github.com/sirupsen/logrus v1.9.3
 	github.com/swaggest/openapi-go v0.2.44
 	github.com/twmb/franz-go v1.16.1
 	github.com/ugorji/go/codec v1.2.12
@@ -56,7 +55,6 @@ require (
 	k8s.io/client-go v0.29.0
 	k8s.io/metrics v0.29.0
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e
-
 )
 
 require (

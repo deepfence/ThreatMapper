@@ -264,7 +264,6 @@ const AgentDiagnosticLogsTable = () => {
   const { data } = useGetLogs();
   const { data: _logs, message } = data;
   const agentLogs = _logs?.agent_logs ?? [];
-  const cloudScannerLogs = _logs?.cloud_scanner_logs ?? [];
 
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const columns = useMemo(() => {
@@ -340,7 +339,7 @@ const AgentDiagnosticLogsTable = () => {
     <>
       <Table
         size="default"
-        data={[...agentLogs, ...cloudScannerLogs]}
+        data={agentLogs}
         columns={columns}
         enablePagination
         pageSize={pageSize}

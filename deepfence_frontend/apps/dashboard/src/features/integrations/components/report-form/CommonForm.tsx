@@ -4,8 +4,8 @@ import { Listbox, ListboxOption } from 'ui-components';
 
 import { UtilsReportFiltersNodeTypeEnum } from '@/api/generated';
 import { getReportNodeType } from '@/features/integrations/pages/DownloadReport';
+import { SeverityEnumList } from '@/utils/enum';
 
-const severities = ['Critical', 'High', 'Medium', 'Low'];
 const getDisplayNodeTypeValue = (nodeType: string) => {
   if (nodeType === UtilsReportFiltersNodeTypeEnum.ContainerImage) {
     return 'Container Image';
@@ -77,10 +77,10 @@ export const CommonForm = ({
           setSeverity([]);
         }}
       >
-        {severities.map((resource) => {
+        {[...SeverityEnumList].splice(0, SeverityEnumList.length - 1).map((resource) => {
           return (
             <ListboxOption value={resource} key={resource}>
-              {resource}
+              {upperFirst(resource)}
             </ListboxOption>
           );
         })}

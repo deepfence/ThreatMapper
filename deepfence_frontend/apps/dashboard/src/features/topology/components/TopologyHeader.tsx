@@ -6,7 +6,6 @@ import { Tooltip } from 'ui-components';
 
 import { SearchNodeCountResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { CloudServicesIcon } from '@/components/icons/cloudService';
 import { CloudLine } from '@/components/icons/common/CloudLine';
 import { NodesLineIcon } from '@/components/icons/common/NodesLine';
 import { OrganizationLineIcon } from '@/components/icons/common/OrganizationLine';
@@ -31,14 +30,11 @@ const SummaryTab = ({
   const matches = useMatches();
   const currentPathName = matches[matches.length - 1]?.pathname ?? '';
   const layoutType = currentPathName.includes('/table') ? 'table' : 'graph';
-  const isActive =
-    (currentPathName.endsWith('table') || currentPathName.endsWith('graph')) &&
-    type === 'cloud_provider'
-      ? true
-      : currentPathName.endsWith(type || '');
+  const isActive = currentPathName.endsWith(type + '/' + layoutType || '');
+
   return (
     <DFLink
-      to={generatePath('/topology/:layoutType/:viewType', {
+      to={generatePath('/inventory/compute/:viewType/:layoutType', {
         layoutType: layoutType,
         viewType: type || '',
       })}
@@ -83,23 +79,13 @@ const SummaryTab = ({
 function useNodeCounts() {
   return useSuspenseQuery({ ...queries.search.nodeCounts() });
 }
-function useCloudResourcesCount() {
-  return useSuspenseQuery({ ...queries.search.cloudResourcesCount() });
-}
 
 const NodeCount = ({ type }: { type: keyof SearchNodeCountResp }) => {
   const { data } = useNodeCounts();
   return <>{data[type]}</>;
 };
 
-const CloudResourceCount = () => {
-  const { data: cloudResourceCount } = useCloudResourcesCount();
-  return <>{cloudResourceCount}</>;
-};
-
 export const TopologyHeader = () => {
-  const params = useParams();
-  const viewType = params.viewType;
   return (
     <div className="flex items-center text-text-text-and-icon text-p1a px-3 bg-bg-breadcrumb-bar dark:border-none border-b border-bg-grid-border">
       <SummaryTab
@@ -152,21 +138,9 @@ export const TopologyHeader = () => {
           </Suspense>
         }
       />
-      <SummaryTab
-        icon={<CloudServicesIcon />}
-        name="Cloud Resources"
-        type={'cloud_resource'}
-        count={
-          <Suspense fallback={0}>
-            <CloudResourceCount />
-          </Suspense>
-        }
-      />
-      {viewType !== 'cloud_resource' ? (
-        <div className="ml-auto">
-          <ViewSwitcher />
-        </div>
-      ) : null}
+      <div className="ml-auto">
+        <ViewSwitcher />
+      </div>
     </div>
   );
 };
@@ -186,7 +160,7 @@ const ViewSwitcher = () => {
         delayDuration={200}
       >
         <Link
-          to={`/topology/graph/${type}`}
+          to={`/inventory/compute/${type}/graph`}
           type="button"
           className={cn('flex items-center', {
             ['text-text-text-and-icon']: !isGraphView,
@@ -205,7 +179,7 @@ const ViewSwitcher = () => {
         delayDuration={200}
       >
         <Link
-          to={`/topology/table/${type}`}
+          to={`/inventory/compute/${type}/table`}
           type="button"
           className={cn('flex items-center', {
             ['text-text-text-and-icon']: isGraphView,

@@ -72,7 +72,7 @@ export interface ModelComplianceScanInfo {
      * @type {string}
      * @memberof ModelComplianceScanInfo
      */
-    status: string;
+    status: ModelComplianceScanInfoStatusEnum;
     /**
      * 
      * @type {string}
@@ -86,6 +86,23 @@ export interface ModelComplianceScanInfo {
      */
     updated_at: number;
 }
+
+
+/**
+ * @export
+ */
+export const ModelComplianceScanInfoStatusEnum = {
+    Complete: 'COMPLETE',
+    Starting: 'STARTING',
+    InProgress: 'IN_PROGRESS',
+    Error: 'ERROR',
+    CancelPending: 'CANCEL_PENDING',
+    Cancelling: 'CANCELLING',
+    Cancelled: 'CANCELLED',
+    DeletePending: 'DELETE_PENDING'
+} as const;
+export type ModelComplianceScanInfoStatusEnum = typeof ModelComplianceScanInfoStatusEnum[keyof typeof ModelComplianceScanInfoStatusEnum];
+
 
 /**
  * Check if a given object implements the ModelComplianceScanInfo interface.

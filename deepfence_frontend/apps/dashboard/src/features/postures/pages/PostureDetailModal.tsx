@@ -257,16 +257,16 @@ const DetailsComponent = ({
               }
               let redirectPath = '';
               if (resource.node_type === 'host') {
-                redirectPath = `host?hosts=${resource.node_id}`;
+                redirectPath = `host/table?hosts=${resource.node_id}`;
               } else if (resource.node_type === 'container') {
-                redirectPath = `container?containers=${resource.node_id}`;
+                redirectPath = `container/table?containers=${resource.node_id}`;
               } else if (resource.node_type === 'cluster') {
-                redirectPath = `kubernetes_cluster?clusters=${resource.node_id}`;
+                redirectPath = `kubernetes_cluster/table?clusters=${resource.node_id}`;
               }
               return (
                 <DFLink
                   key={resource.node_id}
-                  to={`/topology/table/${redirectPath}`}
+                  to={`/inventory/compute/${redirectPath}`}
                   target="_blank"
                   rel="noreferrer"
                   className="text-p2 flex items-center gap-3"

@@ -21,7 +21,7 @@ module "cloud-scanner_example_single-project" {
   mgmt-console-url    = "<Console URL>"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key>"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:THREATMAPPER_VERSION"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud_scanner_ce:THREATMAPPER_VERSION"
   # project_id example: dev1-123456
   project_id          = "<PROJECT_ID>"
   # region example: asia-east1
@@ -54,7 +54,7 @@ module "cloud-scanner_example_multiple-projects" {
   mgmt-console-url    = "<Console URL>"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key>"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:THREATMAPPER_VERSION"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud_scanner_ce:THREATMAPPER_VERSION"
   # project_id example: dev1-123456
   project_id          = "<PROJECT_ID>"
   # region example: asia-east1
@@ -98,7 +98,7 @@ module "cloud-scanner_example_single-project" {
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:THREATMAPPER_VERSION"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud_scanner_ce:THREATMAPPER_VERSION"
   project_id          = "<PROJECT_ID>; ex. dev1-123456"
   region              = "<REGION_ID>; ex. asia-east1"
   #optional for private ip console

@@ -10,6 +10,7 @@ import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
+import { SeverityEnum } from '@/utils/enum';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -60,14 +61,14 @@ const SummaryTable = () => {
         size: 80,
         maxSize: 80,
       }),
-      columnHelper.accessor('critical', {
+      columnHelper.accessor(SeverityEnum.Critical, {
         cell: (info) => {
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
               <div
                 className="w-3 h-3 rounded-full"
                 style={{
-                  backgroundColor: getSeverityColorMap(mode)['critical'],
+                  backgroundColor: getSeverityColorMap(mode)[SeverityEnum.Critical],
                 }}
               ></div>
               <span>{info.getValue() ?? 0}</span>
@@ -80,14 +81,14 @@ const SummaryTable = () => {
         maxSize: 80,
         enableResizing: false,
       }),
-      columnHelper.accessor('high', {
+      columnHelper.accessor(SeverityEnum.High, {
         cell: (info) => {
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: getSeverityColorMap(mode)['high'],
+                  backgroundColor: getSeverityColorMap(mode)[SeverityEnum.High],
                 }}
               ></div>
               <span>{info.getValue() ?? 0}</span>
@@ -100,14 +101,14 @@ const SummaryTable = () => {
         maxSize: 80,
         enableResizing: false,
       }),
-      columnHelper.accessor('medium', {
+      columnHelper.accessor(SeverityEnum.Medium, {
         cell: (info) => {
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: getSeverityColorMap(mode)['medium'],
+                  backgroundColor: getSeverityColorMap(mode)[SeverityEnum.Medium],
                 }}
               ></div>
               <span>{info.getValue() ?? 0}</span>
@@ -120,14 +121,14 @@ const SummaryTable = () => {
         maxSize: 80,
         enableResizing: false,
       }),
-      columnHelper.accessor('low', {
+      columnHelper.accessor(SeverityEnum.Low, {
         cell: (info) => {
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: getSeverityColorMap(mode)['low'],
+                  backgroundColor: getSeverityColorMap(mode)[SeverityEnum.Low],
                 }}
               ></div>
               <span>{info.getValue() ?? 0}</span>
@@ -140,14 +141,14 @@ const SummaryTable = () => {
         maxSize: 80,
         enableResizing: false,
       }),
-      columnHelper.accessor('unknown', {
+      columnHelper.accessor(SeverityEnum.Unknown, {
         cell: (info) => {
           return (
             <div className="flex items-center gap-x-2 tabular-nums">
               <div
                 className="w-3 h-3 rounded-full shrink-0"
                 style={{
-                  backgroundColor: getSeverityColorMap(mode)['unknown'],
+                  backgroundColor: getSeverityColorMap(mode)[SeverityEnum.Unknown],
                 }}
               ></div>
               <span>{info.getValue() ?? 0}</span>

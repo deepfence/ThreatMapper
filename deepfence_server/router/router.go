@@ -265,6 +265,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/vulnerability", dfHandler.CompleteVulnerabilityInfo)
 				r.Post("/host", dfHandler.CompleteHostInfo)
 				r.Post("/cloud-compliance", dfHandler.CompleteCloudComplianceInfo)
+				r.Post("/cloud-resources", dfHandler.CompleteCloudResource)
 				r.Post("/compliance", dfHandler.CompleteComplianceInfo)
 				r.Post("/pod", dfHandler.CompletePodInfo)
 				r.Post("/container", dfHandler.CompleteContainerInfo)
@@ -496,7 +497,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				})
 				r.Route("/cloud-scanner-logs", func(r chi.Router) {
 					r.Post("/", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.GenerateCloudScannerDiagnosticLogs))
-					r.Put("/status/{node_id}", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.UpdateCloudScannerDiagnosticLogsStatus))
 				})
 				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
 			})

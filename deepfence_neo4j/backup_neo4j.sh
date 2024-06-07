@@ -1,9 +1,9 @@
 #!/bin/bash
 
 dt=$(date '+%Y-%m-%d_%H-%M-%S');
-BACKUP_FILE="/backups/neo4j_backup_"$dt
+BACKUP_FILE="/backups/neo4j_backup_$dt.dump"
 
-echo "Backup file is:$BACKUP_FILE"
+echo "Backup file is: $BACKUP_FILE"
 
 mkdir -p /backups/
 
@@ -14,7 +14,7 @@ if [ $retVal -ne 0 ]; then
     exit
 fi
 
-neo4j-admin dump --database='neo4j' --to=$BACKUP_FILE
+neo4j-admin database dump neo4j --to-stdout > $BACKUP_FILE
 retVal=$?
 if [ $retVal -ne 0 ]; then
     echo "Failed to create the backup file"

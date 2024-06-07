@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"time"
 
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
@@ -15,23 +14,11 @@ var (
 	CloudScannerSocketPath = "/tmp/cloud-scanner.sock"
 )
 
-var (
-	CloudScannerMgmtConsoleUrl string
-)
-
-func init() {
-	CloudScannerMgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL")
-	consolePort := os.Getenv("MGMT_CONSOLE_PORT")
-	if consolePort != "" && consolePort != "443" {
-		CloudScannerMgmtConsoleUrl += ":" + consolePort
-	}
-}
-
 func StartCloudComplianceScan(req ctl.StartCloudComplianceScanRequest) error {
-	log.Info().Msgf("Start Cloud Compliance scan: %v\n", req)
+	log.Info().Msgf("Start Cloud Compliance scan: %s, scan id: %s, scan types:%v\n", req.ScanDetails.AccountId, req.ScanDetails.ScanId, req.ScanDetails.ScanTypes)
 	conn, err := net.Dial("unix", CloudScannerSocketPath)
 	if err != nil {
-		log.Error().Msgf("StartCloudComplianceScan::error in creating cloud compliance scanner client with socket %s: %s", CloudScannerSocketPath, err.Error())
+		log.Error().Err(err).Msgf("StartCloudComplianceScan: error in creating cloud compliance scanner client with socket %s", CloudScannerSocketPath)
 		return err
 	}
 	defer conn.Close()
@@ -41,24 +28,22 @@ func StartCloudComplianceScan(req ctl.StartCloudComplianceScanRequest) error {
 	}
 	scanReqBytes, err := json.Marshal(scanReq)
 	if err != nil {
-		log.Info().Msgf("StartCloudComplianceScan::error in converting request into valid json: %s",
-			err.Error())
+		log.Error().Err(err).Msg("StartCloudComplianceScan: error in converting request into valid json")
 		return err
 	}
 	_, err = conn.Write(scanReqBytes)
 	if err != nil {
-		log.Info().Msgf("StartCloudComplianceScan::error in writing data to unix socket %s: %s",
-			CloudScannerSocketPath, err.Error())
+		log.Error().Err(err).Msgf("StartCloudComplianceScan: error in writing data to unix socket %s", CloudScannerSocketPath)
 		return err
 	}
 	return nil
 }
 
 func StopCloudComplianceScan(req ctl.StopCloudComplianceScanRequest) error {
-	log.Info().Msgf("Stop Cloud Compliance Scan : %v", req)
+	log.Info().Msgf("Stop Cloud Compliance Scan: %v", req)
 	conn, err := net.Dial("unix", CloudScannerSocketPath)
 	if err != nil {
-		log.Info().Msgf("StopCloudComplianceScan::error in creating cloud compliance scanner client with socket %s: %s", CloudScannerSocketPath, err.Error())
+		log.Error().Err(err).Msgf("StopCloudComplianceScan: error in creating cloud compliance scanner client with socket %s", CloudScannerSocketPath)
 		return err
 	}
 	defer conn.Close()
@@ -68,14 +53,12 @@ func StopCloudComplianceScan(req ctl.StopCloudComplianceScanRequest) error {
 	}
 	scanReqBytes, err := json.Marshal(scanReq)
 	if err != nil {
-		log.Info().Msgf("StopCloudComplianceScan::error in converting request into valid json: %s",
-			err.Error())
+		log.Error().Err(err).Msg("StopCloudComplianceScan: error in converting request into valid json")
 		return err
 	}
 	_, err = conn.Write(scanReqBytes)
 	if err != nil {
-		log.Info().Msgf("StopCloudComplianceScan::error in writing data to unix socket %s: %s",
-			CloudScannerSocketPath, err.Error())
+		log.Error().Err(err).Msgf("StopCloudComplianceScan: error in writing data to unix socket %s", CloudScannerSocketPath)
 		return err
 	}
 	return nil
@@ -85,8 +68,7 @@ func RefreshResources(req ctl.RefreshResourcesRequest) error {
 	log.Info().Msgf("Refresh Resources: %v", req)
 	conn, err := net.Dial("unix", CloudScannerSocketPath)
 	if err != nil {
-		log.Info().Msgf("RefreshResources::error creating CloudCompliance scanner client with socket %s: %s",
-			CloudScannerSocketPath, err.Error())
+		log.Error().Err(err).Msgf("RefreshResources: error creating CloudCompliance scanner client with socket %s", CloudScannerSocketPath)
 		return err
 	}
 	defer conn.Close()
@@ -96,13 +78,12 @@ func RefreshResources(req ctl.RefreshResourcesRequest) error {
 	}
 	refreshReqBytes, err := json.Marshal(refreshReq)
 	if err != nil {
-		log.Info().Msgf("RefreshResources::error in converting request into valid json: %s", err.Error())
+		log.Error().Err(err).Msg("RefreshResources: error in converting request into valid json")
 		return err
 	}
 	_, err = conn.Write(refreshReqBytes)
 	if err != nil {
-		log.Info().Msgf("RefreshResources::error in writing data to unix socket %s: %s",
-			CloudScannerSocketPath, err.Error())
+		log.Error().Err(err).Msgf("RefreshResources: error in writing data to unix socket %s", CloudScannerSocketPath)
 		return err
 	}
 	return nil
@@ -111,7 +92,7 @@ func RefreshResources(req ctl.RefreshResourcesRequest) error {
 func GetCloudScannerJobCount() int32 {
 	conn, err := net.Dial("unix", CloudScannerSocketPath)
 	if err != nil {
-		log.Error().Msgf("GetCloudScannerJobCount::error in creating cloud compliance scanner client with socket %s: %s\n", CloudScannerSocketPath, err.Error())
+		log.Error().Err(err).Msgf("GetCloudScannerJobCount: error in creating cloud compliance scanner client with socket %s", CloudScannerSocketPath)
 		return 0
 	}
 	defer conn.Close()
@@ -121,13 +102,12 @@ func GetCloudScannerJobCount() int32 {
 	}
 	jobCountReqBytes, err := json.Marshal(jobCountReq)
 	if err != nil {
-		log.Error().Msgf("GetCloudScannerJobCount::error in converting request into valid json: %s\n",
-			err.Error())
+		log.Error().Err(err).Msg("GetCloudScannerJobCount: error in converting request into valid json")
 		return 0
 	}
 	_, err = conn.Write(jobCountReqBytes)
 	if err != nil {
-		log.Error().Msgf("GetCloudScannerJobCount::error in writing data to unix socket %s: %s\n", CloudScannerSocketPath, err.Error())
+		log.Error().Err(err).Msgf("GetCloudScannerJobCount: error in writing data to unix socket %s", CloudScannerSocketPath)
 		return 0
 	}
 	responseTimeout := 10 * time.Second
@@ -137,7 +117,7 @@ func GetCloudScannerJobCount() int32 {
 		conn.SetReadDeadline(deadline)
 		n, err := conn.Read(buf[:])
 		if err != nil {
-			log.Error().Msgf("Error in read: %s", err.Error())
+			log.Error().Err(err).Msg("Error in read")
 			return 0
 		}
 		var jobCount int32
@@ -153,8 +133,7 @@ func GetCloudNodeID() (string, error) {
 	cloudNodeID := ""
 	conn, err := net.Dial("unix", CloudScannerSocketPath)
 	if err != nil {
-		log.Error().Msgf("Error creating cloud scanner client with socket %s: %s\n",
-			CloudScannerSocketPath, err.Error())
+		log.Error().Err(err).Msgf("Error creating cloud scanner client with socket %s", CloudScannerSocketPath)
 		return cloudNodeID, err
 	}
 	defer conn.Close()
@@ -166,14 +145,13 @@ func GetCloudNodeID() (string, error) {
 
 	cloudNodeIDReqBytes, err := json.Marshal(cloudNodeIDReq)
 	if err != nil {
-		log.Error().Msgf("Error in converting request into valid json: %s", err.Error())
+		log.Error().Err(err).Msg("Error in converting request into valid json")
 		return cloudNodeID, err
 	}
 
 	_, err = conn.Write(cloudNodeIDReqBytes)
 	if err != nil {
-		log.Error().Msgf("Error in writing data to unix socket %s: %s\n",
-			CloudScannerSocketPath, err.Error())
+		log.Error().Err(err).Msgf("Error in writing data to unix socket %s", CloudScannerSocketPath)
 		return cloudNodeID, err
 	}
 
@@ -184,7 +162,7 @@ func GetCloudNodeID() (string, error) {
 		conn.SetReadDeadline(deadline)
 		n, err := conn.Read(buf[:])
 		if err != nil {
-			log.Error().Msgf("Error in read: %s", err.Error())
+			log.Error().Err(err).Msg("Error in read")
 			return cloudNodeID, err
 		}
 

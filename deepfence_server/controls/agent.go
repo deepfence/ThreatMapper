@@ -63,8 +63,7 @@ func GetAgentActions(ctx context.Context, agentID model.AgentID, consoleURL stri
 		return actions, []error{stopActionsErr, diagnosticLogErr}
 	}
 
-	upgradeActions, upgradeErr := ExtractPendingAgentUpgrade(ctx, nodeID, workNumToExtract,
-		consoleURL, ttlCache)
+	upgradeActions, upgradeErr := ExtractPendingAgentUpgrade(ctx, nodeID, workNumToExtract, consoleURL, ttlCache)
 	workNumToExtract -= len(upgradeActions)
 	if upgradeErr == nil {
 		actions = append(actions, upgradeActions...)
@@ -78,9 +77,7 @@ func GetAgentActions(ctx context.Context, agentID model.AgentID, consoleURL stri
 
 	var refreshActionsErr error
 	if agentType == controls.CLOUD_AGENT {
-		refreshResourceActions, refreshActionsErr := ExtractRefreshResourceAction(ctx,
-			nodeID, workNumToExtract)
-
+		refreshResourceActions, refreshActionsErr := ExtractRefreshResourceAction(ctx, nodeID, workNumToExtract)
 		workNumToExtract -= len(refreshResourceActions)
 		if refreshActionsErr == nil && len(refreshResourceActions) > 0 {
 			actions = append(actions, refreshResourceActions...)
@@ -89,16 +86,14 @@ func GetAgentActions(ctx context.Context, agentID model.AgentID, consoleURL stri
 
 	var threatintelLogErr error
 	if agentType != controls.CLOUD_AGENT {
-		threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID,
-			consoleURL, ttlCache)
+		threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID, consoleURL, ttlCache)
 		workNumToExtract -= len(threatintelActions)
 		if threatintelLogErr == nil {
 			actions = append(actions, threatintelActions...)
 		}
 	}
 
-	return actions, []error{scanErr, upgradeErr, diagnosticLogErr,
-		stopActionsErr, threatintelLogErr, refreshActionsErr}
+	return actions, []error{scanErr, upgradeErr, diagnosticLogErr, stopActionsErr, threatintelLogErr, refreshActionsErr}
 }
 
 func GetPendingAgentScans(ctx context.Context, nodeID string, availableWorkload int,

@@ -9,19 +9,25 @@ import {
   getSearchApiClient,
 } from '@/api/api';
 import {
+  ModelBenchmarkType,
   ModelCloudCompliance,
+  ModelCloudComplianceStatusEnum,
   ModelCloudNodeControlReqCloudProviderEnum,
   ModelCompliance,
+  ModelComplianceStatusEnum,
   ModelScanCompareReq,
+  ModelScanInfoStatusEnum,
   ModelScanResultsReq,
   SearchSearchNodeReq,
 } from '@/api/generated';
 import { DF404Error } from '@/components/error/404';
-import { ScanStatusEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import { ComplianceScanGroupedStatus } from '@/utils/scan';
-import { COMPLIANCE_SCAN_STATUS_GROUPS } from '@/utils/scan';
+import {
+  SCAN_STATUS_FILTER,
+  SCAN_STATUS_FILTER_TYPE,
+  SCAN_STATUS_GROUPS,
+} from '@/utils/scan';
 
 export const postureQueries = createQueryKeys('posture', {
   postureSummary: () => {
@@ -46,7 +52,7 @@ export const postureQueries = createQueryKeys('posture', {
     page?: number;
     pageSize: number;
     status: string[];
-    complianceScanStatus?: ComplianceScanGroupedStatus;
+    complianceScanStatus?: SCAN_STATUS_FILTER_TYPE;
     nodeType: string;
     order?: {
       sortBy: string;
@@ -138,7 +144,7 @@ export const postureQueries = createQueryKeys('posture', {
         }
 
         if (complianceScanStatus) {
-          if (complianceScanStatus === ComplianceScanGroupedStatus.neverScanned) {
+          if (complianceScanStatus === SCAN_STATUS_FILTER['Never scanned']) {
             searchReq.node_filter.filters.contains_filter!.filter_in = {
               ...searchReq.node_filter.filters.contains_filter!.filter_in,
               last_scan_status: [''],
@@ -146,7 +152,7 @@ export const postureQueries = createQueryKeys('posture', {
           } else {
             searchReq.node_filter.filters.contains_filter.filter_in = {
               ...searchReq.node_filter.filters.contains_filter.filter_in,
-              last_scan_status: COMPLIANCE_SCAN_STATUS_GROUPS[complianceScanStatus],
+              last_scan_status: SCAN_STATUS_GROUPS[complianceScanStatus],
             };
           }
         }
@@ -251,8 +257,9 @@ export const postureQueries = createQueryKeys('posture', {
         }
         const scanStatus = statusResult?.value.statuses?.[scanId].status;
         const isScanRunning =
-          scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
-        const isScanError = scanStatus === ScanStatusEnum.error;
+          scanStatus !== ModelScanInfoStatusEnum.Complete &&
+          scanStatus !== ModelScanInfoStatusEnum.Error;
+        const isScanError = scanStatus === ModelScanInfoStatusEnum.Error;
 
         if (isScanRunning || isScanError) {
           return {
@@ -358,18 +365,19 @@ export const postureQueries = createQueryKeys('posture', {
         );
 
         const linuxComplianceStatus = {
-          info: result.value.status_counts?.['info'] ?? 0,
-          pass: result.value.status_counts?.['pass'] ?? 0,
-          warn: result.value.status_counts?.['warn'] ?? 0,
-          note: result.value.status_counts?.['note'] ?? 0,
+          info: result.value.status_counts?.[ModelComplianceStatusEnum.Info] ?? 0,
+          pass: result.value.status_counts?.[ModelComplianceStatusEnum.Pass] ?? 0,
+          warn: result.value.status_counts?.[ModelComplianceStatusEnum.Warn] ?? 0,
+          note: result.value.status_counts?.[ModelComplianceStatusEnum.Note] ?? 0,
         };
 
         const clusterComplianceStatus = {
-          alarm: result.value.status_counts?.['alarm'] ?? 0,
-          info: result.value.status_counts?.['info'] ?? 0,
-          ok: result.value.status_counts?.['ok'] ?? 0,
-          skip: result.value.status_counts?.['skip'] ?? 0,
-          delete: result.value.status_counts?.['delete'] ?? 0,
+          alarm: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Alarm] ?? 0,
+          info: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Info] ?? 0,
+          ok: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Ok] ?? 0,
+          skip: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Skip] ?? 0,
+          delete:
+            result.value.status_counts?.[ModelCloudComplianceStatusEnum.Delete] ?? 0,
         };
 
         return {
@@ -451,8 +459,9 @@ export const postureQueries = createQueryKeys('posture', {
         const scanStatus = statuses?.status;
 
         const isScanRunning =
-          scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
-        const isScanError = scanStatus === ScanStatusEnum.error;
+          scanStatus !== ModelScanInfoStatusEnum.Complete &&
+          scanStatus !== ModelScanInfoStatusEnum.Error;
+        const isScanError = scanStatus === ModelScanInfoStatusEnum.Error;
 
         if (isScanRunning || isScanError) {
           return {
@@ -565,11 +574,12 @@ export const postureQueries = createQueryKeys('posture', {
         );
 
         const cloudComplianceStatus = {
-          alarm: result.value.status_counts?.['alarm'] ?? 0,
-          info: result.value.status_counts?.['info'] ?? 0,
-          ok: result.value.status_counts?.['ok'] ?? 0,
-          skip: result.value.status_counts?.['skip'] ?? 0,
-          delete: result.value.status_counts?.['delete'] ?? 0,
+          alarm: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Alarm] ?? 0,
+          info: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Info] ?? 0,
+          ok: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Ok] ?? 0,
+          skip: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Skip] ?? 0,
+          delete:
+            result.value.status_counts?.[ModelCloudComplianceStatusEnum.Delete] ?? 0,
         };
 
         return {
@@ -589,7 +599,7 @@ export const postureQueries = createQueryKeys('posture', {
       },
     };
   },
-  listControls: (filters: { nodeType: string; checkType: string }) => {
+  listControls: (filters: { nodeType: string; checkType: ModelBenchmarkType }) => {
     const { nodeType, checkType } = filters;
     return {
       queryKey: [{ filters }],

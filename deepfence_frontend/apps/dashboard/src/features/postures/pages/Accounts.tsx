@@ -87,15 +87,13 @@ import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatPercentage } from '@/utils/number';
 import {
-  COMPLIANCE_SCAN_STATUS_GROUPS,
-  ComplianceScanGroupedStatus,
   isNeverScanned,
   isScanComplete,
   isScanDeletePending,
-  isScanFailed,
   isScanInProgress,
   isScanStopping,
-  SCAN_STATUS_GROUPS,
+  SCAN_STATUS_FILTER,
+  SCAN_STATUS_FILTER_TYPE,
 } from '@/utils/scan';
 import {
   getOrderFromSearchParams,
@@ -274,7 +272,7 @@ const usePostureAccounts = () => {
       order: getOrderFromSearchParams(searchParams),
       status: searchParams.getAll('status'),
       complianceScanStatus: searchParams.get('complianceScanStatus') as
-        | ComplianceScanGroupedStatus
+        | SCAN_STATUS_FILTER_TYPE
         | undefined,
       nodeType,
       org_accounts: searchParams.getAll('org_accounts'),
@@ -389,13 +387,7 @@ const Filters = () => {
             })}
         </Combobox>
         <Combobox
-          value={
-            searchParams.get('complianceScanStatus')
-              ? SCAN_STATUS_GROUPS.find((groupStatus) => {
-                  return groupStatus.value === searchParams.get('complianceScanStatus');
-                })
-              : null
-          }
+          value={searchParams.get('complianceScanStatus')}
           nullable
           onQueryChange={(query) => {
             setComplianceScanStatusSearchText(query);
@@ -403,7 +395,7 @@ const Filters = () => {
           onChange={(value) => {
             setSearchParams((prev) => {
               if (value) {
-                prev.set('complianceScanStatus', value.value);
+                prev.set('complianceScanStatus', value);
               } else {
                 prev.delete('complianceScanStatus');
               }
@@ -413,18 +405,20 @@ const Filters = () => {
           }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['complianceScanStatus']}
         >
-          {SCAN_STATUS_GROUPS.filter((item) => {
-            if (!complianceScanStatusSearchText.length) return true;
-            return item.label
-              .toLowerCase()
-              .includes(complianceScanStatusSearchText.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item.value} value={item}>
-                {item.label}
-              </ComboboxOption>
-            );
-          })}
+          {Object.keys(SCAN_STATUS_FILTER)
+            .filter((item) => {
+              if (!complianceScanStatusSearchText.length) return true;
+              return item
+                .toLowerCase()
+                .includes(complianceScanStatusSearchText.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {item}
+                </ComboboxOption>
+              );
+            })}
         </Combobox>
         {(nodeType === 'aws' || nodeType === 'gcp') && (
           <SearchableCloudAccountsList
@@ -1270,18 +1264,13 @@ const AccountTable = ({
             const data = info.row.original.scan_status_map ?? {};
             const keys = Object.keys(data);
             const statuses = Object.keys(data).map((current, index) => {
-              const scanStatus = COMPLIANCE_SCAN_STATUS_GROUPS.neverScanned.includes(
-                current,
-              )
-                ? ''
-                : current;
               return (
                 <>
                   <div className="flex gap-x-1.5 items-center" key={current}>
                     <span className="text-text-input-value font-medium">
                       {data[current]}
                     </span>
-                    <ScanStatusBadge status={scanStatus ?? ''} />
+                    <ScanStatusBadge status={current ?? ''} />
                     {index < keys.length - 1 ? (
                       <div className="mx-2 w-px h-[20px] bg-bg-grid-border" />
                     ) : null}

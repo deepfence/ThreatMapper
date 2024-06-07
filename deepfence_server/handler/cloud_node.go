@@ -6,25 +6,15 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/httputil"
-
-	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
-	"github.com/hibiken/asynq"
-
-	cloudscanner_diagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/cloudscanner-diagnosis"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"github.com/sirupsen/logrus"
-)
-
-const (
-	trueStr  = "true"
-	falseStr = "false"
+	"github.com/hibiken/asynq"
 )
 
 var (
@@ -32,116 +22,82 @@ var (
 )
 
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
-	req, err := h.extractCloudNodeDetails(w, r)
+	defer r.Body.Close()
+	var req model.CloudNodeAccountRegisterReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		log.Error().Msgf("Errored out extracting cloud node details error")
-		h.complianceError(w, "Extract cloud node details error")
+		log.Error().Msgf("%+v", err)
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
 	log.Debug().Msgf("Register Cloud Node Account Request: %+v", req)
 
-	var logRequestAction ctl.Action
 	monitoredAccountIDs := req.MonitoredAccountIDs
-	orgAccountID := req.OrgAccountID
-	scanList := map[string]model.CloudComplianceScanDetails{}
-	cloudtrailTrails := []model.CloudNodeCloudtrailTrail{}
+	orgAccountID := req.OrganizationAccountID
 	nodeID := req.NodeID
 
 	ctx := r.Context()
-
-	doRefresh := falseStr
-	refreshReq := model.CloudAccountRefreshReq{NodeIDs: []string{nodeID}}
-	toRefreshNodeIDs, err := refreshReq.GetCloudAccountRefresh(ctx)
-	if err == nil {
-		if len(toRefreshNodeIDs) > 0 && toRefreshNodeIDs[0] == nodeID {
-			doRefresh = trueStr
-		}
-	}
-
-	log.Debug().Msgf("Monitored account ids count: %d", len(monitoredAccountIDs))
-	if len(monitoredAccountIDs) != 0 {
-		logrus.Debugf("More than 1 account to be monitored: %+v", monitoredAccountIDs)
-		if orgAccountID == "" {
-			h.complianceError(w, "Org account id is needed for multi account setup")
+	if req.IsOrganizationDeployment {
+		log.Debug().Msgf("Organization deployment: Accounts monitored: %+v", monitoredAccountIDs)
+		if req.OrganizationAccountID == "" {
+			h.complianceError(w, "organization account id is needed for multi account setup")
 			return
 		}
-		monitoredAccountIDs[req.CloudAccount] = nodeID
+		monitoredAccountIDs[req.AccountID] = nodeID
 		orgNodeID := fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountID)
-		nodeType := model.PostureProviderGCP
-		orgCloudProvider := model.PostureProviderGCPOrg
-		if req.CloudProvider == model.PostureProviderAWS {
-			orgCloudProvider = model.PostureProviderAWSOrg
-			nodeType = model.PostureProviderAWS
-		}
-		node := map[string]interface{}{
+		orgAccountNode := map[string]interface{}{
 			"node_id":        orgNodeID,
-			"cloud_provider": orgCloudProvider,
+			"cloud_provider": model.PostureProviderOrgMap[req.CloudProvider],
 			"node_name":      orgAccountID,
 			"version":        req.Version,
-			"node_type":      nodeType,
+			"node_type":      req.CloudProvider,
 		}
-		err = model.UpsertCloudComplianceNode(ctx, node, "", req.HostNodeId)
+		err = model.UpsertCloudComplianceNode(ctx, orgAccountNode, "", req.HostNodeID)
 		if err != nil {
 			h.complianceError(w, err.Error())
 			return
 		}
-		monitoredNodeIds := make([]string, 0, len(monitoredAccountIDs))
 		for monitoredAccountID, monitoredNodeID := range monitoredAccountIDs {
-			monitoredNodeIds = append(monitoredNodeIds, monitoredNodeID)
 			monitoredNode := map[string]interface{}{
 				"node_id":         monitoredNodeID,
 				"cloud_provider":  req.CloudProvider,
 				"node_name":       monitoredAccountID,
 				"organization_id": orgNodeID,
 				"version":         req.Version,
-				"node_type":       nodeType,
+				"node_type":       req.CloudProvider,
 			}
-			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeID, req.HostNodeId)
+			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeID, req.HostNodeID)
 			if err != nil {
+				log.Error().Msgf("Error while upserting node: %+v", err)
 				h.complianceError(w, err.Error())
 				return
 			}
-		}
-		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, append(monitoredNodeIds, nodeID), h.GetHostURL(r))
-		if err != nil {
-			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
 		}
 	} else {
 		log.Debug().Msgf("Single account monitoring for node: %s", nodeID)
 		node := map[string]interface{}{
 			"node_id":        nodeID,
 			"cloud_provider": req.CloudProvider,
-			"node_name":      req.CloudAccount,
+			"node_name":      req.AccountID,
 			"version":        req.Version,
 			"node_type":      req.CloudProvider,
 		}
 		log.Debug().Msgf("Node for upsert: %+v", node)
-		err = model.UpsertCloudComplianceNode(ctx, node, "", req.HostNodeId)
+		err = model.UpsertCloudComplianceNode(ctx, node, "", req.HostNodeID)
 		if err != nil {
 			log.Error().Msgf("Error while upserting node: %+v", err)
 			h.complianceError(w, err.Error())
 			return
 		}
-		// get log request for cloudscanner, if any
-		logRequestAction, err = cloudscanner_diagnosis.GetQueuedCloudScannerDiagnosticLogs(ctx, []string{nodeID}, h.GetHostURL(r))
-		if err != nil {
-			log.Error().Msgf("Error getting queued cloudscanner diagnostic logs: %+v", err)
-		}
-		log.Debug().Msgf("Pending scans for node: %+v", scanList)
 	}
-	log.Debug().Msgf("Returning response: Scan List %+v cloudtrailTrails %+v Refresh %s", scanList, cloudtrailTrails, doRefresh)
-	err = httpext.JSON(w, http.StatusOK,
-		model.CloudNodeAccountRegisterResp{
-			Data: model.CloudNodeAccountRegisterRespData{
-				CloudtrailTrails: cloudtrailTrails,
-				Refresh:          doRefresh,
-				LogAction:        logRequestAction,
-			},
-		})
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) RefreshCloudAccountHandler(w http.ResponseWriter, r *http.Request) {
@@ -229,32 +185,6 @@ func (h *Handler) ListCloudNodeProvidersHandler(w http.ResponseWriter, r *http.R
 
 func (h *Handler) complianceError(w http.ResponseWriter, errorString string) {
 	h.respondError(errors.New(errorString), w)
-}
-
-func (h *Handler) extractCloudNodeDetails(w http.ResponseWriter, r *http.Request) (model.CloudNodeAccountRegisterReq, error) {
-	defer r.Body.Close()
-	var req model.CloudNodeAccountRegisterReq
-	requestDump, err := httputil.DumpRequest(r, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	err = httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-
-	if err != nil {
-		log.Error().Msgf("Request dump: %s", string(requestDump))
-		log.Error().Msgf("%+v", err)
-		h.respondError(&BadDecoding{err}, w)
-		return req, err
-	}
-
-	if utils.StringToCloudProvider(req.CloudProvider) == -1 {
-		err = fmt.Errorf("unknown CloudProvider: %s", req.CloudProvider)
-		log.Error().Msgf("%v", err)
-		h.respondError(&NotFoundError{err}, w)
-		return req, err
-	}
-
-	return req, nil
 }
 
 func (h *Handler) CachePostureProviders(ctx context.Context) error {

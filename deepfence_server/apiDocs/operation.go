@@ -409,8 +409,8 @@ func (d *OpenAPIDocs) AddControlsOperations() {
 
 func (d *OpenAPIDocs) AddCloudNodeOperations() {
 	d.AddOperation("registerCloudNodeAccount", http.MethodPost, "/deepfence/cloud-node/account",
-		"Register Cloud Node Account", "Register Cloud Node Account and return any pending compliance scans from console",
-		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountRegisterReq), new(CloudNodeAccountRegisterResp))
+		"Register Cloud Node Account", "Register Cloud Account",
+		http.StatusNoContent, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountRegisterReq), nil)
 
 	d.AddOperation("deleteCloudNodeAccount", http.MethodPatch, "/deepfence/cloud-node/account/delete",
 		"Delete Cloud Node Account", "Delete Cloud Node Account and related resources",
@@ -664,9 +664,6 @@ func (d *OpenAPIDocs) AddDiagnosisOperations() {
 	d.AddOperation("generateCloudScannerDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/cloud-scanner-logs",
 		"Generate Cloud Scanner Diagnostic Logs", "Generate Cloud Scanner Diagnostic Logs",
 		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(diagnosis.GenerateCloudScannerDiagnosticLogsRequest), nil)
-	d.AddOperation("updateCloudScannerDiagnosticLogsStatus", http.MethodPut, "/deepfence/diagnosis/cloud-scanner-logs/status/{node_id}",
-		"Update Cloud Scanner Diagnostic Logs Status", "Update cloud scanner diagnostic logs status",
-		http.StatusNoContent, []string{tagDiagnosis}, bearerToken, new(diagnosis.DiagnosticLogsStatus), nil)
 	d.AddOperation("getDiagnosticLogs", http.MethodGet, "/deepfence/diagnosis/diagnostic-logs",
 		"Get Diagnostic Logs", "Get diagnostic logs download url links",
 		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new(diagnosis.GetDiagnosticLogsResponse))
@@ -910,6 +907,9 @@ func (d *OpenAPIDocs) AddCompletionOperations() {
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 	d.AddOperation("completeCloudCompliance", http.MethodPost, "/deepfence/complete/cloud-compliance",
 		"Get Completion for cloud compliance fields", "Complete cloud compliance info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeCloudResources", http.MethodPost, "/deepfence/complete/cloud-resources",
+		"Get Completion for cloud resources fields", "Complete cloud resources info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 	d.AddOperation("completeComplianceInfo", http.MethodPost, "/deepfence/complete/compliance",
 		"Get Completion for compliance fields", "Complete compliance info",

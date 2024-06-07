@@ -33,19 +33,22 @@ func CommitFuncCloudCompliance(ctx context.Context, ns string, data []ingestersU
 
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row
+		MATCH (l:CloudComplianceScan{node_id: row.scan_id})
 		MERGE (n:CloudCompliance{node_id: row.node_id})
+		MERGE (l) -[r:DETECTED]-> (n)
 		SET n+=row,
 			n.masked = COALESCE(n.masked, false),
-			n.updated_at = TIMESTAMP()
-		WITH n, row
-		OPTIONAL MATCH (m:CloudResource{arn: row.resource})
-		WITH n, m, CASE WHEN m IS NOT NULL THEN [1] ELSE [] END AS make_cat
-		MATCH (l:CloudComplianceScan{node_id: n.scan_id})
-		MERGE (l) -[r:DETECTED]-> (n)
-		FOREACH (i IN make_cat |
-			MERGE (n) -[:SCANNED]-> (m)
-		)
-		SET r.masked = false`,
+			n.updated_at = TIMESTAMP(),
+		    r.masked = false`,
+		map[string]interface{}{"batch": CloudCompliancesToMaps(data)}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(ctx, `
+		UNWIND $batch as row
+		MATCH (m:CloudResource{node_id: row.resource})
+		MATCH (n:CloudCompliance{node_id: row.node_id})
+		MERGE (n) -[:SCANNED]-> (m)`,
 		map[string]interface{}{"batch": CloudCompliancesToMaps(data)}); err != nil {
 		return err
 	}

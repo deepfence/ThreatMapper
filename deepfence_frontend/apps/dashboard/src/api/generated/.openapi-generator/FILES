@@ -79,6 +79,7 @@ models/ModelAgentPluginDisable.ts
 models/ModelAgentPluginEnable.ts
 models/ModelAgentUpgrade.ts
 models/ModelBasicNode.ts
+models/ModelBenchmarkType.ts
 models/ModelBulkDeleteReportReq.ts
 models/ModelBulkDeleteScansRequest.ts
 models/ModelCloudAccountDeleteReq.ts
@@ -87,11 +88,8 @@ models/ModelCloudCompliance.ts
 models/ModelCloudComplianceScanResult.ts
 models/ModelCloudNodeAccountInfo.ts
 models/ModelCloudNodeAccountRegisterReq.ts
-models/ModelCloudNodeAccountRegisterResp.ts
-models/ModelCloudNodeAccountRegisterRespData.ts
 models/ModelCloudNodeAccountsListReq.ts
 models/ModelCloudNodeAccountsListResp.ts
-models/ModelCloudNodeCloudtrailTrail.ts
 models/ModelCloudNodeComplianceControl.ts
 models/ModelCloudNodeControlReq.ts
 models/ModelCloudNodeControlResp.ts

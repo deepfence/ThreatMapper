@@ -117,28 +117,6 @@ func (h *Handler) GenerateCloudScannerDiagnosticLogs(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (h *Handler) UpdateCloudScannerDiagnosticLogsStatus(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	var req diagnosis.DiagnosticLogsStatus
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
-	if err != nil {
-		h.respondError(err, w)
-		return
-	}
-	req.NodeID = chi.URLParam(r, "node_id")
-	err = h.Validator.Struct(req)
-	if err != nil {
-		h.respondError(&ValidatorError{err: err}, w)
-		return
-	}
-	err = cloudscannerdiagnosis.UpdateCloudScannerDiagnosticLogsStatus(r.Context(), req)
-	if err != nil {
-		h.respondError(err, w)
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
-}
-
 func (h *Handler) GetDiagnosticLogs(w http.ResponseWriter, r *http.Request) {
 	resp, err := diagnosis.GetDiagnosticLogs(r.Context(), h.GetHostURL(r))
 	if err != nil {

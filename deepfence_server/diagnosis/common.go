@@ -19,7 +19,6 @@ const (
 	DiagnosisLinkExpiry              = 5 * time.Minute
 	ConsoleDiagnosisFileServerPrefix = "diagnosis/console-diagnosis/"
 	AgentDiagnosisFileServerPrefix   = "diagnosis/agent-diagnosis/"
-	CloudScannerDiagnosticLogsPrefix = "diagnosis/cloud-scanner-diagnosis/"
 
 	diagnosticLogsStatusSuccess = "Ready for download"
 
@@ -78,9 +77,8 @@ type DiagnosticLogsLink struct {
 }
 
 type GetDiagnosticLogsResponse struct {
-	ConsoleLogs      []DiagnosticLogsLink `json:"console_logs"`
-	AgentLogs        []DiagnosticLogsLink `json:"agent_logs"`
-	CloudScannerLogs []DiagnosticLogsLink `json:"cloud_scanner_logs"`
+	ConsoleLogs []DiagnosticLogsLink `json:"console_logs"`
+	AgentLogs   []DiagnosticLogsLink `json:"agent_logs"`
 }
 
 func GetDiagnosticLogs(ctx context.Context, consoleURL string) (*GetDiagnosticLogsResponse, error) {
@@ -88,14 +86,9 @@ func GetDiagnosticLogs(ctx context.Context, consoleURL string) (*GetDiagnosticLo
 	if err != nil {
 		return nil, err
 	}
-	cloudScannerDiagnosticLogs, err := getCloudScannerDiagnosticLogs(ctx, mc, CloudScannerDiagnosticLogsPrefix, consoleURL)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	}
 	diagnosticLogs := GetDiagnosticLogsResponse{
-		ConsoleLogs:      getDiagnosticLogsHelper(ctx, mc, ConsoleDiagnosisFileServerPrefix, diagnosticLogsTypeConsole, consoleURL),
-		AgentLogs:        getAgentDiagnosticLogs(ctx, mc, AgentDiagnosisFileServerPrefix, consoleURL),
-		CloudScannerLogs: cloudScannerDiagnosticLogs,
+		ConsoleLogs: getDiagnosticLogsHelper(ctx, mc, ConsoleDiagnosisFileServerPrefix, diagnosticLogsTypeConsole, consoleURL),
+		AgentLogs:   getAgentDiagnosticLogs(ctx, mc, AgentDiagnosisFileServerPrefix, consoleURL),
 	}
 	return &diagnosticLogs, nil
 }
@@ -236,99 +229,4 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		return diagnosticLogs[i].CreatedAt > diagnosticLogs[j].CreatedAt
 	})
 	return diagnosticLogs
-}
-
-func getCloudScannerDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathPrefix string, consoleURL string) ([]DiagnosticLogsLink, error) {
-	diagnosticLogs := getDiagnosticLogsHelper(ctx, mc, CloudScannerDiagnosticLogsPrefix, diagnosticLogsTypeCloudScanner, consoleURL)
-	minioAgentLogsKeys := make(map[string]int)
-	for i, log := range diagnosticLogs {
-		minioAgentLogsKeys[log.FileName] = i
-	}
-
-	// Get in progress ones from neo4j
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return diagnosticLogs, err
-	}
-
-	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close(ctx)
-
-	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
-	if err != nil {
-		return diagnosticLogs, err
-	}
-	defer tx.Close(ctx)
-
-	r, err := tx.Run(ctx, `
-		MATCH (n:CloudScannerDiagnosticLogs)-[:SCHEDULEDLOGS]->(m)
-		RETURN n.node_id, n.minio_file_name, n.message, n.status, n.updated_at, m.node_name`, map[string]interface{}{})
-	if err != nil {
-		return diagnosticLogs, err
-	}
-
-	nodeIDToName := make(map[string]string)
-	records, err := r.Collect(ctx)
-	if err != nil {
-		return diagnosticLogs, err
-	}
-	for _, rec := range records {
-		var nodeID, fileName, message, status, updatedAt, nodeName interface{}
-		var ok bool
-		if nodeID, ok = rec.Get("n.node_id"); !ok || nodeID == nil {
-			nodeID = ""
-		}
-		if fileName, ok = rec.Get("n.minio_file_name"); !ok || fileName == nil {
-			fileName = ""
-		}
-		if message, ok = rec.Get("n.message"); !ok || message == nil {
-			message = ""
-		}
-		if status, ok = rec.Get("n.status"); !ok || status == nil {
-			status = ""
-		}
-		if updatedAt, ok = rec.Get("n.updated_at"); !ok || updatedAt == nil {
-			updatedAt = 0
-		}
-		if nodeName, ok = rec.Get("m.node_name"); !ok || nodeName == nil {
-			nodeName = ""
-		}
-		updatedAtTime := time.UnixMilli(updatedAt.(int64))
-		nodeIDToName[nodeID.(string)] = nodeName.(string)
-
-		if status.(string) == utils.ScanStatusSuccess {
-			message = diagnosticLogsStatusSuccess
-		} else {
-			if message.(string) == "" {
-				message = status.(string)
-			} else {
-				var minioError utils.MinioError
-				xmlErr := xml.Unmarshal([]byte(message.(string)), &minioError)
-				if xmlErr != nil {
-					message = message.(string)
-				} else {
-					message = minioError.Message
-				}
-			}
-		}
-
-		if pos, ok := minioAgentLogsKeys[fileName.(string)]; ok {
-			diagnosticLogs[pos].Label = nodeName.(string)
-			diagnosticLogs[pos].Message = message.(string)
-			diagnosticLogs[pos].Type = diagnosticLogsTypeCloudScanner
-		} else {
-			diagnosticLogs = append(diagnosticLogs, DiagnosticLogsLink{
-				URLLink:   "",
-				Type:      diagnosticLogsTypeCloudScanner,
-				FileName:  fileName.(string),
-				Label:     nodeName.(string),
-				Message:   message.(string),
-				CreatedAt: updatedAtTime.Format("2006-01-02 15:04:05"),
-			})
-		}
-	}
-	sort.Slice(diagnosticLogs, func(i, j int) bool {
-		return diagnosticLogs[i].CreatedAt > diagnosticLogs[j].CreatedAt
-	})
-	return diagnosticLogs, nil
 }

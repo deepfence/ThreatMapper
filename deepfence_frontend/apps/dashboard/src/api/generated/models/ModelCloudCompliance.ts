@@ -43,7 +43,7 @@ export interface ModelCloudCompliance {
      * @type {string}
      * @memberof ModelCloudCompliance
      */
-    compliance_check_type: string;
+    compliance_check_type: ModelCloudComplianceComplianceCheckTypeEnum;
     /**
      * 
      * @type {string}
@@ -127,7 +127,7 @@ export interface ModelCloudCompliance {
      * @type {string}
      * @memberof ModelCloudCompliance
      */
-    status: string;
+    status: ModelCloudComplianceStatusEnum;
     /**
      * 
      * @type {string}
@@ -147,6 +147,34 @@ export interface ModelCloudCompliance {
      */
     updated_at: number;
 }
+
+
+/**
+ * @export
+ */
+export const ModelCloudComplianceComplianceCheckTypeEnum = {
+    Hipaa: 'hipaa',
+    Gdpr: 'gdpr',
+    Pci: 'pci',
+    Nist: 'nist',
+    Cis: 'cis',
+    Soc2: 'soc_2',
+    NsaCisa: 'nsa-cisa'
+} as const;
+export type ModelCloudComplianceComplianceCheckTypeEnum = typeof ModelCloudComplianceComplianceCheckTypeEnum[keyof typeof ModelCloudComplianceComplianceCheckTypeEnum];
+
+/**
+ * @export
+ */
+export const ModelCloudComplianceStatusEnum = {
+    Alarm: 'alarm',
+    Info: 'info',
+    Ok: 'ok',
+    Skip: 'skip',
+    Delete: 'delete'
+} as const;
+export type ModelCloudComplianceStatusEnum = typeof ModelCloudComplianceStatusEnum[keyof typeof ModelCloudComplianceStatusEnum];
+
 
 /**
  * Check if a given object implements the ModelCloudCompliance interface.

@@ -44,9 +44,9 @@ const DefaultMenuItems: Array<MenuItem> = [
     to: '/dashboard',
   },
   {
-    title: 'Topology',
+    title: 'Inventory',
     Icon: TopologyIcon,
-    to: '/topology',
+    to: '/inventory',
   },
   {
     title: 'ThreatGraph',
