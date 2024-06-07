@@ -272,7 +272,7 @@
       "post": {
         "tags": ["Cloud Nodes"],
         "summary": "Register Cloud Node Account",
-        "description": "Register Cloud Node Account and return any pending compliance scans from console",
+        "description": "Register Cloud Account",
         "operationId": "registerCloudNodeAccount",
         "requestBody": {
           "content": {
@@ -284,16 +284,7 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ModelCloudNodeAccountRegisterResp"
-                }
-              }
-            }
-          },
+          "204": { "description": "No Content" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -1729,59 +1720,6 @@
         },
         "responses": {
           "202": { "description": "Accepted" },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
-    "/deepfence/diagnosis/cloud-scanner-logs/status/{node_id}": {
-      "put": {
-        "tags": ["Diagnosis"],
-        "summary": "Update Cloud Scanner Diagnostic Logs Status",
-        "description": "Update cloud scanner diagnostic logs status",
-        "operationId": "updateCloudScannerDiagnosticLogsStatus",
-        "parameters": [
-          {
-            "name": "node_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/DiagnosisDiagnosticLogsStatus" }
-            }
-          }
-        },
-        "responses": {
-          "204": { "description": "No Content" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -12504,11 +12442,6 @@
             "items": { "$ref": "#/components/schemas/DiagnosisDiagnosticLogsLink" },
             "nullable": true
           },
-          "cloud_scanner_logs": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/DiagnosisDiagnosticLogsLink" },
-            "nullable": true
-          },
           "console_logs": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/DiagnosisDiagnosticLogsLink" },
@@ -13258,7 +13191,6 @@
             "type": "string"
           },
           "benchmark_types": {
-            "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelBenchmarkType" },
             "nullable": true
@@ -13423,7 +13355,10 @@
           },
           "service": { "type": "string" },
           "severity": { "type": "string" },
-          "status": { "enum": ["alarm", "skip", "ok", "info"], "type": "string" },
+          "status": {
+            "enum": ["alarm", "info", "ok", "skip", "delete"],
+            "type": "string"
+          },
           "title": { "type": "string" },
           "type": { "type": "string" },
           "updated_at": { "type": "integer" }
@@ -13498,38 +13433,27 @@
         }
       },
       "ModelCloudNodeAccountRegisterReq": {
-        "required": ["node_id", "cloud_account", "cloud_provider"],
+        "required": [
+          "node_id",
+          "host_node_id",
+          "account_id",
+          "cloud_provider",
+          "version"
+        ],
         "type": "object",
         "properties": {
-          "cloud_account": { "type": "string" },
+          "account_id": { "type": "string" },
           "cloud_provider": { "enum": ["aws", "gcp", "azure"], "type": "string" },
           "host_node_id": { "type": "string" },
+          "is_organization_deployment": { "type": "boolean" },
           "monitored_account_ids": {
             "type": "object",
             "additionalProperties": { "type": "string" },
             "nullable": true
           },
           "node_id": { "type": "string" },
-          "org_acc_id": { "type": "string" },
+          "organization_account_id": { "type": "string" },
           "version": { "type": "string" }
-        }
-      },
-      "ModelCloudNodeAccountRegisterResp": {
-        "type": "object",
-        "properties": {
-          "data": { "$ref": "#/components/schemas/ModelCloudNodeAccountRegisterRespData" }
-        }
-      },
-      "ModelCloudNodeAccountRegisterRespData": {
-        "type": "object",
-        "properties": {
-          "cloudtrail_trails": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ModelCloudNodeCloudtrailTrail" },
-            "nullable": true
-          },
-          "log_action": { "$ref": "#/components/schemas/ControlsAction" },
-          "refresh": { "type": "string" }
         }
       },
       "ModelCloudNodeAccountsListReq": {
@@ -13553,13 +13477,6 @@
             "nullable": true
           },
           "total": { "type": "integer" }
-        }
-      },
-      "ModelCloudNodeCloudtrailTrail": {
-        "type": "object",
-        "properties": {
-          "account_id": { "type": "string" },
-          "trail_name": { "type": "string" }
         }
       },
       "ModelCloudNodeComplianceControl": {
@@ -13691,10 +13608,7 @@
             "nullable": true
           },
           "rule_id": { "type": "string" },
-          "status": {
-            "enum": ["pass", "fail", "warn", "info", "note"],
-            "type": "string"
-          },
+          "status": { "enum": ["pass", "warn", "info", "note"], "type": "string" },
           "test_category": { "type": "string" },
           "test_desc": { "type": "string" },
           "test_number": { "type": "string" },
@@ -13840,7 +13754,6 @@
         "type": "object",
         "properties": {
           "benchmark_types": {
-            "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelBenchmarkType" },
             "nullable": true

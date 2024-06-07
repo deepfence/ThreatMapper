@@ -1,4 +1,6 @@
 import {
+  ModelCloudComplianceStatusEnum,
+  ModelComplianceStatusEnum,
   ModelMalwareFileSeverityEnum,
   ModelScanResultsActionRequestScanTypeEnum,
   ModelSecretLevelEnum,
@@ -11,14 +13,8 @@ export type VulnerabilitySeverityType = ModelVulnerabilityCveSeverityEnum;
 export type SecretSeverityType = ModelSecretLevelEnum;
 export type MalwareSeverityType = ModelMalwareFileSeverityEnum;
 export type PostureSeverityType =
-  | 'alarm'
-  | 'info'
-  | 'skip'
-  | 'ok'
-  | 'pass'
-  | 'warn'
-  | 'delete'
-  | 'note';
+  | ModelComplianceStatusEnum
+  | ModelCloudComplianceStatusEnum;
 
 export type AllSeverityType =
   | VulnerabilitySeverityType
@@ -99,26 +95,29 @@ export const isUnknownSeverity = (severity: string) => {
   );
 };
 export const isAlarmStatus = (status: string) => {
-  return status?.toLowerCase() === 'alarm';
+  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Alarm;
 };
 export const isInfoStatus = (status: string) => {
-  return status?.toLowerCase() === 'info';
+  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Info;
 };
 export const isOkStatus = (status: string) => {
-  return status?.toLowerCase() === 'ok';
+  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Ok;
 };
 export const isSkipStatus = (status: string) => {
-  return status?.toLowerCase() === 'skip';
+  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Skip;
 };
 export const isPassStatus = (status: string) => {
-  return status?.toLowerCase() === 'pass';
+  return status?.toLowerCase() === ModelComplianceStatusEnum.Pass;
 };
 export const isWarnStatus = (status: string) => {
-  return status?.toLowerCase() === 'warn';
+  return status?.toLowerCase() === ModelComplianceStatusEnum.Warn;
 };
 export const isNoteStatus = (status: string) => {
-  return status?.toLowerCase() === 'note';
+  return status?.toLowerCase() === ModelComplianceStatusEnum.Note;
 };
 export const isDeleteStatus = (status: string) => {
-  return status?.toLowerCase() === 'delete' || status?.toLowerCase() === '';
+  return (
+    status?.toLowerCase() === ModelCloudComplianceStatusEnum.Delete ||
+    status?.toLowerCase() === ''
+  );
 };

@@ -1,6 +1,10 @@
 import { upperFirst } from 'lodash-es';
 import { cn } from 'tailwind-preset';
 
+import {
+  ModelCloudComplianceStatusEnum,
+  ModelComplianceStatusEnum,
+} from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { SeverityCritical } from '@/components/icons/common/SeverityCritical';
 import { SeverityHigh } from '@/components/icons/common/SeverityHigh';
@@ -82,14 +86,18 @@ export const PostureStatusBadgeIcon = ({
       className={cn('w-[18px] h-[18px] shrink-0', className)}
       style={{ color: getPostureColor(theme)[status] }}
     >
-      {status === 'alarm' && <SeverityCritical theme={theme} />}
-      {status === 'info' && <SeverityHigh theme={theme} />}
-      {status === 'ok' && <SeverityLow theme={theme} />}
-      {status === 'skip' && <SeverityUnknown />}
-      {status === 'pass' && <SeverityLow theme={theme} />}
-      {status === 'warn' && <SeverityMedium theme={theme} />}
-      {status === 'note' && <SeverityLow theme={theme} />}
-      {status === 'delete' && <SeverityMedium theme={theme} />}
+      {status === ModelCloudComplianceStatusEnum.Alarm && (
+        <SeverityCritical theme={theme} />
+      )}
+      {status === ModelCloudComplianceStatusEnum.Info && <SeverityHigh theme={theme} />}
+      {status === ModelCloudComplianceStatusEnum.Ok && <SeverityLow theme={theme} />}
+      {status === ModelCloudComplianceStatusEnum.Skip && <SeverityUnknown />}
+      {status === ModelComplianceStatusEnum.Pass && <SeverityLow theme={theme} />}
+      {status === ModelComplianceStatusEnum.Warn && <SeverityMedium theme={theme} />}
+      {status === ModelComplianceStatusEnum.Note && <SeverityLow theme={theme} />}
+      {status === ModelCloudComplianceStatusEnum.Delete && (
+        <SeverityMedium theme={theme} />
+      )}
     </div>
   );
 };

@@ -36,7 +36,9 @@ import {
 import { getScanResultsApiClient } from '@/api/api';
 import {
   ModelBenchmarkType,
+  ModelCloudComplianceStatusEnum,
   ModelCompliance,
+  ModelComplianceStatusEnum,
   ModelScanInfo,
   ModelScanResultsMaskRequestMaskActionEnum,
   UtilsReportFiltersNodeTypeEnum,
@@ -1015,9 +1017,20 @@ const Filters = () => {
   let statuses: string[] = [];
 
   if (params.nodeType.toString() === 'linux') {
-    statuses = ['info', 'pass', 'warn', 'note'];
+    statuses = [
+      ModelComplianceStatusEnum.Info,
+      ModelComplianceStatusEnum.Pass,
+      ModelComplianceStatusEnum.Warn,
+      ModelComplianceStatusEnum.Note,
+    ];
   } else {
-    statuses = ['alarm', 'info', 'ok', 'skip', 'delete'];
+    statuses = [
+      ModelCloudComplianceStatusEnum.Alarm,
+      ModelCloudComplianceStatusEnum.Info,
+      ModelCloudComplianceStatusEnum.Ok,
+      ModelCloudComplianceStatusEnum.Skip,
+      ModelCloudComplianceStatusEnum.Delete,
+    ];
   }
 
   const onFilterRemove = ({ key, value }: { key: string; value: string }) => {

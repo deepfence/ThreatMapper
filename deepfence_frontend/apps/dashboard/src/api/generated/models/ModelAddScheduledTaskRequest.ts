@@ -113,13 +113,6 @@ export const ModelAddScheduledTaskRequestActionEnum = {
 } as const;
 export type ModelAddScheduledTaskRequestActionEnum = typeof ModelAddScheduledTaskRequestActionEnum[keyof typeof ModelAddScheduledTaskRequestActionEnum];
 
-/**
- * @export
- */
-export const ModelAddScheduledTaskRequestBenchmarkTypesEnum = {
-} as const;
-export type ModelAddScheduledTaskRequestBenchmarkTypesEnum = typeof ModelAddScheduledTaskRequestBenchmarkTypesEnum[keyof typeof ModelAddScheduledTaskRequestBenchmarkTypesEnum];
-
 
 /**
  * Check if a given object implements the ModelAddScheduledTaskRequest interface.

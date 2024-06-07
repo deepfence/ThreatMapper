@@ -153,7 +153,6 @@ export type ModelComplianceComplianceCheckTypeEnum = typeof ModelComplianceCompl
  */
 export const ModelComplianceStatusEnum = {
     Pass: 'pass',
-    Fail: 'fail',
     Warn: 'warn',
     Info: 'info',
     Note: 'note'

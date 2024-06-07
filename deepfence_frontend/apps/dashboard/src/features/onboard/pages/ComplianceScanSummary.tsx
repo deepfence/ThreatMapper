@@ -3,6 +3,7 @@ import { Suspense, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { createColumnHelper, Table, TableSkeleton } from 'ui-components';
 
+import { ModelCloudComplianceStatusEnum } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { TruncatedText } from '@/components/TruncatedText';
 import { getPostureColor } from '@/constants/charts';
@@ -44,14 +45,15 @@ export const useTableColumn = () => {
   const columnHelper = createColumnHelper<(typeof data)[number]>();
 
   const _columns = [
-    columnHelper.accessor('alarm', {
+    columnHelper.accessor(ModelCloudComplianceStatusEnum.Alarm, {
       cell: (info) => {
         return (
           <div className="flex items-center gap-x-2 tabular-nums">
             <div
               className="w-3 h-3 rounded-full"
               style={{
-                backgroundColor: getPostureColor(mode)['alarm'],
+                backgroundColor:
+                  getPostureColor(mode)[ModelCloudComplianceStatusEnum.Alarm],
               }}
             ></div>
             <span>{info.getValue() ?? 0}</span>
@@ -64,14 +66,15 @@ export const useTableColumn = () => {
       maxSize: 80,
       enableResizing: false,
     }),
-    columnHelper.accessor('info', {
+    columnHelper.accessor(ModelCloudComplianceStatusEnum.Info, {
       cell: (info) => {
         return (
           <div className="flex items-center gap-x-2 tabular-nums">
             <div
               className="w-3 h-3 rounded-full"
               style={{
-                backgroundColor: getPostureColor(mode)['info'],
+                backgroundColor:
+                  getPostureColor(mode)[ModelCloudComplianceStatusEnum.Info],
               }}
             ></div>
             <span>{info.getValue() ?? 0}</span>
@@ -84,14 +87,14 @@ export const useTableColumn = () => {
       maxSize: 80,
       enableResizing: false,
     }),
-    columnHelper.accessor('ok', {
+    columnHelper.accessor(ModelCloudComplianceStatusEnum.Ok, {
       cell: (info) => {
         return (
           <div className="flex items-center gap-x-2 tabular-nums">
             <div
               className="w-3 h-3 rounded-full"
               style={{
-                backgroundColor: getPostureColor(mode)['ok'],
+                backgroundColor: getPostureColor(mode)[ModelCloudComplianceStatusEnum.Ok],
               }}
             ></div>
             <span>{info.getValue() ?? 0}</span>
@@ -104,14 +107,15 @@ export const useTableColumn = () => {
       maxSize: 80,
       enableResizing: false,
     }),
-    columnHelper.accessor('skip', {
+    columnHelper.accessor(ModelCloudComplianceStatusEnum.Skip, {
       cell: (info) => {
         return (
           <div className="flex items-center gap-x-2 tabular-nums">
             <div
               className="w-3 h-3 rounded-full"
               style={{
-                backgroundColor: getPostureColor(mode)['skip'],
+                backgroundColor:
+                  getPostureColor(mode)[ModelCloudComplianceStatusEnum.Skip],
               }}
             ></div>
             <span>{info.getValue() ?? 0}</span>
@@ -124,14 +128,15 @@ export const useTableColumn = () => {
       maxSize: 80,
       enableResizing: false,
     }),
-    columnHelper.accessor('delete', {
+    columnHelper.accessor(ModelCloudComplianceStatusEnum.Delete, {
       cell: (info) => {
         return (
           <div className="flex items-center gap-x-2 tabular-nums">
             <div
               className="w-3 h-3 rounded-full"
               style={{
-                backgroundColor: getPostureColor(mode)['delete'],
+                backgroundColor:
+                  getPostureColor(mode)[ModelCloudComplianceStatusEnum.Delete],
               }}
             ></div>
             <span>{info.getValue() ?? 0}</span>
