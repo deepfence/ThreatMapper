@@ -11,8 +11,10 @@ import {
 import {
   ModelBenchmarkType,
   ModelCloudCompliance,
+  ModelCloudComplianceStatusEnum,
   ModelCloudNodeControlReqCloudProviderEnum,
   ModelCompliance,
+  ModelComplianceStatusEnum,
   ModelScanCompareReq,
   ModelScanInfoStatusEnum,
   ModelScanResultsReq,
@@ -363,18 +365,19 @@ export const postureQueries = createQueryKeys('posture', {
         );
 
         const linuxComplianceStatus = {
-          info: result.value.status_counts?.['info'] ?? 0,
-          pass: result.value.status_counts?.['pass'] ?? 0,
-          warn: result.value.status_counts?.['warn'] ?? 0,
-          note: result.value.status_counts?.['note'] ?? 0,
+          info: result.value.status_counts?.[ModelComplianceStatusEnum.Info] ?? 0,
+          pass: result.value.status_counts?.[ModelComplianceStatusEnum.Pass] ?? 0,
+          warn: result.value.status_counts?.[ModelComplianceStatusEnum.Warn] ?? 0,
+          note: result.value.status_counts?.[ModelComplianceStatusEnum.Note] ?? 0,
         };
 
         const clusterComplianceStatus = {
-          alarm: result.value.status_counts?.['alarm'] ?? 0,
-          info: result.value.status_counts?.['info'] ?? 0,
-          ok: result.value.status_counts?.['ok'] ?? 0,
-          skip: result.value.status_counts?.['skip'] ?? 0,
-          delete: result.value.status_counts?.['delete'] ?? 0,
+          alarm: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Alarm] ?? 0,
+          info: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Info] ?? 0,
+          ok: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Ok] ?? 0,
+          skip: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Skip] ?? 0,
+          delete:
+            result.value.status_counts?.[ModelCloudComplianceStatusEnum.Delete] ?? 0,
         };
 
         return {
@@ -571,11 +574,12 @@ export const postureQueries = createQueryKeys('posture', {
         );
 
         const cloudComplianceStatus = {
-          alarm: result.value.status_counts?.['alarm'] ?? 0,
-          info: result.value.status_counts?.['info'] ?? 0,
-          ok: result.value.status_counts?.['ok'] ?? 0,
-          skip: result.value.status_counts?.['skip'] ?? 0,
-          delete: result.value.status_counts?.['delete'] ?? 0,
+          alarm: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Alarm] ?? 0,
+          info: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Info] ?? 0,
+          ok: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Ok] ?? 0,
+          skip: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Skip] ?? 0,
+          delete:
+            result.value.status_counts?.[ModelCloudComplianceStatusEnum.Delete] ?? 0,
         };
 
         return {

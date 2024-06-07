@@ -168,9 +168,10 @@ export type ModelCloudComplianceComplianceCheckTypeEnum = typeof ModelCloudCompl
  */
 export const ModelCloudComplianceStatusEnum = {
     Alarm: 'alarm',
-    Skip: 'skip',
+    Info: 'info',
     Ok: 'ok',
-    Info: 'info'
+    Skip: 'skip',
+    Delete: 'delete'
 } as const;
 export type ModelCloudComplianceStatusEnum = typeof ModelCloudComplianceStatusEnum[keyof typeof ModelCloudComplianceStatusEnum];
 

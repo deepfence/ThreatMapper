@@ -20,7 +20,6 @@ import type {
   ModelCloudAccountDeleteReq,
   ModelCloudAccountRefreshReq,
   ModelCloudNodeAccountRegisterReq,
-  ModelCloudNodeAccountRegisterResp,
   ModelCloudNodeAccountsListReq,
   ModelCloudNodeAccountsListResp,
   ModelCloudNodeProvidersListResp,
@@ -36,8 +35,6 @@ import {
     ModelCloudAccountRefreshReqToJSON,
     ModelCloudNodeAccountRegisterReqFromJSON,
     ModelCloudNodeAccountRegisterReqToJSON,
-    ModelCloudNodeAccountRegisterRespFromJSON,
-    ModelCloudNodeAccountRegisterRespToJSON,
     ModelCloudNodeAccountsListReqFromJSON,
     ModelCloudNodeAccountsListReqToJSON,
     ModelCloudNodeAccountsListRespFromJSON,
@@ -133,20 +130,20 @@ export interface CloudNodesApiInterface {
     refreshCloudNodeAccount(requestParameters: RefreshCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
-     * Register Cloud Node Account and return any pending compliance scans from console
+     * Register Cloud Account
      * @summary Register Cloud Node Account
      * @param {ModelCloudNodeAccountRegisterReq} [modelCloudNodeAccountRegisterReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CloudNodesApiInterface
      */
-    registerCloudNodeAccountRaw(requestParameters: RegisterCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelCloudNodeAccountRegisterResp>>;
+    registerCloudNodeAccountRaw(requestParameters: RegisterCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
 
     /**
-     * Register Cloud Node Account and return any pending compliance scans from console
+     * Register Cloud Account
      * Register Cloud Node Account
      */
-    registerCloudNodeAccount(requestParameters: RegisterCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCloudNodeAccountRegisterResp>;
+    registerCloudNodeAccount(requestParameters: RegisterCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -307,10 +304,10 @@ export class CloudNodesApi extends runtime.BaseAPI implements CloudNodesApiInter
     }
 
     /**
-     * Register Cloud Node Account and return any pending compliance scans from console
+     * Register Cloud Account
      * Register Cloud Node Account
      */
-    async registerCloudNodeAccountRaw(requestParameters: RegisterCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelCloudNodeAccountRegisterResp>> {
+    async registerCloudNodeAccountRaw(requestParameters: RegisterCloudNodeAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -333,16 +330,15 @@ export class CloudNodesApi extends runtime.BaseAPI implements CloudNodesApiInter
             body: ModelCloudNodeAccountRegisterReqToJSON(requestParameters.modelCloudNodeAccountRegisterReq),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelCloudNodeAccountRegisterRespFromJSON(jsonValue));
+        return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * Register Cloud Node Account and return any pending compliance scans from console
+     * Register Cloud Account
      * Register Cloud Node Account
      */
-    async registerCloudNodeAccount(requestParameters: RegisterCloudNodeAccountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCloudNodeAccountRegisterResp> {
-        const response = await this.registerCloudNodeAccountRaw(requestParameters, initOverrides);
-        return await response.value();
+    async registerCloudNodeAccount(requestParameters: RegisterCloudNodeAccountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.registerCloudNodeAccountRaw(requestParameters, initOverrides);
     }
 
 }
