@@ -22,7 +22,8 @@ import (
 )
 
 var (
-	threatIntelURL = "https://threat-intel.deepfence.io/threat-intel/listing.json"
+	threatIntelURL  = "https://threat-intel.deepfence.io/threat-intel/listing.json"
+	threatIntelTest = utils.GetEnvOrDefault("DEEPFENCE_THREAT_INTEL_TEST", "false") == "true"
 )
 
 // FetchLicense gets license key from database
@@ -65,6 +66,9 @@ func FetchThreatIntelListing(ctx context.Context, token string) (threatintel.Lis
 	q := req.URL.Query()
 	q.Add("version", wutils.Version)
 	q.Add("product", utils.Project)
+	if threatIntelTest {
+		q.Add("test", "true")
+	}
 	req.URL.RawQuery = q.Encode()
 
 	log.Info().Msgf("query threatintel at %s", req.URL.String())
