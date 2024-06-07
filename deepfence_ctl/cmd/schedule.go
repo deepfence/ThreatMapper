@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/spf13/cobra"
 
@@ -35,54 +34,33 @@ var scheduleTaskAddSubCmd = &cobra.Command{
 
 		cronexpr := `0 */5 * * * *`
 
-		filters := deepfence_server_client.SearchSearchFilter{}
-		filters.InFieldFilter = []string{"node_id"}
-
-		name_entries := []string{"Name=varun-test-host"}
-		name_entries_interface := []interface{}{}
-		for i := range name_entries {
-			name_entries_interface = append(name_entries_interface, name_entries[i])
-		}
-
-		cFilters := deepfence_server_client.ReportersContainsFilter{
-			FilterIn: map[string][]interface{}{
-				"tags": name_entries_interface,
-			},
-		}
-		filters.Filters.ContainsInArrayFilter = &cFilters
-		out, _ := json.Marshal(&filters)
-
-		/*{
-			"in_field": ["node_id"],
-			"filters": {
-				"contains_in_array_filter":
-			}
-		}*/
-
 		var mAddTaskReq deepfence_server_client.ModelAddScheduledTaskRequest
 		mAddTaskReq.CronExpr = &cronexpr
-		mAddTaskReq.NodeType = &node_type
 		desc := "Test Schedule Scan for:" + scan_type
 		mAddTaskReq.Description = &desc
-		str := string(out)
-		mAddTaskReq.Filters = &str
+		mAddTaskReq.Filters = deepfence_server_client.ModelScanFilter{}
+		mAddTaskReq.NodeIds = append(mAddTaskReq.NodeIds,
+			deepfence_server_client.ModelNodeIdentifier{
+				NodeType: node_type,
+			},
+		)
 
 		var err error
 		action := ""
 		switch scan_type {
 		case "secret":
-			action = "secret-scan"
+			action = "SecretScan"
 		case "malware":
-			action = "malware-scan"
+			action = "MalwareScan"
 		case "vulnerability":
-			action = "vulnerability-scan"
+			action = "VulnerabilityScan"
 		case "compliance":
-			action = "compliance-scan"
+			action = "ComplianceScan"
 		default:
 			log.Fatal().Msg("Unsupported")
 		}
 
-		mAddTaskReq.Action = &action
+		mAddTaskReq.Action = action
 		req := http.Client().SettingsAPI.AddScheduledTask(context.Background())
 		req = req.ModelAddScheduledTaskRequest(mAddTaskReq)
 		res, err := http.Client().SettingsAPI.AddScheduledTaskExecute(req)
