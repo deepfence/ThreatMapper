@@ -12,6 +12,8 @@ import {
 } from 'ui-components';
 
 import {
+  ModelCloudComplianceStatusEnum,
+  ModelComplianceStatusEnum,
   ModelIntegrationFilters,
   ModelIntegrationListResp,
   ModelNodeIdentifierNodeTypeEnum,
@@ -24,6 +26,7 @@ import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { FieldSelection } from '@/features/integrations/components/report-form/FieldSelection';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ScanTypeEnum } from '@/types/common';
+import { getPostureStatusPrettyName } from '@/utils/enum';
 
 import {
   ActionEnumType,
@@ -343,17 +346,31 @@ const AdvancedFilters = ({
                 }}
               >
                 <div className="px-3 pt-2 text-p3 text-text-text-and-icon">Host</div>
-                <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
-                <ListboxOption value={'Note'}>Note</ListboxOption>
-                <ListboxOption value={'Ok'}>Ok</ListboxOption>
+                <ListboxOption value={ModelCloudComplianceStatusEnum.Alarm}>
+                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Alarm)}
+                </ListboxOption>
+                <ListboxOption value={ModelComplianceStatusEnum.Note}>
+                  {getPostureStatusPrettyName(ModelComplianceStatusEnum.Note)}
+                </ListboxOption>
+                <ListboxOption value={ModelCloudComplianceStatusEnum.Ok}>
+                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Ok)}
+                </ListboxOption>
                 <div className="px-3 pt-4 text-p3 text-text-text-and-icon">
                   Kubernetes
                 </div>
-                <ListboxOption value={'Pass'}>Pass</ListboxOption>
-                <ListboxOption value={'Skip'}>Skip</ListboxOption>
-                <ListboxOption value={'Warn'}>Warn</ListboxOption>
+                <ListboxOption value={ModelComplianceStatusEnum.Pass}>
+                  {getPostureStatusPrettyName(ModelComplianceStatusEnum.Pass)}
+                </ListboxOption>
+                <ListboxOption value={ModelCloudComplianceStatusEnum.Skip}>
+                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Skip)}
+                </ListboxOption>
+                <ListboxOption value={ModelComplianceStatusEnum.Warn}>
+                  {getPostureStatusPrettyName(ModelComplianceStatusEnum.Warn)}
+                </ListboxOption>
                 <div className="px-3 pt-4 text-p3 text-text-text-and-icon">Common</div>
-                <ListboxOption value={'Info'}>Info</ListboxOption>
+                <ListboxOption value={ModelCloudComplianceStatusEnum.Info}>
+                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Info)}
+                </ListboxOption>
               </Listbox>
             )}
             {isCloudComplianceNotification(notificationType) && (
@@ -373,10 +390,13 @@ const AdvancedFilters = ({
                   return value && value.length ? `${value.length} selected` : '';
                 }}
               >
-                <ListboxOption value={'Pass'}>Pass</ListboxOption>
-                <ListboxOption value={'Skip'}>Skip</ListboxOption>
-                <ListboxOption value={'Warn'}>Warn</ListboxOption>
-                <ListboxOption value={'Info'}>Info</ListboxOption>
+                {Object.values(ModelCloudComplianceStatusEnum).map((status) => {
+                  return (
+                    <ListboxOption key={status} value={status}>
+                      {getPostureStatusPrettyName(status)}
+                    </ListboxOption>
+                  );
+                })}
               </Listbox>
             )}
           </>

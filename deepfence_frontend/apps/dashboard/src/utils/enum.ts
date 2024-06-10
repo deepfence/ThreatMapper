@@ -1,5 +1,7 @@
 import {
   ModelBenchmarkType,
+  ModelCloudComplianceStatusEnum,
+  ModelComplianceStatusEnum,
   ModelMalwareFileSeverityEnum,
   ModelSecretLevelEnum,
   ModelVulnerabilityCveSeverityEnum,
@@ -38,6 +40,34 @@ export function getBenchmarkPrettyName(backendBenchmark: ModelBenchmarkType) {
     default:
       // eslint-disable-next-line no-case-declarations
       const _exhaustiveCheck: never = backendBenchmark;
+      throw new Error(`Unhandled case: ${_exhaustiveCheck}`);
+  }
+}
+
+export function getPostureStatusPrettyName(
+  status: ModelCloudComplianceStatusEnum | ModelComplianceStatusEnum,
+) {
+  switch (status) {
+    case ModelCloudComplianceStatusEnum.Alarm:
+      return 'Alarm';
+    case ModelCloudComplianceStatusEnum.Info:
+      return 'Info';
+    case ModelCloudComplianceStatusEnum.Ok:
+      return 'Ok';
+    case ModelCloudComplianceStatusEnum.Skip:
+      return 'Skip';
+    case ModelCloudComplianceStatusEnum.Delete:
+      return 'Delete';
+    case ModelComplianceStatusEnum.Pass:
+      return 'Pass';
+    case ModelComplianceStatusEnum.Warn:
+      return 'Warn';
+    case ModelComplianceStatusEnum.Note:
+      return 'Note';
+
+    default:
+      // eslint-disable-next-line no-case-declarations
+      const _exhaustiveCheck: never = status;
       throw new Error(`Unhandled case: ${_exhaustiveCheck}`);
   }
 }

@@ -280,7 +280,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       const filters = _filters.fields_filters.contains_filter.filter_in;
       const newFilter = {
         ...filters,
-        status: statusFilter.map((status) => status.toLowerCase()),
+        status: statusFilter,
       };
       _filters.fields_filters.contains_filter.filter_in = newFilter;
     }
