@@ -7,3 +7,6 @@ routes:
 
   - local_path: var/log/fenced/cloud-scanner-log/cloud_scanner_status.log
     remote_path: /deepfence/ingest/cloud-compliance-status
+  
+  - local_path: var/log/fenced/cloud-resources/cloud_resources.log
+    remote_path: /deepfence/ingest/cloud-resources
