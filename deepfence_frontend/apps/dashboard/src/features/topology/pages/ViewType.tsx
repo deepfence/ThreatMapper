@@ -10,7 +10,7 @@ import { PodsTable } from '@/features/topology/data-components/tables/PodsTable'
 function ViewType() {
   const params = useParams();
 
-  const visualType = params.visual;
+  const visualType = params.visualLayout;
   const type = params.viewType ?? 'cloud_provider';
 
   if (visualType === 'graph') {
