@@ -130,13 +130,8 @@ export const commonQueries = createQueryKeys('common', {
           throw response.error;
         }
 
-        if (response.value === null) {
-          // TODO: handle this case with 404 status maybe
-          throw new Error('Error getting host filters');
-        }
-
         return {
-          data: response.value.possible_values?.slice(0, size) || [],
+          data: response.value?.possible_values?.slice(0, size) || [],
         };
       },
     };
@@ -167,13 +162,8 @@ export const commonQueries = createQueryKeys('common', {
           throw response.error;
         }
 
-        if (response.value === null) {
-          // TODO: handle this case with 404 status maybe
-          throw new Error('Error getting completion pods info');
-        }
-
         return {
-          data: response.value.possible_values?.slice(0, size) || [],
+          data: response.value?.possible_values?.slice(0, size) || [],
         };
       },
     };
@@ -208,13 +198,8 @@ export const commonQueries = createQueryKeys('common', {
           throw response.error;
         }
 
-        if (response.value === null) {
-          // TODO: handle this case with 404 status maybe
-          throw new Error('Error getting completion containers info');
-        }
-
         return {
-          data: response.value.possible_values?.slice(0, size) || [],
+          data: response.value?.possible_values?.slice(0, size) || [],
         };
       },
     };
@@ -251,13 +236,8 @@ export const commonQueries = createQueryKeys('common', {
           throw response.error;
         }
 
-        if (response.value === null) {
-          // TODO: handle this case with 404 status maybe
-          throw new Error('Error getting test number filters');
-        }
-
         return {
-          data: response.value.possible_values?.slice(0, size) || [],
+          data: response.value?.possible_values?.slice(0, size) || [],
         };
       },
     };
@@ -294,13 +274,8 @@ export const commonQueries = createQueryKeys('common', {
           throw response.error;
         }
 
-        if (response.value === null) {
-          // TODO: handle this case with 404 status maybe
-          throw new Error('Error getting control filters');
-        }
-
         return {
-          data: response.value.possible_values?.slice(0, size) || [],
+          data: response.value?.possible_values?.slice(0, size) || [],
         };
       },
     };

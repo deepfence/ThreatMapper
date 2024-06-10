@@ -285,6 +285,9 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       _filters.fields_filters.contains_filter.filter_in = newFilter;
     }
 
+    /**
+     * this filter may not be needed anymore
+     */
     if (intervalFilter) {
       // TODO Add filters
     }
