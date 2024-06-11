@@ -5,9 +5,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/hibiken/asynq"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -48,7 +48,7 @@ func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
 	if err != nil {
 		return defaultDBScannedResourceCleanUpTimeout
 	}
-	timeoutSetting, err := model.GetSettingByKey(ctx, pgClient, model.InactiveNodesDeleteScanResultsKey)
+	timeoutSetting, err := setting.GetSettingByKey(ctx, pgClient, setting.InactiveNodesDeleteScanResultsKey)
 	if err != nil {
 		return defaultDBScannedResourceCleanUpTimeout
 	}

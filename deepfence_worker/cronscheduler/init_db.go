@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/minio/minio-go/v7"
@@ -70,30 +71,22 @@ func initSqlDatabase(ctx context.Context) error {
 		return err
 	}
 
-	fileServerURLSetting, err := model.GetSettingByKey(ctx, pgClient, model.FileServerURLSettingKey)
-	if err == nil {
-		err = fileServerURLSetting.Delete(ctx, pgClient)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to delete FileServerURLSettingKey")
-		}
-	}
-
 	err = model.InitializeScheduledTasks(ctx, pgClient)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to initialize scheduled tasks")
 	}
 
-	err = model.SetScanResultsDeletionSetting(ctx, pgClient)
+	err = setting.SetScanResultsDeletionSetting(ctx, pgClient)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to update settings")
 	}
 
-	err = model.SetConsoleIDSetting(ctx, pgClient)
+	err = setting.SetConsoleIDSetting(ctx, pgClient)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to initialize console id")
 	}
 
-	err = model.InitializeAESSetting(ctx, pgClient)
+	err = setting.InitializeAESSetting(ctx, pgClient)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to initialize aes")
 	}

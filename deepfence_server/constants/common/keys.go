@@ -1,9 +1,5 @@
 package common
 
-const (
-	AESSecret = "aes_secret"
-)
-
 var CSPMResources = map[string]string{
 	"aws_s3_bucket":                        "aws_s3",
 	"aws_s3_account_settings":              "aws_s3",

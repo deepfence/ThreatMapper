@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -196,11 +197,11 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// If console URL setting is not set, set it now
-	consoleURL, err := model.GetManagementConsoleURL(ctx, pgClient)
+	consoleURL, err := setting.GetManagementConsoleURL(ctx, pgClient)
 	if err != nil || consoleURL == "" {
-		consoleURLSetting := model.Setting{
-			Key: model.ConsoleURLSettingKey,
-			Value: &model.SettingValue{
+		consoleURLSetting := setting.Setting{
+			Key: setting.ConsoleURLSettingKey,
+			Value: &setting.SettingValue{
 				Label:       "Deepfence Console URL",
 				Value:       "https://" + h.GetHostURL(r),
 				Description: "Deepfence Console URL used for sending emails with links to the console",

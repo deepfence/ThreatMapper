@@ -14,6 +14,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -108,7 +109,7 @@ func publishLicenseUsageToLicenseServer(ctx context.Context) error {
 		activeAgentNodes = rec.Values[0].(int64)
 	}
 
-	consoleIDSetting, err := model.GetSettingByKey(ctx, pgClient, model.ConsoleIDKey)
+	consoleIDSetting, err := setting.GetSettingByKey(ctx, pgClient, setting.ConsoleIDKey)
 	if err != nil {
 		return err
 	}

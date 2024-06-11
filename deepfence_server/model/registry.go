@@ -9,12 +9,12 @@ import (
 	"strings"
 	"time"
 
-	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	pkgConst "github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -388,7 +388,7 @@ func GetAESValueForEncryption(ctx context.Context,
 	ctx, span := telemetry.NewSpan(ctx, "registry", "get-aes-value-for-encryption")
 	defer span.End()
 
-	aes, err := GetSettingByKey(ctx, pgClient, commonConstants.AESSecret)
+	aes, err := setting.GetSettingByKey(ctx, pgClient, utils.AESSecret)
 	if err != nil {
 		return nil, err
 	}

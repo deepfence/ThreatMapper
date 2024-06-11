@@ -229,7 +229,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	binArgs := make(map[string]string, 0)
+	binArgs := make(map[string]string)
 	if len(reqs.ScanConfigLanguages) != 0 {
 		languages := []string{}
 		for i := range reqs.ScanConfigLanguages {
