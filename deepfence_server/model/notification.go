@@ -1,10 +1,11 @@
 package model
 
 type NotificationGetScanResponse struct {
-	VulnerabilityScan []Scan `json:"vulnerability_scan"`
-	SecretScan        []Scan `json:"secret_scan"`
-	MalwareScan       []Scan `json:"malware_scan"`
-	PostureScan       []Scan `json:"posture_scan"`
+	VulnerabilityScan   []Scan `json:"vulnerability_scan"`
+	SecretScan          []Scan `json:"secret_scan"`
+	MalwareScan         []Scan `json:"malware_scan"`
+	ComplianceScan      []Scan `json:"compliance_scan"`
+	CloudComplianceScan []Scan `json:"cloud_compliance_scan"`
 }
 
 type Scan struct {

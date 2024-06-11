@@ -32,8 +32,7 @@ func (h *Handler) GetScansHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// respond with scans
-	err = httpext.JSON(w, http.StatusOK, scans)
-	return
+	httpext.JSON(w, http.StatusOK, scans)
 }
 
 func (h *Handler) MarkScansReadHandler(w http.ResponseWriter, r *http.Request) {
@@ -57,8 +56,7 @@ func (h *Handler) MarkScansReadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// respond with success
-	err = httpext.JSON(w, http.StatusOK, nil)
-	return
+	httpext.JSON(w, http.StatusOK, nil)
 }
 
 /* Registry Sync Handlers */
@@ -76,8 +74,7 @@ func (h *Handler) GetRegistrySyncHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// respond with registries
-	err = httpext.JSON(w, http.StatusOK, registries)
-	return
+	httpext.JSON(w, http.StatusOK, registries)
 }
 
 /* Integration Handlers */
@@ -95,6 +92,5 @@ func (h *Handler) GetIntegrationFailuresHandler(w http.ResponseWriter, r *http.R
 	}
 
 	// respond with integrations
-	err = httpext.JSON(w, http.StatusOK, integrations)
-	return
+	httpext.JSON(w, http.StatusOK, integrations)
 }

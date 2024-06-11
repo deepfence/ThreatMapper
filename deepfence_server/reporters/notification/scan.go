@@ -8,59 +8,70 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 func GetScans(ctx context.Context, scanTypes []string, statues []string) (model.NotificationGetScanResponse, error) {
 	response := model.NotificationGetScanResponse{}
 	var err error
-	for _, scanType := range scanTypes {
+	for _, st := range scanTypes {
+		scanType := utils.DetectedNodeScanType[st]
 		switch scanType {
-		case "vulnerability":
-			response.VulnerabilityScan, err = GetScansFor(ctx, "VulnerabilityScan", statues)
+		case utils.NEO4JVulnerabilityScan:
+			response.VulnerabilityScan, err = GetScansFor(ctx, scanType, statues)
 			if err != nil {
 				return response, err
 			}
-		case "secret":
-			response.SecretScan, err = GetScansFor(ctx, "SecretScan", statues)
+		case utils.NEO4JSecretScan:
+			response.SecretScan, err = GetScansFor(ctx, scanType, statues)
 			if err != nil {
 				return response, err
 			}
-		case "malware":
-			response.MalwareScan, err = GetScansFor(ctx, "MalwareScan", statues)
+		case utils.NEO4JMalwareScan:
+			response.MalwareScan, err = GetScansFor(ctx, scanType, statues)
 			if err != nil {
 				return response, err
 			}
-		case "posture":
-			response.PostureScan, err = GetScansFor(ctx, "PostureScan", statues)
+		case utils.NEO4JComplianceScan:
+			response.ComplianceScan, err = GetScansFor(ctx, scanType, statues)
 			if err != nil {
 				return response, err
 			}
-		case "all":
-			response.VulnerabilityScan, err = GetScansFor(ctx, "VulnerabilityScan", statues)
+		case utils.NEO4JCloudComplianceScan:
+			response.CloudComplianceScan, err = GetScansFor(ctx, scanType, statues)
 			if err != nil {
 				return response, err
 			}
-			response.SecretScan, err = GetScansFor(ctx, "SecretScan", statues)
+		case "":
+			response.VulnerabilityScan, err = GetScansFor(ctx, utils.NEO4JVulnerabilityScan, statues)
 			if err != nil {
 				return response, err
 			}
-			response.MalwareScan, err = GetScansFor(ctx, "MalwareScan", statues)
+			response.SecretScan, err = GetScansFor(ctx, utils.NEO4JSecretScan, statues)
 			if err != nil {
 				return response, err
 			}
-			response.PostureScan, err = GetScansFor(ctx, "PostureScan", statues)
+			response.MalwareScan, err = GetScansFor(ctx, utils.NEO4JMalwareScan, statues)
+			if err != nil {
+				return response, err
+			}
+			response.ComplianceScan, err = GetScansFor(ctx, utils.NEO4JComplianceScan, statues)
+			if err != nil {
+				return response, err
+			}
+			response.CloudComplianceScan, err = GetScansFor(ctx, utils.NEO4JCloudComplianceScan, statues)
 			if err != nil {
 				return response, err
 			}
 		default:
-			return response, fmt.Errorf("Invalid scan type")
+			return response, fmt.Errorf("invalid scan type")
 		}
 	}
 	return response, nil
 }
 
-func GetScansFor(ctx context.Context, scanType string, statues []string) ([]model.Scan, error) {
+func GetScansFor(ctx context.Context, scanType utils.Neo4jScanType, statues []string) ([]model.Scan, error) {
 	scans := []model.Scan{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -79,13 +90,13 @@ func GetScansFor(ctx context.Context, scanType string, statues []string) ([]mode
 	}
 	defer tx.Close(ctx)
 	query := `
-	MATCH (n:` + scanType + `)
+	MATCH (n:` + string(scanType) + `)
 	WHERE n.status IN $statues
 	AND n.acknowledged_at IS NULL
 	RETURN n.created_at, n.updated_at, n.node_id, n.is_priority, n.status, n.status_message, n.trigger_action, n.retries`
 	if len(statues) == 0 {
 		query = `
-		MATCH (n:` + scanType + `)
+		MATCH (n:` + string(scanType) + `)
 		WHERE n.acknowledged_at IS NULL
 		RETURN n.created_at, n.updated_at, n.node_id, n.is_priority, n.status, n.status_message, n.trigger_action, n.retries`
 	}
