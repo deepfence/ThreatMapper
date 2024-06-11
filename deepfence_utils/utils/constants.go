@@ -67,7 +67,8 @@ const (
 	UpdateLicenseTask      = "update_license"
 	ReportLicenseUsageTask = "report_license_usage"
 
-	ThreatIntelUpdateTask = "threat_intel_update"
+	ThreatIntelUpdateTask   = "threat_intel_update"
+	CloudServicesUpdateTask = "cloud_services_update"
 )
 
 const (
@@ -238,6 +239,7 @@ var Tasks = []string{
 	ReportLicenseUsageTask,
 
 	ThreatIntelUpdateTask,
+	CloudServicesUpdateTask,
 }
 
 type ReportType string
