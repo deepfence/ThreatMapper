@@ -278,7 +278,7 @@ func graphToSummaries(
 		return res
 	}
 
-	for cp, crs := range graph.CloudServices {
+	for cp, crs := range graph.InternalCloudServices {
 		for _, crStub := range crs {
 			cr := string(crStub.ID)
 			nodes[cr] = detailed.NodeSummary{
@@ -293,6 +293,14 @@ func graphToSummaries(
 
 	nodes["in-the-internet"] = inboundInternetNode
 	nodes["out-the-internet"] = outboundInternetNode
+	for _, n := range graph.ExternalCloudServices {
+		nodes[string(n.ID)] = detailed.NodeSummary{
+			ID:                string(n.ID),
+			Label:             n.Name,
+			ImmediateParentID: "",
+			Type:              "pseudo",
+		}
+	}
 
 	for h, n := range graph.Processes {
 		for _, idStub := range n {

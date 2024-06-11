@@ -780,6 +780,7 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 		AND NOT n.cloud_provider IS NULL
 		AND NOT n.cloud_region IS NULL
 		AND NOT n.node_id IN ["in-the-internet", "out-the-internet", "`+ConsoleAgentId+`"]
+		AND NOT n.cloud_provider = 'internet'
 		WITH n LIMIT 50000
 		MERGE (cp:CloudProvider{node_id: n.cloud_provider})
 		MERGE (cr:CloudRegion{node_id: n.cloud_region})
@@ -816,7 +817,7 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 		WHERE NOT exists((n) -[:ALIAS]-> ())
 		MERGE (t:ImageTag{node_id: n.docker_image_name + "_" + n.docker_image_tag})
 		MERGE (n) -[a:ALIAS]-> (t)
-		SET t.updated_at = TIMESTAMP(), 
+		SET t.updated_at = TIMESTAMP(),
 			a.updated_at = TIMESTAMP()`,
 		map[string]interface{}{}, txConfig); err != nil {
 		return err

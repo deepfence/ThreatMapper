@@ -1424,21 +1424,23 @@ func requestCloudInfo(ctx context.Context, strIps []string, token string) ([]Clo
 
 func resolveCloudService(connections []Connection, token string) []Connection {
 	ips := []string{}
+	ids := []int{} 
 	for i := range connections {
 		if connections[i].rightIP != nil {
 			ips = append(ips, *connections[i].rightIP)
+			ids = append(ids, i)
 		}
 	}
 	if len(ips) == 0 {
 		return connections
 	}
 	infos, err := requestCloudInfo(context.Background(), ips, token)
-	if err != nil || len(connections) != len(infos) {
-		log.Error().Err(err).Msgf("issue fetching cloud infos %d/%d", len(infos), len(connections))
+	if err != nil || len(ids) != len(infos) {
+		log.Error().Err(err).Msgf("issue fetching cloud infos %v/%v", infos, connections)
 		return connections
 	}
 	for i := range infos {
-		connections[i].destination = infos[i].NodeID()
+		connections[ids[i]].destination = infos[i].NodeID()
 	}
 	return connections
 }

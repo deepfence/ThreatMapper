@@ -436,7 +436,7 @@ func extractResourceNodeIds(ids []interface{}) []NodeID {
 	return res
 }
 
-func (ntp *neo4jTopologyReporter) GetCloudServices(
+func (ntp *neo4jTopologyReporter) GetInternalCloudServices(
 	ctx context.Context,
 	tx neo4j.ExplicitTransaction,
 	cloudProvider []string,
@@ -485,6 +485,46 @@ func (ntp *neo4jTopologyReporter) GetCloudServices(
 				},
 				IDs:          nodeIDs,
 				ResourceType: service,
+			})
+	}
+	return res, nil
+
+}
+
+func (ntp *neo4jTopologyReporter) GetExternalCloudServices(
+	ctx context.Context,
+	tx neo4j.ExplicitTransaction,
+	cloudProvider []string,
+	cloudRegions []string,
+	fieldfilters mo.Option[reporters.FieldsFilters]) ([]NodeStub, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "toploogy", "get-cloud-services")
+	defer span.End()
+
+	res := []NodeStub{}
+
+	r, err := tx.Run(ctx, `
+		MATCH (n:Node) -[:CONNECTS]- (:Node)
+		WHERE n.cloud_provider = "internet"
+		RETURN n.node_id`,
+		map[string]interface{}{},
+	)
+
+	if err != nil {
+		return res, err
+	}
+	records, err := r.Collect(ctx)
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		nodeID := record.Values[0].(string)
+		res = append(res,
+			NodeStub{
+				ID:   NodeID(nodeID),
+				Name: nodeID,
 			})
 	}
 	return res, nil
@@ -921,8 +961,9 @@ type RenderedGraph struct {
 	Connections []ConnectionSummary   `json:"connections" required:"true"`
 	// PublicCloudResources    map[NodeID][]ResourceStub `json:"public-cloud-resources" required:"true"`
 	// NonPublicCloudResources map[NodeID][]ResourceStub `json:"non-public-cloud-resources" required:"true"`
-	CloudServices      map[NodeID][]ResourceStub `json:"cloud-services" required:"true"`
-	SkippedConnections bool                      `json:"skipped_connections" required:"true"`
+	InternalCloudServices map[NodeID][]ResourceStub `json:"cloud-services" required:"true"`
+	ExternalCloudServices []NodeStub                `json:"external-cloud-services" required:"true"`
+	SkippedConnections    bool                      `json:"skipped_connections" required:"true"`
 }
 
 type TopologyFilters struct {
@@ -1239,7 +1280,11 @@ func (ntp *neo4jTopologyReporter) getGraph(ctx context.Context, filters Topology
 	if err != nil {
 		return res, err
 	}
-	res.CloudServices, err = ntp.GetCloudServices(ctx, tx, cloudFilter, regionFilter, mo.None[reporters.FieldsFilters]())
+	res.InternalCloudServices, err = ntp.GetInternalCloudServices(ctx, tx, cloudFilter, regionFilter, mo.None[reporters.FieldsFilters]())
+	if err != nil {
+		return res, err
+	}
+	res.ExternalCloudServices, err = ntp.GetExternalCloudServices(ctx, tx, cloudFilter, regionFilter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
