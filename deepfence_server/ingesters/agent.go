@@ -3,7 +3,11 @@ package ingesters
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -11,6 +15,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -485,7 +490,7 @@ func NewReportIngestionData() ReportIngestionData {
 	}
 }
 
-func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache, buf *bytes.Buffer) ReportIngestionData {
+func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache, buf *bytes.Buffer, token string) ReportIngestionData {
 
 	res := ReportIngestionData{
 		Hosts:                      make([]map[string]interface{}, 0, len(rpt.Host)),
@@ -620,6 +625,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			}
 		}
 	}
+	connections = resolveCloudService(connections, token)
 	res.EndpointEdgesBatch = connections2maps(connections, buf)
 
 	processEdgesBatch := map[string][]string{}
@@ -1038,11 +1044,11 @@ func (nc *neo4jIngester) runDBPusher(
 	log.Info().Msgf("runDBPusher ended")
 }
 
-func (nc *neo4jIngester) runPreparer() {
+func (nc *neo4jIngester) runPreparer(token string) {
 	var buf bytes.Buffer
 	for rpt := range nc.preparersInput {
 		r := computeResolvers(&rpt, &buf)
-		data := prepareNeo4jIngestion(&rpt, nc.resolvers, &buf)
+		data := prepareNeo4jIngestion(&rpt, nc.resolvers, &buf, token)
 		select {
 		case nc.batcher <- data:
 			nc.resolversUpdate <- r
@@ -1052,7 +1058,7 @@ func (nc *neo4jIngester) runPreparer() {
 	}
 }
 
-func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], error) {
+func NewNeo4jCollector(ctx context.Context, token string) (Ingester[report.CompressedReport], error) {
 	rdb, err := newEndpointResolversCache(ctx)
 
 	if err != nil {
@@ -1112,7 +1118,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 	}()
 
 	for i := 0; i < preparerWorkersNum; i++ {
-		go nc.runPreparer()
+		go nc.runPreparer(token)
 	}
 
 	go func() {
@@ -1331,4 +1337,108 @@ func GetPushBack(ctx context.Context, driver neo4j.DriverWithContext) (int32, er
 		return 0, err
 	}
 	return int32(rec.Values[0].(int64)), nil
+}
+
+const (
+	threatIntelResolverURL = "https://threat-intel.deepfence.io/threat-intel"
+)
+
+type CloudInfo struct {
+	Type     string `json:"type"`
+	Region   string `json:"region"`
+	Provider string `json:"provider"`
+}
+
+func (ci *CloudInfo) NodeID() string {
+	return fmt.Sprintf("%s-%s", ci.Provider, ci.Type)
+}
+
+type IPResponse struct {
+	Infos []CloudInfo `json:"Infos"`
+}
+
+type IPRequest struct {
+	IPv4s []string `json:"ipv4s"`
+	IPv6s []string `json:"ipv6s"`
+}
+
+func requestCloudInfo(ctx context.Context, strIps []string, token string) ([]CloudInfo, error) {
+	// check if token is present
+	var infos []CloudInfo
+
+	bodyReq := IPRequest{
+		IPv4s: strIps,
+	}
+	b, err := json.Marshal(bodyReq)
+	if err != nil {
+		return infos, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, threatIntelResolverURL+"/cloud-ips", bytes.NewReader(b))
+	if err != nil {
+		return infos, err
+	}
+
+	req.Header.Set("x-license-key", token)
+
+	q := req.URL.Query()
+	q.Add("version", constants.Version)
+	q.Add("product", utils.Project)
+	req.URL.RawQuery = q.Encode()
+
+	log.Info().Msgf("query threatintel at %s", req.URL.String())
+
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	hc := http.Client{
+		Timeout:   1 * time.Minute,
+		Transport: tr,
+	}
+	resp, err := hc.Do(req)
+	if err != nil {
+		log.Error().Err(err).Msg("failed http request")
+		return infos, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return infos, fmt.Errorf("%d invaid response code", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Error().Err(err).Msg("failed read response body")
+		return infos, err
+	}
+	defer resp.Body.Close()
+
+	var res IPResponse
+	if err := json.Unmarshal(body, &res); err != nil {
+		log.Error().Err(err).Msg("failed to decode response body")
+		return infos, err
+	}
+
+	return res.Infos, nil
+}
+
+func resolveCloudService(connections []Connection, token string) []Connection {
+	ips := []string{}
+	for i := range connections {
+		if connections[i].rightIP != nil {
+			ips = append(ips, *connections[i].rightIP)
+		}
+	}
+	if len(ips) == 0 {
+		return connections
+	}
+	infos, err := requestCloudInfo(context.Background(), ips, token)
+	if err != nil || len(connections) != len(infos) {
+		log.Error().Err(err).Msgf("issue fetching cloud infos %d/%d", len(infos), len(connections))
+		return connections
+	}
+	for i := range infos {
+		connections[i].destination = infos[i].NodeID()
+	}
+	return connections
 }

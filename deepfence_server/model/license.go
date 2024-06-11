@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -370,4 +371,17 @@ func formatDate(dt time.Time) string {
 
 func parseDate(dateString string) (time.Time, error) {
 	return time.Parse(DateLayout1, dateString)
+}
+
+// FetchLicense gets license key from database
+func SimpleFetchLicense(ctx context.Context) (string, error) {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return "", err
+	}
+	license, err := GetLicense(ctx, pgClient)
+	if err != nil {
+		return "", err
+	}
+	return license.LicenseKey, nil
 }
