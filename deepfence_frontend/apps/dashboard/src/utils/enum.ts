@@ -20,6 +20,10 @@ export const SeverityEnumList = [
   SeverityEnum.Low,
   SeverityEnum.Unknown,
 ] as const;
+
+type SeverityKeyType = keyof typeof SeverityEnum;
+export type SeverityValueType = (typeof SeverityEnum)[SeverityKeyType];
+
 export function getBenchmarkPrettyName(backendBenchmark: ModelBenchmarkType) {
   switch (backendBenchmark) {
     case ModelBenchmarkType.Cis:
@@ -68,6 +72,26 @@ export function getPostureStatusPrettyName(
     default:
       // eslint-disable-next-line no-case-declarations
       const _exhaustiveCheck: never = status;
+      throw new Error(`Unhandled case: ${_exhaustiveCheck}`);
+  }
+}
+
+export function getSeverityPrettyName(severity: SeverityValueType) {
+  switch (severity) {
+    case SeverityEnum.Critical:
+      return 'Critical';
+    case SeverityEnum.High:
+      return 'High';
+    case SeverityEnum.Medium:
+      return 'Medium';
+    case SeverityEnum.Low:
+      return 'Low';
+    case SeverityEnum.Unknown:
+      return 'Unknown';
+
+    default:
+      // eslint-disable-next-line no-case-declarations
+      const _exhaustiveCheck: never = severity;
       throw new Error(`Unhandled case: ${_exhaustiveCheck}`);
   }
 }

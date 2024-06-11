@@ -13,7 +13,7 @@ import { getSeverityColorMap } from '@/constants/charts';
 import { CardHeader } from '@/features/secrets/components/landing/CardHeader';
 import { queries } from '@/queries';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { SeverityEnum } from '@/utils/enum';
+import { getSeverityPrettyName, SeverityEnum } from '@/utils/enum';
 import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -45,23 +45,23 @@ function getChartOptions({ data, theme }: { data: TopNSecretChartData[]; theme: 
         },
         {
           name: SeverityEnum.Critical,
-          displayName: 'Critical',
+          displayName: getSeverityPrettyName(SeverityEnum.Critical),
         },
         {
           name: SeverityEnum.High,
-          displayName: 'High',
+          displayName: getSeverityPrettyName(SeverityEnum.High),
         },
         {
           name: SeverityEnum.Medium,
-          displayName: 'Medium',
+          displayName: getSeverityPrettyName(SeverityEnum.Medium),
         },
         {
           name: SeverityEnum.Low,
-          displayName: 'Low',
+          displayName: getSeverityPrettyName(SeverityEnum.Low),
         },
         {
           name: SeverityEnum.Unknown,
-          displayName: 'Unknown',
+          displayName: getSeverityPrettyName(SeverityEnum.Unknown),
         },
       ],
       source: [...data].reverse(),

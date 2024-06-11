@@ -3,7 +3,10 @@ import { Suspense, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { createColumnHelper, Table, TableSkeleton } from 'ui-components';
 
-import { ModelCloudComplianceStatusEnum } from '@/api/generated';
+import {
+  ModelCloudComplianceStatusEnum,
+  ModelComplianceStatusEnum,
+} from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { TruncatedText } from '@/components/TruncatedText';
 import { getPostureColor } from '@/constants/charts';
@@ -11,6 +14,7 @@ import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
+import { getPostureStatusPrettyName } from '@/utils/enum';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -159,81 +163,101 @@ export const useTableColumn = () => {
         return _columns;
       } else if (nodeType === 'host') {
         return [
-          columnHelper.accessor('info', {
+          columnHelper.accessor(ModelComplianceStatusEnum.Info, {
             cell: (info) => {
               return (
                 <div className="flex items-center gap-x-2 tabular-nums">
                   <div
                     className="w-3 h-3 rounded-full"
                     style={{
-                      backgroundColor: getPostureColor(mode)['info'],
+                      backgroundColor:
+                        getPostureColor(mode)[ModelComplianceStatusEnum.Info],
                     }}
                   ></div>
                   <span>{info.getValue() ?? 0}</span>
                 </div>
               );
             },
-            header: () => <TruncatedText text="Info" />,
+            header: () => (
+              <TruncatedText
+                text={getPostureStatusPrettyName(ModelComplianceStatusEnum.Info)}
+              />
+            ),
             minSize: 80,
             size: 80,
             maxSize: 80,
             enableResizing: false,
           }),
-          columnHelper.accessor('pass', {
+          columnHelper.accessor(ModelComplianceStatusEnum.Pass, {
             cell: (info) => {
               return (
                 <div className="flex items-center gap-x-2 tabular-nums">
                   <div
                     className="w-3 h-3 rounded-full"
                     style={{
-                      backgroundColor: getPostureColor(mode)['pass'],
+                      backgroundColor:
+                        getPostureColor(mode)[ModelComplianceStatusEnum.Pass],
                     }}
                   ></div>
                   <span>{info.getValue() ?? 0}</span>
                 </div>
               );
             },
-            header: () => <TruncatedText text="Pass" />,
+            header: () => (
+              <TruncatedText
+                text={getPostureStatusPrettyName(ModelComplianceStatusEnum.Pass)}
+              />
+            ),
             minSize: 80,
             size: 80,
             maxSize: 80,
             enableResizing: false,
           }),
-          columnHelper.accessor('warn', {
+          columnHelper.accessor(ModelComplianceStatusEnum.Warn, {
             cell: (info) => {
               return (
                 <div className="flex items-center gap-x-2 tabular-nums">
                   <div
                     className="w-3 h-3 rounded-full"
                     style={{
-                      backgroundColor: getPostureColor(mode)['warn'],
+                      backgroundColor:
+                        getPostureColor(mode)[ModelComplianceStatusEnum.Warn],
                     }}
                   ></div>
                   <span>{info.getValue() ?? 0}</span>
                 </div>
               );
             },
-            header: () => <TruncatedText text="Warn" />,
+            header: () => (
+              <TruncatedText
+                text={getPostureStatusPrettyName(ModelComplianceStatusEnum.Warn)}
+              />
+            ),
             minSize: 80,
             size: 80,
             maxSize: 80,
             enableResizing: false,
           }),
-          columnHelper.accessor('note', {
+          columnHelper.accessor(ModelComplianceStatusEnum.Note, {
             cell: (info) => {
               return (
                 <div className="flex items-center gap-x-2 tabular-nums">
                   <div
                     className="w-3 h-3 rounded-full"
                     style={{
-                      backgroundColor: getPostureColor(mode)['note'],
+                      backgroundColor:
+                        getPostureColor(mode)[ModelComplianceStatusEnum.Note],
                     }}
                   ></div>
                   <span>{info.getValue() ?? 0}</span>
                 </div>
               );
             },
-            header: () => <TruncatedText text="Note" />,
+            header: () => (
+              <TruncatedText
+                text={getPostureStatusPrettyName(ModelComplianceStatusEnum.Note)}
+              />
+            ),
             minSize: 80,
             size: 80,
             maxSize: 80,

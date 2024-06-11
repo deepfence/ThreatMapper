@@ -26,7 +26,11 @@ import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { FieldSelection } from '@/features/integrations/components/report-form/FieldSelection';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ScanTypeEnum } from '@/types/common';
-import { getPostureStatusPrettyName } from '@/utils/enum';
+import {
+  getPostureStatusPrettyName,
+  getSeverityPrettyName,
+  SeverityEnumList,
+} from '@/utils/enum';
 
 import {
   ActionEnumType,
@@ -217,13 +221,11 @@ const AdvancedFilters = ({
   const statusFilter = fieldFilters?.contains_filter?.filter_in?.['status'];
 
   const [selectedSeverity, setSelectedSeverity] = useState<string[]>(
-    severityFilter?.map((severity) => upperFirst(severity)) ?? [],
+    severityFilter ?? [],
   );
 
   // status
-  const [selectedStatus, setSelectedStatus] = useState<string[]>(
-    statusFilter?.map((status) => upperFirst(status)) ?? [],
-  );
+  const [selectedStatus, setSelectedStatus] = useState<string[]>(statusFilter ?? []);
 
   // to main clear state for combobox
   const [hosts, setHosts] = useState<string[]>(getHostsFilter(filters?.node_ids));
@@ -423,10 +425,13 @@ const AdvancedFilters = ({
                 return value && value.length ? `${value.length} selected` : '';
               }}
             >
-              <ListboxOption value={'Critical'}>Critical</ListboxOption>
-              <ListboxOption value={'High'}>High</ListboxOption>
-              <ListboxOption value={'Medium'}>Medium</ListboxOption>
-              <ListboxOption value={'Low'}>Low</ListboxOption>
+              {SeverityEnumList.map((severity) => {
+                return (
+                  <ListboxOption key={severity} value={severity}>
+                    {getSeverityPrettyName(severity)}
+                  </ListboxOption>
+                );
+              })}
             </Listbox>
           </>
         ) : null}
