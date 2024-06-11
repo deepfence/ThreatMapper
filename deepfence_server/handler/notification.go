@@ -32,7 +32,10 @@ func (h *Handler) GetScansHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// respond with scans
-	httpext.JSON(w, http.StatusOK, scans)
+	err = httpext.JSON(w, http.StatusOK, scans)
+	if err != nil {
+		log.Error().Msgf("Error responding: %v", err)
+	}
 }
 
 func (h *Handler) MarkScansReadHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +59,10 @@ func (h *Handler) MarkScansReadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// respond with success
-	httpext.JSON(w, http.StatusOK, nil)
+	err = httpext.JSON(w, http.StatusOK, nil)
+	if err != nil {
+		log.Error().Msgf("Error responding: %v", err)
+	}
 }
 
 /* Registry Sync Handlers */
@@ -74,7 +80,10 @@ func (h *Handler) GetRegistrySyncHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// respond with registries
-	httpext.JSON(w, http.StatusOK, registries)
+	err = httpext.JSON(w, http.StatusOK, registries)
+	if err != nil {
+		log.Error().Msgf("Error responding: %v", err)
+	}
 }
 
 /* Integration Handlers */
@@ -92,5 +101,8 @@ func (h *Handler) GetIntegrationFailuresHandler(w http.ResponseWriter, r *http.R
 	}
 
 	// respond with integrations
-	httpext.JSON(w, http.StatusOK, integrations)
+	err = httpext.JSON(w, http.StatusOK, integrations)
+	if err != nil {
+		log.Error().Msgf("Error responding: %v", err)
+	}
 }
