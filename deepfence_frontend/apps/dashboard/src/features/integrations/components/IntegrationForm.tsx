@@ -346,26 +346,29 @@ const AdvancedFilters = ({
                 }}
               >
                 <div className="px-3 pt-2 text-p3 text-text-text-and-icon">Host</div>
-                <ListboxOption value={ModelCloudComplianceStatusEnum.Alarm}>
-                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Alarm)}
+                <ListboxOption value={ModelComplianceStatusEnum.Pass}>
+                  {getPostureStatusPrettyName(ModelComplianceStatusEnum.Pass)}
+                </ListboxOption>
+                <ListboxOption value={ModelComplianceStatusEnum.Warn}>
+                  {getPostureStatusPrettyName(ModelComplianceStatusEnum.Warn)}
                 </ListboxOption>
                 <ListboxOption value={ModelComplianceStatusEnum.Note}>
                   {getPostureStatusPrettyName(ModelComplianceStatusEnum.Note)}
                 </ListboxOption>
-                <ListboxOption value={ModelCloudComplianceStatusEnum.Ok}>
-                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Ok)}
-                </ListboxOption>
                 <div className="px-3 pt-4 text-p3 text-text-text-and-icon">
                   Kubernetes
                 </div>
-                <ListboxOption value={ModelComplianceStatusEnum.Pass}>
-                  {getPostureStatusPrettyName(ModelComplianceStatusEnum.Pass)}
+                <ListboxOption value={ModelCloudComplianceStatusEnum.Alarm}>
+                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Alarm)}
+                </ListboxOption>
+                <ListboxOption value={ModelCloudComplianceStatusEnum.Ok}>
+                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Ok)}
                 </ListboxOption>
                 <ListboxOption value={ModelCloudComplianceStatusEnum.Skip}>
                   {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Skip)}
                 </ListboxOption>
-                <ListboxOption value={ModelComplianceStatusEnum.Warn}>
-                  {getPostureStatusPrettyName(ModelComplianceStatusEnum.Warn)}
+                <ListboxOption value={ModelCloudComplianceStatusEnum.Delete}>
+                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Delete)}
                 </ListboxOption>
                 <div className="px-3 pt-4 text-p3 text-text-text-and-icon">Common</div>
                 <ListboxOption value={ModelCloudComplianceStatusEnum.Info}>
