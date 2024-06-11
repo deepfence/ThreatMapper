@@ -13,6 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/report"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
@@ -806,10 +807,10 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 		http.StatusOK, []string{tagSettings}, bearerToken, new(EmailConfigurationAdd), new(MessageResponse))
 	d.AddOperation("getSettings", http.MethodGet, "/deepfence/settings/global-settings",
 		"Get settings", "Get all settings",
-		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]SettingsResponse))
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]setting.SettingsResponse))
 	d.AddOperation("updateSetting", http.MethodPatch, "/deepfence/settings/global-settings/{id}",
 		"Update setting", "Update setting",
-		http.StatusNoContent, []string{tagSettings}, bearerToken, new(SettingUpdateRequest), nil)
+		http.StatusNoContent, []string{tagSettings}, bearerToken, new(setting.SettingUpdateRequest), nil)
 	d.AddOperation("getUserAuditLogs", http.MethodPost, "/deepfence/settings/user-audit-log",
 		"Get user audit logs", "Get audit logs for all users",
 		http.StatusOK, []string{tagSettings}, bearerToken, new(GetAuditLogsRequest), new([]postgresqldb.GetAuditLogsRow))

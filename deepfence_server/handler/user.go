@@ -16,6 +16,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/jwtauth/v5"
@@ -100,9 +101,9 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	consoleURLSetting := model.Setting{
-		Key: model.ConsoleURLSettingKey,
-		Value: &model.SettingValue{
+	consoleURLSetting := setting.Setting{
+		Key: setting.ConsoleURLSettingKey,
+		Value: &setting.SettingValue{
 			Label:       "Deepfence Console URL",
 			Value:       consoleURL,
 			Description: "Deepfence Console URL used for sending emails with links to the console",
@@ -382,7 +383,7 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	consoleURL, err := model.GetManagementConsoleURL(ctx, pgClient)
+	consoleURL, err := setting.GetManagementConsoleURL(ctx, pgClient)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -744,7 +745,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	consoleURL, err := model.GetManagementConsoleURL(ctx, pgClient)
+	consoleURL, err := setting.GetManagementConsoleURL(ctx, pgClient)
 	if err != nil {
 		h.respondError(err, w)
 		return

@@ -19,6 +19,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/sendemail"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
@@ -263,7 +264,7 @@ func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	settings, err := model.GetVisibleSettings(ctx, pgClient)
+	settings, err := setting.GetVisibleSettings(ctx, pgClient)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -287,7 +288,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	var req model.SettingUpdateRequest
+	var req setting.SettingUpdateRequest
 	err = httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		h.respondError(err, w)
@@ -299,7 +300,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	currentSettings, err := model.GetSettingByKey(ctx, pgClient, req.Key)
+	currentSettings, err := setting.GetSettingByKey(ctx, pgClient, req.Key)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -310,7 +311,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	var value interface{}
 	switch currentSettings.Key {
-	case model.ConsoleURLSettingKey:
+	case setting.ConsoleURLSettingKey:
 		var parsedURL *url.URL
 		if parsedURL, err = url.ParseRequestURI(strings.TrimSpace(req.Value)); err != nil {
 			h.respondError(&errInvalidURL, w)
@@ -321,7 +322,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		value = parsedURL.Scheme + "://" + parsedURL.Host
-	case model.InactiveNodesDeleteScanResultsKey:
+	case setting.InactiveNodesDeleteScanResultsKey:
 		value, err = strconv.ParseInt(strings.TrimSpace(req.Value), 10, 64)
 		if err != nil {
 			h.respondError(&errInvalidInteger, w)
@@ -330,22 +331,22 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	default:
 		value = req.Value
 	}
-	setting := model.Setting{
+	s := setting.Setting{
 		ID:  req.ID,
 		Key: req.Key,
-		Value: &model.SettingValue{
+		Value: &setting.SettingValue{
 			Label:       currentSettings.Value.Label,
 			Value:       value,
 			Description: currentSettings.Value.Description,
 		},
 		IsVisibleOnUI: currentSettings.IsVisibleOnUI,
 	}
-	err = setting.Update(ctx, pgClient)
+	err = s.Update(ctx, pgClient)
 	if err != nil {
 		h.respondError(err, w)
 		return
 	}
-	h.AuditUserActivity(r, EventSettings, ActionUpdate, setting, true)
+	h.AuditUserActivity(r, EventSettings, ActionUpdate, s, true)
 	w.WriteHeader(http.StatusNoContent)
 }
 

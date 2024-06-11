@@ -267,3 +267,7 @@ const (
 const (
 	FileServerPathAgentBinary = "agent-binary"
 )
+
+const (
+	AESSecret = "aes_secret"
+)
