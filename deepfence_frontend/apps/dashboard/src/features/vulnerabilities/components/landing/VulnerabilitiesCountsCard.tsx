@@ -11,6 +11,7 @@ import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHe
 import { queries } from '@/queries';
 import { Mode, THEME_DARK, useTheme } from '@/theme/ThemeContext';
 import { VulnerabilitySeverityType } from '@/types/common';
+import { SeverityEnum } from '@/utils/enum';
 import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -56,7 +57,9 @@ function getChartOptions({
             value: data[key],
             name: key,
             itemStyle: {
-              color: colorMap[key as VulnerabilitySeverityType] ?? colorMap['unknown'],
+              color:
+                colorMap[key as VulnerabilitySeverityType] ??
+                colorMap[SeverityEnum.Unknown],
             },
           };
         }),
@@ -92,7 +95,9 @@ function getChartOptions({
             value: data[key],
             name: key,
             itemStyle: {
-              color: colorMap[key as VulnerabilitySeverityType] ?? colorMap['unknown'],
+              color:
+                colorMap[key as VulnerabilitySeverityType] ??
+                colorMap[SeverityEnum.Unknown],
             },
           };
         }),

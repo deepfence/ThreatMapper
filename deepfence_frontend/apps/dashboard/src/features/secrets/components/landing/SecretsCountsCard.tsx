@@ -11,6 +11,7 @@ import { CardHeader } from '@/features/secrets/components/landing/CardHeader';
 import { queries } from '@/queries';
 import { Mode, THEME_DARK, useTheme } from '@/theme/ThemeContext';
 import { SecretSeverityType } from '@/types/common';
+import { SeverityEnum } from '@/utils/enum';
 import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -57,7 +58,7 @@ function getChartOptions({
             itemStyle: {
               color:
                 getSeverityChartInnerColorMap(theme)[key as SecretSeverityType] ??
-                getSeverityChartInnerColorMap(theme)['unknown'],
+                getSeverityChartInnerColorMap(theme)[SeverityEnum.Unknown],
             },
           };
         }),
@@ -94,7 +95,7 @@ function getChartOptions({
             itemStyle: {
               color:
                 getSeverityColorMap(theme)[key as SecretSeverityType] ??
-                getSeverityColorMap(theme)['unknown'],
+                getSeverityColorMap(theme)[SeverityEnum.Unknown],
             },
           };
         }),

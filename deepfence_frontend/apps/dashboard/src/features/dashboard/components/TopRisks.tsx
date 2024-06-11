@@ -13,6 +13,7 @@ import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { queries } from '@/queries';
 import { Mode, THEME_DARK, useTheme } from '@/theme/ThemeContext';
 import { VulnerabilitySeverityType } from '@/types/common';
+import { SeverityEnum } from '@/utils/enum';
 import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -174,7 +175,7 @@ function getChartOptions({
             itemStyle: {
               color:
                 getSeverityChartInnerColorMap(theme)[key as VulnerabilitySeverityType] ??
-                getSeverityChartInnerColorMap(theme)['unknown'],
+                getSeverityChartInnerColorMap(theme)[SeverityEnum.Unknown],
             },
           };
         }),
@@ -211,7 +212,7 @@ function getChartOptions({
             itemStyle: {
               color:
                 getSeverityColorMap(theme)[key as VulnerabilitySeverityType] ??
-                getSeverityColorMap(theme)['unknown'],
+                getSeverityColorMap(theme)[SeverityEnum.Unknown],
             },
           };
         }),

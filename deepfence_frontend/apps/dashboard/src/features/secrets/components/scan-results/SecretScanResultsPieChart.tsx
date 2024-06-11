@@ -4,6 +4,7 @@ import { ECOption, ReactECharts } from '@/components/ReactEcharts';
 import { getSeverityChartInnerColorMap, getSeverityColorMap } from '@/constants/charts';
 import { Mode, THEME_DARK, useTheme } from '@/theme/ThemeContext';
 import { SecretSeverityType } from '@/types/common';
+import { SeverityEnum } from '@/utils/enum';
 import { abbreviateNumber } from '@/utils/number';
 
 function getChartOptions({
@@ -47,7 +48,7 @@ function getChartOptions({
             itemStyle: {
               color:
                 getSeverityChartInnerColorMap(theme)[key as SecretSeverityType] ??
-                getSeverityChartInnerColorMap(theme)['unknown'],
+                getSeverityChartInnerColorMap(theme)[SeverityEnum.Unknown],
             },
           };
         }),
@@ -87,7 +88,7 @@ function getChartOptions({
             itemStyle: {
               color:
                 getSeverityColorMap(theme)[key as SecretSeverityType] ??
-                getSeverityColorMap(theme)['unknown'],
+                getSeverityColorMap(theme)[SeverityEnum.Unknown],
             },
           };
         }),
