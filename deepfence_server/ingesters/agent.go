@@ -3,7 +3,12 @@ package ingesters
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -11,6 +16,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -409,6 +415,7 @@ type Connection struct {
 	localPort   int
 	leftIP      *string
 	rightIP     *string
+	resolved    bool
 }
 
 func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]interface{} {
@@ -485,7 +492,7 @@ func NewReportIngestionData() ReportIngestionData {
 	}
 }
 
-func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache, buf *bytes.Buffer) ReportIngestionData {
+func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache, buf *bytes.Buffer, token string) ReportIngestionData {
 
 	res := ReportIngestionData{
 		Hosts:                      make([]map[string]interface{}, 0, len(rpt.Host)),
@@ -620,6 +627,8 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			}
 		}
 	}
+	connections = resolveCloudServices(connections, token)
+	connections = resolveReverseDNS(connections)
 	res.EndpointEdgesBatch = connections2maps(connections, buf)
 
 	processEdgesBatch := map[string][]string{}
@@ -762,7 +771,8 @@ func (nc *neo4jIngester) PushToDBSeq(ctx context.Context, batches ReportIngestio
 	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
-		MATCH (m:Node{node_id: row.destination})
+		MERGE (m:Node{node_id: row.destination})
+		ON CREATE SET m.pseudo = true, m.active = true, m.updated_at = TIMESTAMP(), m.cloud_region = 'internet', m.cloud_provider = 'internet'
 		MERGE (n)-[r:CONNECTS]->(m)
 		WITH n, r, m, row.pids as rpids
 		UNWIND rpids as pids
@@ -1038,11 +1048,11 @@ func (nc *neo4jIngester) runDBPusher(
 	log.Info().Msgf("runDBPusher ended")
 }
 
-func (nc *neo4jIngester) runPreparer() {
+func (nc *neo4jIngester) runPreparer(token string) {
 	var buf bytes.Buffer
 	for rpt := range nc.preparersInput {
 		r := computeResolvers(&rpt, &buf)
-		data := prepareNeo4jIngestion(&rpt, nc.resolvers, &buf)
+		data := prepareNeo4jIngestion(&rpt, nc.resolvers, &buf, token)
 		select {
 		case nc.batcher <- data:
 			nc.resolversUpdate <- r
@@ -1052,7 +1062,7 @@ func (nc *neo4jIngester) runPreparer() {
 	}
 }
 
-func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], error) {
+func NewNeo4jCollector(ctx context.Context, token string) (Ingester[report.CompressedReport], error) {
 	rdb, err := newEndpointResolversCache(ctx)
 
 	if err != nil {
@@ -1112,7 +1122,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 	}()
 
 	for i := 0; i < preparerWorkersNum; i++ {
-		go nc.runPreparer()
+		go nc.runPreparer(token)
 	}
 
 	go func() {
@@ -1331,4 +1341,127 @@ func GetPushBack(ctx context.Context, driver neo4j.DriverWithContext) (int32, er
 		return 0, err
 	}
 	return int32(rec.Values[0].(int64)), nil
+}
+
+const (
+	threatIntelResolverURL = "https://threat-intel.deepfence.io/threat-intel"
+)
+
+type CloudInfo struct {
+	Type     string `json:"type"`
+	Region   string `json:"region"`
+	Provider string `json:"provider"`
+}
+
+func (ci *CloudInfo) NodeID() string {
+	return fmt.Sprintf("%s-%s", ci.Provider, ci.Type)
+}
+
+type IPResponse struct {
+	Infos []CloudInfo `json:"Infos"`
+}
+
+type IPRequest struct {
+	IPv4s []string `json:"ipv4s"`
+	IPv6s []string `json:"ipv6s"`
+}
+
+func requestCloudInfo(ctx context.Context, strIps []string, token string) ([]CloudInfo, error) {
+	// check if token is present
+	var infos []CloudInfo
+
+	bodyReq := IPRequest{
+		IPv4s: strIps,
+	}
+	b, err := json.Marshal(bodyReq)
+	if err != nil {
+		return infos, err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, threatIntelResolverURL+"/cloud-ips", bytes.NewReader(b))
+	if err != nil {
+		return infos, err
+	}
+
+	req.Header.Set("x-license-key", token)
+
+	q := req.URL.Query()
+	q.Add("version", constants.Version)
+	q.Add("product", utils.Project)
+	req.URL.RawQuery = q.Encode()
+
+	log.Info().Msgf("query threatintel at %s", req.URL.String())
+
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	hc := http.Client{
+		Timeout:   1 * time.Minute,
+		Transport: tr,
+	}
+	resp, err := hc.Do(req)
+	if err != nil {
+		log.Error().Err(err).Msg("failed http request")
+		return infos, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return infos, fmt.Errorf("%d invaid response code", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Error().Err(err).Msg("failed read response body")
+		return infos, err
+	}
+	defer resp.Body.Close()
+
+	var res IPResponse
+	if err := json.Unmarshal(body, &res); err != nil {
+		log.Error().Err(err).Msg("failed to decode response body")
+		return infos, err
+	}
+
+	return res.Infos, nil
+}
+
+func resolveCloudServices(connections []Connection, token string) []Connection {
+	ips := []string{}
+	ids := []int{}
+	for i := range connections {
+		if connections[i].rightIP != nil {
+			ips = append(ips, *connections[i].rightIP)
+			ids = append(ids, i)
+		}
+	}
+	if len(ips) == 0 {
+		return connections
+	}
+	infos, err := requestCloudInfo(context.Background(), ips, token)
+	if err != nil || len(ids) != len(infos) {
+		log.Error().Err(err).Msgf("issue fetching cloud infos %v/%v", infos, connections)
+		return connections
+	}
+	for i := range infos {
+		if !strings.Contains(infos[i].NodeID(), "unknown") {
+			connections[ids[i]].destination = infos[i].NodeID()
+			connections[ids[i]].resolved = true
+		}
+	}
+	return connections
+}
+
+func resolveReverseDNS(connections []Connection) []Connection {
+	for i := range connections {
+		if connections[i].rightIP != nil && !connections[i].resolved {
+			names, err := net.LookupAddr(*connections[i].rightIP)
+			if err != nil || len(names) == 0 {
+				log.Error().Err(err).Msgf("Reverse DNS failed for %s", *connections[i].rightIP)
+				continue
+			}
+			connections[i].destination = fmt.Sprintf("out-%s", names[0])
+		}
+	}
+	return connections
 }

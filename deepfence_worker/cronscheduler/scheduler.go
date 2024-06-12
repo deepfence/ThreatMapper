@@ -363,6 +363,13 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
+	jobID, err = s.cron.AddFunc("@every 12h",
+		s.enqueueTask(namespace, utils.CloudServicesUpdateTask, true, utils.CritialTaskOpts()...))
+	if err != nil {
+		return err
+	}
+	jobIDs = append(jobIDs, jobID)
+
 	s.jobs.CronJobs[namespace] = CronJobs{jobIDs: jobIDs}
 
 	return nil
@@ -398,8 +405,8 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 	s.enqueueTask(namespace, utils.CachePostureProviders, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.RedisRewriteAOF, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.AsynqDeleteAllArchivedTasks, true, utils.CritialTaskOpts()...)()
-
 	s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, false, utils.CritialTaskOpts()...)()
+	s.enqueueTask(namespace, utils.CloudServicesUpdateTask, false, utils.CritialTaskOpts()...)()
 
 	return nil
 }

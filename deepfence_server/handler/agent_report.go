@@ -13,6 +13,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -40,7 +41,13 @@ func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[report.Com
 	if has {
 		return ing.(*ingesters.Ingester[report.CompressedReport]), nil
 	}
-	newEntry, err := ingesters.NewNeo4jCollector(ctx)
+
+	token, err := model.SimpleFetchLicense(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Continuing without license key")
+	}
+
+	newEntry, err := ingesters.NewNeo4jCollector(ctx, token)
 	if err != nil {
 		return nil, err
 	}

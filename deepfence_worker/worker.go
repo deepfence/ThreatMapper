@@ -238,6 +238,8 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 
 	worker.AddRetryableHandler(utils.ThreatIntelUpdateTask, cronjobs.FetchThreatIntel)
 
+	worker.AddRetryableHandler(utils.CloudServicesUpdateTask, cronjobs.IngestServiceNodes)
+
 	worker.AddRetryableHandler(utils.DeleteCloudAccounts, scans.DeleteCloudAccounts)
 
 	return worker, cancel, nil
