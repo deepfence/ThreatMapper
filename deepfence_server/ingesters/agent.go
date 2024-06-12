@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -414,6 +415,7 @@ type Connection struct {
 	localPort   int
 	leftIP      *string
 	rightIP     *string
+	resolved    bool
 }
 
 func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]interface{} {
@@ -625,7 +627,8 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			}
 		}
 	}
-	connections = resolveCloudService(connections, token)
+	connections = resolveCloudServices(connections, token)
+	connections = resolveReverseDNS(connections)
 	res.EndpointEdgesBatch = connections2maps(connections, buf)
 
 	processEdgesBatch := map[string][]string{}
@@ -768,7 +771,8 @@ func (nc *neo4jIngester) PushToDBSeq(ctx context.Context, batches ReportIngestio
 	if _, err := tx.Run(ctx, `
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
-		MATCH (m:Node{node_id: row.destination})
+		MERGE (m:Node{node_id: row.destination})
+		ON CREATE SET m.pseudo = true, m.active = true, m.updated_at = TIMESTAMP(), m.cloud_region = 'internet', m.cloud_provider = 'internet'
 		MERGE (n)-[r:CONNECTS]->(m)
 		WITH n, r, m, row.pids as rpids
 		UNWIND rpids as pids
@@ -1422,9 +1426,9 @@ func requestCloudInfo(ctx context.Context, strIps []string, token string) ([]Clo
 	return res.Infos, nil
 }
 
-func resolveCloudService(connections []Connection, token string) []Connection {
+func resolveCloudServices(connections []Connection, token string) []Connection {
 	ips := []string{}
-	ids := []int{} 
+	ids := []int{}
 	for i := range connections {
 		if connections[i].rightIP != nil {
 			ips = append(ips, *connections[i].rightIP)
@@ -1440,7 +1444,24 @@ func resolveCloudService(connections []Connection, token string) []Connection {
 		return connections
 	}
 	for i := range infos {
-		connections[ids[i]].destination = infos[i].NodeID()
+		if !strings.Contains(infos[i].NodeID(), "unknown") {
+			connections[ids[i]].destination = infos[i].NodeID()
+			connections[ids[i]].resolved = true
+		}
+	}
+	return connections
+}
+
+func resolveReverseDNS(connections []Connection) []Connection {
+	for i := range connections {
+		if connections[i].rightIP != nil && !connections[i].resolved {
+			names, err := net.LookupAddr(*connections[i].rightIP)
+			if err != nil || len(names) == 0 {
+				log.Error().Err(err).Msgf("Reverse DNS failed for %s", *connections[i].rightIP)
+				continue
+			}
+			connections[i].destination = fmt.Sprintf("out-%s", names[0])
+		}
 	}
 	return connections
 }
