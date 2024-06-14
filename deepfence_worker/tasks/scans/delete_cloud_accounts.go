@@ -227,7 +227,7 @@ func isOrgAccount(ctx context.Context, accountID string) (bool, error) {
 	}
 
 	switch cp.(string) {
-	case model.PostureProviderAWSOrg, model.PostureProviderGCPOrg:
+	case model.PostureProviderAWSOrg, model.PostureProviderGCPOrg, model.PostureProviderAzureOrg:
 		return true, nil
 	default:
 		return false, nil
