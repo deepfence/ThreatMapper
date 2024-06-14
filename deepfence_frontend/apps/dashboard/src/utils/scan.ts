@@ -18,7 +18,7 @@ export const isScanFailed = (status: string): boolean => {
 };
 
 export const isNeverScanned = (status: string): boolean => {
-  if (!status?.length) {
+  if (!status?.length || status.toLowerCase() === 'never_scanned') {
     return true;
   }
   return false;
