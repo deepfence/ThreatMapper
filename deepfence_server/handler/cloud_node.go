@@ -68,18 +68,12 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		}
 		monitoredAccountIDs[req.CloudAccount] = nodeID
 		orgNodeID := fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountID)
-		nodeType := model.PostureProviderGCP
-		orgCloudProvider := model.PostureProviderGCPOrg
-		if req.CloudProvider == model.PostureProviderAWS {
-			orgCloudProvider = model.PostureProviderAWSOrg
-			nodeType = model.PostureProviderAWS
-		}
 		node := map[string]interface{}{
 			"node_id":        orgNodeID,
-			"cloud_provider": orgCloudProvider,
+			"cloud_provider": model.PostureProviderOrgMap[req.CloudProvider],
 			"node_name":      orgAccountID,
 			"version":        req.Version,
-			"node_type":      nodeType,
+			"node_type":      req.CloudProvider,
 		}
 		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
@@ -95,7 +89,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				"node_name":       monitoredAccountID,
 				"organization_id": orgNodeID,
 				"version":         req.Version,
-				"node_type":       nodeType,
+				"node_type":       req.CloudProvider,
 			}
 			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeID)
 			if err != nil {

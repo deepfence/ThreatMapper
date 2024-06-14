@@ -313,7 +313,9 @@ func CachePostureProviders(ctx context.Context, task *asynq.Task) error {
 			MATCH (m) -[:DETECTED] -> (c:Compliance)
 			RETURN count(distinct c)`
 
-		} else if postureProviderName == model.PostureProviderAWSOrg || postureProviderName == model.PostureProviderGCPOrg {
+		} else if postureProviderName == model.PostureProviderAWSOrg ||
+			postureProviderName == model.PostureProviderGCPOrg ||
+			postureProviderName == model.PostureProviderAzureOrg {
 			postureProvider.NodeLabel = "Organizations"
 
 			account_count_query = `
