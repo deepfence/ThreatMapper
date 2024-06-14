@@ -24,14 +24,16 @@ const (
 	PostureProviderGCP        = "gcp"
 	PostureProviderGCPOrg     = "gcp_org"
 	PostureProviderAzure      = "azure"
+	PostureProviderAzureOrg   = "azure_org"
 	PostureProviderLinux      = "linux"
 	PostureProviderKubernetes = "kubernetes"
 )
 
 var (
 	PostureProviderOrgMap = map[string]string{
-		PostureProviderAWS: PostureProviderAWSOrg,
-		PostureProviderGCP: PostureProviderGCPOrg,
+		PostureProviderAWS:   PostureProviderAWSOrg,
+		PostureProviderGCP:   PostureProviderGCPOrg,
+		PostureProviderAzure: PostureProviderAzureOrg,
 	}
 )
 
@@ -94,7 +96,7 @@ func (CloudNodeAccountInfo) ExtendedField() string {
 
 func (v CloudNodeAccountInfo) ScanType() utils.Neo4jScanType {
 	switch v.CloudProvider {
-	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg:
+	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg, PostureProviderGCPOrg, PostureProviderAzureOrg:
 		return utils.NEO4JCloudComplianceScan
 	case PostureProviderKubernetes, PostureProviderLinux:
 		return utils.NEO4JComplianceScan
@@ -109,7 +111,7 @@ func (v CloudNodeAccountInfo) LatestScanIDField() string {
 
 func (v CloudNodeAccountInfo) ScanResultType() string {
 	switch v.CloudProvider {
-	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg:
+	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg, PostureProviderGCPOrg, PostureProviderAzureOrg:
 		return "CloudCompliance"
 	case PostureProviderKubernetes, PostureProviderLinux:
 		return "Compliance"
@@ -120,7 +122,7 @@ func (v CloudNodeAccountInfo) ScanResultType() string {
 
 func (v CloudNodeAccountInfo) GetPassStatus() []string {
 	switch v.CloudProvider {
-	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg, PostureProviderKubernetes:
+	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg, PostureProviderGCPOrg, PostureProviderAzureOrg, PostureProviderKubernetes:
 		return []string{"ok", "info", "skip"}
 	case PostureProviderLinux:
 		return []string{"warn", "pass"}
@@ -292,6 +294,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		{Name: PostureProviderGCP, NodeLabel: "Accounts"},
 		// {Name: PostureProviderGCPOrg, NodeLabel: "Organizations"},
 		{Name: PostureProviderAzure, NodeLabel: "Accounts"},
+		// {Name: PostureProviderAzureOrg, NodeLabel: "Organizations"},
 		{Name: PostureProviderLinux, NodeLabel: "Hosts"},
 		{Name: PostureProviderKubernetes, NodeLabel: "Clusters"},
 	}
@@ -352,7 +355,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		if err == nil {
 			for _, record := range records {
 				provider := record.Values[0].(string)
-				if slices.Contains([]string{PostureProviderAWSOrg, PostureProviderGCPOrg}, provider) {
+				if slices.Contains([]string{PostureProviderAWSOrg, PostureProviderGCPOrg, PostureProviderAzureOrg}, provider) {
 					continue
 				}
 				if record.Values[1].(bool) {
@@ -396,6 +399,9 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		isOrgListing = true
 	case PostureProviderGCPOrg:
 		cloudProvider = PostureProviderGCP
+		isOrgListing = true
+	case PostureProviderAzureOrg:
+		cloudProvider = PostureProviderAzure
 		isOrgListing = true
 	case PostureProviderKubernetes:
 		neo4jNodeType = "KubernetesCluster"

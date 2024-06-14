@@ -432,7 +432,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		}
 		var node model.CloudNodeAccountInfo
 		utils.FromMap(nodeMap, &node)
-		if node.CloudProvider == model.PostureProviderAWSOrg || node.CloudProvider == model.PostureProviderGCPOrg {
+		if node.CloudProvider == model.PostureProviderAWSOrg || node.CloudProvider == model.PostureProviderGCPOrg || node.CloudProvider == model.PostureProviderAzureOrg {
 			node.ScanStatusMap, err = getScanStatusMap(ctx, node.NodeID, node.CloudProvider)
 			if err != nil {
 				log.Error().Msgf("Error in populating status of org %v", err)
