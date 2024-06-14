@@ -31,7 +31,8 @@ func (h *Handler) GetCloudNodeControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	controls, err := controls.GetCloudNodeComplianceControls(ctx, cloudNodeControl.NodeID, cloudNodeControl.CloudProvider, cloudNodeControl.ComplianceType)
+	controls, err := controls.GetCloudNodeComplianceControls(ctx, cloudNodeControl.NodeID,
+		cloudNodeControl.CloudProvider, []string{cloudNodeControl.ComplianceType})
 	if err != nil {
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return

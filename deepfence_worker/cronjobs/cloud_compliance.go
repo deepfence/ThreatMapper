@@ -25,7 +25,7 @@ import (
 const cloudControlsBasePath = "/cloud_controls"
 
 var BenchmarksAvailableMap = map[string][]string{
-	"aws":        {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
+	"aws":        {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2", "aws_foundational_security"},
 	"gcp":        {"cis"},
 	"azure":      {"cis", "nist", "pci", "hipaa"},
 	"kubernetes": {"nsa-cisa"},
@@ -44,6 +44,7 @@ type Benchmark struct {
 type Control struct {
 	CategoryBreadcrumb      string            `json:"category_breadcrumb"`
 	CategoryHierarchy       []string          `json:"category_hierarchy"`
+	CategoryHierarchyShort  string            `json:"category_hierarchy_short"`
 	ControlId               string            `json:"control_id"`
 	Description             string            `json:"description"`
 	Title                   string            `json:"title"`
@@ -118,8 +119,9 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 			controlsJson, err := os.ReadFile(controlFilePath)
 			if err != nil {
 				log.Error().Msgf("error reading controls file %s: %s", controlFilePath, err.Error())
-				span.EndWithErr(err)
-				return nil
+				span.RecordErr(err)
+				// skip loading control
+				continue
 			}
 			var controlList []Control
 			if err := json.Unmarshal(controlsJson, &controlList); err != nil {
@@ -149,6 +151,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 			n.category = 'Compliance',
 			n.parent_control_hierarchy = row.parent_control_hierarchy,
 			n.category_hierarchy = row.category_hierarchy,
+			n.category_hierarchy_short = row.category_hierarchy_short,
 			n.compliance_type = $benchmark,
 			n.executable = false
 		ON MATCH
@@ -158,7 +161,8 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 			n.documentation = row.documentation,
 			n.service = $cloudCap,
 			n.parent_control_hierarchy = row.parent_control_hierarchy,
-			n.category_hierarchy = row.category_hierarchy`,
+			n.category_hierarchy = row.category_hierarchy,
+			n.category_hierarchy_short = row.category_hierarchy_short`,
 				map[string]interface{}{
 					"batch":     controlMap,
 					"benchmark": benchmark,

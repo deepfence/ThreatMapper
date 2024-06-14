@@ -31,6 +31,7 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/samber/lo"
+	"github.com/samber/mo"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -1184,6 +1185,21 @@ func (h *Handler) CountSecretScanResultsHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
+func (h *Handler) CountMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4JMalwareScan)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+		Count: len(entries),
+	})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
+}
+
 func (h *Handler) CountComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
 	entries, _, err := listScanResultsHandler[model.Compliance](w, r, utils.NEO4JComplianceScan)
 	if err != nil {
@@ -1199,16 +1215,59 @@ func (h *Handler) CountComplianceScanResultsHandler(w http.ResponseWriter, r *ht
 	}
 }
 
-func (h *Handler) CountMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4JMalwareScan)
+func (h *Handler) CountComplianceScanResultsGroupHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ComplinaceScanResultsGroupReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		h.respondError(err, w)
-		return
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err: err}, w)
 	}
 
-	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
-		Count: len(entries),
-	})
+	ctx := r.Context()
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+	defer tx.Close(ctx)
+
+	query := `MATCH (n:ComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:Compliance)-[:IS]-(r:ComplianceRule) ` +
+		reporters.ParseFieldFilters2CypherWhereConditions("c", mo.Some(req.FieldsFilter), true) +
+		` RETURN r.node_id as control_id, collect(c.status) as status`
+
+	log.Debug().Msgf("CountComplianceScanResultsGroupHandler query: %s", query)
+
+	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_id": req.ScanID})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	recs, err := res.Collect(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	results := map[string]map[string]int64{}
+
+	for _, rec := range recs {
+		results[rec.Values[0].(string)] = groupArrayToMap(rec.Values[1].([]interface{}))
+	}
+
+	err = httpext.JSON(w, http.StatusOK,
+		model.ComplinaceScanResultsGroupResp{Groups: results})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 	}
@@ -1227,6 +1286,82 @@ func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, 
 	if err != nil {
 		log.Error().Msgf("%v", err)
 	}
+}
+
+func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.ComplinaceScanResultsGroupReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(&BadDecoding{err: err}, w)
+	}
+
+	ctx := r.Context()
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+	defer tx.Close(ctx)
+
+	query := `MATCH (n:CloudComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:CloudCompliance) ` +
+		reporters.ParseFieldFilters2CypherWhereConditions("c", mo.Some(req.FieldsFilter), true) +
+		` RETURN c.full_control_id as control_id, collect(c.status) as status`
+
+	log.Debug().Msgf("CountCloudComplianceScanResultsGroupHandler query: %s", query)
+
+	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_id": req.ScanID})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	recs, err := res.Collect(ctx)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+	}
+
+	results := map[string]map[string]int64{}
+
+	for _, rec := range recs {
+		results[rec.Values[0].(string)] = groupArrayToMap(rec.Values[1].([]interface{}))
+	}
+
+	err = httpext.JSON(w, http.StatusOK,
+		model.ComplinaceScanResultsGroupResp{Groups: results})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
+}
+
+func groupArrayToMap(array []interface{}) map[string]int64 {
+
+	result := map[string]int64{}
+
+	for _, n := range array {
+		s := n.(string)
+		val, found := result[s]
+		if found {
+			result[s] = val + 1
+		} else {
+			result[s] = 1
+		}
+	}
+
+	return result
+
 }
 
 func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {

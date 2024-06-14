@@ -4,11 +4,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.3",
     "control_id": "gdpr-3.3",
     "description": "Ensure that docker.socket file ownership is set to root:root (Automated)",
     "title": "Ensure that docker.socket file ownership is set to root:root (Automated)",
     "tags": {},
-    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.socket. If the file does not exist, this recommendation is not applicable. If the file exists, run the command chown root:root <path> to set the ownership and group ownership for the file to root.",
+    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.socket. If the file does not exist, this recommendation is not applicable. If the file exists, run the command chown root:root \u003cpath\u003e to set the ownership and group ownership for the file to root.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.3"
@@ -21,6 +22,7 @@
     "category_hierarchy": [
       "Docker Daemon Configuration"
     ],
+    "category_hierarchy_short": "GDPR-2.7",
     "control_id": "gdpr-2.7",
     "description": "Ensure TLS authentication for Docker daemon is configured (Scored)",
     "title": "Ensure TLS authentication for Docker daemon is configured (Scored)",
@@ -38,6 +40,7 @@
     "category_hierarchy": [
       "Audit"
     ],
+    "category_hierarchy_short": "GDPR-1.1.5",
     "control_id": "gdpr-1.1.5",
     "description": "Ensure auditing is configured for Docker files and directories - /var/lib/docker (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /var/lib/docker (Automated)",
@@ -55,6 +58,7 @@
     "category_hierarchy": [
       "Audit"
     ],
+    "category_hierarchy_short": "GDPR-1.1.6",
     "control_id": "gdpr-1.1.6",
     "description": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/docker (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/docker (Automated)",
@@ -72,6 +76,7 @@
     "category_hierarchy": [
       "Audit"
     ],
+    "category_hierarchy_short": "GDPR-1.1.12",
     "control_id": "gdpr-1.1.12",
     "description": "1.1.12 Ensure auditing is configured for Dockerfiles and directories - /fenced/mnt/host/etc/containerd/config.toml (Automated)",
     "title": "1.1.12 Ensure auditing is configured for Dockerfiles and directories - /fenced/mnt/host/etc/containerd/config.toml (Automated)",
@@ -89,6 +94,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.16",
     "control_id": "gdpr-3.16",
     "description": "Ensure that the Docker socket file permissions are set to 660 or more restrictively (Automated)",
     "title": "Ensure that the Docker socket file permissions are set to 660 or more restrictively (Automated)",
@@ -106,6 +112,7 @@
     "category_hierarchy": [
       "Audit"
     ],
+    "category_hierarchy_short": "GDPR-1.1.3",
     "control_id": "gdpr-1.1.3",
     "description": "Ensure auditing is configured for the Docker daemon (Automated)",
     "title": "Ensure auditing is configured for the Docker daemon (Automated)",
@@ -123,11 +130,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.12",
     "control_id": "gdpr-3.12",
     "description": "Ensure that the Docker server certificate file permissions are set to 444 or more restrictively (Automated)",
     "title": "Ensure that the Docker server certificate file permissions are set to 444 or more restrictively (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chmod 444 <path to Docker server certificate file>. This sets the file permissions of the Docker server certificate file to 444.",
+    "documentation": "You should run the following command: chmod 444 \u003cpath to Docker server certificate file\u003e. This sets the file permissions of the Docker server certificate file to 444.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.12"
@@ -140,6 +148,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.21",
     "control_id": "gdpr-3.21",
     "description": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file ownership is set to root:root (Automated)",
     "title": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file ownership is set to root:root (Automated)",
@@ -157,11 +166,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.10",
     "control_id": "gdpr-3.10",
     "description": "Ensure that TLS CA certificate file permissions are set to 444 or more restrictively (Automated)",
     "title": "Ensure that TLS CA certificate file permissions are set to 444 or more restrictively (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chmod 444 <path to TLS CA certificate file>. This sets the file permissions on the TLS CA file to 444.",
+    "documentation": "You should run the following command: chmod 444 \u003cpath to TLS CA certificate file\u003e. This sets the file permissions on the TLS CA file to 444.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.10"
@@ -174,11 +184,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.8",
     "control_id": "gdpr-3.8",
     "description": "Ensure that registry certificate file permissions are set to 444 or more restrictively (Automated)",
     "title": "Ensure that registry certificate file permissions are set to 444 or more restrictively (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chmod 444 /fenced/mnt/host/etc/docker/certs.d/<registry-name>/*. This would set the permissions for the registry certificate files to 444.",
+    "documentation": "You should run the following command: chmod 444 /fenced/mnt/host/etc/docker/certs.d/\u003cregistry-name\u003e/*. This would set the permissions for the registry certificate files to 444.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.8"
@@ -191,11 +202,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.2",
     "control_id": "gdpr-3.2",
     "description": "Ensure that docker.service file permissions are appropriately set (Automated)",
     "title": "Ensure that docker.service file permissions are appropriately set (Automated)",
     "tags": {},
-    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.service. If the file does not exist, this recommendation is not applicable. If the file exists, run the command chmod 644 <path> to set the file permissions to 644.",
+    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.service. If the file does not exist, this recommendation is not applicable. If the file exists, run the command chmod 644 \u003cpath\u003e to set the file permissions to 644.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.2"
@@ -208,6 +220,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.19",
     "control_id": "gdpr-3.19",
     "description": "Ensure that the /fenced/mnt/host/etc/default/docker file ownership is set to root:root (Automated)",
     "title": "Ensure that the /fenced/mnt/host/etc/default/docker file ownership is set to root:root (Automated)",
@@ -225,6 +238,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.5",
     "control_id": "gdpr-3.5",
     "description": "Ensure that the /fenced/mnt/host/etc/docker directory ownership is set to root:root (Automated)",
     "title": "Ensure that the /fenced/mnt/host/etc/docker directory ownership is set to root:root (Automated)",
@@ -242,11 +256,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.4",
     "control_id": "gdpr-3.4",
     "description": "Ensure that docker.socket file permissions are set to 644 or more restrictive (Automated)",
     "title": "Ensure that docker.socket file permissions are set to 644 or more restrictive (Automated)",
     "tags": {},
-    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.socket. If the file does not exist, this recommendation is not applicable. If the file does exist, you should run the command chmod 644 <path> to set the file permissions to 644.",
+    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.socket. If the file does not exist, this recommendation is not applicable. If the file does exist, you should run the command chmod 644 \u003cpath\u003e to set the file permissions to 644.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.4"
@@ -259,11 +274,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.14",
     "control_id": "gdpr-3.14",
     "description": "Ensure that the Docker server certificate key file permissions are set to 400 (Automated)",
     "title": "Ensure that the Docker server certificate key file permissions are set to 400 (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chmod 400 <path to Docker server certificate key file>. This sets the Docker server certificate key file permissions to 400.",
+    "documentation": "You should run the following command: chmod 400 \u003cpath to Docker server certificate key file\u003e. This sets the Docker server certificate key file permissions to 400.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.14"
@@ -276,6 +292,7 @@
     "category_hierarchy": [
       "Audit"
     ],
+    "category_hierarchy_short": "GDPR-1.1.4",
     "control_id": "gdpr-1.1.4",
     "description": "Ensure auditing is configured for Docker files and directories -/run/containerd (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories -/run/containerd (Automated)",
@@ -293,11 +310,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.11",
     "control_id": "gdpr-3.11",
     "description": "Ensure that Docker server certificate file ownership is set to root:root (Automated)",
     "title": "Ensure that Docker server certificate file ownership is set to root:root (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chown root:root <path to Docker server certificate file>. This sets the individual ownership and the group ownership for the Docker server certificate file to root.",
+    "documentation": "You should run the following command: chown root:root \u003cpath to Docker server certificate file\u003e. This sets the individual ownership and the group ownership for the Docker server certificate file to root.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.11"
@@ -310,6 +328,7 @@
     "category_hierarchy": [
       "Audit"
     ],
+    "category_hierarchy_short": "GDPR-1.1.11",
     "control_id": "gdpr-1.1.11",
     "description": "Ensure auditing is configured for Dockerfiles and directories - /fenced/mnt/host/etc/docker/daemon.json (Automated)",
     "title": "Ensure auditing is configured for Dockerfiles and directories - /fenced/mnt/host/etc/docker/daemon.json (Automated)",
@@ -327,6 +346,7 @@
     "category_hierarchy": [
       "Docker Daemon Configuration"
     ],
+    "category_hierarchy_short": "GDPR-2.5",
     "control_id": "gdpr-2.5",
     "description": "Ensure insecure registries are not used (Scored)",
     "title": "Ensure insecure registries are not used (Scored)",
@@ -344,6 +364,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.20",
     "control_id": "gdpr-3.20",
     "description": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file permissions are set to 644 or more restrictively (Automated)",
     "title": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file permissions are set to 644 or more restrictively (Automated)",
@@ -361,6 +382,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.17",
     "control_id": "gdpr-3.17",
     "description": "Ensure that the daemon.json file ownership is set to root:root (Automated)",
     "title": "Ensure that the daemon.json file ownership is set to root:root (Automated)",
@@ -378,6 +400,7 @@
     "category_hierarchy": [
       "Audit"
     ],
+    "category_hierarchy_short": "GDPR-1.1.9",
     "control_id": "gdpr-1.1.9",
     "description": "Ensure auditing is configured for Docker files and directories - docker.socket (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - docker.socket (Automated)",
@@ -395,11 +418,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.9",
     "control_id": "gdpr-3.9",
     "description": "Ensure that TLS CA certificate file ownership is set to root:root (Automated)",
     "title": "Ensure that TLS CA certificate file ownership is set to root:root (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chown root:root <path to TLS CA certificate file>. This sets the individual ownership and group ownership for the TLS CA certificate file to root.",
+    "documentation": "You should run the following command: chown root:root \u003cpath to TLS CA certificate file\u003e. This sets the individual ownership and group ownership for the TLS CA certificate file to root.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.9"
@@ -412,6 +436,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.15",
     "control_id": "gdpr-3.15",
     "description": "Ensure that the Docker socket file ownership is set to root:docker (Automated)",
     "title": "Ensure that the Docker socket file ownership is set to root:docker (Automated)",
@@ -429,6 +454,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.22",
     "control_id": "gdpr-3.22",
     "description": "Ensure that the /fenced/mnt/host/etc/default/docker file permissions are set to 644 or more restrictively (Automated)",
     "title": "Ensure that the /fenced/mnt/host/etc/default/docker file permissions are set to 644 or more restrictively (Automated)",
@@ -446,6 +472,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.6",
     "control_id": "gdpr-3.6",
     "description": "Ensure that /fenced/mnt/host/etc/docker directory permissions are set to 755 or more restrictively (Automated)",
     "title": "Ensure that /fenced/mnt/host/etc/docker directory permissions are set to 755 or more restrictively (Automated)",
@@ -463,6 +490,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.18",
     "control_id": "gdpr-3.18",
     "description": "Ensure that daemon.json file permissions are set to 644 or more restrictive (Automated)",
     "title": "Ensure that daemon.json file permissions are set to 644 or more restrictive (Automated)",
@@ -480,11 +508,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.13",
     "control_id": "gdpr-3.13",
     "description": "Ensure that the Docker server certificate key file ownership is set to root:root (Automated)",
     "title": "Ensure that the Docker server certificate key file ownership is set to root:root (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chown root:root <path to Docker server certificate key file>. This sets the individual ownership and group ownership for the Docker server certificate key file to root.",
+    "documentation": "You should run the following command: chown root:root \u003cpath to Docker server certificate key file\u003e. This sets the individual ownership and group ownership for the Docker server certificate key file to root.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.13"
@@ -497,11 +526,12 @@
     "category_hierarchy": [
       "Docker Files"
     ],
+    "category_hierarchy_short": "GDPR-3.7",
     "control_id": "gdpr-3.7",
     "description": "Ensure that registry certificate file ownership is set to root:root (Automated)",
     "title": "Ensure that registry certificate file ownership is set to root:root (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chown root:root /fenced/mnt/host/etc/docker/certs.d/<registry-name>/*. This would set the individual ownership and group ownership for the registry certificate files to root.",
+    "documentation": "You should run the following command: chown root:root /fenced/mnt/host/etc/docker/certs.d/\u003cregistry-name\u003e/*. This would set the individual ownership and group ownership for the registry certificate files to root.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.7"
@@ -514,6 +544,7 @@
     "category_hierarchy": [
       "Docker Daemon Configuration"
     ],
+    "category_hierarchy_short": "GDPR-2.14",
     "control_id": "gdpr-2.14",
     "description": "Ensure containers are restricted from acquiring new privileges (Scored)",
     "title": "Ensure containers are restricted from acquiring new privileges (Scored)",
@@ -531,6 +562,7 @@
     "category_hierarchy": [
       "Audit"
     ],
+    "category_hierarchy_short": "GDPR-1.1.10",
     "control_id": "gdpr-1.1.10",
     "description": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/default/docker (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/default/docker (Automated)",
@@ -548,6 +580,7 @@
     "category_hierarchy": [
       "Audit"
     ],
+    "category_hierarchy_short": "GDPR-1.1.7",
     "control_id": "gdpr-1.1.7",
     "description": "Ensure auditing is configured for Docker files and directories - docker.service (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - docker.service (Automated)",

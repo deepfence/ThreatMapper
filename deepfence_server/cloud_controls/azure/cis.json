@@ -6,6 +6,7 @@
       "1 Identity and Access Management",
       "1.1 Security Defaults"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.1.1",
     "control_id": "azure_compliance.control.cis_v200_1_1_1",
     "description": "Security defaults in Azure Active Directory (Azure AD) make it easier to be secure and help protect your organization. Security defaults contain preconfigured security settings for common attacks. Security defaults is available to everyone. The goal is to ensure that all organizations have a basic level of security enabled at no extra cost. You may turn on security defaults in the Azure portal.",
     "title": "1.1.1 Ensure Security Defaults is enabled on Azure Active Directory",
@@ -36,6 +37,7 @@
       "1 Identity and Access Management",
       "1.1 Security Defaults"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.1.2",
     "control_id": "azure_compliance.control.cis_v200_1_1_2",
     "description": "Enable multi-factor authentication for all roles, groups, and users that have write access or permissions to Azure resources.",
     "title": "1.1.2 Ensure that 'Multi-Factor Auth Status' is 'Enabled' for all Privileged Users",
@@ -66,6 +68,7 @@
       "1 Identity and Access Management",
       "1.1 Security Defaults"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.1.3",
     "control_id": "azure_compliance.control.cis_v200_1_1_3",
     "description": "Enable multi-factor authentication for all non-privileged users.",
     "title": "1.1.3 Ensure that 'Multi-Factor Auth Status' is 'Enabled' for all Non-Privileged Users",
@@ -96,6 +99,7 @@
       "1 Identity and Access Management",
       "1.1 Security Defaults"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.1.4",
     "control_id": "azure_compliance.control.cis_v200_1_1_4",
     "description": "Do not allow users to remember multi-factor authentication on devices.",
     "title": "1.1.4 Ensure that 'Allow users to remember multi-factor authentication on devices they trust' is Disabled",
@@ -126,6 +130,7 @@
       "1 Identity and Access Management",
       "1.2 Conditional Access"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.2.1",
     "control_id": "azure_compliance.control.cis_v200_1_2_1",
     "description": "Azure Active Directory Conditional Access allows an organization to configure Named locations and configure whether those locations are trusted or untrusted. These settings provide organizations the means to specify Geographical locations for use in conditional access policies, or define actual IP addresses and IP ranges and whether or not those IP addresses and/or ranges are trusted by the organization.",
     "title": "1.2.1 Ensure Trusted Locations Are Defined",
@@ -156,6 +161,7 @@
       "1 Identity and Access Management",
       "1.2 Conditional Access"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.2.2",
     "control_id": "azure_compliance.control.cis_v200_1_2_2",
     "description": "Conditional Access Policies can be used to block access from geographic locations that are deemed out-of-scope for your organization or application. The scope and variables for this policy should be carefully examined and defined.",
     "title": "1.2.2 Ensure that an exclusionary Geographic Access Policy is considered",
@@ -186,6 +192,7 @@
       "1 Identity and Access Management",
       "1.2 Conditional Access"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.2.3",
     "control_id": "azure_compliance.control.cis_v200_1_2_3",
     "description": "For designated users, they will be prompted to use their multi-factor authentication (MFA) process on login.",
     "title": "1.2.3 Ensure that A Multi-factor Authentication Policy Exists for Administrative Groups",
@@ -216,6 +223,7 @@
       "1 Identity and Access Management",
       "1.2 Conditional Access"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.2.4",
     "control_id": "azure_compliance.control.cis_v200_1_2_4",
     "description": "For designated users, they will be prompted to use their multi-factor authentication (MFA) process on logins.",
     "title": "1.2.4 Ensure that A Multi-factor Authentication Policy Exists for All Users",
@@ -246,6 +254,7 @@
       "1 Identity and Access Management",
       "1.2 Conditional Access"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.2.5",
     "control_id": "azure_compliance.control.cis_v200_1_2_5",
     "description": "For designated users, they will be prompted to use their multi-factor authentication (MFA) process on login.",
     "title": "1.2.5 Ensure Multi-factor Authentication is Required for Risky Sign-ins",
@@ -276,6 +285,7 @@
       "1 Identity and Access Management",
       "1.2 Conditional Access"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.2.6",
     "control_id": "azure_compliance.control.cis_v200_1_2_6",
     "description": "For designated users, they will be prompted to use their multi-factor authentication (MFA) process on logins.",
     "title": "1.2.6 Ensure Multi-factor Authentication is Required for Azure Management",
@@ -305,6 +315,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.3",
     "control_id": "azure_compliance.control.cis_v200_1_3",
     "description": "Require administrators or appropriately delegated users to create new tenants.",
     "title": "1.3 Ensure that 'Users can create Azure AD Tenants' is set to 'No'",
@@ -333,6 +344,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.4",
     "control_id": "azure_compliance.control.cis_v200_1_4",
     "description": "This recommendation extends guest access review by utilizing the Azure AD Privileged Identity Management feature provided in Azure AD Premium P2. Azure AD is extended to include Azure AD B2B collaboration, allowing you to invite people from outside your organization to be guest users in your cloud account and sign in with their own work, school, or social identities.",
     "title": "1.4 Ensure Access Review is Set Up for External Users in Azure AD Privileged Identity Management",
@@ -361,6 +373,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.5",
     "control_id": "azure_compliance.control.cis_v200_1_5",
     "description": "Azure AD is extended to include Azure AD B2B collaboration, allowing you to invite people from outside your organization to be guest users in your cloud account and sign in with their own work, school, or social identities. Guest users allow you to share your company's applications and services with users from any other organization, while maintaining control over your own corporate data. Work with external partners, large or small, even if they don't have Azure AD or an IT department. A simple invitation and redemption process lets partners use their own credentials to access your company's resources as a guest user. Guest users in every subscription should be review on a regular basis to ensure that inactive and unneeded accounts are removed.",
     "title": "1.5 Ensure Guest Users Are Reviewed on a Regular Basis",
@@ -389,6 +402,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.6",
     "control_id": "azure_compliance.control.cis_v200_1_6",
     "description": "Ensures that two alternate forms of identification are provided before allowing a password reset.",
     "title": "1.6 Ensure That 'Number of methods required to reset' is set to '2'",
@@ -417,6 +431,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.7",
     "control_id": "azure_compliance.control.cis_v200_1_7",
     "description": "Microsoft Azure provides a Global Banned Password policy that applies to Azure administrative and normal user accounts. This is not applied to user accounts that are synced from an on-premise Active Directory unless Azure AD Connect is used and you enable EnforceCloudPasswordPolicyForPasswordSyncedUsers. Please see the list in default values on the specifics of this policy. To further password security, it is recommended to further define a custom banned password policy.",
     "title": "1.7 Ensure that a Custom Bad Password List is set to 'Enforce' for your Organization",
@@ -445,6 +460,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.8",
     "control_id": "azure_compliance.control.cis_v200_1_8",
     "description": "Ensure that the number of days before users are asked to re-confirm their authentication information is not set to 0.",
     "title": "1.8 Ensure that 'Number of days before users are asked to re- confirm their authentication information' is not set to '0'",
@@ -473,6 +489,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.9",
     "control_id": "azure_compliance.control.cis_v200_1_9",
     "description": "Ensure that users are notified on their primary and secondary emails on password resets.",
     "title": "1.9 Ensure that 'Notify users on password resets?' is set to 'Yes'",
@@ -501,6 +518,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.10",
     "control_id": "azure_compliance.control.cis_v200_1_10",
     "description": "Ensure that all Global Administrators are notified if any other administrator resets their password.",
     "title": "1.10 Ensure That 'Notify all admins when other admins reset their password?' is set to 'Yes'",
@@ -529,6 +547,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.11",
     "control_id": "azure_compliance.control.cis_v200_1_11",
     "description": "Require administrators to provide consent for applications before use.",
     "title": "1.11 Ensure 'User consent for applications' is set to 'Do not allow user consent'",
@@ -557,6 +576,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.12",
     "control_id": "azure_compliance.control.cis_v200_1_12",
     "description": "Allow users to provide consent for selected permissions when a request is coming from a verified publisher.",
     "title": "1.12 Ensure 'User consent for applications' Is Set To 'Allow for Verified Publishers'",
@@ -585,6 +605,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.13",
     "control_id": "azure_compliance.control.cis_v200_1_13",
     "description": "Require administrators to provide consent for the apps before use.",
     "title": "1.13 Ensure that 'Users can add gallery apps to My Apps' is set to 'No'",
@@ -613,6 +634,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.14",
     "control_id": "azure_compliance.control.cis_v200_1_14",
     "description": "Require administrators or appropriately delegated users to register third-party applications.",
     "title": "1.14 Ensure That 'Users Can Register Applications' Is Set to 'No'",
@@ -641,6 +663,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.15",
     "control_id": "azure_compliance.control.cis_v200_1_15",
     "description": "Limit guest user permissions.",
     "title": "1.15 Ensure That 'Guest users access restrictions' is set to 'Guest user access is restricted to properties and memberships of their own directory objects'",
@@ -669,6 +692,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.16",
     "control_id": "azure_compliance.control.cis_v200_1_16",
     "description": "Restrict invitations to users with specific administrative roles only.",
     "title": "1.16 Ensure that 'Guest invite restrictions' is set to 'Only users assigned to specific admin roles can invite guest users'",
@@ -697,6 +721,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.17",
     "control_id": "azure_compliance.control.cis_v200_1_17",
     "description": "Restrict access to the Azure AD administration portal to administrators only.",
     "title": "1.17 Ensure That 'Restrict access to Azure AD administration portal' is Set to 'Yes'",
@@ -725,6 +750,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.18",
     "control_id": "azure_compliance.control.cis_v200_1_18",
     "description": "Restricts group creation to administrators with permissions only.",
     "title": "1.18 Ensure that 'Restrict user ability to access groups features in the Access Pane' is Set to 'Yes'",
@@ -753,6 +779,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.19",
     "control_id": "azure_compliance.control.cis_v200_1_19",
     "description": "Restrict security group creation to administrators only.",
     "title": "1.19 Ensure that 'Users can create security groups in Azure portals, API or PowerShell' is set to 'No'",
@@ -781,6 +808,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.20",
     "control_id": "azure_compliance.control.cis_v200_1_20",
     "description": "Restrict security group management to administrators only.",
     "title": "1.20 Ensure that 'Owners can manage group membership requests in the Access Panel' is set to 'No'",
@@ -809,6 +837,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.21",
     "control_id": "azure_compliance.control.cis_v200_1_21",
     "description": "Restrict Microsoft 365 group creation to administrators only.",
     "title": "1.21 Ensure that 'Users can create Microsoft 365 groups in Azure portals, API or PowerShell' is set to 'No'",
@@ -837,6 +866,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.22",
     "control_id": "azure_compliance.control.cis_v200_1_22",
     "description": "Joining or registering devices to the active directory should require Multi-factor authentication.",
     "title": "1.22 Ensure that 'Require Multi-Factor Authentication to register or join devices with Azure AD' is set to 'Yes'",
@@ -865,6 +895,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.23",
     "control_id": "azure_compliance.control.cis_v200_1_23",
     "description": "The principle of least privilege should be followed and only necessary privileges should be assigned instead of allowing full administrative access.",
     "title": "1.23 Ensure That No Custom Subscription Administrator Roles Exist",
@@ -893,6 +924,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.24",
     "control_id": "azure_compliance.control.cis_v200_1_24",
     "description": "Resource locking is a powerful protection mechanism that can prevent inadvertent modification/deletion of resources within Azure subscriptions/Resource Groups and is a recommended NIST configuration.",
     "title": "1.24 Ensure a Custom Role is Assigned Permissions for Administering Resource Locks",
@@ -921,6 +953,7 @@
       "CIS v2.0.0",
       "1 Identity and Access Management"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 1.25",
     "control_id": "azure_compliance.control.cis_v200_1_25",
     "description": "Users who are set as subscription owners are able to make administrative changes to the subscriptions and move them into and out of Azure Active Directories.",
     "title": "1.25 Ensure That 'Subscription Entering AAD Directory' and 'Subscription Leaving AAD Directory' Is Set To 'Permit No One'",
@@ -950,6 +983,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.1",
     "control_id": "azure_compliance.control.cis_v200_2_1_1",
     "description": "Turning on Microsoft Defender for Servers enables threat detection for Servers, providing threat intelligence, anomaly detection, and behavior analytics in the Microsoft Defender for Cloud.",
     "title": "2.1.1 Ensure That Microsoft Defender for Servers Is Set to 'On'",
@@ -980,6 +1014,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.2",
     "control_id": "azure_compliance.control.cis_v200_2_1_2",
     "description": "Turning on Microsoft Defender for App Service enables threat detection for App Service, providing threat intelligence, anomaly detection, and behavior analytics in the Microsoft Defender for Cloud.",
     "title": "2.1.2 Ensure That Microsoft Defender for App Services Is Set To 'On'",
@@ -1010,6 +1045,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.3",
     "control_id": "azure_compliance.control.cis_v200_2_1_3",
     "description": "Turning on Microsoft Defender for Databases enables threat detection for the instances running your database software. This provides threat intelligence, anomaly detection, and behavior analytics in the Azure Microsoft Defender for Cloud. Instead of being enabled on services like Platform as a Service (PaaS), this implementation will run within your instances as Infrastructure as a Service (IaaS) on the Operating Systems hosting your databases.",
     "title": "2.1.3 Ensure That Microsoft Defender for Databases Is Set To 'On'",
@@ -1040,6 +1076,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.4",
     "control_id": "azure_compliance.control.cis_v200_2_1_4",
     "description": "Turning on Microsoft Defender for Azure SQL Databases enables threat detection for Azure SQL database servers, providing threat intelligence, anomaly detection, and behavior analytics in the Microsoft Defender for Cloud.",
     "title": "2.1.4 Ensure That Microsoft Defender for Azure SQL Databases Is Set To 'On'",
@@ -1070,6 +1107,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.5",
     "control_id": "azure_compliance.control.cis_v200_2_1_5",
     "description": "Turning on Microsoft Defender for SQL servers on machines enables threat detection for SQL servers on machines, providing threat intelligence, anomaly detection, and behavior analytics in the Microsoft Defender for Cloud.",
     "title": "2.1.5 Ensure That Microsoft Defender for SQL Servers on Machines Is Set To 'On'",
@@ -1100,6 +1138,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.6",
     "control_id": "azure_compliance.control.cis_v200_2_1_6",
     "description": "Turning on Microsoft Defender for Open-source relational databases enables threat detection for Open-source relational databases, providing threat intelligence, anomaly detection, and behavior analytics in the Microsoft Defender for Cloud.",
     "title": "2.1.6 Ensure That Microsoft Defender for Open-Source Relational Databases Is Set To 'On'",
@@ -1130,6 +1169,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.7",
     "control_id": "azure_compliance.control.cis_v200_2_1_7",
     "description": "Turning on Microsoft Defender for Storage enables threat detection for Storage, providing threat intelligence, anomaly detection, and behavior analytics in the Microsoft Defender for Cloud.",
     "title": "2.1.7 Ensure That Microsoft Defender for Storage Is Set To 'On'",
@@ -1160,6 +1200,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.8",
     "control_id": "azure_compliance.control.cis_v200_2_1_8",
     "description": "Turning on Microsoft Defender for Containers enables threat detection for Container Registries including Kubernetes, providing threat intelligence, anomaly detection, and behavior analytics in the Microsoft Defender for Cloud.",
     "title": "2.1.8 Ensure That Microsoft Defender for Containers Is Set To 'On'",
@@ -1190,6 +1231,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.9",
     "control_id": "azure_compliance.control.cis_v200_2_1_9",
     "description": "Microsoft Defender for Azure Cosmos DB scans all incoming network requests for threats to your Azure Cosmos DB resources.",
     "title": "2.1.9 Ensure That Microsoft Defender for Azure Cosmos DB Is Set To 'On'",
@@ -1220,6 +1262,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.10",
     "control_id": "azure_compliance.control.cis_v200_2_1_10",
     "description": "Turning on Microsoft Defender for Key Vault enables threat detection for Key Vault, providing threat intelligence, anomaly detection, and behavior analytics in the Microsoft Defender for Cloud.",
     "title": "2.1.10 Ensure That Microsoft Defender for Key Vault Is Set To 'On'",
@@ -1250,6 +1293,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.11",
     "control_id": "azure_compliance.control.cis_v200_2_1_11",
     "description": "Microsoft Defender for DNS scans all network traffic exiting from within a subscription.",
     "title": "2.1.11 Ensure That Microsoft Defender for DNS Is Set To 'On'",
@@ -1280,6 +1324,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.12",
     "control_id": "azure_compliance.control.cis_v200_2_1_12",
     "description": "Microsoft Defender for Resource Manager scans incoming administrative requests to change your infrastructure from both CLI and the Azure portal.",
     "title": "2.1.12 Ensure That Microsoft Defender for Resource Manager Is Set To 'On'",
@@ -1310,6 +1355,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.13",
     "control_id": "azure_compliance.control.cis_v200_2_1_13",
     "description": "Ensure that the latest OS patches for all virtual machines are applied.",
     "title": "2.1.13 Ensure that Microsoft Defender Recommendation for 'Apply system updates' status is 'Completed'",
@@ -1340,6 +1386,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.14",
     "control_id": "azure_compliance.control.cis_v200_2_1_14",
     "description": "None of the settings offered by ASC Default policy should be set to effect Disabled.",
     "title": "2.1.14 Ensure Any of the ASC Default Policy Settings are Not Set to 'Disabled'",
@@ -1370,6 +1417,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.15",
     "control_id": "azure_compliance.control.cis_v200_2_1_15",
     "description": "Enable automatic provisioning of the monitoring agent to collect security data.",
     "title": "2.1.15 Ensure that Auto provisioning of 'Log Analytics agent for Azure VMs' is Set to 'On'",
@@ -1400,6 +1448,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.16",
     "control_id": "azure_compliance.control.cis_v200_2_1_16",
     "description": "Enable automatic provisioning of vulnerability assessment for machines on both Azure and hybrid (Arc enabled) machines.",
     "title": "2.1.16 Ensure that Auto provisioning of 'Vulnerability assessment for machines' is Set to 'On'",
@@ -1430,6 +1479,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.17",
     "control_id": "azure_compliance.control.cis_v200_2_1_17",
     "description": "Enable automatic provisioning of the Microsoft Defender for Containers components.",
     "title": "2.1.17 Ensure that Auto provisioning of 'Microsoft Defender for Containers components' is Set to 'On'",
@@ -1460,6 +1510,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.18",
     "control_id": "azure_compliance.control.cis_v200_2_1_18",
     "description": "Enable security alert emails to subscription owners.",
     "title": "2.1.18 Ensure That 'All users with the following roles' is set to 'Owner'",
@@ -1490,6 +1541,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.19",
     "control_id": "azure_compliance.control.cis_v200_2_1_19",
     "description": "Microsoft Defender for Cloud emails the subscription owners whenever a high-severity alert is triggered for their subscription. You should provide a security contact email address as an additional email address.",
     "title": "2.1.19 Ensure 'Additional email addresses' is Configured with a Security Contact Email",
@@ -1520,6 +1572,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.20",
     "control_id": "azure_compliance.control.cis_v200_2_1_20",
     "description": "Enables emailing security alerts to the subscription owner or other designated security contact.",
     "title": "2.1.20 Ensure That 'Notify about alerts with the following severity' is Set to 'High'",
@@ -1550,6 +1603,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.21",
     "control_id": "azure_compliance.control.cis_v200_2_1_21",
     "description": "This integration setting enables Microsoft Defender for Cloud Apps (formerly 'Microsoft Cloud App Security' or 'MCAS' - see additional info) to communicate with Microsoft Defender for Cloud.",
     "title": "2.1.21 Ensure that Microsoft Defender for Cloud Apps integration with Microsoft Defender for Cloud is Selected",
@@ -1580,6 +1634,7 @@
       "2 Microsoft Defender",
       "2.1 Microsoft Defender for Cloud"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.1.22",
     "control_id": "azure_compliance.control.cis_v200_2_1_22",
     "description": "This integration setting enables Microsoft Defender for Endpoint (formerly 'Advanced Threat Protection' or 'ATP' or 'WDATP' - see additional info) to communicate with Microsoft Defender for Cloud.",
     "title": "2.1.22 Ensure that Microsoft Defender for Endpoint integration with Microsoft Defender for Cloud is selected",
@@ -1610,6 +1665,7 @@
       "2 Microsoft Defender",
       "2.2 Microsoft Defender for IoT"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 2.2.1",
     "control_id": "azure_compliance.control.cis_v200_2_2_1",
     "description": "Microsoft Defender for IoT acts as a central security hub for IoT devices within your organization.",
     "title": "2.2.1 Ensure That Microsoft Defender for IoT Hub Is Set To 'On'",
@@ -1639,6 +1695,7 @@
       "CIS v2.0.0",
       "2 Microsoft Defender"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - ",
     "control_id": "azure_compliance.benchmark.cis_v200_2_3",
     "description": "",
     "title": "2.3 Microsoft Defender for External Attack Surface Monitoring",
@@ -1665,6 +1722,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.1",
     "control_id": "azure_compliance.control.cis_v200_3_1",
     "description": "Enable data encryption in transit.",
     "title": "3.1 Ensure that 'Secure transfer required' is set to 'Enabled'",
@@ -1693,6 +1751,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.2",
     "control_id": "azure_compliance.control.cis_v200_3_2",
     "description": "Enabling encryption at the hardware level on top of the default software encryption for Storage Accounts accessing Azure storage solutions.",
     "title": "3.2 Ensure that 'Enable Infrastructure Encryption' for Each Storage Account in Azure Storage is Set to 'enabled'",
@@ -1721,6 +1780,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.3",
     "control_id": "azure_compliance.control.cis_v200_3_3",
     "description": "Access Keys authenticate application access requests to data contained in Storage Accounts. A periodic rotation of these keys is recommended to ensure that potentially compromised keys cannot result in a long-term exploitable credential. The 'Rotation Reminder' is an automatic reminder feature for a manual procedure.",
     "title": "3.3 Ensure that 'Enable key rotation reminders' is enabled for each Storage Account",
@@ -1749,6 +1809,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.4",
     "control_id": "azure_compliance.control.cis_v200_3_4",
     "description": "For increased security, regenerate storage account access keys periodically.",
     "title": "3.4 Ensure that Storage Account Access Keys are Periodically Regenerated",
@@ -1777,6 +1838,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.5",
     "control_id": "azure_compliance.control.cis_v200_3_5",
     "description": "The Storage Queue service stores messages that may be read by any client who has access to the storage account. A queue can contain an unlimited number of messages, each of which can be up to 64KB in size using version 2011-08-18 or newer. Storage Logging happens server-side and allows details for both successful and failed requests to be recorded in the storage account.",
     "title": "3.5 Ensure Storage Logging is Enabled for Queue Service for 'Read', 'Write', and 'Delete' requests",
@@ -1805,6 +1867,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.6",
     "control_id": "azure_compliance.control.cis_v200_3_6",
     "description": "Expire shared access signature tokens within an hour.",
     "title": "3.6 Ensure that Shared Access Signature Tokens Expire Within an Hour",
@@ -1833,6 +1896,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.7",
     "control_id": "azure_compliance.control.cis_v200_3_7",
     "description": "Disallowing public access for a storage account overrides the public access settings for individual containers in that storage account.",
     "title": "3.7 Ensure that 'Public access level' is disabled for storage accounts with blob containers",
@@ -1861,6 +1925,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.8",
     "control_id": "azure_compliance.control.cis_v200_3_8",
     "description": "Restricting default network access helps to provide a new layer of security, since storage accounts accept connections from clients on any network. To limit access to selected networks, the default action must be changed.",
     "title": "3.8 Ensure Default Network Access Rule for Storage Accounts is Set to Deny",
@@ -1889,6 +1954,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.9",
     "control_id": "azure_compliance.control.cis_v200_3_9",
     "description": "Some Azure services that interact with storage accounts operate from networks that can't be granted access through network rules. To help this type of service work as intended, allow the set of trusted Azure services to bypass the network rules. These services will then use strong authentication to access the storage account.",
     "title": "3.9 Ensure 'Allow Azure services on the trusted services list to access this storage account' is Enabled for Storage Account Access",
@@ -1917,6 +1983,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.10",
     "control_id": "azure_compliance.control.cis_v200_3_10",
     "description": "Use private endpoints for your Azure Storage accounts to allow clients and services to securely access data located over a network via an encrypted Private Link. To do this, the private endpoint uses an IP address from the VNet for each service. Network traffic between disparate services securely traverses encrypted over the VNet.",
     "title": "3.10 Ensure Private Endpoints are used to access Storage Accounts",
@@ -1945,6 +2012,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.11",
     "control_id": "azure_compliance.control.cis_v200_3_11",
     "description": "The Azure Storage blobs contain data like ePHI or Financial, which can be secret or personal. Data that is erroneously modified or deleted by an application or other storage account user will cause data loss or unavailability.",
     "title": "3.11 Ensure Soft Delete is Enabled for Azure Containers and Blob Storage",
@@ -1973,6 +2041,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.12",
     "control_id": "azure_compliance.control.cis_v200_3_12",
     "description": "Enable sensitive data encryption at rest using Customer Managed Keys rather than Microsoft Managed keys.",
     "title": "3.12 Ensure Storage for Critical Data are Encrypted with Customer Managed Keys",
@@ -2001,6 +2070,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.13",
     "control_id": "azure_compliance.control.cis_v200_3_13",
     "description": "The Storage Blob service provides scalable, cost-efficient object storage in the cloud. Storage Logging happens server-side and allows details for both successful and failed requests to be recorded in the storage account. These logs allow users to see the details of read, write, and delete operations against the blobs. Storage Logging log entries contain the following information about individual requests: timing information such as start time, end-to-end latency, and server latency; authentication details; concurrency information; and the sizes of the request and response messages.",
     "title": "3.13 Ensure Storage logging is Enabled for Blob Service for 'Read', 'Write', and 'Delete' requests",
@@ -2029,6 +2099,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.14",
     "control_id": "azure_compliance.control.cis_v200_3_14",
     "description": "Azure Table storage is a service that stores structured NoSQL data in the cloud, providing a key/attribute store with a schema-less design. Storage Logging happens server-side and allows details for both successful and failed requests to be recorded in the storage account. These logs allow users to see the details of read, write, and delete operations against the tables. Storage Logging log entries contain the following information about individual requests: timing information such as start time, end-to-end latency, and server latency; authentication details; concurrency information; and the sizes of the request and response messages.",
     "title": "3.14 Ensure Storage Logging is Enabled for Table Service for 'Read', 'Write', and 'Delete' Requests",
@@ -2057,6 +2128,7 @@
       "CIS v2.0.0",
       "3 Storage Accounts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 3.15",
     "control_id": "azure_compliance.control.cis_v200_3_15",
     "description": "In some cases, Azure Storage sets the minimum TLS version to be version 1.0 by default. TLS 1.0 is a legacy version and has known vulnerabilities. This minimum TLS version can be configured to be later protocols such as TLS 1.2.",
     "title": "3.15 Ensure the 'Minimum TLS version' for storage accounts is set to 'Version 1.2'",
@@ -2086,6 +2158,7 @@
       "4 Database Services",
       "4.1 SQL Server - Auditing"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.1.1",
     "control_id": "azure_compliance.control.cis_v200_4_1_1",
     "description": "Enable auditing on SQL Servers.",
     "title": "4.1.1 Ensure that 'Auditing' is set to 'On'",
@@ -2116,6 +2189,7 @@
       "4 Database Services",
       "4.1 SQL Server - Auditing"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.1.2",
     "control_id": "azure_compliance.control.cis_v200_4_1_2",
     "description": "Ensure that no SQL Databases allow ingress from 0.0.0.0/0 (ANY IP).",
     "title": "4.1.2 Ensure no Azure SQL Databases allow ingress from 0.0.0.0/0 (ANY IP)",
@@ -2146,6 +2220,7 @@
       "4 Database Services",
       "4.1 SQL Server - Auditing"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.1.3",
     "control_id": "azure_compliance.control.cis_v200_4_1_3",
     "description": "Transparent Data Encryption (TDE) with Customer-managed key support provides increased transparency and control over the TDE Protector, increased security with an HSM-backed external service, and promotion of separation of duties.",
     "title": "4.1.3 Ensure SQL server's Transparent Data Encryption (TDE) protector is encrypted with Customer-managed key",
@@ -2176,6 +2251,7 @@
       "4 Database Services",
       "4.1 SQL Server - Auditing"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.1.4",
     "control_id": "azure_compliance.control.cis_v200_4_1_4",
     "description": "Use Azure Active Directory Authentication for authentication with SQL Database to manage credentials in a single place.",
     "title": "4.1.4 Ensure that Azure Active Directory Admin is Configured for SQL Servers",
@@ -2206,6 +2282,7 @@
       "4 Database Services",
       "4.1 SQL Server - Auditing"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.1.5",
     "control_id": "azure_compliance.control.cis_v200_4_1_5",
     "description": "Enable Transparent Data Encryption on every SQL server.",
     "title": "4.1.5 Ensure that 'Data encryption' is set to 'On' on a SQL Database",
@@ -2236,6 +2313,7 @@
       "4 Database Services",
       "4.1 SQL Server - Auditing"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.1.6",
     "control_id": "azure_compliance.control.cis_v200_4_1_6",
     "description": "SQL Server Audit Retention should be configured to be greater than 90 days.",
     "title": "4.1.6 Ensure that 'Auditing' Retention is 'greater than 90 days'",
@@ -2266,6 +2344,7 @@
       "4 Database Services",
       "4.2 SQL Server - Microsoft Defender for SQL"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.2.1",
     "control_id": "azure_compliance.control.cis_v200_4_2_1",
     "description": "Enable \"Azure Defender for SQL\" on critical SQL Servers.",
     "title": "4.2.1 Ensure that Microsoft Defender for SQL is set to 'On' for critical SQL Servers",
@@ -2296,6 +2375,7 @@
       "4 Database Services",
       "4.2 SQL Server - Microsoft Defender for SQL"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.2.2",
     "control_id": "azure_compliance.control.cis_v200_4_2_2",
     "description": "Enable Vulnerability Assessment (VA) service scans for critical SQL servers and corresponding SQL databases.",
     "title": "4.2.2 Ensure that Vulnerability Assessment (VA) is enabled on a SQL server by setting a Storage Account",
@@ -2326,6 +2406,7 @@
       "4 Database Services",
       "4.2 SQL Server - Microsoft Defender for SQL"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.2.3",
     "control_id": "azure_compliance.control.cis_v200_4_2_3",
     "description": "Enable Vulnerability Assessment (VA) Periodic recurring scans for critical SQL servers and corresponding SQL databases.",
     "title": "4.2.3 Ensure that Vulnerability Assessment (VA) setting 'Periodic recurring scans' is set to 'on' for each SQL server",
@@ -2356,6 +2437,7 @@
       "4 Database Services",
       "4.2 SQL Server - Microsoft Defender for SQL"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.2.4",
     "control_id": "azure_compliance.control.cis_v200_4_2_4",
     "description": "Configure 'Send scan reports to' with email ids of concerned data owners/stakeholders for a critical SQL servers.",
     "title": "4.2.4 Ensure that Vulnerability Assessment (VA) setting 'Send scan reports to' is configured for a SQL server",
@@ -2386,6 +2468,7 @@
       "4 Database Services",
       "4.2 SQL Server - Microsoft Defender for SQL"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.2.5",
     "control_id": "azure_compliance.control.cis_v200_4_2_5",
     "description": "Enable Vulnerability Assessment (VA) setting 'Also send email notifications to admins and subscription owners'.",
     "title": "4.2.5 Ensure that Vulnerability Assessment (VA) setting 'Also send email notifications to admins and subscription owners' is set for each SQL Server",
@@ -2416,6 +2499,7 @@
       "4 Database Services",
       "4.3 PostgreSQL Database Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.3.1",
     "control_id": "azure_compliance.control.cis_v200_4_3_1",
     "description": "Enable SSL connection on PostgreSQL Servers.",
     "title": "4.3.1 Ensure 'Enforce SSL connection' is set to 'ENABLED' for PostgreSQL Database Server",
@@ -2446,6 +2530,7 @@
       "4 Database Services",
       "4.3 PostgreSQL Database Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.3.2",
     "control_id": "azure_compliance.control.cis_v200_4_3_2",
     "description": "Enable log_checkpoints on PostgreSQL Servers.",
     "title": "4.3.2 Ensure Server Parameter 'log_checkpoints' is set to 'ON' for PostgreSQL Database Server",
@@ -2476,6 +2561,7 @@
       "4 Database Services",
       "4.3 PostgreSQL Database Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.3.3",
     "control_id": "azure_compliance.control.cis_v200_4_3_3",
     "description": "Enable log_connections on PostgreSQL Servers.",
     "title": "4.3.3 Ensure server parameter 'log_connections' is set to 'ON' for PostgreSQL Database Server",
@@ -2506,6 +2592,7 @@
       "4 Database Services",
       "4.3 PostgreSQL Database Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.3.4",
     "control_id": "azure_compliance.control.cis_v200_4_3_4",
     "description": "Enable log_disconnections on PostgreSQL Servers.",
     "title": "4.3.4 Ensure server parameter 'log_disconnections' is set to 'ON' for PostgreSQL Database Server",
@@ -2536,6 +2623,7 @@
       "4 Database Services",
       "4.3 PostgreSQL Database Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.3.5",
     "control_id": "azure_compliance.control.cis_v200_4_3_5",
     "description": "Enable connection_throttling on PostgreSQL Servers.",
     "title": "4.3.5 Ensure server parameter 'connection_throttling' is set to 'ON' for PostgreSQL Database Server",
@@ -2566,6 +2654,7 @@
       "4 Database Services",
       "4.3 PostgreSQL Database Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.3.6",
     "control_id": "azure_compliance.control.cis_v200_4_3_6",
     "description": "Ensure log_retention_days on PostgreSQL Servers is set to an appropriate value.",
     "title": "4.3.6 Ensure Server Parameter 'log_retention_days' is greater than 3 days for PostgreSQL Database Server",
@@ -2596,6 +2685,7 @@
       "4 Database Services",
       "4.3 PostgreSQL Database Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.3.7",
     "control_id": "azure_compliance.control.cis_v200_4_3_7",
     "description": "Disable access from Azure services to PostgreSQL Database Server.",
     "title": "4.3.7 Ensure 'Allow access to Azure services' for PostgreSQL Database Server is disabled",
@@ -2626,6 +2716,7 @@
       "4 Database Services",
       "4.3 PostgreSQL Database Server"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.3.8",
     "control_id": "azure_compliance.control.cis_v200_4_3_8",
     "description": "Azure Database for PostgreSQL servers should be created with 'infrastructure double encryption' enabled.",
     "title": "4.3.8 Ensure 'Infrastructure double encryption' for PostgreSQL Database Server is 'Enabled'",
@@ -2656,6 +2747,7 @@
       "4 Database Services",
       "4.4 MySQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.4.1",
     "control_id": "azure_compliance.control.cis_v200_4_4_1",
     "description": "Enable SSL connection on MySQL Servers.",
     "title": "4.4.1 Ensure 'Enforce SSL connection' is set to 'Enabled' for Standard MySQL Database Server",
@@ -2686,6 +2778,7 @@
       "4 Database Services",
       "4.4 MySQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.4.2",
     "control_id": "azure_compliance.control.cis_v200_4_4_2",
     "description": "Ensure TLS version on MySQL flexible servers is set to the default value.",
     "title": "4.4.2 Ensure 'TLS Version' is set to 'TLSV1.2' for MySQL flexible Database Server",
@@ -2716,6 +2809,7 @@
       "4 Database Services",
       "4.4 MySQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.4.3",
     "control_id": "azure_compliance.control.cis_v200_4_4_3",
     "description": "Enable audit_log_enabled on MySQL Servers.",
     "title": "4.4.3 Ensure server parameter 'audit_log_enabled' is set to 'ON' for MySQL Database Server",
@@ -2746,6 +2840,7 @@
       "4 Database Services",
       "4.4 MySQL Database"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.4.4",
     "control_id": "azure_compliance.control.cis_v200_4_4_4",
     "description": "Set audit_log_enabled to include CONNECTION on MySQL Servers.",
     "title": "4.4.4 Ensure server parameter 'audit_log_events' has 'CONNECTION' set for MySQL Database Server",
@@ -2776,6 +2871,7 @@
       "4 Database Services",
       "4.5 Cosmos DB"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.5.1",
     "control_id": "azure_compliance.control.cis_v200_4_5_1",
     "description": "Limiting your Cosmos DB to only communicate on whitelisted networks lowers its attack footprint.",
     "title": "4.5.1 Ensure That 'Firewalls \u0026 Networks' Is Limited to Use Selected Networks Instead of All Networks",
@@ -2806,6 +2902,7 @@
       "4 Database Services",
       "4.5 Cosmos DB"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.5.2",
     "control_id": "azure_compliance.control.cis_v200_4_5_2",
     "description": "Private endpoints limit network traffic to approved sources.",
     "title": "4.5.2 Ensure That Private Endpoints Are Used Where Possible",
@@ -2836,6 +2933,7 @@
       "4 Database Services",
       "4.5 Cosmos DB"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 4.5.3",
     "control_id": "azure_compliance.control.cis_v200_4_5_3",
     "description": "Cosmos DB can use tokens or AAD for client authentication which in turn will use Azure RBAC for authorization. Using AAD is significantly more secure because AAD handles the credentials and allows for MFA and centralized management, and the Azure RBAC better integrated with the rest of Azure.",
     "title": "4.5.3 Use Azure Active Directory (AAD) Client Authentication and Azure RBAC where possible",
@@ -2866,6 +2964,7 @@
       "5 Logging and Monitoring",
       "5.1 Configuring Diagnostic Settings"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.1.1",
     "control_id": "azure_compliance.control.cis_v200_5_1_1",
     "description": "Enable Diagnostic settings for exporting activity logs. Diagnostic settings are available for each individual resource within a subscription. Settings should be configured for all appropriate resources for your environment.",
     "title": "5.1.1 Ensure that a 'Diagnostic Setting' exists",
@@ -2896,6 +2995,7 @@
       "5 Logging and Monitoring",
       "5.1 Configuring Diagnostic Settings"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.1.2",
     "control_id": "azure_compliance.control.cis_v200_5_1_2",
     "description": "A Diagnostic Setting must exist. If a Diagnostic Setting does not exist, the navigation and options within this recommendation will not be available. Please review the recommendation at the beginning of this subsection titled: 'Ensure that a 'Diagnostic Setting' exists.' The diagnostic setting should be configured to log the appropriate activities from the control/management plane.",
     "title": "5.1.2 Ensure Diagnostic Setting captures appropriate categories",
@@ -2926,6 +3026,7 @@
       "5 Logging and Monitoring",
       "5.1 Configuring Diagnostic Settings"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.1.3",
     "control_id": "azure_compliance.control.cis_v200_5_1_3",
     "description": "The storage account container containing the activity log export should not be publicly accessible.",
     "title": "5.1.3 Ensure the Storage Container Storing the Activity Logs is not Publicly Accessible",
@@ -2956,6 +3057,7 @@
       "5 Logging and Monitoring",
       "5.1 Configuring Diagnostic Settings"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.1.4",
     "control_id": "azure_compliance.control.cis_v200_5_1_4",
     "description": "Storage accounts with the activity log exports can be configured to use Customer Managed Keys (CMK).",
     "title": "5.1.4 Ensure the storage account containing the container with activity logs is encrypted with Customer Managed Key",
@@ -2986,6 +3088,7 @@
       "5 Logging and Monitoring",
       "5.1 Configuring Diagnostic Settings"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.1.5",
     "control_id": "azure_compliance.control.cis_v200_5_1_5",
     "description": "Enable AuditEvent logging for key vault instances to ensure interactions with key vaults are logged and available.",
     "title": "5.1.5 Ensure that logging for Azure Key Vault is 'Enabled'",
@@ -3016,6 +3119,7 @@
       "5 Logging and Monitoring",
       "5.1 Configuring Diagnostic Settings"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.1.6",
     "control_id": "azure_compliance.control.cis_v200_5_1_6",
     "description": "Ensure that network flow logs are captured and fed into a central log analytics workspace.",
     "title": "5.1.6 Ensure that Network Security Group Flow logs are captured and sent to Log Analytics",
@@ -3046,6 +3150,7 @@
       "5 Logging and Monitoring",
       "5.1 Configuring Diagnostic Settings"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.1.7",
     "control_id": "azure_compliance.control.cis_v200_5_1_7",
     "description": "Enable AppServiceHTTPLogs diagnostic log category for Azure App Service instances to ensure all http requests are captured and centrally logged.",
     "title": "5.1.7 Ensure that logging for Azure AppService 'HTTP logs' is enabled",
@@ -3076,6 +3181,7 @@
       "5 Logging and Monitoring",
       "5.2 Monitoring using Activity Log Alerts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2.1",
     "control_id": "azure_compliance.control.cis_v200_5_2_1",
     "description": "Create an activity log alert for the Create Policy Assignment event.",
     "title": "5.2.1 Ensure that Activity Log Alert exists for Create Policy Assignment",
@@ -3106,6 +3212,7 @@
       "5 Logging and Monitoring",
       "5.2 Monitoring using Activity Log Alerts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2.2",
     "control_id": "azure_compliance.control.cis_v200_5_2_2",
     "description": "Create an activity log alert for the Delete Policy Assignment event.",
     "title": "5.2.2 Ensure that Activity Log Alert exists for Delete Policy Assignment",
@@ -3136,6 +3243,7 @@
       "5 Logging and Monitoring",
       "5.2 Monitoring using Activity Log Alerts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2.3",
     "control_id": "azure_compliance.control.cis_v200_5_2_3",
     "description": "Create an Activity Log Alert for the Create or Update Network Security Group event.",
     "title": "5.2.3 Ensure that Activity Log Alert exists for Create or Update Network Security Group",
@@ -3166,6 +3274,7 @@
       "5 Logging and Monitoring",
       "5.2 Monitoring using Activity Log Alerts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2.4",
     "control_id": "azure_compliance.control.cis_v200_5_2_4",
     "description": "Create an activity log alert for the Delete Network Security Group event.",
     "title": "5.2.4 Ensure that Activity Log Alert exists for Delete Network Security Group",
@@ -3196,6 +3305,7 @@
       "5 Logging and Monitoring",
       "5.2 Monitoring using Activity Log Alerts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2.5",
     "control_id": "azure_compliance.control.cis_v200_5_2_5",
     "description": "Create an activity log alert for the Create or Update Security Solution event.",
     "title": "5.2.5 Ensure that Activity Log Alert exists for Create or Update Security Solution",
@@ -3226,6 +3336,7 @@
       "5 Logging and Monitoring",
       "5.2 Monitoring using Activity Log Alerts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2.6",
     "control_id": "azure_compliance.control.cis_v200_5_2_6",
     "description": "Create an activity log alert for the Delete Security Solution event.",
     "title": "5.2.6 Ensure that Activity Log Alert exists for Delete Security Solution",
@@ -3256,6 +3367,7 @@
       "5 Logging and Monitoring",
       "5.2 Monitoring using Activity Log Alerts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2.7",
     "control_id": "azure_compliance.control.cis_v200_5_2_7",
     "description": "Create an activity log alert for the Create or Update SQL Server Firewall Rule event.",
     "title": "5.2.7 Ensure that Activity Log Alert exists for Create or Update SQL Server Firewall Rule",
@@ -3286,6 +3398,7 @@
       "5 Logging and Monitoring",
       "5.2 Monitoring using Activity Log Alerts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2.8",
     "control_id": "azure_compliance.control.cis_v200_5_2_8",
     "description": "Create an activity log alert for the 'Delete SQL Server Firewall Rule.'",
     "title": "5.2.8 Ensure that Activity Log Alert exists for Delete SQL Server Firewall Rule",
@@ -3316,6 +3429,7 @@
       "5 Logging and Monitoring",
       "5.2 Monitoring using Activity Log Alerts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2.9",
     "control_id": "azure_compliance.control.cis_v200_5_2_9",
     "description": "Create an activity log alert for the Create or Update Public IP Addresses rule.",
     "title": "5.2.9 Ensure that Activity Log Alert exists for Create or Update Public IP Address rule",
@@ -3346,6 +3460,7 @@
       "5 Logging and Monitoring",
       "5.2 Monitoring using Activity Log Alerts"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.2.10",
     "control_id": "azure_compliance.control.cis_v200_5_2_10",
     "description": "Create an activity log alert for the Delete Public IP Address rule.",
     "title": "5.2.10 Ensure that Activity Log Alert exists for Delete Public IP Address rule",
@@ -3376,6 +3491,7 @@
       "5 Logging and Monitoring",
       "5.3 Configuring Application Insights"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.3.1",
     "control_id": "azure_compliance.control.cis_v200_5_3_1",
     "description": "Application Insights within Azure act as an Application Performance Monitoring solution providing valuable data into how well an application performs and additional information when performing incident response. The types of log data collected include application metrics, telemetry data, and application trace logging data providing organizations with detailed information about application activity and application transactions.",
     "title": "5.3.1 Ensure Application Insights are Configured",
@@ -3405,6 +3521,7 @@
       "CIS v2.0.0",
       "5 Logging and Monitoring"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 5.4",
     "control_id": "azure_compliance.control.cis_v200_5_4",
     "description": "Resource Logs capture activity to the data access plane while the Activity log is a subscription-level log for the control plane. Resource-level diagnostic logs provide insight into operations that were performed within that resource itself; for example, reading or updating a secret from a Key Vault.",
     "title": "5.4 Ensure that Azure Monitor Resource Logging is Enabled for All Services that Support it",
@@ -3434,6 +3551,7 @@
       "5 Logging and Monitoring",
       "5.5 Ensure that SKU Basic/Consumption is not used on artifacts that need to be monitored (Particularly for Production Workloads)"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - ",
     "control_id": "azure_compliance.control.network_lb_no_basic_sku",
     "description": "The use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft. Typically, these SKU’s do not have a service SLA and Microsoft will usually refuse to provide support for them. Consequently Basic/Free SKUs should never be used for production workloads.",
     "title": "Network load balancers should use standard SKUs as a minimum",
@@ -3456,6 +3574,7 @@
       "5 Logging and Monitoring",
       "5.5 Ensure that SKU Basic/Consumption is not used on artifacts that need to be monitored (Particularly for Production Workloads)"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - ",
     "control_id": "azure_compliance.control.network_public_ip_no_basic_sku",
     "description": "The use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft. Typically, these SKU’s do not have a service SLA and Microsoft will usually refuse to provide support for them. Consequently Basic/Free SKUs should never be used for production workloads.",
     "title": "Network public IPs should use standard SKUs as a minimum",
@@ -3478,6 +3597,7 @@
       "5 Logging and Monitoring",
       "5.5 Ensure that SKU Basic/Consumption is not used on artifacts that need to be monitored (Particularly for Production Workloads)"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - ",
     "control_id": "azure_compliance.control.network_virtual_network_gateway_no_basic_sku",
     "description": "The use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft. Typically, these SKU’s do not have a service SLA and Microsoft will usually refuse to provide support for them. Consequently Basic/Free SKUs should never be used for production workloads.",
     "title": "Virtual network gateways should use standard SKUs as a minimum",
@@ -3500,6 +3620,7 @@
       "5 Logging and Monitoring",
       "5.5 Ensure that SKU Basic/Consumption is not used on artifacts that need to be monitored (Particularly for Production Workloads)"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - ",
     "control_id": "azure_compliance.control.redis_cache_no_basic_sku",
     "description": "The use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft. Typically, these SKU’s do not have a service SLA and Microsoft will usually refuse to provide support for them. Consequently Basic/Free SKUs should never be used for production workloads.",
     "title": "Azure Cache for Redis should use standard SKUs as a minimum",
@@ -3521,6 +3642,7 @@
       "CIS v2.0.0",
       "6 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.1",
     "control_id": "azure_compliance.control.cis_v200_6_1",
     "description": "Network security groups should be periodically evaluated for port misconfigurations. Where certain ports and protocols may be exposed to the Internet, they should be evaluated for necessity and restricted wherever they are not explicitly required.",
     "title": "6.1 Ensure that RDP access from the Internet is evaluated and restricted",
@@ -3549,6 +3671,7 @@
       "CIS v2.0.0",
       "6 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.2",
     "control_id": "azure_compliance.control.cis_v200_6_2",
     "description": "Network security groups should be periodically evaluated for port misconfigurations. Where certain ports and protocols may be exposed to the Internet, they should be evaluated for necessity and restricted wherever they are not explicitly required.",
     "title": "6.2 Ensure that SSH access from the Internet is evaluated and restricted",
@@ -3577,6 +3700,7 @@
       "CIS v2.0.0",
       "6 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.3",
     "control_id": "azure_compliance.control.cis_v200_6_3",
     "description": "Network security groups should be periodically evaluated for port misconfigurations. Where certain ports and protocols may be exposed to the Internet, they should be evaluated for necessity and restricted wherever they are not explicitly required.",
     "title": "6.3 Ensure that UDP access from the Internet is evaluated and restricted",
@@ -3605,6 +3729,7 @@
       "CIS v2.0.0",
       "6 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.4",
     "control_id": "azure_compliance.control.cis_v200_6_4",
     "description": "Network security groups should be periodically evaluated for port misconfigurations. Where certain ports and protocols may be exposed to the Internet, they should be evaluated for necessity and restricted wherever they are not explicitly required and narrowly configured.",
     "title": "6.4 Ensure that HTTP(S) access from the Internet is evaluated and restricted",
@@ -3633,6 +3758,7 @@
       "CIS v2.0.0",
       "6 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.5",
     "control_id": "azure_compliance.control.cis_v200_6_5",
     "description": "Network Security Group Flow Logs should be enabled and the retention period set to greater than or equal to 90 days.",
     "title": "6.5 Ensure that Network Security Group Flow Log retention period is 'greater than 90 days'",
@@ -3661,6 +3787,7 @@
       "CIS v2.0.0",
       "6 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.6",
     "control_id": "azure_compliance.control.cis_v200_6_6",
     "description": "Enable Network Watcher for Azure subscriptions.",
     "title": "6.6 Ensure that Network Watcher is 'Enabled'",
@@ -3689,6 +3816,7 @@
       "CIS v2.0.0",
       "6 Networking"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 6.7",
     "control_id": "azure_compliance.control.cis_v200_6_7",
     "description": "Public IP Addresses provide tenant accounts with Internet connectivity for resources contained within the tenant. During the creation of certain resources in Azure, a Public IP Address may be created. All Public IP Addresses within the tenant should be periodically reviewed for accuracy and necessity.",
     "title": "6.7 Ensure that Public IP addresses are Evaluated on a Periodic Basis",
@@ -3717,6 +3845,7 @@
       "CIS v2.0.0",
       "7 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 7.1",
     "control_id": "azure_compliance.control.cis_v200_7_1",
     "description": "The Azure Bastion service allows secure remote access to Azure Virtual Machines over the Internet without exposing remote access protocol ports and services directly to the Internet. The Azure Bastion service provides this access using TLS over 443/TCP, and subscribes to hardened configurations within an organization's Azure Active Directory service.",
     "title": "7.1 Ensure an Azure Bastion Host Exists",
@@ -3745,6 +3874,7 @@
       "CIS v2.0.0",
       "7 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 7.2",
     "control_id": "azure_compliance.control.cis_v200_7_2",
     "description": "Migrate blob-based VHDs to Managed Disks on Virtual Machines to exploit the default features of this configuration.",
     "title": "7.2 Ensure Virtual Machines are utilizing Managed Disks",
@@ -3773,6 +3903,7 @@
       "CIS v2.0.0",
       "7 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 7.3",
     "control_id": "azure_compliance.control.cis_v200_7_3",
     "description": "Ensure that OS disks (boot volumes) and data disks (non-boot volumes) are encrypted with CMK (Customer Managed Keys). Customer Managed keys can be either ADE or Server Side Encryption(SSE).",
     "title": "7.3 Ensure that 'OS and Data' disks are encrypted with Customer Managed Key (CMK)",
@@ -3801,6 +3932,7 @@
       "CIS v2.0.0",
       "7 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 7.4",
     "control_id": "azure_compliance.control.cis_v200_7_4",
     "description": "Ensure that unattached disks in a subscription are encrypted with a Customer Managed Key (CMK).",
     "title": "7.4 Ensure that 'Unattached disks' are encrypted with 'Customer Managed Key' (CMK)",
@@ -3829,6 +3961,7 @@
       "CIS v2.0.0",
       "7 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 7.5",
     "control_id": "azure_compliance.control.cis_v200_7_5",
     "description": "For added security, only install organization-approved extensions on VMs.",
     "title": "7.5 Ensure that Only Approved Extensions Are Installed",
@@ -3857,6 +3990,7 @@
       "CIS v2.0.0",
       "7 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 7.6",
     "control_id": "azure_compliance.control.cis_v200_7_6",
     "description": "Install endpoint protection for all virtual machines.",
     "title": "7.6 Ensure that Endpoint Protection for all Virtual Machines is installed",
@@ -3885,6 +4019,7 @@
       "CIS v2.0.0",
       "7 Virtual Machines"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 7.7",
     "control_id": "azure_compliance.control.cis_v200_7_7",
     "description": "VHD (Virtual Hard Disks) are stored in blob storage and are the old-style disks that were attached to Virtual Machines. The blob VHD was then leased to the VM. By default, storage accounts are not encrypted, and Microsoft Defender will then recommend that the OS disks should be encrypted. Storage accounts can be encrypted as a whole using PMK or CMK. This should be turned on for storage accounts containing VHDs.",
     "title": "7.7 Ensure that VHDs are Encrypted",
@@ -3913,6 +4048,7 @@
       "CIS v2.0.0",
       "8 Key Vault"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 8.1",
     "control_id": "azure_compliance.control.cis_v200_8_1",
     "description": "Ensure that all Keys in Role Based Access Control (RBAC) Azure Key Vaults have an expiration date set.",
     "title": "8.1 Ensure that the Expiration Date is set for all Keys in RBAC Key Vaults",
@@ -3941,6 +4077,7 @@
       "CIS v2.0.0",
       "8 Key Vault"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 8.2",
     "control_id": "azure_compliance.control.cis_v200_8_2",
     "description": "Ensure that all Keys in Non Role Based Access Control (RBAC) Azure Key Vaults have an expiration date set.",
     "title": "8.2 Ensure that the Expiration Date is set for all Keys in Non-RBAC Key Vaults",
@@ -3969,6 +4106,7 @@
       "CIS v2.0.0",
       "8 Key Vault"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 8.3",
     "control_id": "azure_compliance.control.cis_v200_8_3",
     "description": "Ensure that all Secrets in Role Based Access Control (RBAC) Azure Key Vaults have an expiration date set.",
     "title": "8.3 Ensure that the Expiration Date is set for all Secrets in RBAC Key Vaults",
@@ -3997,6 +4135,7 @@
       "CIS v2.0.0",
       "8 Key Vault"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 8.4",
     "control_id": "azure_compliance.control.cis_v200_8_4",
     "description": "Ensure that all Secrets in Non Role Based Access Control (RBAC) Azure Key Vaults have an expiration date set.",
     "title": "8.4 Ensure that the Expiration Date is set for all Secrets in Non- RBAC Key Vaults",
@@ -4025,6 +4164,7 @@
       "CIS v2.0.0",
       "8 Key Vault"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 8.5",
     "control_id": "azure_compliance.control.cis_v200_8_5",
     "description": "The key vault contains object keys, secrets and certificates. Accidental unavailability of a key vault can cause immediate data loss or loss of security functions (authentication, validation, verification, non-repudiation, etc.) supported by the key vault objects. It is recommended the key vault be made recoverable by enabling the \"Do Not Purge\" and \"Soft Delete\" functions.",
     "title": "8.5 Ensure the Key Vault is Recoverable",
@@ -4053,6 +4193,7 @@
       "CIS v2.0.0",
       "8 Key Vault"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 8.6",
     "control_id": "azure_compliance.control.cis_v200_8_6",
     "description": "Role assignments disappear when a Key Vault has been deleted (soft- delete) and recovered. Afterwards it will be required to recreate all role assignments. This is a limitation of the soft-delete feature across all Azure services.",
     "title": "8.6 Enable Role Based Access Control for Azure Key Vault",
@@ -4081,6 +4222,7 @@
       "CIS v2.0.0",
       "8 Key Vault"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 8.7",
     "control_id": "azure_compliance.control.cis_v200_8_7",
     "description": "Private endpoints will secure network traffic from Azure Key Vault to the resources requesting secrets and keys.",
     "title": "8.7 Ensure that Private Endpoints are Used for Azure Key Vault",
@@ -4109,6 +4251,7 @@
       "CIS v2.0.0",
       "8 Key Vault"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 8.8",
     "control_id": "azure_compliance.control.cis_v200_8_8",
     "description": "Automatic Key Rotation is available in Public Preview. The currently supported applications are Key Vault, Managed Disks, and Storage accounts accessing keys within Key Vault. The number of supported applications will incrementally increased.",
     "title": "8.8 Ensure Automatic Key Rotation is Enabled Within Azure Key Vault for the Supported Services",
@@ -4137,6 +4280,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.1",
     "control_id": "azure_compliance.control.cis_v200_9_1",
     "description": "Azure App Service Authentication is a feature that can prevent anonymous HTTP requests from reaching a Web Application or authenticate those with tokens before they reach the app. If an anonymous request is received from a browser, App Service will redirect to a logon page. To handle the logon process, a choice from a set of identity providers can be made, or a custom authentication mechanism can be implemented.",
     "title": "9.1 Ensure App Service Authentication is set up for apps in Azure App Service",
@@ -4165,6 +4309,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.2",
     "control_id": "azure_compliance.control.cis_v200_9_2",
     "description": "Azure Web Apps allows sites to run under both HTTP and HTTPS by default. Web apps can be accessed by anyone using non-secure HTTP links by default. Non-secure HTTP requests can be restricted and all HTTP requests redirected to the secure HTTPS port. It is recommended to enforce HTTPS-only traffic.",
     "title": "9.2 Ensure Web App Redirects All HTTP traffic to HTTPS in Azure App Service",
@@ -4193,6 +4338,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.3",
     "control_id": "azure_compliance.control.cis_v200_9_3",
     "description": "The TLS (Transport Layer Security) protocol secures transmission of data over the internet using standard encryption technology. Encryption should be set with the latest version of TLS. App service allows TLS 1.2 by default, which is the recommended TLS level by industry standards such as PCI DSS.",
     "title": "9.3 Ensure Web App is using the latest version of TLS encryption",
@@ -4221,6 +4367,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.4",
     "control_id": "azure_compliance.control.cis_v200_9_4",
     "description": "Client certificates allow for the app to request a certificate for incoming requests. Only clients that have a valid certificate will be able to reach the app.",
     "title": "9.4 Ensure the web app has 'Client Certificates (Incoming client certificates)' set to 'On'",
@@ -4249,6 +4396,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.5",
     "control_id": "azure_compliance.control.cis_v200_9_5",
     "description": "Managed service identity in App Service provides more security by eliminating secrets from the app, such as credentials in the connection strings. When registering with Azure Active Directory in App Service, the app will connect to other Azure services securely without the need for usernames and passwords.",
     "title": "9.5 Ensure that Register with Azure Active Directory is enabled on App Service",
@@ -4277,6 +4425,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.6",
     "control_id": "azure_compliance.control.cis_v200_9_6",
     "description": "Periodically newer versions are released for PHP software either due to security flaws or to include additional functionality. Using the latest PHP version for web apps is recommended in order to take advantage of security fixes, if any, and/or additional functionalities of the newer version.",
     "title": "9.6 Ensure That 'PHP version' is the Latest, If Used to Run the Web App",
@@ -4305,6 +4454,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.7",
     "control_id": "azure_compliance.control.cis_v200_9_7",
     "description": "Periodically, newer versions are released for Python software either due to security flaws or to include additional functionality. Using the latest full Python version for web apps is recommended in order to take advantage of security fixes, if any, and/or additional functionalities of the newer version.",
     "title": "9.7 Ensure that 'Python version' is the Latest Stable Version, if Used to Run the Web App",
@@ -4333,6 +4483,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.8",
     "control_id": "azure_compliance.control.cis_v200_9_8",
     "description": "Periodically, newer versions are released for Java software either due to security flaws or to include additional functionality. Using the latest Java version for web apps is recommended in order to take advantage of security fixes, if any, and/or new functionalities of the newer version.",
     "title": "9.8 Ensure that 'Java version' is the latest, if used to run the Web App",
@@ -4361,6 +4512,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.9",
     "control_id": "azure_compliance.control.cis_v200_9_9",
     "description": "Periodically, newer versions are released for HTTP either due to security flaws or to include additional functionality. Using the latest HTTP version for web apps to take advantage of security fixes, if any, and/or new functionalities of the newer version.",
     "title": "9.9 Ensure that 'HTTP Version' is the Latest, if Used to Run the Web App",
@@ -4389,6 +4541,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.10",
     "control_id": "azure_compliance.control.cis_v200_9_10",
     "description": "By default, Azure Functions, Web, and API Services can be deployed over FTP. If FTP is required for an essential deployment workflow, FTPS should be required for FTP login for all App Service Apps and Functions.",
     "title": "9.10 Ensure FTP deployments are Disabled",
@@ -4417,6 +4570,7 @@
       "CIS v2.0.0",
       "9 AppService"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 9.11",
     "control_id": "azure_compliance.control.cis_v200_9_11",
     "description": "Azure Key Vault will store multiple types of sensitive information such as encryption keys, certificate thumbprints, and Managed Identity Credentials. Access to these 'Secrets' can be controlled through granular permissions.",
     "title": "9.11 Ensure Azure Key Vaults are Used to Store Secrets",
@@ -4445,6 +4599,7 @@
       "CIS v2.0.0",
       "10 Miscellaneous"
     ],
+    "category_hierarchy_short": "CIS v2.0.0 - 10.1",
     "control_id": "azure_compliance.control.cis_v200_10_1",
     "description": "Resource Manager Locks provide a way for administrators to lock down Azure resources to prevent deletion of, or modifications to, a resource. These locks sit outside of the Role Based Access Controls (RBAC) hierarchy and, when applied, will place restrictions on the resource for all users.",
     "title": "10.1 Ensure that Resource Locks are set for Mission-Critical Azure Resources",

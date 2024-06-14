@@ -427,6 +427,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 							r.Get("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GroupMalwareResultsHandler))
 							r.Get("/class", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GroupMalwareClassResultsHandler))
 						})
+						// compliance and cloud-compliance result counts by control_id
+						r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountComplianceScanResultsGroupHandler))
+						r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountCloudComplianceScanResultsGroupHandler))
 					})
 				})
 			})
