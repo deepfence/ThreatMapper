@@ -13504,10 +13504,22 @@
         }
       },
       "ModelCloudNodeAccountsListReq": {
-        "required": ["window"],
+        "required": ["cloud_provider", "window"],
         "type": "object",
         "properties": {
-          "cloud_provider": { "type": "string" },
+          "cloud_provider": {
+            "enum": [
+              "aws",
+              "gcp",
+              "azure",
+              "linux",
+              "kubernetes",
+              "aws_org",
+              "gcp_org",
+              "azure_org"
+            ],
+            "type": "string"
+          },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
@@ -14015,7 +14027,6 @@
           "from_timestamp": { "type": "integer" },
           "report_id": { "type": "string" },
           "status": { "type": "string" },
-          "status_message": { "type": "string" },
           "storage_path": { "type": "string" },
           "to_timestamp": { "type": "integer" },
           "type": { "type": "string" },

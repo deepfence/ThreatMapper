@@ -31,7 +31,7 @@ export interface ModelCloudNodeAccountsListReq {
      * @type {string}
      * @memberof ModelCloudNodeAccountsListReq
      */
-    cloud_provider?: string;
+    cloud_provider: ModelCloudNodeAccountsListReqCloudProviderEnum;
     /**
      * 
      * @type {ModelFetchWindow}
@@ -40,11 +40,29 @@ export interface ModelCloudNodeAccountsListReq {
     window: ModelFetchWindow;
 }
 
+
+/**
+ * @export
+ */
+export const ModelCloudNodeAccountsListReqCloudProviderEnum = {
+    Aws: 'aws',
+    Gcp: 'gcp',
+    Azure: 'azure',
+    Linux: 'linux',
+    Kubernetes: 'kubernetes',
+    AwsOrg: 'aws_org',
+    GcpOrg: 'gcp_org',
+    AzureOrg: 'azure_org'
+} as const;
+export type ModelCloudNodeAccountsListReqCloudProviderEnum = typeof ModelCloudNodeAccountsListReqCloudProviderEnum[keyof typeof ModelCloudNodeAccountsListReqCloudProviderEnum];
+
+
 /**
  * Check if a given object implements the ModelCloudNodeAccountsListReq interface.
  */
 export function instanceOfModelCloudNodeAccountsListReq(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "window" in value;
 
     return isInstance;
@@ -60,7 +78,7 @@ export function ModelCloudNodeAccountsListReqFromJSONTyped(json: any, ignoreDisc
     }
     return {
         
-        'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
+        'cloud_provider': json['cloud_provider'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
 }

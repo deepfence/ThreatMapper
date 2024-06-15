@@ -35,6 +35,7 @@ export const complianceType: {
   gcp: ['CIS'],
   gcp_org: ['CIS'],
   azure: ['CIS', 'NIST', 'HIPAA'],
+  azure_org: ['CIS', 'NIST', 'HIPAA'],
   host: ['HIPAA', 'GDPR', 'PCI', 'NIST'],
   kubernetes_cluster: ['NSA-CISA'],
 };
@@ -72,6 +73,7 @@ export const CLOUDS = [
   ComplianceScanNodeTypeEnum.aws,
   ComplianceScanNodeTypeEnum.aws_org,
   ComplianceScanNodeTypeEnum.azure,
+  ComplianceScanNodeTypeEnum.azure_org,
   ComplianceScanNodeTypeEnum.gcp,
   ComplianceScanNodeTypeEnum.gcp_org,
 ];
@@ -320,6 +322,8 @@ const ControlTable = ({
         return ComplianceScanNodeTypeEnum.aws;
       case ComplianceScanNodeTypeEnum.gcp_org:
         return ComplianceScanNodeTypeEnum.gcp;
+      case ComplianceScanNodeTypeEnum.azure_org:
+        return ComplianceScanNodeTypeEnum.azure;
 
       default:
         return nodeType;

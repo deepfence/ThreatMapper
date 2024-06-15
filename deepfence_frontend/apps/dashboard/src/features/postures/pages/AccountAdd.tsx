@@ -29,7 +29,7 @@ const AccountAdd = () => {
           <AWSTerraform />
         </div>
       )}
-      {ACCOUNT_CONNECTOR.AZURE === account && <AzureConnectorForm />}
+      {account.startsWith(ACCOUNT_CONNECTOR.AZURE) && <AzureConnectorForm />}
       {account.startsWith(ACCOUNT_CONNECTOR.GCP) && <GCPConnectorForm />}
     </>
   );

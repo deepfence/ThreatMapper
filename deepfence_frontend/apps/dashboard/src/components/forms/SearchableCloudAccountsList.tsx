@@ -5,7 +5,13 @@ import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
 
-export type ICloudAccountType = 'gcp' | 'aws' | 'azure' | 'aws_org' | 'gcp_org';
+export type ICloudAccountType =
+  | 'gcp'
+  | 'aws'
+  | 'azure'
+  | 'aws_org'
+  | 'gcp_org'
+  | 'azure_org';
 export type SearchableCloudAccountsListProps = {
   cloudProvider?: ICloudAccountType;
   onChange?: (value: string[]) => void;
@@ -88,10 +94,10 @@ const SearchableCloudAccounts = ({
           isSelectVariantType && selectedAccounts.length > 0
             ? `${selectedAccounts.length} selected`
             : cloudProvider
-            ? displayValue
               ? displayValue
-              : `${cloudProvider} account`
-            : 'Cloud account'
+                ? displayValue
+                : `${cloudProvider} account`
+              : 'Cloud account'
         }
         multiple
         value={selectedAccounts}
@@ -147,8 +153,8 @@ export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListPr
               return displayValue
                 ? displayValue
                 : cloudProvider
-                ? `${cloudProvider} account`
-                : 'Cloud account';
+                  ? `${cloudProvider} account`
+                  : 'Cloud account';
             }}
             multiple
             onQueryChange={() => {
