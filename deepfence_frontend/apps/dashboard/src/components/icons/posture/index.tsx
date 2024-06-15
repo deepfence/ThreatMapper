@@ -16,6 +16,8 @@ export const PostureLogos = ({ name }: { name: string }) => {
     return <AwsIcon />;
   } else if (name === 'azure') {
     return <AzureIcon />;
+  } else if (name === 'azure_org') {
+    return <AzureIcon />;
   } else if (name === 'gcp_org') {
     return <GoogleIcon />;
   } else if (name === 'gcp') {

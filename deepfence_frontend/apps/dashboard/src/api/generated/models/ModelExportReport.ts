@@ -54,12 +54,6 @@ export interface ModelExportReport {
      * @type {string}
      * @memberof ModelExportReport
      */
-    status_message?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelExportReport
-     */
     storage_path?: string;
     /**
      * 
@@ -111,7 +105,6 @@ export function ModelExportReportFromJSONTyped(json: any, ignoreDiscriminator: b
         'from_timestamp': !exists(json, 'from_timestamp') ? undefined : json['from_timestamp'],
         'report_id': !exists(json, 'report_id') ? undefined : json['report_id'],
         'status': !exists(json, 'status') ? undefined : json['status'],
-        'status_message': !exists(json, 'status_message') ? undefined : json['status_message'],
         'storage_path': !exists(json, 'storage_path') ? undefined : json['storage_path'],
         'to_timestamp': !exists(json, 'to_timestamp') ? undefined : json['to_timestamp'],
         'type': !exists(json, 'type') ? undefined : json['type'],
@@ -134,7 +127,6 @@ export function ModelExportReportToJSON(value?: ModelExportReport | null): any {
         'from_timestamp': value.from_timestamp,
         'report_id': value.report_id,
         'status': value.status,
-        'status_message': value.status_message,
         'storage_path': value.storage_path,
         'to_timestamp': value.to_timestamp,
         'type': value.type,

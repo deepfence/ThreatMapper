@@ -139,6 +139,15 @@ export const onboardQueries = createQueryKeys('onboard', {
             },
           },
         });
+        const azureOrgResultsPromise = listCloudNodeAccountApi({
+          modelCloudNodeAccountsListReq: {
+            cloud_provider: 'azure_org',
+            window: {
+              offset: 0,
+              size: 1000000,
+            },
+          },
+        });
 
         const searchHostsApi = apiWrapper({
           fn: getSearchApiClient().searchHosts,
@@ -203,6 +212,7 @@ export const onboardQueries = createQueryKeys('onboard', {
           azureResults,
           awsOrgResults,
           gcpOrgResults,
+          azureOrgResults,
         ] = await Promise.all([
           awsResultsPromise,
           hostsResultsPromise,
@@ -212,6 +222,7 @@ export const onboardQueries = createQueryKeys('onboard', {
           azureResultsPromise,
           awsOrgResultsPromise,
           gcpOrgResultsPromise,
+          azureOrgResultsPromise,
         ]);
 
         if (
@@ -222,7 +233,8 @@ export const onboardQueries = createQueryKeys('onboard', {
           !gcpResults.ok ||
           !azureResults.ok ||
           !awsOrgResults.ok ||
-          !gcpOrgResults.ok
+          !gcpOrgResults.ok ||
+          !azureOrgResults.ok
         ) {
           // TODO(manan) handle error cases
           return [];
@@ -328,10 +340,33 @@ export const onboardQueries = createQueryKeys('onboard', {
             count: azureResults.value.total,
             connections: (
               azureResults.value.cloud_node_accounts_info?.map((result) => ({
-                id: `gcp-${result.node_id}`,
+                id: `azure-${result.node_id}`,
                 urlId: result.node_id ?? '',
                 accountType: 'Azure',
                 urlType: 'azure',
+                connectionMethod: 'Cloud connector',
+                accountId: result.node_name ?? '-',
+                active: !!result.active,
+              })) ?? []
+            ).sort((a, b) => {
+              return (a.accountId ?? '').localeCompare(b.accountId ?? '');
+            }),
+          });
+        }
+
+        if (azureOrgResults.value.total) {
+          data.push({
+            id: 'azure_org',
+            urlId: 'azure_org',
+            urlType: 'azure_org',
+            accountType: 'Azure Organizations',
+            count: azureOrgResults.value.total,
+            connections: (
+              azureOrgResults.value.cloud_node_accounts_info?.map((result) => ({
+                id: `azure_org-${result.node_id}`,
+                urlId: result.node_id ?? '',
+                accountType: 'Azure Organizations',
+                urlType: 'azure_org',
                 connectionMethod: 'Cloud connector',
                 accountId: result.node_name ?? '-',
                 active: !!result.active,

@@ -45,6 +45,7 @@ export enum ComplianceScanNodeTypeEnum {
   gcp = 'gcp',
   gcp_org = 'gcp_org',
   azure = 'azure',
+  azure_org = 'azure_org',
   host = 'host',
   kubernetes_cluster = 'kubernetes_cluster',
 }
@@ -83,7 +84,7 @@ export type CloudNodeType = 'aws' | 'azure' | 'gcp';
 export const isCloudNode = (nodeType?: string) =>
   nodeType === 'aws' || nodeType === 'azure' || nodeType === 'gcp';
 export const isCloudOrgNode = (nodeType?: string) =>
-  nodeType === 'aws_org' || nodeType === 'gcp_org';
+  nodeType === 'aws_org' || nodeType === 'gcp_org' || nodeType === 'azure_org';
 
 export type GenerativeAIIntegrationType = 'openai' | 'amazon-bedrock';
 
