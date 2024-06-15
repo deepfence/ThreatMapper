@@ -159,6 +159,7 @@ const (
 	DO
 	AWSOrg
 	GCPOrg
+	AzureOrg
 )
 
 func StringToCloudProvider(s string) CloudProvider {
@@ -175,6 +176,8 @@ func StringToCloudProvider(s string) CloudProvider {
 		return DO
 	case "gcp_org":
 		return GCPOrg
+	case "azure_org":
+		return AzureOrg
 	}
 	return -1
 }

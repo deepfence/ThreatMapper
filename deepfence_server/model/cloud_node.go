@@ -52,7 +52,7 @@ type CloudNodeAccountRegisterReq struct {
 }
 
 type CloudNodeAccountsListReq struct {
-	CloudProvider string      `json:"cloud_provider" enum:"aws,gcp,azure,linux,kubernetes,aws_org,gcp_org" required:"true"`
+	CloudProvider string      `json:"cloud_provider" enum:"aws,gcp,azure,linux,kubernetes,aws_org,gcp_org,azure_org" required:"true"`
 	Window        FetchWindow `json:"window" required:"true"`
 }
 
