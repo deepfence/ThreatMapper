@@ -15,7 +15,7 @@ Copy and paste the following (single project or multiple projects) into a new fi
 ```terraform
 module "cloud-scanner_example_single-project" {
   source              = "deepfence/cloud-scanner/gcp//examples/single-project"
-  version             = "0.4.0"
+  version             = "0.5.0"
   name                = "deepfence-cloud-scanner"
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url    = "<Console URL>"
@@ -46,7 +46,7 @@ module "cloud-scanner_example_single-project" {
 ```terraform
 module "cloud-scanner_example_multiple-projects" {
   source              = "deepfence/cloud-scanner/gcp//examples/multi-project"
-  version             = "0.4.0"
+  version             = "0.5.0"
   name                = "deepfence-cloud-scanner"
   # org_domain: root project name
   org_domain          = ""
@@ -86,27 +86,6 @@ terraform apply
 To connect to a private ip console on a vpc, this deployment will create a serverless vpc connector. Specify the vpc name of console and ip_cidr_range with a mask of /28 for the connector, default is 11.0.0.0/28.
 For full details, refer to the `examples` provided in the GitHub repository: https://github.com/deepfence/terraform-gcp-cloud-scanner
 
-For a multi project cloud scanner, the org domain needs to be specified.
-Copy and paste the following into a new file cloud-scanner.tf. Edit the fields: org_domain, region, mgmt-console-url and deepfence-key.
-
-```terraform
-module "cloud-scanner_example_single-project" {
-  source              = "deepfence/cloud-scanner/gcp//examples/multi-project"
-  org_domain          = "<Your Org Domain> e.g. deepfence.io"
-  version             = "0.3.0"
-  name                = "deepfence-cloud-scanner"
-  mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
-  mgmt-console-port   = "443"
-  deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:THREATMAPPER_VERSION"
-  project_id          = "<PROJECT_ID>; ex. dev1-123456"
-  region              = "<REGION_ID>; ex. asia-east1"
-  #optional for private ip console
-  vpc                 = "<VPC Network Name>; Name of vpc network in which the console exists"
-  #optional for private ip console
-  ip_cidr_range_svpca = "<11.0.0.0/28> IP CIDR range for the connector to above vpc"
-}
-```
 Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the project of deployment
 
 ## What Compliance Scans are Performed?

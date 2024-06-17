@@ -9,23 +9,71 @@ Cloud Scanner is deployed as a task within your Azure infrastructure.
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
 
 Copy and paste the following into a new file cloud-scanner.tf. Edit the fields: region, mgmt-console-url and deepfence-key.
-```shell
+
+## Single Subscription
+
+Monitor a single Azure subscription
+
+```terraform
 provider "azurerm" {
   features {}
+  # Subscription ID to deploy the Azure Container Service
   subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
 }
 
 module "cloud-scanner_example_single-subscription" {
   source              = "deepfence/cloud-scanner/azure//examples/single-subscription"
-  version             = "0.2.0"
+  version             = "0.4.0"
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
   name                = "deepfence-cloud-scanner"
   image               = "quay.io/deepfenceio/cloud-scanner:THREATMAPPER_VERSION"
+  # Location name https://gist.github.com/ausfestivus/04e55c7d80229069bf3bc75870630ec8#results
+  location            = "eastus"
+  # Number of CPU cores (Default: 2 vCPU)
+  cpu                 = "2"
+  # Memory in GB (Default: 4 GB)
+  memory              = "4"
+  tags = {
+    product = "deepfence-cloud-scanner"
+  }
+}
+```
+
+## Tenant subscriptions
+
+Monitor multiple subscriptions in a Tenant
+
+```terraform
+provider "azurerm" {
+  features {}
+  # Subscription ID to deploy the Azure Container Service
+  subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
 }
 
+module "cloud-scanner_example_tenant-subscriptions" {
+  source                  = "deepfence/cloud-scanner/azure//examples/tenant-subscriptions"
+  version                 = "0.4.0"
+  mgmt-console-url        = "<Console URL> eg. XXX.XXX.XX.XXX"
+  mgmt-console-port       = "<Console port> eg. 443"
+  deepfence-key           = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  name                    = "deepfence-cloud-scanner"
+  image                   = "quay.io/deepfenceio/cloud-scanner:THREATMAPPER_VERSION"
+  # List of subscription ids to monitor
+  subscription_ids_access = ["XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX", "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"]
+  # Location name https://gist.github.com/ausfestivus/04e55c7d80229069bf3bc75870630ec8#results
+  location                = "eastus"
+  # Number of CPU cores (Default: 4 vCPU)
+  cpu                     = "4"
+  # Memory in GB (Default: 8 GB)
+  memory                  = "8"
+  tags = {
+    product = "deepfence-cloud-scanner"
+  }
+}
 ```
+
 Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the subscription
 
 Then run
