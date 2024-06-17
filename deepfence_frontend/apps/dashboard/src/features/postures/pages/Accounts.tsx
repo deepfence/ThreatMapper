@@ -761,8 +761,8 @@ const DeleteAccountConfirmationModal = ({
               ? `The Selected cloud account, resources and scans related to the account will be
               deleted.`
               : isCloudOrgNode(params.nodeType)
-                ? `The Selected org cloud account, child accounts related to org account, resources and scans related to the cloud accounts will be deleted.`
-                : ''}
+              ? `The Selected org cloud account, child accounts related to org account, resources and scans related to the cloud accounts will be deleted.`
+              : ''}
           </span>
           <br />
           <span>Are you sure you want to delete?</span>
@@ -1255,7 +1255,14 @@ const AccountTable = ({
             </WrapperComponent>
           );
         },
-        header: () => 'Account',
+        header: (col) => {
+          if (nodeType === 'azure') {
+            return 'Subscription';
+          } else if (nodeType === 'azure_org') {
+            return 'Tenant';
+          }
+          return 'Account';
+        },
         ...columnWidth.node_name,
       }),
       columnHelper.accessor('compliance_percentage', {
@@ -1720,16 +1727,18 @@ const Accounts = () => {
   );
 };
 
-const tabs = [
-  {
-    label: 'Regular Accounts',
-    value: 'accounts',
-  },
-  {
-    label: 'Organization Accounts',
-    value: 'org-accounts',
-  },
-];
+const tabs = ['accounts', 'org-accounts'] as const;
+
+function getTabLabel(value: (typeof tabs)[number], nodeType: string) {
+  if (nodeType?.includes?.('azure')) {
+    if (value === 'accounts') {
+      return 'Subscriptions';
+    } else {
+      return 'Tenants';
+    }
+  }
+  return value === 'accounts' ? 'Regular Accounts' : 'Organization Accounts';
+}
 
 const AccountWithTab = () => {
   const { nodeType } = useParams() as {
@@ -1741,13 +1750,20 @@ const AccountWithTab = () => {
   });
   const { navigate } = usePageNavigation();
 
+  const tabOpts = tabs.map((tab) => {
+    return {
+      label: getTabLabel(tab, nodeType),
+      value: tab,
+    };
+  });
+
   return (
     <>
       <Header />
       <Tabs
         className="mt-2"
         value={currentTab}
-        tabs={tabs}
+        tabs={tabOpts}
         onValueChange={(value) => {
           if (currentTab === value) return;
           let _nodeType = nodeType;

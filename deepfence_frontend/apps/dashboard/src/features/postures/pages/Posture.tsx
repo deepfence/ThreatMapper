@@ -19,7 +19,7 @@ export const providersToNameMapping: { [key: string]: string } = {
   gcp: 'GCP',
   gcp_org: 'GCP Organizations',
   azure: 'Azure',
-  azure_org: 'Azure Organizations',
+  azure_org: 'Azure',
   linux: 'Linux Hosts',
   kubernetes: 'Kubernetes',
 };
@@ -148,52 +148,37 @@ const CardIconSection = ({ provider }: { provider: ModelPostureProvider }) => {
   );
 };
 
+function getAccountProductName(provider: ModelPostureProvider) {
+  if (isLinuxProvider(provider.name ?? '')) {
+    return 'Hosts';
+  } else if (isKubernetesProvider(provider.name ?? '')) {
+    return 'Clusters';
+  } else if (provider.name === 'azure') {
+    return 'Subscriptions';
+  } else if (!isNonCloudProvider(provider.name ?? '')) {
+    return 'Accounts';
+  }
+}
+
 const CardCountSection = ({ provider }: { provider: ModelPostureProvider }) => {
   const textStyle = 'text-p7a leading-6 text-text-text-and-icon min-w-[120px]';
   const countStyle = 'text-h3 text-text-input-value';
   return (
     <div className="ml-[42px]">
-      <div className="flex gap-x-6">
-        <span className={textStyle}>
-          {!isNonCloudProvider(provider.name ?? '') ? (
-            'Active Accounts'
-          ) : (
-            <>
-              {isLinuxProvider(provider.name ?? '') && 'Active hosts'}
-              {isKubernetesProvider(provider.name ?? '') && 'Active clusters'}
-            </>
-          )}
-        </span>
+      <div className="flex justify-between gap-x-6">
+        <span className={textStyle}>Active {getAccountProductName(provider)}</span>
         <span className={countStyle}>{abbreviateNumber(provider.node_count ?? 0)}</span>
       </div>
 
-      <div className="flex gap-x-6">
-        <span className={textStyle}>
-          {!isNonCloudProvider(provider.name ?? '') ? (
-            'Inactive Accounts'
-          ) : (
-            <>
-              {isLinuxProvider(provider.name ?? '') && 'Inactive hosts'}
-              {isKubernetesProvider(provider.name ?? '') && 'Inactive clusters'}
-            </>
-          )}
-        </span>
+      <div className="flex justify-between gap-x-6">
+        <span className={textStyle}>Inactive {getAccountProductName(provider)}</span>
         <span className={countStyle}>
           {abbreviateNumber(provider.node_count_inactive ?? 0)}
         </span>
       </div>
 
-      <div className="flex gap-x-6">
-        <span className={textStyle}>
-          {!isNonCloudProvider(provider.name ?? '') ? (
-            'Scanned Accounts'
-          ) : (
-            <>
-              {isLinuxProvider(provider.name ?? '') && 'Scanned hosts'}
-              {isKubernetesProvider(provider.name ?? '') && 'Scanned clusters'}
-            </>
-          )}
-        </span>
+      <div className="flex justify-between gap-x-6">
+        <span className={textStyle}>Scanned {getAccountProductName(provider)}</span>
         <span className={countStyle}>{abbreviateNumber(provider.scan_count ?? 0)}</span>
       </div>
 
