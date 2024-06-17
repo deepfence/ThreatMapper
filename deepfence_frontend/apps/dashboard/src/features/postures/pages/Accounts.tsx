@@ -309,10 +309,10 @@ const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
 const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   complianceScanStatus: 'Posture scan status',
   status: 'Status',
-  org_accounts: 'Organization accounts',
+  org_accounts: 'Organization account',
   aws_accounts: 'Account',
   gcp_accounts: 'Account',
-  azure_accounts: 'Account',
+  azure_accounts: 'Subscription',
   hosts: 'Account',
   clusters: 'Account',
 };
@@ -428,9 +428,11 @@ const Filters = () => {
             );
           })}
         </Combobox>
-        {(nodeType === 'aws' || nodeType === 'gcp') && (
+        {(nodeType === 'aws' || nodeType === 'gcp' || nodeType === 'azure') && (
           <SearchableCloudAccountsList
-            displayValue="Organization account"
+            displayValue={
+              nodeType === 'azure' ? 'Tenant' : FILTER_SEARCHPARAMS[`org_accounts`]
+            }
             valueKey="nodeId"
             cloudProvider={`${nodeType}_org` as ICloudAccountType}
             defaultSelectedAccounts={searchParams.getAll('org_accounts')}
@@ -688,7 +690,9 @@ const DeleteAccountConfirmationModal = ({
   onSuccess: () => void;
 }) => {
   const fetcher = useFetcher();
-  const params = useParams();
+  const params = useParams() as {
+    nodeType: string;
+  };
 
   const onDeleteAction = useCallback(
     (actionType: string) => {
@@ -723,7 +727,12 @@ const DeleteAccountConfirmationModal = ({
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
-            Delete account
+            Delete{' '}
+            {params.nodeType.startsWith('azure')
+              ? isCloudOrgNode(params.nodeType)
+                ? 'tenant'
+                : 'subscription'
+              : 'account'}
           </div>
         ) : undefined
       }
@@ -757,12 +766,25 @@ const DeleteAccountConfirmationModal = ({
       {!fetcher.data?.success ? (
         <div className="grid">
           <span>
-            {isCloudNode(params.nodeType)
-              ? `The Selected cloud account, resources and scans related to the account will be
+            {params.nodeType.startsWith('azure') ? (
+              <>
+                {isCloudNode(params.nodeType)
+                  ? `The Selected subscription, resources and scans related to the subscription will be
+            deleted.`
+                  : isCloudOrgNode(params.nodeType)
+                  ? `The Selected tenant, child subscriptions related to tenant, resources and scans related to tenant will be deleted.`
+                  : ''}
+              </>
+            ) : (
+              <>
+                {isCloudNode(params.nodeType)
+                  ? `The Selected cloud account, resources and scans related to the account will be
               deleted.`
-              : isCloudOrgNode(params.nodeType)
-              ? `The Selected org cloud account, child accounts related to org account, resources and scans related to the cloud accounts will be deleted.`
-              : ''}
+                  : isCloudOrgNode(params.nodeType)
+                  ? `The Selected org cloud account, child accounts related to org account, resources and scans related to the cloud accounts will be deleted.`
+                  : ''}
+              </>
+            )}
           </span>
           <br />
           <span>Are you sure you want to delete?</span>
@@ -885,7 +907,7 @@ const ActionDropdown = ({
                     onTableAction(row, ActionEnumType.REFRESH_ACCOUNT);
                   }}
                 >
-                  Refresh account
+                  Refresh {getAccountProductName(nodeType)}
                 </DropdownItem>
                 <DropdownItem
                   disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
@@ -896,7 +918,7 @@ const ActionDropdown = ({
                     onTableAction(row, ActionEnumType.DELETE_ACCOUNT);
                   }}
                 >
-                  Delete account
+                  Delete {getAccountProductName(nodeType)}
                 </DropdownItem>
               </>
             ) : null}
@@ -993,7 +1015,7 @@ const BulkActions = ({
           );
         }}
       >
-        ADD NEW ACCOUNT
+        Add new {getAccountProductName(nodeType)}
       </Button>
       <Button
         color="default"
@@ -1075,7 +1097,7 @@ const BulkActions = ({
               )
             }
           >
-            Refresh account
+            Refresh {getAccountProductName(nodeType)}
           </Button>
           <Button
             variant="flat"
@@ -1095,7 +1117,7 @@ const BulkActions = ({
               )
             }
           >
-            Delete account
+            Delete {getAccountProductName(nodeType)}
           </Button>
         </>
       ) : null}
@@ -1255,7 +1277,7 @@ const AccountTable = ({
             </WrapperComponent>
           );
         },
-        header: (col) => {
+        header: () => {
           if (nodeType === 'azure') {
             return 'Subscription';
           } else if (nodeType === 'azure_org') {
@@ -1728,6 +1750,16 @@ const Accounts = () => {
 };
 
 const tabs = ['accounts', 'org-accounts'] as const;
+
+function getAccountProductName(nodeType: string) {
+  if (nodeType.toLowerCase() === 'azure') {
+    return 'subscription';
+  }
+  if (nodeType.startsWith('azure')) {
+    return 'tenant';
+  }
+  return 'account';
+}
 
 function getTabLabel(value: (typeof tabs)[number], nodeType: string) {
   if (nodeType?.includes?.('azure')) {
