@@ -885,7 +885,7 @@ const ActionDropdown = ({
                     onTableAction(row, ActionEnumType.REFRESH_ACCOUNT);
                   }}
                 >
-                  Refresh account
+                  Refresh {getAccountProductName(nodeType)}
                 </DropdownItem>
                 <DropdownItem
                   disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
@@ -896,7 +896,7 @@ const ActionDropdown = ({
                     onTableAction(row, ActionEnumType.DELETE_ACCOUNT);
                   }}
                 >
-                  Delete account
+                  Delete {getAccountProductName(nodeType)}
                 </DropdownItem>
               </>
             ) : null}
@@ -993,7 +993,7 @@ const BulkActions = ({
           );
         }}
       >
-        ADD NEW ACCOUNT
+        Add new {getAccountProductName(nodeType)}
       </Button>
       <Button
         color="default"
@@ -1075,7 +1075,7 @@ const BulkActions = ({
               )
             }
           >
-            Refresh account
+            Refresh {getAccountProductName(nodeType)}
           </Button>
           <Button
             variant="flat"
@@ -1095,7 +1095,7 @@ const BulkActions = ({
               )
             }
           >
-            Delete account
+            Delete {getAccountProductName(nodeType)}
           </Button>
         </>
       ) : null}
@@ -1255,7 +1255,7 @@ const AccountTable = ({
             </WrapperComponent>
           );
         },
-        header: (col) => {
+        header: () => {
           if (nodeType === 'azure') {
             return 'Subscription';
           } else if (nodeType === 'azure_org') {
@@ -1728,6 +1728,16 @@ const Accounts = () => {
 };
 
 const tabs = ['accounts', 'org-accounts'] as const;
+
+function getAccountProductName(nodeType: string) {
+  if (nodeType.toLowerCase() === 'azure') {
+    return 'subscription';
+  }
+  if (nodeType.startsWith('azure')) {
+    return 'tenant';
+  }
+  return 'account';
+}
 
 function getTabLabel(value: (typeof tabs)[number], nodeType: string) {
   if (nodeType?.includes?.('azure')) {
