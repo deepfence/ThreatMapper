@@ -10,7 +10,6 @@ import {
   createColumnHelper,
   Dropdown,
   DropdownItem,
-  IconButton,
   Listbox,
   ListboxOption,
   Modal,
@@ -30,9 +29,8 @@ import {
   ModelUpdateUserIDRequestRoleEnum,
 } from '@/api/generated';
 import { ModelUser } from '@/api/generated/models/ModelUser';
-import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { CopyButton, useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { DFLink } from '@/components/DFLink';
-import { CheckIcon } from '@/components/icons/common/Check';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
@@ -345,24 +343,6 @@ const ChangePasswordModal = ({
     </SlidingModal>
   );
 };
-const CopyField = ({ value }: { value: string }) => {
-  const { copy, isCopied } = useCopyToClipboardState();
-
-  return (
-    <div className="absolute right-0 top-0 group-hover:block">
-      {isCopied ? (
-        <IconButton size="sm" variant="flat" color="success" icon={<CheckIcon />} />
-      ) : (
-        <IconButton
-          size="sm"
-          variant="flat"
-          onClick={() => copy(value)}
-          icon={<CopyLineIcon />}
-        />
-      )}
-    </div>
-  );
-};
 
 const InviteUserModal = ({
   showDialog,
@@ -478,7 +458,7 @@ const InviteUserModal = ({
                 >
                   {data?.invite_url}
                 </DFLink>
-                <CopyField value={data?.invite_url} />
+                <CopyButton value={data?.invite_url} className="group-hover:block" />
                 <span className="mt-4 block">
                   Use above invite link for registration, the link will expire after{' '}
                   {data?.invite_expiry_hours} hours.
