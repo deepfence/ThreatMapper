@@ -4,15 +4,13 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import {
   Button,
   CircleSpinner,
-  IconButton,
   SlidingModal,
   SlidingModalCloseButton,
   SlidingModalContent,
   SlidingModalHeader,
 } from 'ui-components';
 
-import { useCopyToClipboardState } from '@/components/CopyToClipboard';
-import { CheckIcon } from '@/components/icons/common/Check';
+import { CopyButton, useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { RemediationBlock } from '@/components/remediation/RemediationBlock';
 import { RemediationButton } from '@/components/remediation/RemediationButton';
@@ -99,38 +97,6 @@ const Header = ({
 function processLabel(labelKey: string) {
   return replacebyUppercaseCharacters(labelKey);
 }
-
-const CopyField = ({ value }: { value: string }) => {
-  const { copy, isCopied } = useCopyToClipboardState();
-
-  return (
-    <div className="absolute right-0 top-0 hidden group-hover:block">
-      {isCopied ? (
-        <IconButton
-          size="sm"
-          variant="flat"
-          color="success"
-          icon={
-            <span className="w-3 h-3 block">
-              <CheckIcon />
-            </span>
-          }
-        />
-      ) : (
-        <IconButton
-          size="sm"
-          variant="flat"
-          onClick={() => copy(value)}
-          icon={
-            <span className="w-3 h-3 block">
-              <CopyLineIcon />
-            </span>
-          }
-        />
-      )}
-    </div>
-  );
-};
 
 const DetailsComponent = ({
   isRemediationOpen,
@@ -238,7 +204,7 @@ const DetailsComponent = ({
               <div className="text-p3 text-text-text-and-icon first-letter:capitalize">
                 {label}
               </div>
-              <CopyField value={valueAsStr} />
+              <CopyButton value={valueAsStr} className="hidden group-hover:block" />
             </div>
             <div className="text-p1 dark:text-text-input-value text-text-text-and-icon break-words">
               {key in timeFormatKey ? formatMilliseconds(+valueAsStr) : valueAsStr}
@@ -250,7 +216,10 @@ const DetailsComponent = ({
         <div className="flex flex-col grow basis-[100%] max-w-full gap-1 group">
           <div className="basis-[45%] flex relative">
             <div className="text-p3 text-text-text-and-icon">Resources</div>
-            <CopyField value={JSON.stringify(cloudPosture.resources)} />
+            <CopyButton
+              value={JSON.stringify(cloudPosture.resources)}
+              className="hidden group-hover:block"
+            />
           </div>
           <div className="text-p1 flex flex-col">
             {cloudPosture.resources.map((resource) => {
