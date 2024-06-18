@@ -259,7 +259,7 @@ const useGetControls = ({
   nodeType: string;
 }) => {
   return useSuspenseQuery({
-    ...queries.posture.listControls({ checkTypes: [checkType], nodeType }),
+    ...queries.posture.listControls({ checkType, nodeType }),
   });
 };
 

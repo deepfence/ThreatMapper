@@ -142,7 +142,7 @@ export const useGetControls = ({
   > = {};
 
   const { data: listControlsData } = useSuspenseQuery({
-    ...queries.posture.listControls({ checkTypes: [checkType], nodeType }),
+    ...queries.posture.listControls({ checkType, nodeType }),
   });
 
   const { data: countsByControlsData } = useSuspenseQuery({

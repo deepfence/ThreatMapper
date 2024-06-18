@@ -665,12 +665,12 @@ export const postureQueries = createQueryKeys('posture', {
       },
     };
   },
-  listControls: (filters: { nodeType: string; checkTypes: string[] }) => {
-    const { nodeType, checkTypes } = filters;
+  listControls: (filters: { nodeType: string; checkType: string }) => {
+    const { nodeType, checkType } = filters;
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
-        if (!nodeType || !checkTypes.length) {
+        if (!nodeType || !checkType) {
           return {
             controls: [],
             message: '',
@@ -683,7 +683,7 @@ export const postureQueries = createQueryKeys('posture', {
         const result = await listControlsApi({
           modelCloudNodeControlReq: {
             cloud_provider: nodeType as ModelCloudNodeControlReqCloudProviderEnum,
-            compliance_type: checkTypes,
+            compliance_type: checkType,
             node_id: '',
           },
         });
