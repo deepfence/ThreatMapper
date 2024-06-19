@@ -219,6 +219,7 @@ const Filters = () => {
         </Combobox>
         <SearchableCloudAccountsList
           cloudProvider="aws"
+          displayValue={FILTER_SEARCHPARAMS.aws_account_ids.label}
           defaultSelectedAccounts={searchParams.getAll('aws_account_ids')}
           onClearAll={() => {
             setSearchParams((prev) => {
@@ -238,6 +239,7 @@ const Filters = () => {
         />
         <SearchableCloudAccountsList
           cloudProvider="gcp"
+          displayValue={FILTER_SEARCHPARAMS.gcp_account_ids.label}
           defaultSelectedAccounts={searchParams.getAll('gcp_account_ids')}
           onClearAll={() => {
             setSearchParams((prev) => {
