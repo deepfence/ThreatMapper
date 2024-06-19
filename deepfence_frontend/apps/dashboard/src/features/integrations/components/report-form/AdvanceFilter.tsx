@@ -12,7 +12,11 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
-import { isCloudNonOrgNode, isCloudOrgNode } from '@/features/postures/utils';
+import {
+  getDisplayNameOfNodeType,
+  isCloudNonOrgNode,
+  isCloudOrgNode,
+} from '@/features/postures/utils';
 import { ScanTypeEnum } from '@/types/common';
 
 const getNodeTypeByProviderName = (providerName: string): string | undefined => {
@@ -83,7 +87,9 @@ export const AdvancedFilter = ({
           <div className="grid grid-cols-2 gap-x-8 gap-y-6 pt-4">
             {nodeType && isCloudNode(nodeType) && (
               <SearchableCloudAccountsList
-                label={`${upperCase(provider)} Account`}
+                label={getDisplayNameOfNodeType(
+                  provider as ModelCloudNodeAccountsListReqCloudProviderEnum,
+                )}
                 triggerVariant="select"
                 defaultSelectedAccounts={selectedCloudAccounts}
                 cloudProvider={provider.toLowerCase() as 'aws' | 'gcp' | 'azure'}

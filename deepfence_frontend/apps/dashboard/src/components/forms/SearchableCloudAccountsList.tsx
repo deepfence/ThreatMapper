@@ -3,6 +3,8 @@ import { debounce } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
+import { ModelCloudNodeAccountsListReqCloudProviderEnum } from '@/api/generated';
+import { getDisplayNameOfNodeType } from '@/features/postures/utils';
 import { queries } from '@/queries';
 import { CloudNodeType } from '@/types/common';
 
@@ -90,8 +92,10 @@ const SearchableCloudAccounts = ({
             : cloudProvider
             ? displayValue
               ? displayValue
-              : `${cloudProvider} account`
-            : 'Cloud account'
+              : `${cloudProvider} ${getDisplayNameOfNodeType(
+                  cloudProvider as ModelCloudNodeAccountsListReqCloudProviderEnum,
+                ).toLowerCase()}`
+            : 'Cloud'
         }
         multiple
         value={selectedAccounts}
@@ -147,8 +151,10 @@ export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListPr
               return displayValue
                 ? displayValue
                 : cloudProvider
-                ? `${cloudProvider} account`
-                : 'Cloud account';
+                ? `${cloudProvider} ${getDisplayNameOfNodeType(
+                    cloudProvider as ModelCloudNodeAccountsListReqCloudProviderEnum,
+                  ).toLowerCase()}`
+                : `Cloud`;
             }}
             multiple
             onQueryChange={() => {
