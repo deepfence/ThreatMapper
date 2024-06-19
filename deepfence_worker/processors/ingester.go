@@ -2,12 +2,14 @@ package processors
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	wtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
+	"github.com/twmb/franz-go/pkg/kerr"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -130,6 +132,12 @@ func (i *Ingester) pollRecords(ctx context.Context, kc *kgo.Client) {
 			records.EachError(
 				func(s string, i int32, err error) {
 					log.Error().Msgf("topic=%s partition=%d error: %s", s, i, err)
+					// these errors should not happen
+					// exit if it happens
+					// restart should rebalance correctly
+					if errors.Is(err, kerr.UnknownTopicOrPartition) || errors.Is(err, kerr.UnknownTopicID) {
+						log.Fatal().Err(err).Msg("encountered unknown topic error")
+					}
 				},
 			)
 		}

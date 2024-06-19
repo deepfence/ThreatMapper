@@ -40,15 +40,22 @@ var (
 var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderGCP,
 	PostureProviderAzure, PostureProviderLinux, PostureProviderKubernetes}
 
+type CloudNodeMonitoredAccount struct {
+	NodeID      string `json:"node_id" validate:"required" required:"true"`
+	AccountName string `json:"account_name" validate:"required" required:"true"`
+	AccountID   string `json:"account_id" validate:"required" required:"true"`
+}
+
 type CloudNodeAccountRegisterReq struct {
-	NodeID                   string            `json:"node_id" validate:"required" required:"true"`
-	HostNodeID               string            `json:"host_node_id" validate:"required" required:"true"`
-	AccountID                string            `json:"account_id" validate:"required" required:"true"`
-	CloudProvider            string            `json:"cloud_provider" validate:"required,oneof=aws gcp azure" enum:"aws,gcp,azure" required:"true"`
-	IsOrganizationDeployment bool              `json:"is_organization_deployment"`
-	MonitoredAccountIDs      map[string]string `json:"monitored_account_ids"`
-	OrganizationAccountID    string            `json:"organization_account_id"`
-	Version                  string            `json:"version" validate:"required" required:"true"`
+	NodeID                   string                      `json:"node_id" validate:"required" required:"true"`
+	AccountName              string                      `json:"account_name" validate:"required" required:"true"`
+	HostNodeID               string                      `json:"host_node_id" validate:"required" required:"true"`
+	AccountID                string                      `json:"account_id" validate:"required" required:"true"`
+	CloudProvider            string                      `json:"cloud_provider" validate:"required,oneof=aws gcp azure" enum:"aws,gcp,azure" required:"true"`
+	IsOrganizationDeployment bool                        `json:"is_organization_deployment"`
+	MonitoredAccounts        []CloudNodeMonitoredAccount `json:"monitored_accounts"`
+	OrganizationAccountID    string                      `json:"organization_account_id"`
+	Version                  string                      `json:"version" validate:"required" required:"true"`
 }
 
 type CloudNodeAccountsListReq struct {
@@ -70,6 +77,7 @@ type CloudNodeAccountsListResp struct {
 type CloudNodeAccountInfo struct {
 	NodeID               string           `json:"node_id"`
 	NodeName             string           `json:"node_name"`
+	AccountName          string           `json:"account_name"`
 	CloudProvider        string           `json:"cloud_provider"`
 	CompliancePercentage float64          `json:"compliance_percentage"`
 	Active               bool             `json:"active"`

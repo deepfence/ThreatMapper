@@ -38,18 +38,17 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 
 	log.Debug().Msgf("Register Cloud Node Account Request: %+v", req)
 
-	monitoredAccountIDs := req.MonitoredAccountIDs
+	monitoredAccounts := req.MonitoredAccounts
 	orgAccountID := req.OrganizationAccountID
 	nodeID := req.NodeID
 
 	ctx := r.Context()
 	if req.IsOrganizationDeployment {
-		log.Debug().Msgf("Organization deployment: Accounts monitored: %+v", monitoredAccountIDs)
+		log.Debug().Msgf("Organization deployment: Accounts monitored: %+v", monitoredAccounts)
 		if req.OrganizationAccountID == "" {
 			h.complianceError(w, "organization account id is needed for multi account setup")
 			return
 		}
-		monitoredAccountIDs[req.AccountID] = nodeID
 		orgNodeID := fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountID)
 		orgAccountNode := map[string]interface{}{
 			"node_id":        orgNodeID,
@@ -63,11 +62,12 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			h.complianceError(w, err.Error())
 			return
 		}
-		for monitoredAccountID, monitoredNodeID := range monitoredAccountIDs {
+		for _, monitoredAccount := range monitoredAccounts {
 			monitoredNode := map[string]interface{}{
-				"node_id":         monitoredNodeID,
+				"node_id":         monitoredAccount.NodeID,
 				"cloud_provider":  req.CloudProvider,
-				"node_name":       monitoredAccountID,
+				"node_name":       monitoredAccount.AccountID,
+				"account_name":    monitoredAccount.AccountName,
 				"organization_id": orgNodeID,
 				"version":         req.Version,
 				"node_type":       req.CloudProvider,
@@ -85,6 +85,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"node_id":        nodeID,
 			"cloud_provider": req.CloudProvider,
 			"node_name":      req.AccountID,
+			"account_name":   req.AccountName,
 			"version":        req.Version,
 			"node_type":      req.CloudProvider,
 		}
