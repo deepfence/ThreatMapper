@@ -51,7 +51,8 @@ export const ModelCloudNodeAccountsListReqCloudProviderEnum = {
     Linux: 'linux',
     Kubernetes: 'kubernetes',
     AwsOrg: 'aws_org',
-    GcpOrg: 'gcp_org'
+    GcpOrg: 'gcp_org',
+    AzureOrg: 'azure_org'
 } as const;
 export type ModelCloudNodeAccountsListReqCloudProviderEnum = typeof ModelCloudNodeAccountsListReqCloudProviderEnum[keyof typeof ModelCloudNodeAccountsListReqCloudProviderEnum];
 

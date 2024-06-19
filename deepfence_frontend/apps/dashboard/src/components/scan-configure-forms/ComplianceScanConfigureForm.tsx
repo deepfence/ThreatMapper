@@ -15,6 +15,7 @@ import { CircleSpinner, createColumnHelper, Switch, Table } from 'ui-components'
 import { getComplianceApiClient, getSettingsApiClient } from '@/api/api';
 import {
   ModelBenchmarkType,
+  ModelCloudNodeAccountsListReqCloudProviderEnum,
   ModelComplianceScanTriggerReq,
   ModelNodeIdentifierNodeTypeEnum,
   ModelScanResultsActionRequestScanTypeEnum,
@@ -23,8 +24,13 @@ import { ModelCloudNodeComplianceControl } from '@/api/generated/models/ModelClo
 import { ScheduleScanForm } from '@/components/scan-configure-forms/ScheduleScanForm';
 import { TruncatedText } from '@/components/TruncatedText';
 import { ActionEnumType } from '@/features/postures/data-component/toggleControlApiAction';
+import {
+  isCloudNonOrgNode,
+  isCloudOrgNode,
+  isNonCloudNode,
+} from '@/features/postures/utils';
 import { invalidateAllQueries, queries } from '@/queries';
-import { ComplianceScanNodeTypeEnum, isCloudNode, isCloudOrgNode } from '@/types/common';
+import { ComplianceScanNodeTypeEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { getBenchmarkPrettyName } from '@/utils/enum';
@@ -51,6 +57,7 @@ export const complianceType: {
   gcp: [ModelBenchmarkType.Cis],
   gcp_org: [ModelBenchmarkType.Cis],
   azure: [ModelBenchmarkType.Cis, ModelBenchmarkType.Nist, ModelBenchmarkType.Hipaa],
+  azure_org: [ModelBenchmarkType.Cis, ModelBenchmarkType.Nist, ModelBenchmarkType.Hipaa],
   host: [
     ModelBenchmarkType.Hipaa,
     ModelBenchmarkType.Gdpr,
@@ -89,14 +96,6 @@ type TabsType = {
   value: ModelBenchmarkType;
 };
 
-export const CLOUDS = [
-  ComplianceScanNodeTypeEnum.aws,
-  ComplianceScanNodeTypeEnum.aws_org,
-  ComplianceScanNodeTypeEnum.azure,
-  ComplianceScanNodeTypeEnum.gcp,
-  ComplianceScanNodeTypeEnum.gcp_org,
-];
-
 const isKubernetesNode = (nodeType: ComplianceScanNodeTypeEnum) =>
   nodeType == ComplianceScanNodeTypeEnum.kubernetes_cluster;
 
@@ -109,7 +108,8 @@ export const scanPostureApiAction = async ({
   let nodeType = body._nodeType.toString();
   const checkTypes = body._checkTypes.toString()?.split(',') as Array<ModelBenchmarkType>;
 
-  const isCloudScan = CLOUDS.includes(nodeType as ComplianceScanNodeTypeEnum);
+  const isCloudScan = !isNonCloudNode(nodeType);
+
   if (isKubernetesNode(nodeType as ComplianceScanNodeTypeEnum)) {
     nodeType = 'cluster';
   } else if (isCloudScan) {
@@ -332,19 +332,20 @@ const ControlTable = ({
   const _nodeType = useMemo(() => {
     switch (nodeType) {
       case ComplianceScanNodeTypeEnum.host:
-        return 'linux';
+        return ModelCloudNodeAccountsListReqCloudProviderEnum.Linux;
       case ComplianceScanNodeTypeEnum.kubernetes_cluster:
-        return 'kubernetes';
-      case ComplianceScanNodeTypeEnum.aws_org:
-        return ComplianceScanNodeTypeEnum.aws;
-      case ComplianceScanNodeTypeEnum.gcp_org:
-        return ComplianceScanNodeTypeEnum.gcp;
+        return ModelCloudNodeAccountsListReqCloudProviderEnum.Kubernetes;
+      case ModelCloudNodeAccountsListReqCloudProviderEnum.AwsOrg:
+        return ModelCloudNodeAccountsListReqCloudProviderEnum.Aws;
+      case ModelCloudNodeAccountsListReqCloudProviderEnum.GcpOrg:
+        return ModelCloudNodeAccountsListReqCloudProviderEnum.Gcp;
+      case ModelCloudNodeAccountsListReqCloudProviderEnum.AzureOrg:
+        return ModelCloudNodeAccountsListReqCloudProviderEnum.Azure;
 
       default:
         return nodeType;
     }
   }, [nodeType]);
-  const fetcher = useFetcher();
   const [pageSize, setPageSize] = useState(10);
   const { data } = useGetControls({
     checkType: selectedTab,
@@ -566,7 +567,7 @@ export const ComplianceScanConfigureForm = ({
           </span>
         ) : null}
 
-        {!isCloudNode(nodeType) &&
+        {!isCloudNonOrgNode(nodeType) &&
         !isCloudOrgNode(nodeType) &&
         !isKubernetesNode(nodeType) ? (
           <div className="flex flex-col gap-y-2 mt-4">

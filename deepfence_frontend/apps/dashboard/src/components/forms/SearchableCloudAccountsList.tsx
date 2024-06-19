@@ -4,10 +4,10 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
+import { CloudNodeType } from '@/types/common';
 
-export type ICloudAccountType = 'gcp' | 'aws' | 'azure' | 'aws_org' | 'gcp_org';
 export type SearchableCloudAccountsListProps = {
-  cloudProvider?: ICloudAccountType;
+  cloudProvider?: CloudNodeType;
   onChange?: (value: string[]) => void;
   onClearAll?: () => void;
   defaultSelectedAccounts?: string[];
@@ -88,10 +88,10 @@ const SearchableCloudAccounts = ({
           isSelectVariantType && selectedAccounts.length > 0
             ? `${selectedAccounts.length} selected`
             : cloudProvider
+            ? displayValue
               ? displayValue
-                ? displayValue
-                : `${cloudProvider} account`
-              : 'Cloud account'
+              : `${cloudProvider} account`
+            : 'Cloud account'
         }
         multiple
         value={selectedAccounts}
@@ -147,8 +147,8 @@ export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListPr
               return displayValue
                 ? displayValue
                 : cloudProvider
-                  ? `${cloudProvider} account`
-                  : 'Cloud account';
+                ? `${cloudProvider} account`
+                : 'Cloud account';
             }}
             multiple
             onQueryChange={() => {

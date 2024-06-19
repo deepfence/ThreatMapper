@@ -102,6 +102,8 @@ models/ModelComplianceScanInfo.ts
 models/ModelComplianceScanResult.ts
 models/ModelComplianceScanStatusResp.ts
 models/ModelComplianceScanTriggerReq.ts
+models/ModelComplinaceScanResultsGroupReq.ts
+models/ModelComplinaceScanResultsGroupResp.ts
 models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
@@ -195,8 +197,6 @@ models/ModelSecretRule.ts
 models/ModelSecretScanResult.ts
 models/ModelSecretScanResultRules.ts
 models/ModelSecretScanTriggerReq.ts
-models/ModelSettingUpdateRequest.ts
-models/ModelSettingsResponse.ts
 models/ModelStopScanRequest.ts
 models/ModelSummary.ts
 models/ModelTopologyDeltaReq.ts
@@ -230,6 +230,8 @@ models/SearchSearchCountResp.ts
 models/SearchSearchFilter.ts
 models/SearchSearchNodeReq.ts
 models/SearchSearchScanReq.ts
+models/SettingSettingUpdateRequest.ts
+models/SettingSettingsResponse.ts
 models/UtilsAdvancedReportFilters.ts
 models/UtilsReportFilters.ts
 models/UtilsReportOptions.ts

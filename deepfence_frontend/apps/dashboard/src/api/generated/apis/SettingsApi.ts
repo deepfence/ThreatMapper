@@ -29,12 +29,12 @@ import type {
   ModelMessageResponse,
   ModelRegisterLicenseRequest,
   ModelRegisterLicenseResponse,
-  ModelSettingUpdateRequest,
-  ModelSettingsResponse,
   ModelUpdateScheduledTaskRequest,
   PostgresqlDbGetAuditLogsRow,
   PostgresqlDbScheduler,
   SearchSearchCountResp,
+  SettingSettingUpdateRequest,
+  SettingSettingsResponse,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -65,10 +65,6 @@ import {
     ModelRegisterLicenseRequestToJSON,
     ModelRegisterLicenseResponseFromJSON,
     ModelRegisterLicenseResponseToJSON,
-    ModelSettingUpdateRequestFromJSON,
-    ModelSettingUpdateRequestToJSON,
-    ModelSettingsResponseFromJSON,
-    ModelSettingsResponseToJSON,
     ModelUpdateScheduledTaskRequestFromJSON,
     ModelUpdateScheduledTaskRequestToJSON,
     PostgresqlDbGetAuditLogsRowFromJSON,
@@ -77,6 +73,10 @@ import {
     PostgresqlDbSchedulerToJSON,
     SearchSearchCountRespFromJSON,
     SearchSearchCountRespToJSON,
+    SettingSettingUpdateRequestFromJSON,
+    SettingSettingUpdateRequestToJSON,
+    SettingSettingsResponseFromJSON,
+    SettingSettingsResponseToJSON,
 } from '../models';
 
 export interface AddEmailConfigurationRequest {
@@ -118,7 +118,7 @@ export interface UpdateScheduledTaskRequest {
 
 export interface UpdateSettingRequest {
     id: number;
-    modelSettingUpdateRequest?: ModelSettingUpdateRequest;
+    settingSettingUpdateRequest?: SettingSettingUpdateRequest;
 }
 
 export interface UploadAgentVersionRequest {
@@ -325,13 +325,13 @@ export interface SettingsApiInterface {
      * @throws {RequiredError}
      * @memberof SettingsApiInterface
      */
-    getSettingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSettingsResponse>>>;
+    getSettingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<SettingSettingsResponse>>>;
 
     /**
      * Get all settings
      * Get settings
      */
-    getSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSettingsResponse>>;
+    getSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<SettingSettingsResponse>>;
 
     /**
      * Get audit logs for all users
@@ -432,7 +432,7 @@ export interface SettingsApiInterface {
      * Update setting
      * @summary Update setting
      * @param {number} id 
-     * @param {ModelSettingUpdateRequest} [modelSettingUpdateRequest] 
+     * @param {SettingSettingUpdateRequest} [settingSettingUpdateRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SettingsApiInterface
@@ -945,7 +945,7 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      * Get all settings
      * Get settings
      */
-    async getSettingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSettingsResponse>>> {
+    async getSettingsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<SettingSettingsResponse>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -965,14 +965,14 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelSettingsResponseFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(SettingSettingsResponseFromJSON));
     }
 
     /**
      * Get all settings
      * Get settings
      */
-    async getSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSettingsResponse>> {
+    async getSettings(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<SettingSettingsResponse>> {
         const response = await this.getSettingsRaw(initOverrides);
         return await response.value();
     }
@@ -1236,7 +1236,7 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelSettingUpdateRequestToJSON(requestParameters.modelSettingUpdateRequest),
+            body: SettingSettingUpdateRequestToJSON(requestParameters.settingSettingUpdateRequest),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

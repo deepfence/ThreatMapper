@@ -3,12 +3,20 @@ import { Suspense } from 'react';
 import { cn } from 'tailwind-preset';
 import { Breadcrumb, BreadcrumbLink, Card, Separator } from 'ui-components';
 
-import { ModelPostureProvider } from '@/api/generated';
+import {
+  ModelCloudNodeAccountsListReqCloudProviderEnum,
+  ModelPostureProvider,
+} from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ComplianceIconByPercent, PostureLogos } from '@/components/icons/posture';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { getColorForCompliancePercent } from '@/constants/charts';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
+import {
+  isKubernetesNodeType,
+  isLinuxNodeType,
+  isNonCloudNode,
+} from '@/features/postures/utils';
 import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { abbreviateNumber, formatPercentage } from '@/utils/number';
@@ -18,16 +26,11 @@ export const providersToNameMapping: { [key: string]: string } = {
   aws_org: 'AWS Organizations',
   gcp: 'GCP',
   gcp_org: 'GCP Organizations',
+  azure_org: 'Azure',
   azure: 'Azure',
   linux: 'Linux Hosts',
   kubernetes: 'Kubernetes',
 };
-
-export const isNonCloudProvider = (provider: string) => {
-  return provider === 'linux' || provider === 'kubernetes';
-};
-export const isLinuxProvider = (provider: string) => provider === 'linux';
-export const isKubernetesProvider = (provider: string) => provider === 'kubernetes';
 
 const HeaderSkeleton = () => {
   return (
@@ -147,56 +150,41 @@ const CardIconSection = ({ provider }: { provider: ModelPostureProvider }) => {
   );
 };
 
+function getAccountProductName(provider: ModelPostureProvider) {
+  if (isLinuxNodeType(provider.name ?? '')) {
+    return 'Hosts';
+  } else if (isKubernetesNodeType(provider.name ?? '')) {
+    return 'Clusters';
+  } else if (provider.name === ModelCloudNodeAccountsListReqCloudProviderEnum.Azure) {
+    return 'Subscriptions';
+  } else if (!isNonCloudNode(provider.name ?? '')) {
+    return 'Accounts';
+  }
+}
+
 const CardCountSection = ({ provider }: { provider: ModelPostureProvider }) => {
   const textStyle = 'text-p7a leading-6 text-text-text-and-icon min-w-[120px]';
   const countStyle = 'text-h3 text-text-input-value';
   return (
     <div className="ml-[42px]">
       <div className="flex gap-x-6">
-        <span className={textStyle}>
-          {!isNonCloudProvider(provider.name ?? '') ? (
-            'Active Accounts'
-          ) : (
-            <>
-              {isLinuxProvider(provider.name ?? '') && 'Active hosts'}
-              {isKubernetesProvider(provider.name ?? '') && 'Active clusters'}
-            </>
-          )}
-        </span>
+        <span className={textStyle}>Active {getAccountProductName(provider)}</span>
         <span className={countStyle}>{abbreviateNumber(provider.node_count ?? 0)}</span>
       </div>
 
       <div className="flex gap-x-6">
-        <span className={textStyle}>
-          {!isNonCloudProvider(provider.name ?? '') ? (
-            'Inactive Accounts'
-          ) : (
-            <>
-              {isLinuxProvider(provider.name ?? '') && 'Inactive hosts'}
-              {isKubernetesProvider(provider.name ?? '') && 'Inactive clusters'}
-            </>
-          )}
-        </span>
+        <span className={textStyle}>Inactive {getAccountProductName(provider)}</span>
         <span className={countStyle}>
           {abbreviateNumber(provider.node_count_inactive ?? 0)}
         </span>
       </div>
 
       <div className="flex gap-x-6">
-        <span className={textStyle}>
-          {!isNonCloudProvider(provider.name ?? '') ? (
-            'Scanned Accounts'
-          ) : (
-            <>
-              {isLinuxProvider(provider.name ?? '') && 'Scanned hosts'}
-              {isKubernetesProvider(provider.name ?? '') && 'Scanned clusters'}
-            </>
-          )}
-        </span>
+        <span className={textStyle}>Scanned {getAccountProductName(provider)}</span>
         <span className={countStyle}>{abbreviateNumber(provider.scan_count ?? 0)}</span>
       </div>
 
-      {!isNonCloudProvider(provider.name ?? '') ? (
+      {!isNonCloudNode(provider.name ?? '') ? (
         <div className="flex gap-x-6">
           <span className={textStyle}>Resources</span>
           <span className={countStyle}>
@@ -240,7 +228,7 @@ const PostureCloudList = () => {
   return (
     <>
       {providers
-        ?.filter((provider) => !isNonCloudProvider(provider.name ?? ''))
+        ?.filter((provider) => !isNonCloudNode(provider.name ?? ''))
         .map((provider) => {
           return <PostureCard key={provider.name} provider={provider} />;
         })}
@@ -259,7 +247,7 @@ const PosturenNonCloudList = () => {
   return (
     <>
       {providers
-        ?.filter((provider) => isNonCloudProvider(provider.name ?? ''))
+        ?.filter((provider) => isNonCloudNode(provider.name ?? ''))
         .map((provider) => {
           return <PostureCard key={provider.name} provider={provider} />;
         })}
