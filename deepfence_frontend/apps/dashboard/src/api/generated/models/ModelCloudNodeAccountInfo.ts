@@ -21,6 +21,12 @@ import { exists, mapValues } from '../runtime';
 export interface ModelCloudNodeAccountInfo {
     /**
      * 
+     * @type {string}
+     * @memberof ModelCloudNodeAccountInfo
+     */
+    account_name?: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof ModelCloudNodeAccountInfo
      */
@@ -100,6 +106,7 @@ export function ModelCloudNodeAccountInfoFromJSONTyped(json: any, ignoreDiscrimi
     }
     return {
         
+        'account_name': !exists(json, 'account_name') ? undefined : json['account_name'],
         'active': !exists(json, 'active') ? undefined : json['active'],
         'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
         'compliance_percentage': !exists(json, 'compliance_percentage') ? undefined : json['compliance_percentage'],
@@ -122,6 +129,7 @@ export function ModelCloudNodeAccountInfoToJSON(value?: ModelCloudNodeAccountInf
     }
     return {
         
+        'account_name': value.account_name,
         'active': value.active,
         'cloud_provider': value.cloud_provider,
         'compliance_percentage': value.compliance_percentage,

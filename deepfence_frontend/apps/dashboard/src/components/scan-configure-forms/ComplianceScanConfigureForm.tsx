@@ -39,6 +39,7 @@ export const complianceType: {
     ModelBenchmarkType.Hipaa,
     ModelBenchmarkType.Soc2,
     ModelBenchmarkType.Gdpr,
+    ModelBenchmarkType.AwsFoundationalSecurity,
   ],
   aws_org: [
     ModelBenchmarkType.Cis,
@@ -364,9 +365,7 @@ const ControlTable = ({
               nodeType={_nodeType}
               checkType={selectedTab.toLowerCase()}
               checked={!!info.row.original.enabled}
-              controlId={
-                info.row.original?.control_id ? [info.row.original.control_id] : ['']
-              }
+              controlId={info.row.original?.node_id ? [info.row.original.node_id] : ['']}
             />
           );
         },
@@ -374,9 +373,15 @@ const ControlTable = ({
         size: 50,
         minSize: 60,
       }),
-      columnHelper.accessor('category_hierarchy', {
+      columnHelper.accessor('category_hierarchy_short', {
         id: 'category',
-        cell: (info) => <TruncatedText text={info.getValue()?.join(', ') ?? ''} />,
+        cell: (info) => {
+          let text = info.getValue() ?? '';
+          if (!text.length) {
+            text = info.row.original?.category_hierarchy?.join(', ') ?? '';
+          }
+          return <TruncatedText text={text} />;
+        },
         header: () => <span>Category</span>,
         maxSize: 100,
         size: 120,
