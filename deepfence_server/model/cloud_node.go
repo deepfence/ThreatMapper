@@ -42,13 +42,13 @@ var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderGCP,
 
 type CloudNodeMonitoredAccount struct {
 	NodeID      string `json:"node_id" validate:"required" required:"true"`
-	AccountName string `json:"account_name" validate:"required" required:"true"`
+	AccountName string `json:"account_name"`
 	AccountID   string `json:"account_id" validate:"required" required:"true"`
 }
 
 type CloudNodeAccountRegisterReq struct {
 	NodeID                   string                      `json:"node_id" validate:"required" required:"true"`
-	AccountName              string                      `json:"account_name" validate:"required" required:"true"`
+	AccountName              string                      `json:"account_name"`
 	HostNodeID               string                      `json:"host_node_id" validate:"required" required:"true"`
 	AccountID                string                      `json:"account_id" validate:"required" required:"true"`
 	CloudProvider            string                      `json:"cloud_provider" validate:"required,oneof=aws gcp azure" enum:"aws,gcp,azure" required:"true"`
