@@ -39,6 +39,7 @@ export const complianceType: {
     ModelBenchmarkType.Hipaa,
     ModelBenchmarkType.Soc2,
     ModelBenchmarkType.Gdpr,
+    ModelBenchmarkType.AwsFoundationalSecurity,
   ],
   aws_org: [
     ModelBenchmarkType.Cis,

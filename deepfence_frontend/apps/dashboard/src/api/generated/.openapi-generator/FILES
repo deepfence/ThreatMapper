@@ -94,6 +94,7 @@ models/ModelCloudNodeComplianceControl.ts
 models/ModelCloudNodeControlReq.ts
 models/ModelCloudNodeControlResp.ts
 models/ModelCloudNodeEnableDisableReq.ts
+models/ModelCloudNodeMonitoredAccount.ts
 models/ModelCloudNodeProvidersListResp.ts
 models/ModelCloudResource.ts
 models/ModelCompliance.ts
@@ -102,6 +103,8 @@ models/ModelComplianceScanInfo.ts
 models/ModelComplianceScanResult.ts
 models/ModelComplianceScanStatusResp.ts
 models/ModelComplianceScanTriggerReq.ts
+models/ModelComplinaceScanResultsGroupReq.ts
+models/ModelComplinaceScanResultsGroupResp.ts
 models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts

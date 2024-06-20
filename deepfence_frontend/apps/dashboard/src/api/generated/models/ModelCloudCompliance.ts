@@ -159,7 +159,8 @@ export const ModelCloudComplianceComplianceCheckTypeEnum = {
     Nist: 'nist',
     Cis: 'cis',
     Soc2: 'soc_2',
-    NsaCisa: 'nsa-cisa'
+    NsaCisa: 'nsa-cisa',
+    AwsFoundationalSecurity: 'aws_foundational_security'
 } as const;
 export type ModelCloudComplianceComplianceCheckTypeEnum = typeof ModelCloudComplianceComplianceCheckTypeEnum[keyof typeof ModelCloudComplianceComplianceCheckTypeEnum];
 

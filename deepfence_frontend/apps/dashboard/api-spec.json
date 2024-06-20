@@ -6864,6 +6864,118 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/scan/results/count/group/cloud-compliance": {
+      "post": {
+        "tags": ["Compliance"],
+        "summary": "Count Cloud Compliance Results by Control ID",
+        "description": "Count Cloud Compliance Results grouped by Control ID",
+        "operationId": "groupResultsCloudCompliance",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelComplinaceScanResultsGroupReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelComplinaceScanResultsGroupResp"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/results/count/group/compliance": {
+      "post": {
+        "tags": ["Compliance"],
+        "summary": "Count Compliance Results by Control ID",
+        "description": "Count Compliance Results grouped by Control ID",
+        "operationId": "groupResultsCompliance",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelComplinaceScanResultsGroupReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelComplinaceScanResultsGroupResp"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/scan/results/count/group/malware": {
       "get": {
         "tags": ["Malware Scan"],
@@ -13263,7 +13375,16 @@
         }
       },
       "ModelBenchmarkType": {
-        "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
+        "enum": [
+          "hipaa",
+          "gdpr",
+          "pci",
+          "nist",
+          "cis",
+          "soc_2",
+          "nsa-cisa",
+          "aws_foundational_security"
+        ],
         "type": "string"
       },
       "ModelBulkDeleteReportReq": {
@@ -13335,7 +13456,16 @@
           "account_id": { "type": "string" },
           "cloud_provider": { "type": "string" },
           "compliance_check_type": {
-            "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
+            "enum": [
+              "hipaa",
+              "gdpr",
+              "pci",
+              "nist",
+              "cis",
+              "soc_2",
+              "nsa-cisa",
+              "aws_foundational_security"
+            ],
             "type": "string"
           },
           "control_id": { "type": "string" },
@@ -13416,6 +13546,7 @@
       "ModelCloudNodeAccountInfo": {
         "type": "object",
         "properties": {
+          "account_name": { "type": "string" },
           "active": { "type": "boolean" },
           "cloud_provider": { "type": "string" },
           "compliance_percentage": { "type": "number" },
@@ -13435,6 +13566,7 @@
       "ModelCloudNodeAccountRegisterReq": {
         "required": [
           "node_id",
+          "account_name",
           "host_node_id",
           "account_id",
           "cloud_provider",
@@ -13443,12 +13575,13 @@
         "type": "object",
         "properties": {
           "account_id": { "type": "string" },
+          "account_name": { "type": "string" },
           "cloud_provider": { "enum": ["aws", "gcp", "azure"], "type": "string" },
           "host_node_id": { "type": "string" },
           "is_organization_deployment": { "type": "boolean" },
-          "monitored_account_ids": {
-            "type": "object",
-            "additionalProperties": { "type": "string" },
+          "monitored_accounts": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelCloudNodeMonitoredAccount" },
             "nullable": true
           },
           "node_id": { "type": "string" },
@@ -13461,7 +13594,16 @@
         "type": "object",
         "properties": {
           "cloud_provider": {
-            "enum": ["aws", "gcp", "azure", "linux", "kubernetes", "aws_org", "gcp_org"],
+            "enum": [
+              "aws",
+              "gcp",
+              "azure",
+              "linux",
+              "kubernetes",
+              "aws_org",
+              "gcp_org",
+              "azure_org"
+            ],
             "type": "string"
           },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
@@ -13487,9 +13629,12 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "category_hierarchy_short": { "type": "string" },
+          "compliance_type": { "type": "string" },
           "control_id": { "type": "string" },
           "description": { "type": "string" },
           "enabled": { "type": "boolean" },
+          "node_id": { "type": "string" },
           "service": { "type": "string" },
           "title": { "type": "string" }
         }
@@ -13503,7 +13648,16 @@
             "type": "string"
           },
           "compliance_type": {
-            "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
+            "enum": [
+              "hipaa",
+              "gdpr",
+              "pci",
+              "nist",
+              "cis",
+              "soc_2",
+              "nsa-cisa",
+              "aws_foundational_security"
+            ],
             "type": "string"
           },
           "node_id": { "type": "string" }
@@ -13527,6 +13681,15 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "node_id": { "type": "string" }
+        }
+      },
+      "ModelCloudNodeMonitoredAccount": {
+        "required": ["node_id", "account_name", "account_id"],
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string" },
+          "account_name": { "type": "string" },
           "node_id": { "type": "string" }
         }
       },
@@ -13764,6 +13927,27 @@
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
+            "nullable": true
+          }
+        }
+      },
+      "ModelComplinaceScanResultsGroupReq": {
+        "required": ["scan_id", "fields_filter"],
+        "type": "object",
+        "properties": {
+          "fields_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
+          "scan_id": { "type": "string" }
+        }
+      },
+      "ModelComplinaceScanResultsGroupResp": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": { "type": "integer" }
+            },
             "nullable": true
           }
         }
@@ -16031,7 +16215,8 @@
               "nist",
               "hipaa",
               "pci",
-              "soc_2"
+              "soc_2",
+              "aws_foundational_security"
             ],
             "type": "array",
             "items": { "type": "string" },

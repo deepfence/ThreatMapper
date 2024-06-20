@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelCloudNodeMonitoredAccount } from './ModelCloudNodeMonitoredAccount';
+import {
+    ModelCloudNodeMonitoredAccountFromJSON,
+    ModelCloudNodeMonitoredAccountFromJSONTyped,
+    ModelCloudNodeMonitoredAccountToJSON,
+} from './ModelCloudNodeMonitoredAccount';
+
 /**
  * 
  * @export
@@ -25,6 +32,12 @@ export interface ModelCloudNodeAccountRegisterReq {
      * @memberof ModelCloudNodeAccountRegisterReq
      */
     account_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeAccountRegisterReq
+     */
+    account_name: string;
     /**
      * 
      * @type {string}
@@ -45,10 +58,10 @@ export interface ModelCloudNodeAccountRegisterReq {
     is_organization_deployment?: boolean;
     /**
      * 
-     * @type {{ [key: string]: string; }}
+     * @type {Array<ModelCloudNodeMonitoredAccount>}
      * @memberof ModelCloudNodeAccountRegisterReq
      */
-    monitored_account_ids?: { [key: string]: string; } | null;
+    monitored_accounts?: Array<ModelCloudNodeMonitoredAccount> | null;
     /**
      * 
      * @type {string}
@@ -87,6 +100,7 @@ export type ModelCloudNodeAccountRegisterReqCloudProviderEnum = typeof ModelClou
 export function instanceOfModelCloudNodeAccountRegisterReq(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "account_id" in value;
+    isInstance = isInstance && "account_name" in value;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "host_node_id" in value;
     isInstance = isInstance && "node_id" in value;
@@ -106,10 +120,11 @@ export function ModelCloudNodeAccountRegisterReqFromJSONTyped(json: any, ignoreD
     return {
         
         'account_id': json['account_id'],
+        'account_name': json['account_name'],
         'cloud_provider': json['cloud_provider'],
         'host_node_id': json['host_node_id'],
         'is_organization_deployment': !exists(json, 'is_organization_deployment') ? undefined : json['is_organization_deployment'],
-        'monitored_account_ids': !exists(json, 'monitored_account_ids') ? undefined : json['monitored_account_ids'],
+        'monitored_accounts': !exists(json, 'monitored_accounts') ? undefined : (json['monitored_accounts'] === null ? null : (json['monitored_accounts'] as Array<any>).map(ModelCloudNodeMonitoredAccountFromJSON)),
         'node_id': json['node_id'],
         'organization_account_id': !exists(json, 'organization_account_id') ? undefined : json['organization_account_id'],
         'version': json['version'],
@@ -126,10 +141,11 @@ export function ModelCloudNodeAccountRegisterReqToJSON(value?: ModelCloudNodeAcc
     return {
         
         'account_id': value.account_id,
+        'account_name': value.account_name,
         'cloud_provider': value.cloud_provider,
         'host_node_id': value.host_node_id,
         'is_organization_deployment': value.is_organization_deployment,
-        'monitored_account_ids': value.monitored_account_ids,
+        'monitored_accounts': value.monitored_accounts === undefined ? undefined : (value.monitored_accounts === null ? null : (value.monitored_accounts as Array<any>).map(ModelCloudNodeMonitoredAccountToJSON)),
         'node_id': value.node_id,
         'organization_account_id': value.organization_account_id,
         'version': value.version,

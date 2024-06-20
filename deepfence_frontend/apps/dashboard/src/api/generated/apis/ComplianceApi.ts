@@ -21,6 +21,8 @@ import type {
   IngestersComplianceScanStatus,
   ModelComplianceScanResult,
   ModelComplianceScanTriggerReq,
+  ModelComplinaceScanResultsGroupReq,
+  ModelComplinaceScanResultsGroupResp,
   ModelScanListReq,
   ModelScanListResp,
   ModelScanResultsReq,
@@ -43,6 +45,10 @@ import {
     ModelComplianceScanResultToJSON,
     ModelComplianceScanTriggerReqFromJSON,
     ModelComplianceScanTriggerReqToJSON,
+    ModelComplinaceScanResultsGroupReqFromJSON,
+    ModelComplinaceScanResultsGroupReqToJSON,
+    ModelComplinaceScanResultsGroupRespFromJSON,
+    ModelComplinaceScanResultsGroupRespToJSON,
     ModelScanListReqFromJSON,
     ModelScanListReqToJSON,
     ModelScanListRespFromJSON,
@@ -63,6 +69,14 @@ import {
 
 export interface CountResultsComplianceScanRequest {
     modelScanResultsReq?: ModelScanResultsReq;
+}
+
+export interface GroupResultsCloudComplianceRequest {
+    modelComplinaceScanResultsGroupReq?: ModelComplinaceScanResultsGroupReq;
+}
+
+export interface GroupResultsComplianceRequest {
+    modelComplinaceScanResultsGroupReq?: ModelComplinaceScanResultsGroupReq;
 }
 
 export interface IngestComplianceScanStatusRequest {
@@ -115,6 +129,38 @@ export interface ComplianceApiInterface {
      * Get Compliance Scans Results
      */
     countResultsComplianceScan(requestParameters: CountResultsComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Count Cloud Compliance Results grouped by Control ID
+     * @summary Count Cloud Compliance Results by Control ID
+     * @param {ModelComplinaceScanResultsGroupReq} [modelComplinaceScanResultsGroupReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ComplianceApiInterface
+     */
+    groupResultsCloudComplianceRaw(requestParameters: GroupResultsCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplinaceScanResultsGroupResp>>;
+
+    /**
+     * Count Cloud Compliance Results grouped by Control ID
+     * Count Cloud Compliance Results by Control ID
+     */
+    groupResultsCloudCompliance(requestParameters: GroupResultsCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplinaceScanResultsGroupResp>;
+
+    /**
+     * Count Compliance Results grouped by Control ID
+     * @summary Count Compliance Results by Control ID
+     * @param {ModelComplinaceScanResultsGroupReq} [modelComplinaceScanResultsGroupReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ComplianceApiInterface
+     */
+    groupResultsComplianceRaw(requestParameters: GroupResultsComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplinaceScanResultsGroupResp>>;
+
+    /**
+     * Count Compliance Results grouped by Control ID
+     * Count Compliance Results by Control ID
+     */
+    groupResultsCompliance(requestParameters: GroupResultsComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplinaceScanResultsGroupResp>;
 
     /**
      * Ingest compliance issues found while scanning the agent
@@ -271,6 +317,84 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      */
     async countResultsComplianceScan(requestParameters: CountResultsComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countResultsComplianceScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Count Cloud Compliance Results grouped by Control ID
+     * Count Cloud Compliance Results by Control ID
+     */
+    async groupResultsCloudComplianceRaw(requestParameters: GroupResultsCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplinaceScanResultsGroupResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/results/count/group/cloud-compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelComplinaceScanResultsGroupReqToJSON(requestParameters.modelComplinaceScanResultsGroupReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelComplinaceScanResultsGroupRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Count Cloud Compliance Results grouped by Control ID
+     * Count Cloud Compliance Results by Control ID
+     */
+    async groupResultsCloudCompliance(requestParameters: GroupResultsCloudComplianceRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplinaceScanResultsGroupResp> {
+        const response = await this.groupResultsCloudComplianceRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Count Compliance Results grouped by Control ID
+     * Count Compliance Results by Control ID
+     */
+    async groupResultsComplianceRaw(requestParameters: GroupResultsComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplinaceScanResultsGroupResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/results/count/group/compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelComplinaceScanResultsGroupReqToJSON(requestParameters.modelComplinaceScanResultsGroupReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelComplinaceScanResultsGroupRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Count Compliance Results grouped by Control ID
+     * Count Compliance Results by Control ID
+     */
+    async groupResultsCompliance(requestParameters: GroupResultsComplianceRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplinaceScanResultsGroupResp> {
+        const response = await this.groupResultsComplianceRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
