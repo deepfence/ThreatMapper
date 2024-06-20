@@ -32,6 +32,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
+		log.Error().Msg(err.Error())
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
@@ -63,6 +64,12 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			return
 		}
 		for _, monitoredAccount := range monitoredAccounts {
+			err = h.Validator.Struct(monitoredAccount)
+			if err != nil {
+				log.Error().Msg(err.Error())
+				h.respondError(&ValidatorError{err: err}, w)
+				return
+			}
 			monitoredNode := map[string]interface{}{
 				"node_id":         monitoredAccount.NodeID,
 				"cloud_provider":  req.CloudProvider,

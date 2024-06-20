@@ -68,6 +68,7 @@ export * from './ModelCloudNodeComplianceControl';
 export * from './ModelCloudNodeControlReq';
 export * from './ModelCloudNodeControlResp';
 export * from './ModelCloudNodeEnableDisableReq';
+export * from './ModelCloudNodeMonitoredAccount';
 export * from './ModelCloudNodeProvidersListResp';
 export * from './ModelCloudResource';
 export * from './ModelCompliance';

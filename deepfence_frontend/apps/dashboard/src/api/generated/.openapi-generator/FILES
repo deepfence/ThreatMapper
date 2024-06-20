@@ -94,6 +94,7 @@ models/ModelCloudNodeComplianceControl.ts
 models/ModelCloudNodeControlReq.ts
 models/ModelCloudNodeControlResp.ts
 models/ModelCloudNodeEnableDisableReq.ts
+models/ModelCloudNodeMonitoredAccount.ts
 models/ModelCloudNodeProvidersListResp.ts
 models/ModelCloudResource.ts
 models/ModelCompliance.ts

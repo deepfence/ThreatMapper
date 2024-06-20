@@ -72,7 +72,16 @@ type BenchmarkType string
 
 // TODO: add new compliance type here
 func (bt BenchmarkType) Enum() []interface{} {
-	return []interface{}{"hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"}
+	return []interface{}{
+		"hipaa",
+		"gdpr",
+		"pci",
+		"nist",
+		"cis",
+		"soc_2",
+		"nsa-cisa",
+		"aws_foundational_security",
+	}
 }
 
 func BenchmarkTypeToArray(bt []BenchmarkType) []string {

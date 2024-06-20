@@ -13375,7 +13375,16 @@
         }
       },
       "ModelBenchmarkType": {
-        "enum": ["hipaa", "gdpr", "pci", "nist", "cis", "soc_2", "nsa-cisa"],
+        "enum": [
+          "hipaa",
+          "gdpr",
+          "pci",
+          "nist",
+          "cis",
+          "soc_2",
+          "nsa-cisa",
+          "aws_foundational_security"
+        ],
         "type": "string"
       },
       "ModelBulkDeleteReportReq": {
@@ -13537,6 +13546,7 @@
       "ModelCloudNodeAccountInfo": {
         "type": "object",
         "properties": {
+          "account_name": { "type": "string" },
           "active": { "type": "boolean" },
           "cloud_provider": { "type": "string" },
           "compliance_percentage": { "type": "number" },
@@ -13556,6 +13566,7 @@
       "ModelCloudNodeAccountRegisterReq": {
         "required": [
           "node_id",
+          "account_name",
           "host_node_id",
           "account_id",
           "cloud_provider",
@@ -13564,12 +13575,13 @@
         "type": "object",
         "properties": {
           "account_id": { "type": "string" },
+          "account_name": { "type": "string" },
           "cloud_provider": { "enum": ["aws", "gcp", "azure"], "type": "string" },
           "host_node_id": { "type": "string" },
           "is_organization_deployment": { "type": "boolean" },
-          "monitored_account_ids": {
-            "type": "object",
-            "additionalProperties": { "type": "string" },
+          "monitored_accounts": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelCloudNodeMonitoredAccount" },
             "nullable": true
           },
           "node_id": { "type": "string" },
@@ -13669,6 +13681,15 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "node_id": { "type": "string" }
+        }
+      },
+      "ModelCloudNodeMonitoredAccount": {
+        "required": ["node_id", "account_name", "account_id"],
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string" },
+          "account_name": { "type": "string" },
           "node_id": { "type": "string" }
         }
       },

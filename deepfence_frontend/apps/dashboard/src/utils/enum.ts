@@ -40,6 +40,8 @@ export function getBenchmarkPrettyName(backendBenchmark: ModelBenchmarkType) {
       return 'GDPR';
     case ModelBenchmarkType.NsaCisa:
       return 'NSA-CISA';
+    case ModelBenchmarkType.AwsFoundationalSecurity:
+      return 'AWS Foundational Security';
 
     default:
       // eslint-disable-next-line no-case-declarations
