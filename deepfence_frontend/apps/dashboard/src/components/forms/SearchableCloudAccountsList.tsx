@@ -90,12 +90,12 @@ const SearchableCloudAccounts = ({
           isSelectVariantType && selectedAccounts.length > 0
             ? `${selectedAccounts.length} selected`
             : cloudProvider
-            ? displayValue
               ? displayValue
-              : `${cloudProvider} ${getDisplayNameOfNodeType(
-                  cloudProvider as ModelCloudNodeAccountsListReqCloudProviderEnum,
-                ).toLowerCase()}`
-            : 'Cloud'
+                ? displayValue
+                : `${cloudProvider} ${getDisplayNameOfNodeType(
+                    cloudProvider as ModelCloudNodeAccountsListReqCloudProviderEnum,
+                  ).toLowerCase()}`
+              : 'Cloud'
         }
         multiple
         value={selectedAccounts}
@@ -151,10 +151,10 @@ export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListPr
               return displayValue
                 ? displayValue
                 : cloudProvider
-                ? `${cloudProvider} ${getDisplayNameOfNodeType(
-                    cloudProvider as ModelCloudNodeAccountsListReqCloudProviderEnum,
-                  ).toLowerCase()}`
-                : `Cloud`;
+                  ? `${cloudProvider} ${getDisplayNameOfNodeType(
+                      cloudProvider as ModelCloudNodeAccountsListReqCloudProviderEnum,
+                    ).toLowerCase()}`
+                  : `Cloud`;
             }}
             multiple
             onQueryChange={() => {
