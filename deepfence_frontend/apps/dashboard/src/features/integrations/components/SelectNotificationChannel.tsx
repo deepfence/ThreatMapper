@@ -3,7 +3,7 @@ import { flatten, groupBy } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
-import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
+import { getIntegratinPrettyName } from '@/features/integrations/components/integration-form/utils';
 import { queries } from '@/queries';
 
 function useListIntegrations() {
@@ -79,7 +79,7 @@ const Channel = () => {
           .map((item) => {
             return (
               <ComboboxOption key={item} value={item}>
-                {integrationTypeToNameMapping[item]}
+                {getIntegratinPrettyName(item)}
               </ComboboxOption>
             );
           })}

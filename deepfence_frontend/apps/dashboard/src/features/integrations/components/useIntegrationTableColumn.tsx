@@ -18,7 +18,7 @@ import {
   severityMap,
 } from '@/features/integrations/pages/IntegrationAdd';
 
-import { IntegrationType } from './IntegrationForm';
+import { IntegrationType } from './integration-form/utils';
 
 const ActionDropdown = ({
   row,
@@ -59,15 +59,17 @@ export const useIntegrationTableColumn = (
     integrationType: string;
   };
 
-  if (!integrationType) {
-    throw new Error('Integration Type is required');
-  }
   const columnHelper = createColumnHelper<ModelIntegrationListResp>();
 
   const getDynamicTableColumns = () => {
     switch (integrationType) {
       case IntegrationType.slack:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 10,
+            size: 20,
+            maxSize: 30,
+          }),
           columnHelper.display({
             id: 'config.channel',
             cell: (cell) => cell.row.original.config?.channel,
@@ -89,6 +91,11 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.s3:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 30,
+            size: 34,
+            maxSize: 45,
+          }),
           columnHelper.display({
             id: 'config.aws_region',
             cell: ({ row }) =>
@@ -180,6 +187,11 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.jira:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 15,
+            size: 25,
+            maxSize: 30,
+          }),
           columnHelper.display({
             id: 'config.api_token_masked',
             header: () => <TruncatedText text={'Auth type'} />,
@@ -253,6 +265,11 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.splunk:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 15,
+            size: 20,
+            maxSize: 30,
+          }),
           columnHelper.display({
             id: 'config.endpoint_url',
             cell: ({ row }) =>
@@ -282,6 +299,11 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.elasticsearch:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 15,
+            size: 25,
+            maxSize: 30,
+          }),
           columnHelper.display({
             id: 'config.endpoint_url',
             cell: ({ row }) =>
@@ -338,6 +360,11 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.sumoLogic:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 10,
+            size: 15,
+            maxSize: 25,
+          }),
           columnHelper.display({
             id: 'config.endpoint_url',
             cell: ({ row }) =>
@@ -354,6 +381,11 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.googleChronicle:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 15,
+            size: 20,
+            maxSize: 30,
+          }),
           columnHelper.display({
             id: 'config.url',
             cell: ({ row }) =>
@@ -383,6 +415,11 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.awsSecurityHub:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 15,
+            size: 20,
+            maxSize: 30,
+          }),
           columnHelper.display({
             id: 'config.aws_access_key',
             cell: ({ row }) =>
@@ -408,6 +445,11 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.microsoftTeams:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 15,
+            size: 20,
+            maxSize: 30,
+          }),
           columnHelper.display({
             id: 'config.webhook_url_masked',
             cell: ({ row }) =>
@@ -418,12 +460,17 @@ export const useIntegrationTableColumn = (
               ),
             header: () => <TruncatedText text={'Webhook url'} />,
             minSize: 45,
-            size: 50,
-            maxSize: 55,
+            size: 80,
+            maxSize: 80,
           }),
         ];
       case IntegrationType.pagerDuty:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 15,
+            size: 20,
+            maxSize: 30,
+          }),
           columnHelper.display({
             id: 'config.service_key_masked',
             cell: ({ row }) =>
@@ -453,6 +500,11 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.httpEndpoint:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 15,
+            size: 20,
+            maxSize: 30,
+          }),
           columnHelper.display({
             id: 'config.url',
             cell: ({ row }) =>
@@ -482,6 +534,11 @@ export const useIntegrationTableColumn = (
         ];
       case IntegrationType.email:
         return [
+          getRowSelectionColumn(columnHelper, {
+            minSize: 10,
+            size: 15,
+            maxSize: 25,
+          }),
           columnHelper.display({
             id: 'config.email_id',
             header: () => <TruncatedText text={'Email id'} />,
@@ -501,11 +558,7 @@ export const useIntegrationTableColumn = (
 
   const columns = useMemo(() => {
     const columns = [
-      getRowSelectionColumn(columnHelper, {
-        minSize: 10,
-        size: 15,
-        maxSize: 30,
-      }),
+      getDynamicTableColumns()[0],
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
@@ -588,7 +641,7 @@ export const useIntegrationTableColumn = (
         size: 70,
         maxSize: 75,
       }),
-      ...getDynamicTableColumns(),
+      ...getDynamicTableColumns().slice(1),
       columnHelper.display({
         id: 'filters',
         enableSorting: false,
@@ -658,5 +711,10 @@ export const useIntegrationTableColumn = (
     ];
     return columns;
   }, []);
+
+  // if (!integrationType) {
+  //   throw new Error('Integration Type is required');
+  // }
+
   return columns;
 };
