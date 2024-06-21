@@ -22,14 +22,18 @@ import {
 } from '@/api/generated';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { PlusIcon } from '@/components/icons/common/Plus';
-import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { getArrayTypeValuesFromFormData } from '@/utils/formData';
 
-import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
+import {
+  getIntegrationPrettyName,
+  IntegrationKeyType,
+  IntegrationType,
+} from '../components/integration-form/utils';
+import { IntegrationForm } from '../components/IntegrationForm';
 import { IntegrationTable } from '../components/IntegrationTable';
 
 export const CLOUD_TRAIL_ALERT = 'CloudTrail Alert';
@@ -562,7 +566,7 @@ const BulkActions = ({
 
 const IntegrationAdd = () => {
   const { integrationType } = useParams() as {
-    integrationType: string;
+    integrationType: IntegrationKeyType;
   };
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -578,7 +582,7 @@ const IntegrationAdd = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
   const params = useParams() as {
-    integrationType: string;
+    integrationType: IntegrationKeyType;
   };
 
   const onTableAction = useCallback(
@@ -639,9 +643,7 @@ const IntegrationAdd = () => {
         >
           <SlidingModalCloseButton />
           <Header
-            title={`Edit Integration: ${
-              integrationTypeToNameMapping[params.integrationType]
-            }`}
+            title={`Edit Integration: ${getIntegrationPrettyName(params.integrationType)}`}
           />
           <IntegrationForm
             integrationType={integrationType}
@@ -660,9 +662,7 @@ const IntegrationAdd = () => {
         >
           <SlidingModalCloseButton />
           <Header
-            title={`Add Integration: ${
-              integrationTypeToNameMapping[params.integrationType]
-            }`}
+            title={`Add Integration: ${getIntegrationPrettyName(params.integrationType)}`}
           />
           <IntegrationForm
             integrationType={integrationType}

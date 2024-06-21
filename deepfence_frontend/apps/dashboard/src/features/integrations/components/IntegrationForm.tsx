@@ -1,64 +1,28 @@
-import { isNil, upperFirst } from 'lodash-es';
+import { isNil } from 'lodash-es';
 import { useState } from 'react';
-import { useFetcher, useParams } from 'react-router-dom';
-import { useUpdateEffect } from 'react-use';
-import {
-  Button,
-  Checkbox,
-  Listbox,
-  ListboxOption,
-  Radio,
-  TextInput,
-} from 'ui-components';
+import { useFetcher } from 'react-router-dom';
+import { Button, Checkbox, Radio, TextInput } from 'ui-components';
 
-import {
-  ModelCloudComplianceStatusEnum,
-  ModelComplianceStatusEnum,
-  ModelIntegrationFilters,
-  ModelIntegrationListResp,
-  ModelNodeIdentifierNodeTypeEnum,
-} from '@/api/generated';
+import { ModelIntegrationListResp } from '@/api/generated';
+import { DFLink } from '@/components/DFLink';
 import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
-import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
-import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
-import { SearchableHostList } from '@/components/forms/SearchableHostList';
-import { SearchableImageList } from '@/components/forms/SearchableImageList';
-import { FieldSelection } from '@/features/integrations/components/report-form/FieldSelection';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { ScanTypeEnum } from '@/types/common';
-import {
-  getPostureStatusPrettyName,
-  getSeverityPrettyName,
-  SeverityEnumList,
-} from '@/utils/enum';
 
+import { ActionEnumType } from '../pages/IntegrationAdd';
+import { NotificationTypeField } from './integration-form/NotificationTypeField';
+import { TextInputType } from './integration-form/TextInputType';
 import {
-  ActionEnumType,
-  severityMap,
-  // CLOUD_TRAIL_ALERT,
-  // USER_ACTIVITIES,
-} from '../pages/IntegrationAdd';
+  getIntegrationPrettyName,
+  IntegrationDocsLinkMap,
+  IntegrationKeyType,
+  IntegrationType,
+} from './integration-form/utils';
 
-type IntegrationTypeProps = {
-  integrationType: string;
+interface IntegrationTypeProps {
+  integrationType: IntegrationKeyType;
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
   data?: ModelIntegrationListResp;
-};
-
-export const IntegrationType = {
-  slack: 'slack',
-  pagerDuty: 'pagerduty',
-  email: 'email',
-  httpEndpoint: 'http_endpoint',
-  microsoftTeams: 'teams',
-  splunk: 'splunk',
-  sumoLogic: 'sumologic',
-  elasticsearch: 'elasticsearch',
-  googleChronicle: 'googlechronicle',
-  awsSecurityHub: 'aws_security_hub',
-  jira: 'jira',
-  s3: 's3',
-} as const;
+}
 
 // const UserActivityIntegration: string[] = [
 //   IntegrationType.splunk,
@@ -82,496 +46,6 @@ export const IntegrationType = {
 //   IntegrationType.googleChronicle,
 //   IntegrationType.awsSecurityHub,
 // ];
-
-const TextInputType = ({
-  label,
-  name,
-  value,
-  helperText,
-  color,
-  type,
-  placeholder,
-  required,
-  defaultValue,
-}: {
-  label: string;
-  name: string;
-  value?: string;
-  helperText: string;
-  color: 'error' | 'default';
-  type?: 'text' | 'password';
-  placeholder?: string;
-  required?: boolean;
-  defaultValue?: string;
-}) => {
-  return (
-    <TextInput
-      className="w-full"
-      label={label}
-      type={type ?? 'text'}
-      name={name}
-      placeholder={placeholder ? placeholder : label}
-      helperText={helperText}
-      color={color}
-      required={required}
-      value={value}
-      defaultValue={defaultValue}
-    />
-  );
-};
-
-const isCloudTrailNotification = (notificationType: string) => {
-  return notificationType && notificationType === 'CloudTrailAlert';
-};
-
-const isUserActivityNotification = (notificationType: string) => {
-  return notificationType && notificationType === 'UserActivities';
-};
-
-const isVulnerabilityNotification = (notificationType: string) => {
-  return notificationType && notificationType === 'Vulnerability';
-};
-
-const isJiraIntegration = (integrationType: string) => {
-  return integrationType && integrationType === IntegrationType.jira;
-};
-
-const isCloudComplianceNotification = (notificationType: string) => {
-  return notificationType && notificationType === 'CloudCompliance';
-};
-
-const isComplianceNotification = (notificationType: string) => {
-  return notificationType && notificationType === 'Compliance';
-};
-
-const getHostsFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
-  if (!nodeIds) {
-    return [];
-  }
-  return nodeIds.reduce((acc: string[], current) => {
-    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.Host) {
-      acc.push(current.node_id);
-    }
-    return acc;
-  }, []);
-};
-
-const getImagesFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
-  if (!nodeIds) {
-    return [];
-  }
-  return nodeIds.reduce((acc: string[], current) => {
-    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.Image) {
-      acc.push(current.node_id);
-    }
-    return acc;
-  }, []);
-};
-
-const getClustersFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
-  if (!nodeIds) {
-    return [];
-  }
-  return nodeIds.reduce((acc: string[], current) => {
-    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.Cluster) {
-      acc.push(current.node_id);
-    }
-    return acc;
-  }, []);
-};
-
-const getCloudAccountsFilter = (nodeIds: ModelIntegrationFilters['node_ids'] = []) => {
-  if (!nodeIds) {
-    return [];
-  }
-  return nodeIds.reduce((acc: string[], current) => {
-    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.CloudAccount) {
-      acc.push(current.node_id);
-    }
-    return acc;
-  }, []);
-};
-
-const API_SCAN_TYPE_MAP: {
-  [key: string]: ScanTypeEnum;
-} = {
-  Vulnerability: ScanTypeEnum.VulnerabilityScan,
-  Secret: ScanTypeEnum.SecretScan,
-  Malware: ScanTypeEnum.MalwareScan,
-  Compliance: ScanTypeEnum.ComplianceScan,
-};
-
-const scanTypes = ['Secret', 'Vulnerability', 'Malware'];
-const AdvancedFilters = ({
-  notificationType,
-  cloudProvider,
-  filters,
-}: {
-  notificationType: string;
-  cloudProvider?: string;
-  filters?: ModelIntegrationFilters;
-}) => {
-  const fieldFilters = filters?.fields_filters;
-  // severity
-  const severityFilter =
-    fieldFilters?.contains_filter?.filter_in?.[
-      severityMap[notificationType ?? ''] || 'severity'
-    ];
-  // status for compliance
-  const statusFilter = fieldFilters?.contains_filter?.filter_in?.['status'];
-
-  const [selectedSeverity, setSelectedSeverity] = useState<string[]>(
-    severityFilter ?? [],
-  );
-
-  // status
-  const [selectedStatus, setSelectedStatus] = useState<string[]>(statusFilter ?? []);
-
-  // to main clear state for combobox
-  const [hosts, setHosts] = useState<string[]>(getHostsFilter(filters?.node_ids));
-  const [images, setImages] = useState<string[]>(getImagesFilter(filters?.node_ids));
-  const [containers, setContainers] = useState<string[]>(filters?.container_names ?? []);
-  const [clusters, setClusters] = useState<string[]>(
-    getClustersFilter(filters?.node_ids),
-  );
-  const [selectedCloudAccounts, setSelectedCloudAccounts] = useState<string[]>(
-    getCloudAccountsFilter(filters?.node_ids),
-  );
-
-  useUpdateEffect(() => {
-    setSelectedSeverity([]);
-    setSelectedStatus([]);
-    setHosts([]);
-    setImages([]);
-    setContainers([]);
-    setClusters([]);
-    setSelectedCloudAccounts([]);
-  }, [notificationType, cloudProvider]);
-
-  return (
-    <div className="col-span-2 mt-6">
-      <div className="flex text-text-input-value ">
-        <div className="text-h5">Advanced Filter (Optional)</div>
-      </div>
-      <div className="grid grid-cols-2 gap-y-8 gap-x-8 pt-4">
-        {isCloudComplianceNotification(notificationType) && cloudProvider ? (
-          <SearchableCloudAccountsList
-            label={`${cloudProvider} Account`}
-            triggerVariant="select"
-            defaultSelectedAccounts={selectedCloudAccounts}
-            cloudProvider={cloudProvider.toLowerCase() as 'aws' | 'gcp' | 'azure'}
-            onClearAll={() => {
-              setSelectedCloudAccounts([]);
-            }}
-            onChange={(value) => {
-              setSelectedCloudAccounts(value);
-            }}
-          />
-        ) : (
-          <SearchableHostList
-            scanType={API_SCAN_TYPE_MAP[notificationType]}
-            triggerVariant="select"
-            defaultSelectedHosts={hosts}
-            onChange={(value) => {
-              setHosts(value);
-            }}
-            onClearAll={() => {
-              setHosts([]);
-            }}
-            agentRunning={false}
-            active={false}
-          />
-        )}
-        {!isComplianceNotification(notificationType) &&
-          !isCloudComplianceNotification(notificationType) && (
-            <SearchableContainerList
-              scanType={API_SCAN_TYPE_MAP[notificationType]}
-              triggerVariant="select"
-              defaultSelectedContainers={containers}
-              onChange={(value) => {
-                setContainers(value);
-              }}
-              onClearAll={() => {
-                setContainers([]);
-              }}
-              active={false}
-              valueKey="nodeName"
-            />
-          )}
-        {!isComplianceNotification(notificationType) &&
-          !isCloudComplianceNotification(notificationType) && (
-            <SearchableImageList
-              scanType={API_SCAN_TYPE_MAP[notificationType]}
-              triggerVariant="select"
-              defaultSelectedImages={images}
-              onChange={(value) => {
-                setImages(value);
-              }}
-              onClearAll={() => {
-                setImages([]);
-              }}
-            />
-          )}
-        {!isCloudComplianceNotification(notificationType) && (
-          <SearchableClusterList
-            triggerVariant="select"
-            defaultSelectedClusters={clusters}
-            onChange={(value) => {
-              setClusters(value);
-            }}
-            onClearAll={() => {
-              setClusters([]);
-            }}
-            agentRunning={false}
-            active={false}
-          />
-        )}
-
-        {isComplianceNotification(notificationType) ||
-        isCloudComplianceNotification(notificationType) ? (
-          <>
-            {isComplianceNotification(notificationType) && (
-              <Listbox
-                variant="underline"
-                value={selectedStatus}
-                name="statusFilter"
-                onChange={(value) => {
-                  setSelectedStatus(value);
-                }}
-                placeholder="Select status"
-                label="Select status"
-                multiple
-                clearAll="Clear"
-                onClearAll={() => setSelectedStatus([])}
-                getDisplayValue={(value) => {
-                  return value && value.length ? `${value.length} selected` : '';
-                }}
-              >
-                <div className="px-3 pt-2 text-p3 text-text-text-and-icon">Host</div>
-                <ListboxOption value={ModelComplianceStatusEnum.Pass}>
-                  {getPostureStatusPrettyName(ModelComplianceStatusEnum.Pass)}
-                </ListboxOption>
-                <ListboxOption value={ModelComplianceStatusEnum.Warn}>
-                  {getPostureStatusPrettyName(ModelComplianceStatusEnum.Warn)}
-                </ListboxOption>
-                <ListboxOption value={ModelComplianceStatusEnum.Note}>
-                  {getPostureStatusPrettyName(ModelComplianceStatusEnum.Note)}
-                </ListboxOption>
-                <div className="px-3 pt-4 text-p3 text-text-text-and-icon">
-                  Kubernetes
-                </div>
-                <ListboxOption value={ModelCloudComplianceStatusEnum.Alarm}>
-                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Alarm)}
-                </ListboxOption>
-                <ListboxOption value={ModelCloudComplianceStatusEnum.Ok}>
-                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Ok)}
-                </ListboxOption>
-                <ListboxOption value={ModelCloudComplianceStatusEnum.Skip}>
-                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Skip)}
-                </ListboxOption>
-                <ListboxOption value={ModelCloudComplianceStatusEnum.Delete}>
-                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Delete)}
-                </ListboxOption>
-                <div className="px-3 pt-4 text-p3 text-text-text-and-icon">Common</div>
-                <ListboxOption value={ModelCloudComplianceStatusEnum.Info}>
-                  {getPostureStatusPrettyName(ModelCloudComplianceStatusEnum.Info)}
-                </ListboxOption>
-              </Listbox>
-            )}
-            {isCloudComplianceNotification(notificationType) && (
-              <Listbox
-                variant="underline"
-                value={selectedStatus}
-                name="statusFilter"
-                onChange={(value) => {
-                  setSelectedStatus(value);
-                }}
-                placeholder="Select status"
-                label="Select status"
-                multiple
-                clearAll="Clear"
-                onClearAll={() => setSelectedStatus([])}
-                getDisplayValue={(value) => {
-                  return value && value.length ? `${value.length} selected` : '';
-                }}
-              >
-                {Object.values(ModelCloudComplianceStatusEnum).map((status) => {
-                  return (
-                    <ListboxOption key={status} value={status}>
-                      {getPostureStatusPrettyName(status)}
-                    </ListboxOption>
-                  );
-                })}
-              </Listbox>
-            )}
-          </>
-        ) : null}
-
-        {scanTypes.includes(notificationType as ScanTypeEnum) ? (
-          <>
-            <Listbox
-              variant="underline"
-              value={selectedSeverity}
-              name="severityFilter"
-              onChange={(value) => {
-                setSelectedSeverity(value);
-              }}
-              placeholder="Select severity"
-              label="Select severity"
-              multiple
-              clearAll="Clear"
-              onClearAll={() => setSelectedSeverity([])}
-              getDisplayValue={(value) => {
-                return value && value.length ? `${value.length} selected` : '';
-              }}
-            >
-              {SeverityEnumList.map((severity) => {
-                return (
-                  <ListboxOption key={severity} value={severity}>
-                    {getSeverityPrettyName(severity)}
-                  </ListboxOption>
-                );
-              })}
-            </Listbox>
-          </>
-        ) : null}
-      </div>
-    </div>
-  );
-};
-
-const getDisplayNotification = (notificationType: string) => {
-  if (isCloudTrailNotification(notificationType)) {
-    return 'CloudTrail Alert';
-  } else if (isUserActivityNotification(notificationType)) {
-    return 'User Activities';
-  } else if (isCloudComplianceNotification(notificationType)) {
-    return 'Cloud Compliance';
-  }
-  return notificationType;
-};
-const NotificationType = ({
-  fieldErrors,
-  defaultNotificationType,
-  data,
-}: {
-  fieldErrors?: Record<string, string>;
-  defaultNotificationType: string;
-  data?: ModelIntegrationListResp;
-}) => {
-  const [notificationType, setNotificationType] = useState<ScanTypeEnum | string>(
-    defaultNotificationType,
-  );
-  const [cloud, setCloud] = useState<string>('AWS');
-
-  const { integrationType } = useParams() as {
-    integrationType: string;
-  };
-
-  if (!integrationType) {
-    console.warn('Notification Type is required to get scan resource type');
-    return null;
-  }
-
-  return (
-    <>
-      <Listbox
-        variant="underline"
-        value={notificationType}
-        name="_notificationType"
-        onChange={(value) => {
-          if (value === 'CloudTrail Alert') {
-            setNotificationType('CloudTrail Alert');
-          } else {
-            setNotificationType(value);
-          }
-        }}
-        placeholder="Select notification type"
-        label="Notification Type"
-        getDisplayValue={() => {
-          return getDisplayNotification(notificationType);
-        }}
-        required
-      >
-        {['Vulnerability', 'Secret', 'Malware', 'Compliance', 'CloudCompliance'].map(
-          (notification) => {
-            return (
-              <ListboxOption key={notification} value={notification}>
-                {getDisplayNotification(notification)}
-              </ListboxOption>
-            );
-          },
-        )}
-
-        {/* {CloudTrailIntegration.includes(integrationType) && (
-          <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>
-        )} */}
-
-        {/* {UserActivityIntegration.includes(integrationType) ? (
-          <SelectItem value={USER_ACTIVITIES}>User Activities</SelectItem>
-        ) : null} */}
-      </Listbox>
-
-      {isCloudComplianceNotification(notificationType) &&
-        integrationType !== IntegrationType.s3 && (
-          <Listbox
-            variant="underline"
-            label="Select Provider"
-            value={cloud}
-            name="cloudType"
-            onChange={(value) => {
-              setCloud(value);
-            }}
-            placeholder="Select provider"
-            getDisplayValue={() => {
-              return cloud;
-            }}
-          >
-            {['AWS', 'GCP', 'AZURE'].map((cloud) => {
-              return (
-                <ListboxOption value={cloud} key={cloud}>
-                  {cloud}
-                </ListboxOption>
-              );
-            })}
-          </Listbox>
-        )}
-
-      {isCloudTrailNotification(notificationType) && <>Add Cloud trails here</>}
-
-      {/**  TODO: check this is used */}
-      {isUserActivityNotification(notificationType) && (
-        <div className="mt-3">
-          <TextInputType
-            name="interval"
-            label="Enter interval"
-            helperText={fieldErrors?.interval ?? ''}
-            color={fieldErrors?.interval ? 'error' : 'default'}
-          />
-        </div>
-      )}
-
-      {notificationType &&
-      !isCloudTrailNotification(notificationType) &&
-      !isUserActivityNotification(notificationType) ? (
-        <AdvancedFilters
-          notificationType={notificationType}
-          cloudProvider={cloud}
-          filters={data?.filters}
-        />
-      ) : null}
-
-      {notificationType &&
-      isVulnerabilityNotification(notificationType) &&
-      isJiraIntegration(integrationType) ? (
-        <FieldSelection
-          notificationType={notificationType.toLowerCase() as 'vulnerability'}
-          defaultSelectedFields={data?.config?.custom_fields}
-        />
-      ) : null}
-    </>
-  );
-};
 
 export const IntegrationForm = ({
   integrationType,
@@ -601,10 +75,23 @@ export const IntegrationForm = ({
     return formData?.config?.use_iam_role === 'true';
   });
 
+  const docLink = IntegrationDocsLinkMap[integrationType];
+
   return (
     <>
       {!data?.success ? (
         <fetcher.Form method="post" className="m-4 overflow-y-auto">
+          {docLink && docLink.trim().length > 0 ? (
+            <div className="text-p4a text-text-input-value pb-4">
+              Integrate with {getIntegrationPrettyName(integrationType)}. Find out more
+              information by{' '}
+              <DFLink href={docLink} target="_blank" rel="noreferrer">
+                reading our documentation
+              </DFLink>
+              .
+            </div>
+          ) : null}
+
           <input type="text" name="integrationId" hidden readOnly value={formData?.id} />
           <div className="grid grid-cols-2 relative gap-y-8 gap-x-8">
             {integrationType === IntegrationType.slack && (
@@ -1016,7 +503,7 @@ export const IntegrationForm = ({
               </>
             )}
 
-            <NotificationType
+            <NotificationTypeField
               defaultNotificationType={formData?.notification_type ?? ''}
               data={formData}
             />

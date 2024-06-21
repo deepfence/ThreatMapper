@@ -3,11 +3,14 @@ import { Breadcrumb, BreadcrumbLink } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
-import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
+import {
+  getIntegrationPrettyName,
+  IntegrationKeyType,
+} from '@/features/integrations/components/integration-form/utils';
 
 const IntegrationsLayout = () => {
   const params = useParams() as {
-    integrationType: string;
+    integrationType: IntegrationKeyType;
   };
 
   if (!params.integrationType) {
@@ -25,7 +28,7 @@ const IntegrationsLayout = () => {
           </BreadcrumbLink>
           <BreadcrumbLink>
             <span className="inherit cursor-auto">
-              {integrationTypeToNameMapping[params.integrationType]}
+              {getIntegrationPrettyName(params.integrationType)}
             </span>
           </BreadcrumbLink>
         </Breadcrumb>
