@@ -239,3 +239,45 @@ func LinkNodesWithCloudResources(ctx context.Context) error {
 
 	return tx.Commit(ctx)
 }
+
+func CommitFuncCloudResourceRefreshStatus(ctx context.Context, ns string, cs []ingestersUtil.CloudResourceRefreshStatus) error {
+
+	ctx = directory.ContextWithNameSpace(ctx, directory.NamespaceID(ns))
+
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "commit-func-cloud-resource")
+	defer span.End()
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close(ctx)
+
+	_, err = tx.Run(ctx, `
+		UNWIND $batch as row
+		MATCH (n:CloudNode{node_id: row.cloud_node_id})
+		SET n.cloud_resource_refresh_status = row.refresh_status,
+			n.cloud_resource_refresh_message = row.refresh_message`,
+		map[string]interface{}{
+			"batch": ResourceRefreshStatusToMaps(cs),
+		},
+	)
+
+	return nil
+}
+
+func ResourceRefreshStatusToMaps(ms []ingestersUtil.CloudResourceRefreshStatus) []map[string]interface{} {
+	res := make([]map[string]interface{}, 0, len(ms))
+	for i, v := range ms {
+		res[i] = v.ToMap()
+	}
+	return res
+}

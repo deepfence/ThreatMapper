@@ -754,6 +754,11 @@ func (h *Handler) IngestCloudComplianceScanStatusReportHandler(w http.ResponseWr
 	ingestScanReportKafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestCloudResourceRefreshStatusReportHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewCloudResourceRefreshStatusIngester()
+	ingestScanReportKafka(w, r, ingester, h.IngestChan)
+}
+
 func ingestScanReportKafka[T any](
 	respWrite http.ResponseWriter,
 	req *http.Request,

@@ -111,6 +111,12 @@ func NewKafkaProcessors(namespace string) map[string]*BulkProcessor {
 			desWrapper(ingesters.CommitFuncStatus[ingestersUtil.CloudComplianceScanStatus](utils.NEO4JCloudComplianceScan))),
 	)
 
+	processors[utils.TopicWithNamespace(utils.CloudResourceRefreshStatus, namespace)] = NewBulkProcessor(
+		utils.CloudResourceRefreshStatus, namespace,
+		telemetryWrapper(utils.CloudResourceRefreshStatus,
+			desWrapper(ingesters.CommitFuncCloudResourceRefreshStatus)),
+	)
+
 	processors[utils.TopicWithNamespace(utils.CloudResource, namespace)] = NewBulkProcessorWithSize(
 		utils.CloudResource, namespace,
 		telemetryWrapper(utils.CloudResource,

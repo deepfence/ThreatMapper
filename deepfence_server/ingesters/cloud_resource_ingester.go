@@ -47,3 +47,41 @@ func (tc *CloudResourceIngester) Ingest(
 
 	return nil
 }
+
+type CloudResourceRefreshStatusIngester struct{}
+
+func NewCloudResourceRefreshStatusIngester() KafkaIngester[[]ingestersUtil.CloudResourceRefreshStatus] {
+	return &CloudResourceRefreshStatusIngester{}
+}
+
+func (tc *CloudResourceRefreshStatusIngester) Ingest(
+	ctx context.Context,
+	cs []ingestersUtil.CloudResourceRefreshStatus,
+	ingestC chan *kgo.Record,
+) error {
+
+	tenantID, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		return err
+	}
+
+	rh := []kgo.RecordHeader{
+		{Key: "namespace", Value: []byte(tenantID)},
+	}
+
+	for _, c := range cs {
+		cb, err := json.Marshal(c)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		} else {
+			ingestC <- &kgo.Record{
+				Topic:   utils.CloudResourceRefreshStatus,
+				Value:   cb,
+				Headers: rh,
+			}
+		}
+	}
+
+	return nil
+
+}
