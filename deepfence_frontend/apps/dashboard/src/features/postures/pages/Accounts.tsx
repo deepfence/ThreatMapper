@@ -1223,9 +1223,9 @@ const AccountTable = ({
           );
         },
         header: () => '',
-        size: 20,
-        minSize: 20,
-        maxSize: 20,
+        minSize: 15,
+        size: 15,
+        maxSize: 15,
         enableResizing: false,
       }),
       columnHelper.accessor('node_name', {

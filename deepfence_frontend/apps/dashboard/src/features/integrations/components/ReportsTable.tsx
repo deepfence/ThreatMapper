@@ -211,9 +211,9 @@ export const ReportTable = ({
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        minSize: 15,
-        size: 20,
-        maxSize: 30,
+        minSize: 10,
+        size: 10,
+        maxSize: 10,
       }),
       columnHelper.display({
         id: 'actions',
@@ -237,26 +237,26 @@ export const ReportTable = ({
           );
         },
         header: () => '',
-        minSize: 20,
-        size: 25,
-        maxSize: 30,
+        minSize: 15,
+        size: 15,
+        maxSize: 15,
         enableResizing: false,
       }),
       columnHelper.accessor('type', {
         enableSorting: true,
         cell: (cell) => <span className="uppercase">{cell.getValue()}</span>,
         header: () => 'Report type',
-        minSize: 30,
-        size: 40,
-        maxSize: 55,
+        minSize: 50,
+        size: 70,
+        maxSize: 80,
       }),
       columnHelper.accessor('created_at', {
         enableSorting: true,
         cell: (cell) => formatMilliseconds(cell.getValue() ?? ''),
         header: () => 'Created at',
-        minSize: 40,
-        size: 50,
-        maxSize: 70,
+        minSize: 50,
+        size: 70,
+        maxSize: 80,
       }),
       columnHelper.display({
         id: 'duration',
@@ -279,9 +279,9 @@ export const ReportTable = ({
         enableSorting: true,
         cell: (cell) => <ScanStatusBadge status={cell.getValue() ?? ''} />,
         header: () => 'Status',
-        minSize: 30,
-        size: 40,
-        maxSize: 70,
+        minSize: 50,
+        size: 70,
+        maxSize: 80,
       }),
       columnHelper.accessor('filters', {
         enableSorting: false,

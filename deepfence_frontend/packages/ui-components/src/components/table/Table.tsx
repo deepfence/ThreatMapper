@@ -101,6 +101,10 @@ function useTableContext<TData extends RowData>() {
 
 const PAGE_RESIZE_OPTIONS = [10, 25, 50, 100, 250];
 
+function isInTruncationRequiredField(columnName: string) {
+  return !['selection', 'actions'].includes(columnName);
+}
+
 const CustomTable = <TData extends RowData>(
   props: TableProps<TData>,
   ref: Ref<Table<TData>>,
@@ -366,25 +370,29 @@ function Th<TData>({
       className={cn(
         'relative border-0 text-text-text-and-icon',
         'border-b-[1.5px] dark:border-bg-grid-border border-[#dcdcdc]',
-        'text-p11',
+        'text-p11 px-4',
         { 'cursor-pointer select-none': header.column.getCanSort() },
       )}
       style={{ width: header.getSize() }}
       onClick={header.column.getToggleSortingHandler()}
     >
       <div
-        className={cn(`w-full h-full flex truncate pl-4 pr-2.5 items-center`, {
+        className={cn(`w-full h-full flex items-center`, {
           ['py-[15px]']: size === 'default',
           ['py-[9px]']: size === 'compact',
           ['py-[12px]']: size === 'medium',
           ['py-[18px]']: size === 'relaxed',
         })}
       >
-        <span className="flex-1 truncate text-start">
+        <div
+          className={cn('flex-1 text-start', {
+            truncate: isInTruncationRequiredField(header.column.id),
+          })}
+        >
           {header.isPlaceholder
             ? null
             : flexRender(header.column.columnDef.header, header.getContext())}
-        </span>
+        </div>
         {header.column.getCanSort() ? (
           <span className={cn('ml-1 flex items-center w-[0.8rem] h-[0.8rem]')}>
             {header.column.getIsSorted() === 'asc' ? (
@@ -502,13 +510,14 @@ function Td<TData>({
       key={cell.id}
       style={{ width: cell.column.getSize() }}
       className={cn(
-        `text-[13px] font-medium leading-[18px] text-text-text-and-icon px-4 truncate min-w-0`,
+        `text-[13px] font-medium leading-[18px] text-text-text-and-icon px-4 min-w-0`,
         {
           'border-b border-bg-grid-border': rowIdx !== totalRows - 1,
           ['h-[48px]']: size === 'default',
           ['h-[36px]']: size === 'compact',
           ['h-[42px]']: size === 'medium',
           ['h-[54px]']: size === 'relaxed',
+          truncate: isInTruncationRequiredField(cell.column.id),
         },
         rest.className ?? '',
       )}

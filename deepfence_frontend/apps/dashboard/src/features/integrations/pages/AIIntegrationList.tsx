@@ -445,7 +445,7 @@ const AIIntegrationTable = () => {
         header: () => '',
         minSize: 30,
         size: 30,
-        maxSize: 35,
+        maxSize: 30,
         enableResizing: false,
       }),
       columnHelper.accessor('integration_type', {

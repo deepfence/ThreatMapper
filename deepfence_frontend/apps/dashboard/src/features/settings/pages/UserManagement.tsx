@@ -776,10 +776,8 @@ const UsersTable = ({
               user={cell.row.original}
               onTableAction={onTableAction}
               trigger={
-                <button className="p-1">
-                  <div className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
-                    <EllipsisIcon />
-                  </div>
+                <button className="h-[16px] w-[16px] text-text-text-and-icon rotate-90">
+                  <EllipsisIcon />
                 </button>
               }
             />
@@ -795,7 +793,7 @@ const UsersTable = ({
         cell: (cell) => cell.getValue(),
         header: () => 'ID',
         minSize: 30,
-        size: 30,
+        size: 40,
         maxSize: 85,
       }),
       columnHelper.accessor('first_name', {
