@@ -55,6 +55,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"node_id":        orgNodeID,
 			"cloud_provider": model.PostureProviderOrgMap[req.CloudProvider],
 			"node_name":      orgAccountID,
+			"account_name":   req.AccountName,
 			"version":        req.Version,
 			"node_type":      req.CloudProvider,
 		}

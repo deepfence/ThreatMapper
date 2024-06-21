@@ -328,6 +328,10 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	return res, nil
 }
 
+var (
+	searchCloudNodeFields = []string{"node_id", "node_name", "account_name", "version", "compliance_percentage", "last_scan_id", "last_scan_status", "active"}
+)
+
 func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
 	ctx, span := telemetry.NewSpan(ctx, "search", "search-cloudnode")
 	defer span.End()
@@ -382,10 +386,13 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
-		CALL {WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x}) RETURN n.node_name as node_name, n.active as active, n.version as version}
-		WITH x, node_name, version, compliance_percentage, last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` +
+		CALL {
+			WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x})
+			RETURN n.node_name as node_name, n.account_name as account_name, n.active as active, n.version as version
+		}
+		WITH x, node_name, account_name, version, compliance_percentage, last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` +
 		reporters.ParseFieldFilters2CypherWhereConditions("", mo.Some(scanFilter), true) +
-		`RETURN x as node_id, node_name, COALESCE(version, 'unknown') as version, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+		`RETURN x as node_id, node_name, account_name, COALESCE(version, 'unknown') as version, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
 		reporters.OrderFilter2CypherCondition("", orderFilters, nil) + fw.FetchWindow2CypherQuery()
 
 	log.Debug().Msgf("search cloud node query: %v", query)
@@ -421,7 +428,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		} else {
 			nodeMap = map[string]interface{}{}
 			baseValuesCount := 0
-			for _, nodeMapKey := range []string{"node_id", "node_name", "version", "compliance_percentage", "last_scan_id", "last_scan_status", "active"} {
+			for _, nodeMapKey := range searchCloudNodeFields {
 				nodeMap[nodeMapKey] = rec.Values[baseValuesCount]
 				baseValuesCount += 1
 			}
