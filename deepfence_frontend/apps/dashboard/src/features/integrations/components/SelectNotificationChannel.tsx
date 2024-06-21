@@ -3,7 +3,10 @@ import { flatten, groupBy } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
-import { getIntegratinPrettyName } from '@/features/integrations/components/integration-form/utils';
+import {
+  getIntegrationPrettyName,
+  IntegrationKeyType,
+} from '@/features/integrations/components/integration-form/utils';
 import { queries } from '@/queries';
 
 function useListIntegrations() {
@@ -77,9 +80,10 @@ const Channel = () => {
             return false;
           })
           .map((item) => {
+            /** TODO: remove typecast to IntegrationKeyType when notification_type?: string; is fixed in backend */
             return (
               <ComboboxOption key={item} value={item}>
-                {getIntegratinPrettyName(item)}
+                {getIntegrationPrettyName(item as IntegrationKeyType)}
               </ComboboxOption>
             );
           })}

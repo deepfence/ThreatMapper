@@ -22,7 +22,7 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
-import { IntegrationDocsLinkMap } from '@/features/integrations/components/integration-form/utils';
+import { AIIntegrationDocsLinkMap } from '@/features/integrations/components/integration-form/utils';
 import { AI_INTEGRATION_TYPES } from '@/features/integrations/pages/AIIntegrationList';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries } from '@/queries';
@@ -193,7 +193,7 @@ const AIIntegrationAdd = () => {
             <div className="text-p4a text-text-input-value">
               Get issues remediation. Find out more information by{' '}
               <DFLink
-                href={IntegrationDocsLinkMap[params.integrationType!]}
+                href={AIIntegrationDocsLinkMap[params.integrationType!]}
                 target="_blank"
                 rel="noreferrer"
               >

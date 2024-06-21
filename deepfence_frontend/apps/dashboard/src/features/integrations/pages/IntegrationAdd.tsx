@@ -29,7 +29,8 @@ import { apiWrapper } from '@/utils/api';
 import { getArrayTypeValuesFromFormData } from '@/utils/formData';
 
 import {
-  getIntegratinPrettyName,
+  getIntegrationPrettyName,
+  IntegrationKeyType,
   IntegrationType,
 } from '../components/integration-form/utils';
 import { IntegrationForm } from '../components/IntegrationForm';
@@ -565,7 +566,7 @@ const BulkActions = ({
 
 const IntegrationAdd = () => {
   const { integrationType } = useParams() as {
-    integrationType: string;
+    integrationType: IntegrationKeyType;
   };
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -581,7 +582,7 @@ const IntegrationAdd = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
   const params = useParams() as {
-    integrationType: string;
+    integrationType: IntegrationKeyType;
   };
 
   const onTableAction = useCallback(
@@ -642,7 +643,7 @@ const IntegrationAdd = () => {
         >
           <SlidingModalCloseButton />
           <Header
-            title={`Edit Integration: ${getIntegratinPrettyName(params.integrationType)}`}
+            title={`Edit Integration: ${getIntegrationPrettyName(params.integrationType)}`}
           />
           <IntegrationForm
             integrationType={integrationType}
@@ -661,7 +662,7 @@ const IntegrationAdd = () => {
         >
           <SlidingModalCloseButton />
           <Header
-            title={`Add Integration: ${getIntegratinPrettyName(params.integrationType)}`}
+            title={`Add Integration: ${getIntegrationPrettyName(params.integrationType)}`}
           />
           <IntegrationForm
             integrationType={integrationType}

@@ -12,13 +12,14 @@ import { ActionEnumType } from '../pages/IntegrationAdd';
 import { NotificationTypeField } from './integration-form/NotificationTypeField';
 import { TextInputType } from './integration-form/TextInputType';
 import {
-  getIntegratinPrettyName,
+  getIntegrationPrettyName,
   IntegrationDocsLinkMap,
+  IntegrationKeyType,
   IntegrationType,
 } from './integration-form/utils';
 
 interface IntegrationTypeProps {
-  integrationType: string;
+  integrationType: IntegrationKeyType;
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
   data?: ModelIntegrationListResp;
 }
@@ -82,7 +83,7 @@ export const IntegrationForm = ({
         <fetcher.Form method="post" className="m-4 overflow-y-auto">
           {docLink ? (
             <div className="text-p4a text-text-input-value pb-4">
-              Integrate with {getIntegratinPrettyName(integrationType)}. Find out more
+              Integrate with {getIntegrationPrettyName(integrationType)}. Find out more
               information by{' '}
               <DFLink href={docLink} target="_blank" rel="noreferrer">
                 reading our documentation

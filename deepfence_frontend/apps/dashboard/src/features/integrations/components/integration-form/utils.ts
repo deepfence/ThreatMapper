@@ -2,7 +2,7 @@ import {
   ModelIntegrationFilters,
   ModelNodeIdentifierNodeTypeEnum,
 } from '@/api/generated';
-import { ScanTypeEnum } from '@/types/common';
+import { GenerativeAIIntegrationType, ScanTypeEnum } from '@/types/common';
 
 export const IntegrationType = {
   slack: 'slack',
@@ -18,8 +18,8 @@ export const IntegrationType = {
   jira: 'jira',
   s3: 's3',
 } as const;
-
-export function getIntegratinPrettyName(type: string) {
+export type IntegrationKeyType = (typeof IntegrationType)[keyof typeof IntegrationType];
+export function getIntegrationPrettyName(type: IntegrationKeyType) {
   switch (type) {
     case IntegrationType.slack:
       return 'Slack';
@@ -50,7 +50,13 @@ export function getIntegratinPrettyName(type: string) {
   }
 }
 
-export const IntegrationDocsLinkMap: Record<string, string> = {
+export const AIIntegrationDocsLinkMap: Record<GenerativeAIIntegrationType, string> = {
+  openai: 'https://community.deepfence.io/threatmapper/docs/integrations/threatrx',
+  'amazon-bedrock':
+    'https://community.deepfence.io/threatmapper/docs/integrations/threatrx',
+};
+
+export const IntegrationDocsLinkMap: Record<IntegrationKeyType, string> = {
   slack: 'https://community.deepfence.io/threatmapper/docs/integrations/slack',
   pagerduty: 'https://community.deepfence.io/threatmapper/docs/integrations/pagerduty',
   email: 'https://community.deepfence.io/threatmapper/docs/integrations/email',
@@ -65,9 +71,6 @@ export const IntegrationDocsLinkMap: Record<string, string> = {
   aws_security_hub: '',
   jira: 'https://community.deepfence.io/threatmapper/docs/integrations/jira',
   s3: 'https://community.deepfence.io/threatmapper/docs/integrations/s3',
-  openai: 'https://community.deepfence.io/threatmapper/docs/integrations/threatrx',
-  'amazon-bedrock':
-    'https://community.deepfence.io/threatmapper/docs/integrations/threatrx',
 } as const;
 
 export const isCloudTrailNotification = (notificationType: string) => {

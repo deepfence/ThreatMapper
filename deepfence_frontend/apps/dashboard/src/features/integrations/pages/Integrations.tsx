@@ -38,7 +38,7 @@ import { GenerativeAIIntegrationType } from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 import {
-  getIntegratinPrettyName,
+  getIntegrationPrettyName,
   IntegrationType,
 } from '../components/integration-form/utils';
 import { useListIntegrations } from './IntegrationAdd';
@@ -60,31 +60,31 @@ const IntegrationsData = [
     name: 'Notification',
     types: [
       {
-        name: getIntegratinPrettyName(IntegrationType.slack),
+        name: getIntegrationPrettyName(IntegrationType.slack),
         id: IntegrationType.slack,
         icon: <SlackIcon />,
         path: '/integrations/notifications/add/slack',
       },
       {
-        name: getIntegratinPrettyName(IntegrationType.microsoftTeams),
+        name: getIntegrationPrettyName(IntegrationType.microsoftTeams),
         id: IntegrationType.microsoftTeams,
         icon: <TeamsIcon />,
         path: '/integrations/notifications/add/teams',
       },
       {
-        name: getIntegratinPrettyName(IntegrationType.pagerDuty),
+        name: getIntegrationPrettyName(IntegrationType.pagerDuty),
         id: IntegrationType.pagerDuty,
         icon: <PagerDutyIcon />,
         path: '/integrations/notifications/add/pagerduty',
       },
       {
-        name: getIntegratinPrettyName(IntegrationType.httpEndpoint),
+        name: getIntegrationPrettyName(IntegrationType.httpEndpoint),
         id: IntegrationType.httpEndpoint,
         icon: <HttpIcon />,
         path: '/integrations/notifications/add/http_endpoint',
       },
       {
-        name: getIntegratinPrettyName(IntegrationType.email),
+        name: getIntegrationPrettyName(IntegrationType.email),
         id: IntegrationType.email,
         icon: <EmailIcon />,
         path: '/integrations/notifications/add/email',
@@ -95,31 +95,31 @@ const IntegrationsData = [
     name: 'SIEM/SOAR',
     types: [
       {
-        name: getIntegratinPrettyName(IntegrationType.splunk),
+        name: getIntegrationPrettyName(IntegrationType.splunk),
         id: IntegrationType.splunk,
         icon: <SplunkIcon />,
         path: '/integrations/seim/add/splunk',
       },
       {
-        name: getIntegratinPrettyName(IntegrationType.elasticsearch),
+        name: getIntegrationPrettyName(IntegrationType.elasticsearch),
         id: IntegrationType.elasticsearch,
         icon: <ElasticsearchIcon />,
         path: '/integrations/seim/add/elasticsearch',
       },
       {
-        name: getIntegratinPrettyName(IntegrationType.sumoLogic),
+        name: getIntegrationPrettyName(IntegrationType.sumoLogic),
         id: IntegrationType.sumoLogic,
         icon: <SumoLogicIcon />,
         path: '/integrations/seim/add/sumologic',
       },
       {
-        name: getIntegratinPrettyName(IntegrationType.googleChronicle),
+        name: getIntegrationPrettyName(IntegrationType.googleChronicle),
         id: IntegrationType.googleChronicle,
         icon: <GoogleChronicleIcon />,
         path: '/integrations/seim/add/googlechronicle',
       },
       {
-        name: getIntegratinPrettyName(IntegrationType.awsSecurityHub),
+        name: getIntegrationPrettyName(IntegrationType.awsSecurityHub),
         id: IntegrationType.awsSecurityHub,
         icon: <AmazonECRRegistryIcon />,
         path: '/integrations/seim/add/aws_security_hub',
@@ -130,7 +130,7 @@ const IntegrationsData = [
     name: 'Ticketing',
     types: [
       {
-        name: getIntegratinPrettyName(IntegrationType.jira),
+        name: getIntegrationPrettyName(IntegrationType.jira),
         id: IntegrationType.jira,
         icon: <JiraIcon />,
         path: '/integrations/ticketing/add/jira',
@@ -141,7 +141,7 @@ const IntegrationsData = [
     name: 'Archival',
     types: [
       {
-        name: getIntegratinPrettyName(IntegrationType.s3),
+        name: getIntegrationPrettyName(IntegrationType.s3),
         id: IntegrationType.s3,
         icon: <S3ArchivalIcon />,
         path: '/integrations/archival/add/s3',
