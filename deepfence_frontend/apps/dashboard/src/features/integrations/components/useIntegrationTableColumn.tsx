@@ -712,9 +712,5 @@ export const useIntegrationTableColumn = (
     return columns;
   }, []);
 
-  // if (!integrationType) {
-  //   throw new Error('Integration Type is required');
-  // }
-
   return columns;
 };

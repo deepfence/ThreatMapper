@@ -81,7 +81,7 @@ export const IntegrationForm = ({
     <>
       {!data?.success ? (
         <fetcher.Form method="post" className="m-4 overflow-y-auto">
-          {docLink ? (
+          {docLink && docLink.trim().length > 0 ? (
             <div className="text-p4a text-text-input-value pb-4">
               Integrate with {getIntegrationPrettyName(integrationType)}. Find out more
               information by{' '}
