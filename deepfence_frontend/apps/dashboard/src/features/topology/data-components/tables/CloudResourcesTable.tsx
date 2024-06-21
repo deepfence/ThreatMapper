@@ -98,7 +98,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   serviceType: 'Service type',
   aws_account_ids: 'AWS account',
   gcp_account_ids: 'GCP account',
-  azure_account_ids: 'Azure account',
+  azure_account_ids: 'Azure subscription',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -229,6 +229,20 @@ function Filters() {
   const [cloudProvidersSearchText, setCloudProvidersSearchText] = useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
+  const onFilterRemove = ({ key, value }: { key: string; value: string }) => {
+    return () => {
+      setSearchParams((prev) => {
+        const existingValues = prev.getAll(key);
+        prev.delete(key);
+        existingValues.forEach((existingValue) => {
+          if (existingValue !== value) prev.append(key, existingValue);
+        });
+        prev.delete('page');
+        return prev;
+      });
+    };
+  };
+
   return (
     <FilterWrapper>
       <div className="flex gap-2">
@@ -313,7 +327,7 @@ function Filters() {
         />
         <SearchableCloudAccountsList
           cloudProvider="azure"
-          displayValue="Azure account"
+          displayValue={FILTER_SEARCHPARAMS['azure_account_ids']}
           defaultSelectedAccounts={searchParams.getAll('azure_account_ids')}
           onClearAll={() => {
             setSearchParams((prev) => {
@@ -344,17 +358,7 @@ function Filters() {
               return (
                 <FilterBadge
                   key={`${key}-${value}`}
-                  onRemove={() => {
-                    setSearchParams((prev) => {
-                      const existingValues = prev.getAll(key);
-                      prev.delete(key);
-                      existingValues.forEach((existingValue) => {
-                        if (existingValue !== value) prev.append(key, existingValue);
-                      });
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }}
+                  onRemove={onFilterRemove({ key, value })}
                   text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
                 />
               );

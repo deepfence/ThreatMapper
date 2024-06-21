@@ -1,3 +1,4 @@
+import { ModelCloudNodeAccountsListReqCloudProviderEnum } from '@/api/generated';
 import { ShieldCheckSolidIcon } from '@/components/icons/posture/ShieldCheckSolid';
 import { ShieldWarningSolidIcon } from '@/components/icons/posture/ShieldWarningSolid';
 import { ShieldXSolidIcon } from '@/components/icons/posture/ShieldXSolid';
@@ -10,19 +11,21 @@ import { KubernetesIcon } from './Kubernetes';
 import { LinuxIcon } from './Linux';
 
 export const PostureLogos = ({ name }: { name: string }) => {
-  if (name === 'aws') {
+  if (name === ModelCloudNodeAccountsListReqCloudProviderEnum.Aws) {
     return <AwsIcon />;
-  } else if (name === 'aws_org') {
+  } else if (name === ModelCloudNodeAccountsListReqCloudProviderEnum.AwsOrg) {
     return <AwsIcon />;
-  } else if (name === 'azure') {
+  } else if (name === ModelCloudNodeAccountsListReqCloudProviderEnum.Azure) {
     return <AzureIcon />;
-  } else if (name === 'gcp_org') {
+  } else if (name === ModelCloudNodeAccountsListReqCloudProviderEnum.GcpOrg) {
     return <GoogleIcon />;
-  } else if (name === 'gcp') {
+  } else if (name === ModelCloudNodeAccountsListReqCloudProviderEnum.AzureOrg) {
+    return <AzureIcon />;
+  } else if (name === ModelCloudNodeAccountsListReqCloudProviderEnum.Gcp) {
     return <GoogleIcon />;
-  } else if (name === 'kubernetes') {
+  } else if (name === ModelCloudNodeAccountsListReqCloudProviderEnum.Kubernetes) {
     return <KubernetesIcon />;
-  } else if (name === 'linux') {
+  } else if (name === ModelCloudNodeAccountsListReqCloudProviderEnum.Linux) {
     return <LinuxIcon />;
   }
   return null;

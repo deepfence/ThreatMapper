@@ -37,16 +37,14 @@ import { getCloudNodesApiClient, getScanResultsApiClient } from '@/api/api';
 import {
   ModelBulkDeleteScansRequestScanTypeEnum,
   ModelCloudNodeAccountInfo,
+  ModelCloudNodeAccountsListReqCloudProviderEnum,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
 import { ConfigureScanModal } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
-import {
-  ICloudAccountType,
-  SearchableCloudAccountsList,
-} from '@/components/forms/SearchableCloudAccountsList';
+import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { ArrowUpCircleLine } from '@/components/icons/common/ArrowUpCircleLine';
@@ -57,10 +55,7 @@ import { PlusIcon } from '@/components/icons/common/Plus';
 import { RefreshIcon } from '@/components/icons/common/Refresh';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
-import {
-  CLOUDS,
-  ComplianceScanConfigureFormProps,
-} from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { ComplianceScanConfigureFormProps } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
@@ -68,19 +63,24 @@ import { getColorForCompliancePercent } from '@/constants/charts';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
+import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import {
-  isKubernetesProvider,
-  isLinuxProvider,
-  isNonCloudProvider,
-  providersToNameMapping,
-} from '@/features/postures/pages/Posture';
+  getDeleteConfirmationDisplayName,
+  getDisplayNameOfNodeType,
+  getSearchableCloudAccountDisplayName,
+  isCloudNonOrgNode,
+  isCloudOrgNode,
+  isKubernetesNodeType,
+  isLinuxNodeType,
+  isNonCloudNode,
+} from '@/features/postures/utils';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import {
+  CloudNodeNonOrgType,
+  CloudNodeType,
   ComplianceScanNodeTypeEnum,
-  isCloudNode,
-  isCloudOrgNode,
   ScanTypeEnum,
 } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
@@ -126,6 +126,8 @@ const getNodeTypeByProviderName = (providerName: string): ComplianceScanNodeType
       return ComplianceScanNodeTypeEnum.gcp_org;
     case 'azure':
       return ComplianceScanNodeTypeEnum.azure;
+    case 'azure_org':
+      return ComplianceScanNodeTypeEnum.azure_org;
     case 'kubernetes':
       return ComplianceScanNodeTypeEnum.kubernetes_cluster;
     default:
@@ -305,10 +307,10 @@ const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
 const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   complianceScanStatus: 'Posture scan status',
   status: 'Status',
-  org_accounts: 'Organization accounts',
+  org_accounts: 'Organization account',
   aws_accounts: 'Account',
   gcp_accounts: 'Account',
-  azure_accounts: 'Account',
+  azure_accounts: 'Subscription',
   hosts: 'Account',
   clusters: 'Account',
 };
@@ -320,7 +322,7 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
 };
 const Filters = () => {
   const { nodeType } = useParams() as {
-    nodeType: 'aws' | 'gcp' | 'azure';
+    nodeType: string;
   };
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -420,56 +422,61 @@ const Filters = () => {
               );
             })}
         </Combobox>
-        {(nodeType === 'aws' || nodeType === 'gcp') && (
-          <SearchableCloudAccountsList
-            displayValue="Organization account"
-            valueKey="nodeId"
-            cloudProvider={`${nodeType}_org` as ICloudAccountType}
-            defaultSelectedAccounts={searchParams.getAll('org_accounts')}
-            onClearAll={() => {
-              setSearchParams((prev) => {
-                prev.delete('org_accounts');
-                prev.delete('page');
-                return prev;
-              });
-            }}
-            onChange={(value) => {
-              setSearchParams((prev) => {
-                prev.delete('org_accounts');
-                value.forEach((id) => {
-                  prev.append('org_accounts', id);
+        {isCloudNonOrgNode(nodeType) ? (
+          <>
+            <SearchableCloudAccountsList
+              displayValue={getSearchableCloudAccountDisplayName(
+                `${nodeType}_org` as ModelCloudNodeAccountsListReqCloudProviderEnum,
+              )}
+              valueKey="nodeId"
+              cloudProvider={`${nodeType}_org` as CloudNodeType}
+              defaultSelectedAccounts={searchParams.getAll('org_accounts')}
+              onClearAll={() => {
+                setSearchParams((prev) => {
+                  prev.delete('org_accounts');
+                  prev.delete('page');
+                  return prev;
                 });
-                prev.delete('page');
-                return prev;
-              });
-            }}
-          />
-        )}
-        {isCloudNode(nodeType) ? (
-          <SearchableCloudAccountsList
-            cloudProvider={nodeType as ICloudAccountType}
-            displayValue={FILTER_SEARCHPARAMS[`${nodeType}_accounts`]}
-            defaultSelectedAccounts={searchParams.getAll(`${nodeType}_accounts`)}
-            onClearAll={() => {
-              setSearchParams((prev) => {
-                prev.delete(`${nodeType}_accounts`);
-                prev.delete('page');
-                return prev;
-              });
-            }}
-            onChange={(value) => {
-              setSearchParams((prev) => {
-                prev.delete(`${nodeType}_accounts`);
-                value.forEach((id) => {
-                  prev.append(`${nodeType}_accounts`, id);
+              }}
+              onChange={(value) => {
+                setSearchParams((prev) => {
+                  prev.delete('org_accounts');
+                  value.forEach((id) => {
+                    prev.append('org_accounts', id);
+                  });
+                  prev.delete('page');
+                  return prev;
                 });
-                prev.delete('page');
-                return prev;
-              });
-            }}
-          />
+              }}
+            />
+            <SearchableCloudAccountsList
+              cloudProvider={nodeType as CloudNodeType}
+              displayValue={
+                FILTER_SEARCHPARAMS[`${nodeType as CloudNodeNonOrgType}_accounts`]
+              }
+              defaultSelectedAccounts={searchParams.getAll(`${nodeType}_accounts`)}
+              onClearAll={() => {
+                setSearchParams((prev) => {
+                  prev.delete(`${nodeType}_accounts`);
+                  prev.delete('page');
+                  return prev;
+                });
+              }}
+              onChange={(value) => {
+                setSearchParams((prev) => {
+                  prev.delete(`${nodeType}_accounts`);
+                  value.forEach((id) => {
+                    prev.append(`${nodeType}_accounts`, id);
+                  });
+                  prev.delete('page');
+                  return prev;
+                });
+              }}
+            />
+          </>
         ) : null}
-        {isLinuxProvider(nodeType) ? (
+
+        {isLinuxNodeType(nodeType) ? (
           <SearchableHostList
             scanType={'none'}
             displayValue={FILTER_SEARCHPARAMS['hosts']}
@@ -493,7 +500,7 @@ const Filters = () => {
             }}
           />
         ) : null}
-        {isKubernetesProvider(nodeType) ? (
+        {isKubernetesNodeType(nodeType) ? (
           <SearchableClusterList
             displayValue={FILTER_SEARCHPARAMS['clusters']}
             defaultSelectedClusters={searchParams.getAll('clusters')}
@@ -524,6 +531,19 @@ const Filters = () => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
             }) as Array<[FILTER_SEARCHPARAMS_KEYS_ENUM, string]>
           ).map(([key, value]) => {
+            if (key === FILTER_SEARCHPARAMS_KEYS_ENUM.org_accounts) {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={onFilterRemove({ key, value })}
+                  text={value}
+                  label={getSearchableCloudAccountDisplayName(
+                    `${nodeType}_org` as ModelCloudNodeAccountsListReqCloudProviderEnum,
+                  )}
+                />
+              );
+            }
+
             if (FILTER_SEARCHPARAMS_DYNAMIC_KEYS.includes(key)) {
               return (
                 <FilterBadge
@@ -680,7 +700,9 @@ const DeleteAccountConfirmationModal = ({
   onSuccess: () => void;
 }) => {
   const fetcher = useFetcher();
-  const params = useParams();
+  const params = useParams() as {
+    nodeType: string;
+  };
 
   const onDeleteAction = useCallback(
     (actionType: string) => {
@@ -715,7 +737,10 @@ const DeleteAccountConfirmationModal = ({
             <span className="h-6 w-6 shrink-0">
               <ErrorStandardLineIcon />
             </span>
-            Delete account
+            Delete{' '}
+            {getDisplayNameOfNodeType(
+              params.nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+            )}
           </div>
         ) : undefined
       }
@@ -749,12 +774,9 @@ const DeleteAccountConfirmationModal = ({
       {!fetcher.data?.success ? (
         <div className="grid">
           <span>
-            {isCloudNode(params.nodeType)
-              ? `The Selected cloud account, resources and scans related to the account will be
-              deleted.`
-              : isCloudOrgNode(params.nodeType)
-                ? `The Selected org cloud account, child accounts related to org account, resources and scans related to the cloud accounts will be deleted.`
-                : ''}
+            {getDeleteConfirmationDisplayName(
+              params.nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+            )}
           </span>
           <br />
           <span>Are you sure you want to delete?</span>
@@ -877,7 +899,10 @@ const ActionDropdown = ({
                     onTableAction(row, ActionEnumType.REFRESH_ACCOUNT);
                   }}
                 >
-                  Refresh account
+                  Refresh{' '}
+                  {getDisplayNameOfNodeType(
+                    nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+                  ).toLowerCase()}
                 </DropdownItem>
                 <DropdownItem
                   disabled={isScanInProgress(scanStatus) || isScanStopping(scanStatus)}
@@ -888,7 +913,10 @@ const ActionDropdown = ({
                     onTableAction(row, ActionEnumType.DELETE_ACCOUNT);
                   }}
                 >
-                  Delete account
+                  Delete{' '}
+                  {getDisplayNameOfNodeType(
+                    nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+                  ).toLowerCase()}
                 </DropdownItem>
               </>
             ) : null}
@@ -985,7 +1013,10 @@ const BulkActions = ({
           );
         }}
       >
-        ADD NEW ACCOUNT
+        ADD NEW{' '}
+        {getDisplayNameOfNodeType(
+          nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+        ).toUpperCase()}
       </Button>
       <Button
         color="default"
@@ -1067,7 +1098,10 @@ const BulkActions = ({
               )
             }
           >
-            Refresh account
+            Refresh{' '}
+            {getDisplayNameOfNodeType(
+              nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+            ).toLowerCase()}
           </Button>
           <Button
             variant="flat"
@@ -1087,7 +1121,10 @@ const BulkActions = ({
               )
             }
           >
-            Delete account
+            Delete{' '}
+            {getDisplayNameOfNodeType(
+              nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+            ).toLowerCase()}
           </Button>
         </>
       ) : null}
@@ -1198,9 +1235,14 @@ const AccountTable = ({
             let path = '/posture/scan-results/:nodeType/:scanId';
 
             if (
-              cell.row.original.cloud_provider &&
-              CLOUDS.includes(
-                cell.row.original.cloud_provider as ComplianceScanNodeTypeEnum,
+              (cell.row.original.cloud_provider &&
+                isCloudNode(
+                  cell.row.original
+                    .cloud_provider as ModelCloudNodeAccountsListReqCloudProviderEnum,
+                )) ||
+              isCloudOrgNode(
+                cell.row.original
+                  .cloud_provider as ModelCloudNodeAccountsListReqCloudProviderEnum,
               )
             ) {
               path = '/posture/cloud/scan-results/:nodeType/:scanId';
@@ -1224,7 +1266,10 @@ const AccountTable = ({
             </WrapperComponent>
           );
         },
-        header: () => 'Account',
+        header: () =>
+          getDisplayNameOfNodeType(
+            nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+          ),
         ...columnWidth.node_name,
       }),
       columnHelper.accessor('compliance_percentage', {
@@ -1289,7 +1334,7 @@ const AccountTable = ({
       }),
     ];
 
-    if (isCloudNode(nodeType) || isCloudOrgNode(nodeType)) {
+    if (isCloudNonOrgNode(nodeType) || isCloudOrgNode(nodeType)) {
       columns.push(
         columnHelper.accessor('version', {
           enableSorting: false,
@@ -1471,7 +1516,7 @@ const Accounts = () => {
   const [showCancelScan, setShowCancelScan] = useState(false);
   const [openStartScan, setOpenStartScan] = useState<boolean>(false);
 
-  const scanType = isNonCloudProvider(routeParams.nodeType)
+  const scanType = isNonCloudNode(routeParams.nodeType)
     ? ScanTypeEnum.ComplianceScan
     : ScanTypeEnum.CloudComplianceScan;
 
@@ -1587,7 +1632,7 @@ const Accounts = () => {
 
   return (
     <div>
-      {!hasOrgCloudAccount(nodeType ?? '') ? <Header /> : null}
+      {!isCloudNode(nodeType ?? '') ? <Header /> : null}
       {showCancelScan && (
         <StopScanForm
           open={true}
@@ -1620,7 +1665,7 @@ const Accounts = () => {
           showDialog={showDeleteDialog}
           scanIds={rowToAction.scanIdsToDeleteScan}
           scanType={
-            isNonCloudProvider(routeParams.nodeType)
+            isNonCloudNode(routeParams.nodeType)
               ? ModelBulkDeleteScansRequestScanTypeEnum.Compliance
               : ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance
           }
@@ -1684,16 +1729,18 @@ const Accounts = () => {
   );
 };
 
-const tabs = [
-  {
-    label: 'Regular Accounts',
-    value: 'accounts',
-  },
-  {
-    label: 'Organization Accounts',
-    value: 'org-accounts',
-  },
-];
+const tabs = ['accounts', 'org-accounts'] as const;
+
+function getTabLabel(value: (typeof tabs)[number], nodeType: string) {
+  if (nodeType?.includes?.('azure')) {
+    if (value === 'accounts') {
+      return 'Subscriptions';
+    } else {
+      return 'Tenants';
+    }
+  }
+  return value === 'accounts' ? 'Regular Accounts' : 'Organization Accounts';
+}
 
 const AccountWithTab = () => {
   const { nodeType } = useParams() as {
@@ -1705,13 +1752,20 @@ const AccountWithTab = () => {
   });
   const { navigate } = usePageNavigation();
 
+  const tabOpts = tabs.map((tab) => {
+    return {
+      label: getTabLabel(tab, nodeType),
+      value: tab,
+    };
+  });
+
   return (
     <>
       <Header />
       <Tabs
         className="mt-2"
         value={currentTab}
-        tabs={tabs}
+        tabs={tabOpts}
         onValueChange={(value) => {
           if (currentTab === value) return;
           let _nodeType = nodeType;
@@ -1742,15 +1796,15 @@ const ConditionalAccount = () => {
     nodeType: string;
   };
 
-  if (hasOrgCloudAccount(nodeType)) {
+  if (isCloudNode(nodeType)) {
     return <AccountWithTab />;
   }
   return <Accounts />;
 };
 
-const hasOrgCloudAccount = (nodeType: string) => {
-  return nodeType.startsWith('aws') || nodeType.startsWith('gcp');
-};
+const isCloudNode = (nodeType: string) =>
+  isCloudNonOrgNode(nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum) ||
+  isCloudOrgNode(nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum);
 
 export const module = {
   action,

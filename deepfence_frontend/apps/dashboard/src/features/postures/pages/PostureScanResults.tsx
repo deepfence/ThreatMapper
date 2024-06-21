@@ -83,11 +83,7 @@ import { PostureScanResultsPieChart } from '@/features/postures/components/scan-
 import { PosturesCompare } from '@/features/postures/components/scan-result/PosturesCompare';
 import { SearchablePostureTestNumber } from '@/features/postures/components/scan-result/SearchableTestNumber';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
-import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { invalidateAllQueries, queries } from '@/queries';
-import { useTheme } from '@/theme/ThemeContext';
 import {
-  ComplianceScanNodeTypeEnum,
   isAlarmStatus,
   isDeleteStatus,
   isInfoStatus,
@@ -96,6 +92,12 @@ import {
   isPassStatus,
   isSkipStatus,
   isWarnStatus,
+} from '@/features/postures/utils';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { invalidateAllQueries, queries } from '@/queries';
+import { useTheme } from '@/theme/ThemeContext';
+import {
+  ComplianceScanNodeTypeEnum,
   PostureSeverityType,
   ScanTypeEnum,
 } from '@/types/common';

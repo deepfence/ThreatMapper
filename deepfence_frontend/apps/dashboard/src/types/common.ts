@@ -1,5 +1,6 @@
 import {
   ModelCloudComplianceStatusEnum,
+  ModelCloudNodeAccountsListReqCloudProviderEnum,
   ModelComplianceStatusEnum,
   ModelMalwareFileSeverityEnum,
   ModelScanResultsActionRequestScanTypeEnum,
@@ -41,10 +42,20 @@ export enum ComplianceScanNodeTypeEnum {
   aws_org = 'aws_org',
   gcp = 'gcp',
   gcp_org = 'gcp_org',
+  azure_org = 'azure_org',
   azure = 'azure',
   host = 'host',
   kubernetes_cluster = 'kubernetes_cluster',
 }
+
+type PostureEnum =
+  (typeof ModelCloudNodeAccountsListReqCloudProviderEnum)[keyof typeof ModelCloudNodeAccountsListReqCloudProviderEnum];
+
+export type CloudNodeType = Exclude<PostureEnum, 'kubernetes' | 'linux'>;
+export type CloudNodeNonOrgType = Exclude<
+  PostureEnum,
+  'aws_org' | 'gcp_org' | 'azure_org' | 'linux' | 'kubernetes'
+>;
 
 export const RegistryType = {
   azure_container_registry: 'azure_container_registry',
@@ -69,12 +80,6 @@ export const registryTypeToNameMapping: { [key: string]: string } = {
   quay: 'Quay',
 } as const;
 
-export type CloudNodeType = 'aws' | 'azure' | 'gcp';
-export const isCloudNode = (nodeType?: string) =>
-  nodeType === 'aws' || nodeType === 'azure' || nodeType === 'gcp';
-export const isCloudOrgNode = (nodeType?: string) =>
-  nodeType === 'aws_org' || nodeType === 'gcp_org';
-
 export type GenerativeAIIntegrationType = 'openai' | 'amazon-bedrock';
 
 export const isCriticalSeverity = (severity: string) => {
@@ -92,32 +97,5 @@ export const isLowSeverity = (severity: string) => {
 export const isUnknownSeverity = (severity: string) => {
   return (
     severity?.toLowerCase() === SeverityEnum.Unknown || severity?.toLowerCase() === ''
-  );
-};
-export const isAlarmStatus = (status: string) => {
-  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Alarm;
-};
-export const isInfoStatus = (status: string) => {
-  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Info;
-};
-export const isOkStatus = (status: string) => {
-  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Ok;
-};
-export const isSkipStatus = (status: string) => {
-  return status?.toLowerCase() === ModelCloudComplianceStatusEnum.Skip;
-};
-export const isPassStatus = (status: string) => {
-  return status?.toLowerCase() === ModelComplianceStatusEnum.Pass;
-};
-export const isWarnStatus = (status: string) => {
-  return status?.toLowerCase() === ModelComplianceStatusEnum.Warn;
-};
-export const isNoteStatus = (status: string) => {
-  return status?.toLowerCase() === ModelComplianceStatusEnum.Note;
-};
-export const isDeleteStatus = (status: string) => {
-  return (
-    status?.toLowerCase() === ModelCloudComplianceStatusEnum.Delete ||
-    status?.toLowerCase() === ''
   );
 };

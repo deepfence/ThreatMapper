@@ -11488,7 +11488,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelSettingsResponse" }
+                  "items": { "$ref": "#/components/schemas/SettingSettingsResponse" }
                 }
               }
             }
@@ -11540,7 +11540,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelSettingUpdateRequest" }
+              "schema": { "$ref": "#/components/schemas/SettingSettingUpdateRequest" }
             }
           }
         },
@@ -15516,28 +15516,6 @@
           }
         }
       },
-      "ModelSettingUpdateRequest": {
-        "required": ["key", "value"],
-        "type": "object",
-        "properties": {
-          "key": {
-            "enum": ["console_url", "file_server_url", "inactive_delete_scan_results"],
-            "type": "string"
-          },
-          "value": { "type": "string" }
-        }
-      },
-      "ModelSettingsResponse": {
-        "required": ["id", "key", "label", "value", "description"],
-        "type": "object",
-        "properties": {
-          "description": { "type": "string" },
-          "id": { "type": "integer" },
-          "key": { "type": "string" },
-          "label": { "type": "string" },
-          "value": {}
-        }
-      },
       "ModelStopScanRequest": {
         "required": ["scan_ids", "scan_type"],
         "type": "object",
@@ -16155,6 +16133,28 @@
           },
           "scan_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
+        }
+      },
+      "SettingSettingUpdateRequest": {
+        "required": ["key", "value"],
+        "type": "object",
+        "properties": {
+          "key": {
+            "enum": ["console_url", "file_server_url", "inactive_delete_scan_results"],
+            "type": "string"
+          },
+          "value": { "type": "string" }
+        }
+      },
+      "SettingSettingsResponse": {
+        "required": ["id", "key", "label", "value", "description"],
+        "type": "object",
+        "properties": {
+          "description": { "type": "string" },
+          "id": { "type": "integer" },
+          "key": { "type": "string" },
+          "label": { "type": "string" },
+          "value": {}
         }
       },
       "SqlNullTime": { "type": "object" },

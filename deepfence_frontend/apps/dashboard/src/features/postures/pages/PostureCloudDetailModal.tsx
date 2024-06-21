@@ -10,6 +10,7 @@ import {
   SlidingModalHeader,
 } from 'ui-components';
 
+import { ModelCloudNodeAccountsListReqCloudProviderEnum } from '@/api/generated';
 import { CopyButton, useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { RemediationBlock } from '@/components/remediation/RemediationBlock';
@@ -148,32 +149,45 @@ const DetailsComponent = ({
     );
   }
 
-  const keyValues = getFieldsKeyValue(cloudPosture ?? {}, {
-    hiddenFields: [
-      'status',
-      'description',
-      'node_name',
-      'severity',
-      'type',
-      'count',
-      'node_id',
-      'resources',
-    ],
-    priorityFields: [
-      'cloud_provider',
-      'region',
-      'account_id',
-      'compliance_check_type',
-      'control_id',
-      'group',
-      'title',
-      'service',
-      'reason',
-      'resource',
-      'masked',
-      'updated_at',
-    ],
-  });
+  const keyValues = getFieldsKeyValue(
+    {
+      ...(cloudPosture ?? {}),
+      subscription_id: cloudPosture.account_id,
+    },
+    {
+      hiddenFields: [
+        'status',
+        'description',
+        'node_name',
+        'severity',
+        'type',
+        'count',
+        'node_id',
+        'resources',
+        cloudPosture.cloud_provider ===
+        ModelCloudNodeAccountsListReqCloudProviderEnum.Azure
+          ? 'account_id'
+          : 'subscription_id',
+      ],
+      priorityFields: [
+        'cloud_provider',
+        'region',
+        cloudPosture.cloud_provider ===
+        ModelCloudNodeAccountsListReqCloudProviderEnum.Azure
+          ? 'subscription_id'
+          : 'account_id',
+        'compliance_check_type',
+        'control_id',
+        'group',
+        'title',
+        'service',
+        'reason',
+        'resource',
+        'masked',
+        'updated_at',
+      ],
+    },
+  );
 
   return (
     <div className="flex flex-wrap gap-y-[30px] gap-x-[14px] py-[18px] px-5">

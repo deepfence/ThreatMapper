@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Listbox, ListboxOption } from 'ui-components';
 
 import {
+  ModelCloudNodeAccountsListReqCloudProviderEnum,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
@@ -11,7 +12,12 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
-import { isCloudNode, ScanTypeEnum } from '@/types/common';
+import {
+  getDisplayNameOfNodeType,
+  isCloudNonOrgNode,
+  isCloudOrgNode,
+} from '@/features/postures/utils';
+import { ScanTypeEnum } from '@/types/common';
 
 const getNodeTypeByProviderName = (providerName: string): string | undefined => {
   switch (providerName) {
@@ -67,6 +73,10 @@ export const AdvancedFilter = ({
   const [images, setImages] = useState<string[]>([]);
   const [containers, setContainers] = useState<string[]>([]);
 
+  const isCloudNode = (nodeType: string) =>
+    isCloudNonOrgNode(nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum) ||
+    isCloudOrgNode(nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum);
+
   return (
     <>
       {resourceType && provider ? (
@@ -75,9 +85,11 @@ export const AdvancedFilter = ({
             <div className="text-h5">Advanced Filter (Optional)</div>
           </div>
           <div className="grid grid-cols-2 gap-x-8 gap-y-6 pt-4">
-            {isCloudNode(nodeType) && (
+            {nodeType && isCloudNode(nodeType) && (
               <SearchableCloudAccountsList
-                label={`${upperCase(provider)} Account`}
+                label={getDisplayNameOfNodeType(
+                  provider as ModelCloudNodeAccountsListReqCloudProviderEnum,
+                )}
                 triggerVariant="select"
                 defaultSelectedAccounts={selectedCloudAccounts}
                 cloudProvider={provider.toLowerCase() as 'aws' | 'gcp' | 'azure'}

@@ -17,7 +17,10 @@ import {
 } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
-import { ModelSettingsResponse, ModelSettingUpdateRequestKeyEnum } from '@/api/generated';
+import {
+  SettingSettingsResponse,
+  SettingSettingUpdateRequestKeyEnum,
+} from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
@@ -47,8 +50,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
   });
   const updateResponse = await updateApi({
     id: Number(body.id),
-    modelSettingUpdateRequest: {
-      key: body.key as ModelSettingUpdateRequestKeyEnum,
+    settingSettingUpdateRequest: {
+      key: body.key as SettingSettingUpdateRequestKeyEnum,
       value: body.value as string,
     },
   });
@@ -82,7 +85,7 @@ const EditGlobalSettingModal = ({
 }: {
   showDialog: boolean;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  setting: ModelSettingsResponse;
+  setting: SettingSettingsResponse;
 }) => {
   const fetcher = useFetcher<ActionReturnType>();
   const { data, state } = fetcher;
@@ -141,7 +144,7 @@ const ActionDropdown = ({
   setting,
   trigger,
 }: {
-  setting: ModelSettingsResponse;
+  setting: SettingSettingsResponse;
   trigger: React.ReactNode;
 }) => {
   const [openEditSetting, setOpenEditSetting] = useState(false);
@@ -175,7 +178,7 @@ const ActionDropdown = ({
   );
 };
 const SettingTable = () => {
-  const columnHelper = createColumnHelper<ModelSettingsResponse>();
+  const columnHelper = createColumnHelper<SettingSettingsResponse>();
 
   const columns = useMemo(() => {
     const columns = [

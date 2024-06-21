@@ -137,7 +137,7 @@ const FILTER_SEARCHPARAMS: Record<
   cloud_resource_only: { label: 'Scope', possibleValues: THREAT_GRAPH_SCOPE },
   aws_account_ids: { label: 'AWS account' },
   gcp_account_ids: { label: 'GCP account' },
-  azure_account_ids: { label: 'Azure account' },
+  azure_account_ids: { label: 'Azure subscription' },
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -219,6 +219,7 @@ const Filters = () => {
         </Combobox>
         <SearchableCloudAccountsList
           cloudProvider="aws"
+          displayValue={FILTER_SEARCHPARAMS.aws_account_ids.label}
           defaultSelectedAccounts={searchParams.getAll('aws_account_ids')}
           onClearAll={() => {
             setSearchParams((prev) => {
@@ -238,6 +239,7 @@ const Filters = () => {
         />
         <SearchableCloudAccountsList
           cloudProvider="gcp"
+          displayValue={FILTER_SEARCHPARAMS.gcp_account_ids.label}
           defaultSelectedAccounts={searchParams.getAll('gcp_account_ids')}
           onClearAll={() => {
             setSearchParams((prev) => {
@@ -257,6 +259,7 @@ const Filters = () => {
         />
         <SearchableCloudAccountsList
           cloudProvider="azure"
+          displayValue={FILTER_SEARCHPARAMS.azure_account_ids.label}
           defaultSelectedAccounts={searchParams.getAll('azure_account_ids')}
           onClearAll={() => {
             setSearchParams((prev) => {

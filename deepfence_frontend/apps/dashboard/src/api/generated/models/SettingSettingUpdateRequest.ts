@@ -16,74 +16,62 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelSettingsResponse
+ * @interface SettingSettingUpdateRequest
  */
-export interface ModelSettingsResponse {
+export interface SettingSettingUpdateRequest {
     /**
      * 
      * @type {string}
-     * @memberof ModelSettingsResponse
+     * @memberof SettingSettingUpdateRequest
      */
-    description: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelSettingsResponse
-     */
-    id: number;
+    key: SettingSettingUpdateRequestKeyEnum;
     /**
      * 
      * @type {string}
-     * @memberof ModelSettingsResponse
+     * @memberof SettingSettingUpdateRequest
      */
-    key: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelSettingsResponse
-     */
-    label: string;
-    /**
-     * 
-     * @type {any}
-     * @memberof ModelSettingsResponse
-     */
-    value: any | null;
+    value: string;
 }
 
+
 /**
- * Check if a given object implements the ModelSettingsResponse interface.
+ * @export
  */
-export function instanceOfModelSettingsResponse(value: object): boolean {
+export const SettingSettingUpdateRequestKeyEnum = {
+    ConsoleUrl: 'console_url',
+    FileServerUrl: 'file_server_url',
+    InactiveDeleteScanResults: 'inactive_delete_scan_results'
+} as const;
+export type SettingSettingUpdateRequestKeyEnum = typeof SettingSettingUpdateRequestKeyEnum[keyof typeof SettingSettingUpdateRequestKeyEnum];
+
+
+/**
+ * Check if a given object implements the SettingSettingUpdateRequest interface.
+ */
+export function instanceOfSettingSettingUpdateRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "description" in value;
-    isInstance = isInstance && "id" in value;
     isInstance = isInstance && "key" in value;
-    isInstance = isInstance && "label" in value;
     isInstance = isInstance && "value" in value;
 
     return isInstance;
 }
 
-export function ModelSettingsResponseFromJSON(json: any): ModelSettingsResponse {
-    return ModelSettingsResponseFromJSONTyped(json, false);
+export function SettingSettingUpdateRequestFromJSON(json: any): SettingSettingUpdateRequest {
+    return SettingSettingUpdateRequestFromJSONTyped(json, false);
 }
 
-export function ModelSettingsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelSettingsResponse {
+export function SettingSettingUpdateRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): SettingSettingUpdateRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'description': json['description'],
-        'id': json['id'],
         'key': json['key'],
-        'label': json['label'],
         'value': json['value'],
     };
 }
 
-export function ModelSettingsResponseToJSON(value?: ModelSettingsResponse | null): any {
+export function SettingSettingUpdateRequestToJSON(value?: SettingSettingUpdateRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -92,10 +80,7 @@ export function ModelSettingsResponseToJSON(value?: ModelSettingsResponse | null
     }
     return {
         
-        'description': value.description,
-        'id': value.id,
         'key': value.key,
-        'label': value.label,
         'value': value.value,
     };
 }
