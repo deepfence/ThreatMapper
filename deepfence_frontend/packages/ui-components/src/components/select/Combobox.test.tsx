@@ -108,7 +108,6 @@ describe('Combobox', () => {
           }}
           label="Select your value"
           onChange={(value) => {
-            console.log('*************', value);
             setSelected(value);
           }}
           getDisplayValue={() => {
