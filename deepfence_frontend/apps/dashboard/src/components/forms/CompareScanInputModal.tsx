@@ -25,8 +25,8 @@ const Tags = ({
   setSelectedTag,
   scanType,
 }: {
-  selectedTag: ImageTagType;
-  setSelectedTag: React.Dispatch<React.SetStateAction<ImageTagType>>;
+  selectedTag: ImageTagType | null;
+  setSelectedTag: React.Dispatch<React.SetStateAction<ImageTagType | null>>;
   scanType: ScanTypeEnum;
 }) => {
   const dockerImageName = useScanResults({
@@ -73,7 +73,7 @@ const InputForm = ({
   toScanData: ToScanDataType;
   setToScanData: React.Dispatch<React.SetStateAction<ToScanDataType>>;
 }) => {
-  const [selectedTag, setSelectedTag] = useState<ImageTagType>({
+  const [selectedTag, setSelectedTag] = useState<ImageTagType | null>({
     nodeId,
     nodeName: '',
     tagList: [],

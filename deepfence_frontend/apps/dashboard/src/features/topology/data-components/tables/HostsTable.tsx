@@ -315,7 +315,6 @@ function Filters() {
         />
         <Combobox
           value={searchParams.get('vulnerabilityScanStatus')}
-          nullable
           onQueryChange={(query) => {
             setVulnerabilityScanStatusSearchText(query);
           }}
@@ -352,7 +351,6 @@ function Filters() {
         </Combobox>
         <Combobox
           value={searchParams.get('secretScanStatus')}
-          nullable
           onQueryChange={(query) => {
             setSecretScanStatusSearchText(query);
           }}
@@ -389,7 +387,6 @@ function Filters() {
         </Combobox>
         <Combobox
           value={searchParams.get('malwareScanStatus')}
-          nullable
           onQueryChange={(query) => {
             setMalwareScanStatusSearchText(query);
           }}
@@ -426,7 +423,6 @@ function Filters() {
         </Combobox>
         <Combobox
           value={searchParams.get('complianceScanStatus')}
-          nullable
           onQueryChange={(query) => {
             setComplianceScanStatusSearchText(query);
           }}

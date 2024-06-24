@@ -8,9 +8,9 @@ import { ScanTypeEnum } from '@/types/common';
 
 export type Props = {
   scanType: ScanTypeEnum | 'none';
-  onChange?: (value: ImageTagType) => void;
+  onChange?: (value: ImageTagType | null) => void;
   onClearAll?: () => void;
-  defaultSelectedTag?: ImageTagType;
+  defaultSelectedTag?: ImageTagType | null;
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
   triggerVariant?: 'select' | 'button';
@@ -35,8 +35,8 @@ const SearchableTag = ({
   filter,
 }: Props) => {
   const [searchText, setSearchText] = useState('');
-  const [selectedTag, setSelectedTag] = useState<ImageTagType | undefined>(() => {
-    return defaultSelectedTag;
+  const [selectedTag, setSelectedTag] = useState<ImageTagType | null>(() => {
+    return defaultSelectedTag ?? null;
   });
 
   const isSelectVariantType = useMemo(() => {
@@ -44,7 +44,7 @@ const SearchableTag = ({
   }, [triggerVariant]);
 
   useEffect(() => {
-    setSelectedTag(defaultSelectedTag ?? undefined);
+    setSelectedTag(defaultSelectedTag ?? null);
   }, [defaultSelectedTag]);
 
   const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =

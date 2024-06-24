@@ -245,7 +245,6 @@ const Filters = () => {
       <div className="flex gap-2">
         <Combobox
           value={searchParams.get('vulnerabilityScanStatus')}
-          nullable
           onQueryChange={(query) => {
             setVulnerabilityScanStatusSearchText(query);
           }}
@@ -279,7 +278,6 @@ const Filters = () => {
         </Combobox>
         <Combobox
           value={searchParams.get('secretScanStatus')}
-          nullable
           onQueryChange={(query) => {
             setSecretScanStatusSearchText(query);
           }}
@@ -313,7 +311,6 @@ const Filters = () => {
         </Combobox>
         <Combobox
           value={searchParams.get('malwareScanStatus')}
-          nullable
           onQueryChange={(query) => {
             setMalwareScanStatusSearchText(query);
           }}

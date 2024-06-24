@@ -71,7 +71,6 @@ const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
   return (
     <Combobox
       value={selected}
-      nullable
       onQueryChange={(query) => {
         setQuery(query);
       }}
@@ -112,7 +111,6 @@ const SingleSelectNullableWithStringValuesTemplate: StoryFn<typeof Combobox> = (
   return (
     <Combobox
       value={selected}
-      nullable
       triggerVariant="select"
       onQueryChange={(query) => {
         setQuery(query);
@@ -151,7 +149,7 @@ export const SingleSelectNullableStringValuesAndSelectTrigger: StoryObj<typeof C
   };
 
 const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
-  const [selected, setSelected] = useState<(typeof OPTIONS)[number]>(OPTIONS[0]);
+  const [selected, setSelected] = useState<(typeof OPTIONS)[number] | null>(OPTIONS[0]);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
   const [loading, setLoading] = useState(false);
 
@@ -228,7 +226,6 @@ const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
       }}
       clearAllElement="Clear filters"
       multiple
-      nullable
       getDisplayValue={() => {
         return 'PropertyName';
       }}
@@ -282,7 +279,6 @@ const MultiSelectNullableWithSelectVariantTemplate: StoryFn<typeof Combobox> = (
       }}
       clearAllElement="Clear"
       multiple
-      nullable
       placeholder="Please select..."
       getDisplayValue={(value) => {
         return value.length ? `${value.length} selected` : null;
