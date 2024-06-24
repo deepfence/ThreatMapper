@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -238,4 +239,79 @@ func LinkNodesWithCloudResources(ctx context.Context) error {
 	}
 
 	return tx.Commit(ctx)
+}
+
+func CommitFuncCloudResourceRefreshStatus(ctx context.Context, ns string, cs []ingestersUtil.CloudResourceRefreshStatus) error {
+
+	ctx = directory.ContextWithNameSpace(ctx, directory.NamespaceID(ns))
+
+	ctx, span := telemetry.NewSpan(ctx, "ingesters", "commit-func-cloud-resource")
+	defer span.End()
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close(ctx)
+
+	_, err = tx.Run(ctx, `
+		UNWIND $batch as row
+		MATCH (n:CloudNode{node_id: row.cloud_node_id})
+		SET n.refresh_status = row.refresh_status,
+			n.refresh_message = row.refresh_message`,
+		map[string]interface{}{
+			"batch": ResourceRefreshStatusToMaps(cs),
+		},
+	)
+
+	return tx.Commit(ctx)
+}
+
+func ResourceRefreshStatusToMaps(data []ingestersUtil.CloudResourceRefreshStatus) []map[string]interface{} {
+	statusBuff := map[string]map[string]interface{}{}
+	for _, i := range data {
+		statusMap := i.ToMap()
+
+		cloudNodeId, ok := statusMap["cloud_node_id"].(string)
+		if !ok {
+			log.Error().Msgf("failed to convert cloud_node_id to string, data: %v", statusMap)
+			continue
+		}
+
+		newStatus, ok := statusMap["refresh_status"].(string)
+		if !ok {
+			log.Error().Msgf("failed to convert refresh_status to string, data: %v", statusMap)
+			continue
+		}
+
+		old, found := statusBuff[cloudNodeId]
+		if !found {
+			statusBuff[cloudNodeId] = statusMap
+		} else {
+			oldStatus, ok := old["refresh_status"].(string)
+			if !ok {
+				log.Error().Msgf("failed to convert refresh_status to string, data: %v", old)
+				continue
+			}
+			if newStatus != oldStatus {
+				if newStatus == utils.ScanStatusSuccess ||
+					newStatus == utils.ScanStatusFailed || newStatus == utils.ScanStatusCancelled {
+					statusBuff[cloudNodeId] = statusMap
+				}
+			}
+		}
+	}
+	statuses := []map[string]interface{}{}
+	for _, v := range statusBuff {
+		statuses = append(statuses, v)
+	}
+	return statuses
 }

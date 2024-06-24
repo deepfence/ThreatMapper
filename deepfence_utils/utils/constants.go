@@ -11,21 +11,22 @@ const (
 
 // kafka topics
 const (
-	AuditLogs                 = "audit-logs"
-	VulnerabilityScan         = "vulnerability-scan"
-	VulnerabilityScanStatus   = "vulnerability-scan-status"
-	SecretScan                = "secret-scan"
-	SecretScanStatus          = "secret-scan-status"
-	MalwareScan               = "malware-scan"
-	MalwareScanStatus         = "malware-scan-status"
-	SbomArtifacts             = "sbom-artifact"
-	SbomCVEScan               = "sbom-cve-scan"
-	CloudComplianceScan       = "cloud-compliance-scan"
-	CloudComplianceScanStatus = "cloud-compliance-scan-status"
-	ComplianceScan            = "compliance-scan"
-	ComplianceScanStatus      = "compliance-scan-status"
-	CloudTrailAlerts          = "cloudtrail-alert"
-	CloudResource             = "cloud-resource"
+	AuditLogs                  = "audit-logs"
+	VulnerabilityScan          = "vulnerability-scan"
+	VulnerabilityScanStatus    = "vulnerability-scan-status"
+	SecretScan                 = "secret-scan"
+	SecretScanStatus           = "secret-scan-status"
+	MalwareScan                = "malware-scan"
+	MalwareScanStatus          = "malware-scan-status"
+	SbomArtifacts              = "sbom-artifact"
+	SbomCVEScan                = "sbom-cve-scan"
+	CloudComplianceScan        = "cloud-compliance-scan"
+	CloudComplianceScanStatus  = "cloud-compliance-scan-status"
+	CloudResourceRefreshStatus = "cloud-resource-refresh-status"
+	ComplianceScan             = "compliance-scan"
+	ComplianceScanStatus       = "compliance-scan-status"
+	CloudTrailAlerts           = "cloudtrail-alert"
+	CloudResource              = "cloud-resource"
 )
 
 // task names
@@ -202,6 +203,7 @@ var Topics = []string{
 	MalwareScan, MalwareScanStatus,
 	SbomArtifacts, SbomCVEScan,
 	CloudComplianceScan, CloudComplianceScanStatus,
+	CloudResourceRefreshStatus,
 	ComplianceScan, ComplianceScanStatus,
 	CloudTrailAlerts,
 	AuditLogs,

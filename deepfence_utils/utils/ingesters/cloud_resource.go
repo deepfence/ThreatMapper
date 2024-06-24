@@ -187,3 +187,17 @@ func convertStructFieldToJSONString(bb map[string]interface{}, key string) map[s
 	}
 	return bb
 }
+
+type CloudResourceRefreshStatus struct {
+	CloudNodeID    string `json:"cloud_node_id"`
+	RefreshMessage string `json:"refresh_message"`
+	RefreshStatus  string `json:"refresh_status"`
+}
+
+func (c *CloudResourceRefreshStatus) ToMap() map[string]interface{} {
+	return map[string]interface{}{
+		"cloud_node_id":   c.CloudNodeID,
+		"refresh_message": c.RefreshMessage,
+		"refresh_status":  c.RefreshStatus,
+	}
+}
