@@ -696,9 +696,9 @@ const ScansTable = ({
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        size: 45,
-        minSize: 45,
-        maxSize: 45,
+        size: 35,
+        minSize: 35,
+        maxSize: 35,
       }),
       columnHelper.display({
         id: 'actions',
@@ -708,18 +708,16 @@ const ScansTable = ({
             row={cell.row.original}
             onTableAction={onTableAction}
             trigger={
-              <button className="p-1 flex">
-                <span className="block h-4 w-4 text-text-text-and-icon rotate-90 shrink-0">
-                  <EllipsisIcon />
-                </span>
+              <button className="block h-4 w-4 text-text-text-and-icon rotate-90 shrink-0">
+                <EllipsisIcon />
               </button>
             }
           />
         ),
         header: () => '',
-        size: 30,
-        minSize: 30,
-        maxSize: 50,
+        size: 35,
+        minSize: 35,
+        maxSize: 35,
         enableResizing: false,
       }),
       columnHelper.accessor('node_type', {

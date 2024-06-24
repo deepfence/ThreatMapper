@@ -1417,9 +1417,9 @@ const SecretTable = ({
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        size: 40,
-        minSize: 40,
-        maxSize: 40,
+        size: 35,
+        minSize: 35,
+        maxSize: 35,
       }),
       columnHelper.display({
         id: 'actions',
@@ -1442,9 +1442,9 @@ const SecretTable = ({
           />
         ),
         header: () => '',
-        size: 45,
-        minSize: 40,
-        maxSize: 55,
+        size: 35,
+        minSize: 35,
+        maxSize: 35,
         enableResizing: false,
       }),
       columnHelper.accessor('node_id', {

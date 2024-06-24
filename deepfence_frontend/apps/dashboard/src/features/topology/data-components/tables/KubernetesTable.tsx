@@ -385,8 +385,52 @@ const DataTable = ({
     () => [
       getRowSelectionColumn(columnHelper, {
         minSize: 20,
-        size: 25,
-        maxSize: 40,
+        size: 20,
+        maxSize: 20,
+      }),
+      columnHelper.display({
+        id: 'actions',
+        enableSorting: false,
+        cell: (cell) => (
+          <Dropdown
+            triggerAsChild={true}
+            align={'start'}
+            content={
+              <>
+                <DropdownItem>
+                  <DFLink
+                    to={`../compute/host/table?clusters=${cell.row.original.node_id}`}
+                    unstyled
+                  >
+                    Go to hosts
+                  </DFLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <DFLink
+                    to={`../compute/container/table?clusters=${cell.row.original.node_id}`}
+                    unstyled
+                  >
+                    Go to containers
+                  </DFLink>
+                </DropdownItem>
+                <DropdownItem>
+                  <DFLink to={`../compute/pod/table?clusters=${name}`} unstyled>
+                    Go to pods
+                  </DFLink>
+                </DropdownItem>
+              </>
+            }
+          >
+            <div className="cursor-pointer h-3 w-4 text-text-text-and-icon rotate-90">
+              <EllipsisIcon />
+            </div>
+          </Dropdown>
+        ),
+        header: () => '',
+        size: 35,
+        minSize: 35,
+        maxSize: 35,
+        enableResizing: false,
       }),
       columnHelper.accessor('node_name', {
         cell: (info) => {
@@ -396,44 +440,7 @@ const DataTable = ({
           } else {
             name = info.row.original.node_id;
           }
-          return (
-            <div className="flex gap-x-2 items-center">
-              <Dropdown
-                triggerAsChild={true}
-                align={'start'}
-                content={
-                  <>
-                    <DropdownItem>
-                      <DFLink
-                        to={`../compute/host/table?clusters=${info.row.original.node_id}`}
-                        unstyled
-                      >
-                        Go to hosts
-                      </DFLink>
-                    </DropdownItem>
-                    <DropdownItem>
-                      <DFLink
-                        to={`../compute/container/table?clusters=${info.row.original.node_id}`}
-                        unstyled
-                      >
-                        Go to containers
-                      </DFLink>
-                    </DropdownItem>
-                    <DropdownItem>
-                      <DFLink to={`../compute/pod/table?clusters=${name}`} unstyled>
-                        Go to pods
-                      </DFLink>
-                    </DropdownItem>
-                  </>
-                }
-              >
-                <div className="cursor-pointer h-3 w-4 text-text-text-and-icon rotate-90">
-                  <EllipsisIcon />
-                </div>
-              </Dropdown>
-              <TruncatedText text={name} />
-            </div>
-          );
+          return <TruncatedText text={name} />;
         },
         header: () => 'Name',
         minSize: 140,
