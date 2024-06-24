@@ -770,3 +770,13 @@ WHERE license_key = $2;
 DELETE
 FROM license
 WHERE license_key = $1;
+
+-- name: UpdateIntegrationLastEventUpdatedAt :exec
+UPDATE integration
+SET last_event_updated_at = $2
+WHERE id = $1;
+
+-- name: UpdateIntegrationMetrics :exec
+UPDATE integration
+SET metrics = $2
+WHERE id = $1;
