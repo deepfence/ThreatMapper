@@ -37,7 +37,7 @@ export interface ModelCloudNodeAccountRegisterReq {
      * @type {string}
      * @memberof ModelCloudNodeAccountRegisterReq
      */
-    account_name: string;
+    account_name?: string;
     /**
      * 
      * @type {string}
@@ -100,7 +100,6 @@ export type ModelCloudNodeAccountRegisterReqCloudProviderEnum = typeof ModelClou
 export function instanceOfModelCloudNodeAccountRegisterReq(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "account_id" in value;
-    isInstance = isInstance && "account_name" in value;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "host_node_id" in value;
     isInstance = isInstance && "node_id" in value;
@@ -120,7 +119,7 @@ export function ModelCloudNodeAccountRegisterReqFromJSONTyped(json: any, ignoreD
     return {
         
         'account_id': json['account_id'],
-        'account_name': json['account_name'],
+        'account_name': !exists(json, 'account_name') ? undefined : json['account_name'],
         'cloud_provider': json['cloud_provider'],
         'host_node_id': json['host_node_id'],
         'is_organization_deployment': !exists(json, 'is_organization_deployment') ? undefined : json['is_organization_deployment'],

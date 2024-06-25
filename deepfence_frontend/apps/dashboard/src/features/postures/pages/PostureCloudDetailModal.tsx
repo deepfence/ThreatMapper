@@ -10,7 +10,10 @@ import {
   SlidingModalHeader,
 } from 'ui-components';
 
-import { ModelCloudNodeAccountsListReqCloudProviderEnum } from '@/api/generated';
+import {
+  ModelCloudCompliance,
+  ModelCloudNodeAccountsListReqCloudProviderEnum,
+} from '@/api/generated';
 import { CopyButton, useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { RemediationBlock } from '@/components/remediation/RemediationBlock';
@@ -149,10 +152,34 @@ const DetailsComponent = ({
     );
   }
 
+  type DynamicType = 'subscription_id' | 'project_id';
+  function getHiddenFields(
+    cloud: string,
+  ): Array<DynamicType | keyof ModelCloudCompliance> {
+    if (cloud === ModelCloudNodeAccountsListReqCloudProviderEnum.Azure) {
+      return ['account_id', 'project_id'];
+    } else if (cloud === ModelCloudNodeAccountsListReqCloudProviderEnum.Gcp) {
+      return ['account_id', 'subscription_id'];
+    } else if (cloud === ModelCloudNodeAccountsListReqCloudProviderEnum.Aws) {
+      return ['subscription_id', 'project_id'];
+    }
+    return [];
+  }
+
+  function getPriorityFields(cloud: string) {
+    if (cloud === ModelCloudNodeAccountsListReqCloudProviderEnum.Azure) {
+      return 'subscription_id';
+    } else if (cloud === ModelCloudNodeAccountsListReqCloudProviderEnum.Gcp) {
+      return 'project_id';
+    }
+    return 'account_id';
+  }
+
   const keyValues = getFieldsKeyValue(
     {
       ...(cloudPosture ?? {}),
       subscription_id: cloudPosture.account_id,
+      project_id: cloudPosture.account_id,
     },
     {
       hiddenFields: [
@@ -164,18 +191,12 @@ const DetailsComponent = ({
         'count',
         'node_id',
         'resources',
-        cloudPosture.cloud_provider ===
-        ModelCloudNodeAccountsListReqCloudProviderEnum.Azure
-          ? 'account_id'
-          : 'subscription_id',
+        ...getHiddenFields(cloudPosture.cloud_provider),
       ],
       priorityFields: [
         'cloud_provider',
         'region',
-        cloudPosture.cloud_provider ===
-        ModelCloudNodeAccountsListReqCloudProviderEnum.Azure
-          ? 'subscription_id'
-          : 'account_id',
+        getPriorityFields(cloudPosture.cloud_provider),
         'compliance_check_type',
         'control_id',
         'group',

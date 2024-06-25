@@ -36,7 +36,7 @@ export interface ModelCloudNodeAccountInfo {
      * @type {string}
      * @memberof ModelCloudNodeAccountInfo
      */
-    cloud_provider?: string;
+    cloud_provider?: ModelCloudNodeAccountInfoCloudProviderEnum;
     /**
      * 
      * @type {number}
@@ -75,6 +75,18 @@ export interface ModelCloudNodeAccountInfo {
     node_name?: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelCloudNodeAccountInfo
+     */
+    refresh_message?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeAccountInfo
+     */
+    refresh_status?: ModelCloudNodeAccountInfoRefreshStatusEnum;
+    /**
+     * 
      * @type {{ [key: string]: number; }}
      * @memberof ModelCloudNodeAccountInfo
      */
@@ -86,6 +98,32 @@ export interface ModelCloudNodeAccountInfo {
      */
     version?: string;
 }
+
+
+/**
+ * @export
+ */
+export const ModelCloudNodeAccountInfoCloudProviderEnum = {
+    Aws: 'aws',
+    Gcp: 'gcp',
+    Azure: 'azure',
+    AwsOrg: 'aws_org',
+    GcpOrg: 'gcp_org',
+    AzureOrg: 'azure_org'
+} as const;
+export type ModelCloudNodeAccountInfoCloudProviderEnum = typeof ModelCloudNodeAccountInfoCloudProviderEnum[keyof typeof ModelCloudNodeAccountInfoCloudProviderEnum];
+
+/**
+ * @export
+ */
+export const ModelCloudNodeAccountInfoRefreshStatusEnum = {
+    Starting: 'STARTING',
+    InProgress: 'IN_PROGRESS',
+    Error: 'ERROR',
+    Complete: 'COMPLETE'
+} as const;
+export type ModelCloudNodeAccountInfoRefreshStatusEnum = typeof ModelCloudNodeAccountInfoRefreshStatusEnum[keyof typeof ModelCloudNodeAccountInfoRefreshStatusEnum];
+
 
 /**
  * Check if a given object implements the ModelCloudNodeAccountInfo interface.
@@ -115,6 +153,8 @@ export function ModelCloudNodeAccountInfoFromJSONTyped(json: any, ignoreDiscrimi
         'last_scan_status': !exists(json, 'last_scan_status') ? undefined : json['last_scan_status'],
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
+        'refresh_message': !exists(json, 'refresh_message') ? undefined : json['refresh_message'],
+        'refresh_status': !exists(json, 'refresh_status') ? undefined : json['refresh_status'],
         'scan_status_map': !exists(json, 'scan_status_map') ? undefined : json['scan_status_map'],
         'version': !exists(json, 'version') ? undefined : json['version'],
     };
@@ -138,6 +178,8 @@ export function ModelCloudNodeAccountInfoToJSON(value?: ModelCloudNodeAccountInf
         'last_scan_status': value.last_scan_status,
         'node_id': value.node_id,
         'node_name': value.node_name,
+        'refresh_message': value.refresh_message,
+        'refresh_status': value.refresh_status,
         'scan_status_map': value.scan_status_map,
         'version': value.version,
     };

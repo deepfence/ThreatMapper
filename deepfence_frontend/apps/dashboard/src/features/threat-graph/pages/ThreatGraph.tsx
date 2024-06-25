@@ -136,7 +136,7 @@ const FILTER_SEARCHPARAMS: Record<
   type: { label: 'Threat', possibleValues: THREAT_TYPES },
   cloud_resource_only: { label: 'Scope', possibleValues: THREAT_GRAPH_SCOPE },
   aws_account_ids: { label: 'AWS account' },
-  gcp_account_ids: { label: 'GCP account' },
+  gcp_account_ids: { label: 'GCP project' },
   azure_account_ids: { label: 'Azure subscription' },
 };
 

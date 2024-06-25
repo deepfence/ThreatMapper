@@ -13548,13 +13548,21 @@
         "properties": {
           "account_name": { "type": "string" },
           "active": { "type": "boolean" },
-          "cloud_provider": { "type": "string" },
+          "cloud_provider": {
+            "enum": ["aws", "gcp", "azure", "aws_org", "gcp_org", "azure_org"],
+            "type": "string"
+          },
           "compliance_percentage": { "type": "number" },
           "host_node_id": { "type": "string" },
           "last_scan_id": { "type": "string" },
           "last_scan_status": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
+          "refresh_message": { "type": "string" },
+          "refresh_status": {
+            "enum": ["STARTING", "IN_PROGRESS", "ERROR", "COMPLETE"],
+            "type": "string"
+          },
           "scan_status_map": {
             "type": "object",
             "additionalProperties": { "type": "integer" },
@@ -13566,7 +13574,6 @@
       "ModelCloudNodeAccountRegisterReq": {
         "required": [
           "node_id",
-          "account_name",
           "host_node_id",
           "account_id",
           "cloud_provider",
@@ -13685,7 +13692,7 @@
         }
       },
       "ModelCloudNodeMonitoredAccount": {
-        "required": ["node_id", "account_name", "account_id"],
+        "required": ["node_id", "account_id"],
         "type": "object",
         "properties": {
           "account_id": { "type": "string" },

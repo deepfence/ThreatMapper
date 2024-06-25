@@ -30,7 +30,7 @@ export interface ModelCloudNodeMonitoredAccount {
      * @type {string}
      * @memberof ModelCloudNodeMonitoredAccount
      */
-    account_name: string;
+    account_name?: string;
     /**
      * 
      * @type {string}
@@ -45,7 +45,6 @@ export interface ModelCloudNodeMonitoredAccount {
 export function instanceOfModelCloudNodeMonitoredAccount(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "account_id" in value;
-    isInstance = isInstance && "account_name" in value;
     isInstance = isInstance && "node_id" in value;
 
     return isInstance;
@@ -62,7 +61,7 @@ export function ModelCloudNodeMonitoredAccountFromJSONTyped(json: any, ignoreDis
     return {
         
         'account_id': json['account_id'],
-        'account_name': json['account_name'],
+        'account_name': !exists(json, 'account_name') ? undefined : json['account_name'],
         'node_id': json['node_id'],
     };
 }

@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
-import { capitalize } from 'lodash-es';
+import { capitalize, startCase } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -59,10 +59,12 @@ import { ComplianceScanConfigureFormProps } from '@/components/scan-configure-fo
 import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { TruncatedText } from '@/components/TruncatedText';
 import { getColorForCompliancePercent } from '@/constants/charts';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
+import { RefreshAccountStatusError } from '@/features/postures/components/RefreshAccountStatusError';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import {
   getDeleteConfirmationDisplayName,
@@ -73,6 +75,7 @@ import {
   isKubernetesNodeType,
   isLinuxNodeType,
   isNonCloudNode,
+  isRefreshAccountFailed,
 } from '@/features/postures/utils';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -309,7 +312,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   status: 'Status',
   org_accounts: 'Organization account',
   aws_accounts: 'Account',
-  gcp_accounts: 'Account',
+  gcp_accounts: 'Project',
   azure_accounts: 'Subscription',
   hosts: 'Account',
   clusters: 'Account',
@@ -912,6 +915,7 @@ const ActionDropdown = ({
                     }
                     onTableAction(row, ActionEnumType.DELETE_ACCOUNT);
                   }}
+                  color="error"
                 >
                   Delete{' '}
                   {getDisplayNameOfNodeType(
@@ -1178,7 +1182,17 @@ const AccountTable = ({
       size: 40,
       maxSize: 40,
     },
+    account_name: {
+      minSize: 50,
+      size: 70,
+      maxSize: 80,
+    },
     last_scan_status: {
+      minSize: 50,
+      size: 70,
+      maxSize: 80,
+    },
+    refresh_status: {
       minSize: 50,
       size: 70,
       maxSize: 80,
@@ -1272,30 +1286,6 @@ const AccountTable = ({
           ),
         ...columnWidth.node_name,
       }),
-      columnHelper.accessor('compliance_percentage', {
-        ...columnWidth.compliance_percentage,
-        header: () => 'Compliance %',
-        cell: (cell) => {
-          const percent = Number(cell.getValue());
-          const isScanned = !!cell.row.original.last_scan_status;
-
-          if (isScanned) {
-            return (
-              <span
-                style={{
-                  color: getColorForCompliancePercent(theme, percent),
-                }}
-              >
-                {formatPercentage(percent, {
-                  maximumFractionDigits: 1,
-                })}
-              </span>
-            );
-          } else {
-            return <span>Unknown</span>;
-          }
-        },
-      }),
       columnHelper.accessor('active', {
         ...columnWidth.active,
         header: () => 'Active',
@@ -1329,12 +1319,68 @@ const AccountTable = ({
             return <ScanStatusBadge status={value ?? ''} />;
           }
         },
-        header: () => 'Status',
+        header: () => 'Scan status',
         ...columnWidth.last_scan_status,
+      }),
+      columnHelper.accessor('compliance_percentage', {
+        ...columnWidth.compliance_percentage,
+        header: () => 'Compliance %',
+        cell: (cell) => {
+          const percent = Number(cell.getValue());
+          const isScanned = !!cell.row.original.last_scan_status;
+
+          if (isScanned) {
+            return (
+              <span
+                style={{
+                  color: getColorForCompliancePercent(theme, percent),
+                }}
+              >
+                {formatPercentage(percent, {
+                  maximumFractionDigits: 1,
+                })}
+              </span>
+            );
+          } else {
+            return <span>Unknown</span>;
+          }
+        },
       }),
     ];
 
     if (isCloudNonOrgNode(nodeType) || isCloudOrgNode(nodeType)) {
+      columns.splice(
+        3,
+        1,
+        columnHelper.accessor('account_name', {
+          ...columnWidth.account_name,
+          header: () => 'Name',
+          cell: (info) => {
+            return <TruncatedText text={info.getValue()} />;
+          },
+        }),
+        columnHelper.accessor('active', {
+          ...columnWidth.active,
+          header: () => 'Active',
+          cell: (info) => {
+            return info.getValue() ? 'Yes' : 'No';
+          },
+        }),
+        columnHelper.accessor('refresh_status', {
+          ...columnWidth.refresh_status,
+          header: () => 'Refresh status',
+          cell: (info) => {
+            if (isRefreshAccountFailed(info.getValue())) {
+              return (
+                <RefreshAccountStatusError
+                  errorMessage={info.row.original.refresh_message ?? 'Unknown error'}
+                />
+              );
+            }
+            return <TruncatedText text={startCase(info.getValue().toLowerCase())} />;
+          },
+        }),
+      );
       columns.push(
         columnHelper.accessor('version', {
           enableSorting: false,
@@ -1380,7 +1426,7 @@ const AccountTable = ({
               </div>
             );
           },
-          header: () => 'Version',
+          header: () => 'Scanner version',
           ...columnWidth.version,
         }),
       );
@@ -1737,6 +1783,12 @@ function getTabLabel(value: (typeof tabs)[number], nodeType: string) {
       return 'Subscriptions';
     } else {
       return 'Tenants';
+    }
+  } else if (nodeType?.includes?.('gcp')) {
+    if (value === 'accounts') {
+      return 'Projects';
+    } else {
+      return 'Organization Projects';
     }
   }
   return value === 'accounts' ? 'Regular Accounts' : 'Organization Accounts';
