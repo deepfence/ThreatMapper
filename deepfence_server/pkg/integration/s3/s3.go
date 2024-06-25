@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/klauspost/compress/gzip"
@@ -28,7 +29,7 @@ func New(ctx context.Context, b []byte) (*S3, error) {
 	return &s, nil
 }
 
-func (s S3) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (s S3) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "s3-send-notification")
 	defer span.End()
@@ -65,9 +66,9 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 	}
 
 	// Marshal your JSON data into a byte slice
-	jsonBytes := []byte(message)
+	payload, err := json.Marshal(message)
 	if err != nil {
-		fmt.Println("Failed to marshal JSON data", err)
+		log.Error().Err(err).Msg("failed to marshal message")
 		return err
 	}
 
@@ -79,7 +80,7 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 		return err
 	}
 
-	_, _ = gzWriter.Write(jsonBytes)
+	_, _ = gzWriter.Write(payload)
 	gzWriter.Close()
 	// Upload the JSON data to S3
 	svc := s3.New(sess)

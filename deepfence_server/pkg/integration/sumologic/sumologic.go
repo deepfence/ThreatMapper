@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
@@ -39,7 +38,7 @@ func (s SumoLogic) FormatMessage(message []map[string]interface{}) (bytes.Buffer
 	return buffer, nil
 }
 
-func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[string]interface{}) error {
+func (s SumoLogic) SendNotification(ctx context.Context, data []map[string]interface{}, extra map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "sumologic-send-notification")
 	defer span.End()
@@ -47,15 +46,7 @@ func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[
 	// Create an HTTP client with a timeout
 	client := utils.GetHTTPClient()
 
-	var d []map[string]interface{}
-	dec := json.NewDecoder(strings.NewReader(data))
-	dec.UseNumber()
-	if err := dec.Decode(&d); err != nil {
-		log.Error().Msgf("%v", err)
-		return nil
-	}
-
-	msg, err := s.FormatMessage(d)
+	msg, err := s.FormatMessage(data)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		return nil

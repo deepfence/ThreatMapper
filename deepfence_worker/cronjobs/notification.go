@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
 
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
-	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
@@ -26,13 +26,6 @@ import (
 
 const NOTIFICATION_INTERVAL = 60000 //in milliseconds
 var ErrUnsupportedScan = errors.New("unsupported scan type in integration")
-
-var (
-	NotificationRecordsCounts = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "notification_records_total",
-		Help: "Total number of records sent by notification types",
-	}, []string{"resource", "type", "status", "namespace"})
-)
 
 var fieldsMap = map[string]map[string]string{
 	utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
@@ -60,7 +53,8 @@ var fieldsMap = map[string]map[string]string{
 		"part":               "Part",
 		"signature_to_match": "Matched Signature",
 		"updated_at":         "updated_at"},
-	utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]: {"class": "Class",
+	utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]: {
+		"class":             "Class",
 		"complete_filename": "File Name",
 		"file_sev_score":    "File Severity Score",
 		"file_severity":     "File Severity",
@@ -176,7 +170,7 @@ func TriggerSendNotifications(ctx context.Context, task *asynq.Task) error {
 			log.Error().Err(err).Msg("failsed to marshal payload")
 		}
 
-		uniqueTaskID := ig.IntegrationType + "-" + strconv.FormatInt(ig.LastSentTime.Time.UnixMilli(), 10)
+		uniqueTaskID := fmt.Sprintf("%d-%s-%d", ig.ID, ig.IntegrationType, ig.LastSentTime.Time.UnixMilli())
 
 		if err := worker.EnqueueUniqueWithTaskID(utils.SendNotificationTask, uniqueTaskID,
 			data, utils.LowTaskOpts()...); err != nil {
@@ -272,13 +266,13 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "process-integration")
 	defer span.End()
 
-	start := time.Now()
-
 	var filters model.IntegrationFilters
 	err := json.Unmarshal(intg.Filters, &filters)
 	if err != nil {
 		return err
 	}
+
+	start := time.Now()
 
 	// check if last_event_updated_at time is available
 	// or default to time.Now() - NOTIFICATION_INTERVAL
@@ -354,10 +348,9 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 
 	// nothing to notify
 	if len(scansList) == 0 {
-		log.Info().Msgf("No %s scans to notify after timestamp (%d,%d)",
-			intg.Resource,
-			intg.LastEventUpdatedAt.Time.UnixMilli(), start.UnixMilli())
-		if err := updateLastEventUpdatedAt(ctx, intg.ID, start); err != nil {
+		log.Info().Msgf("No %s scans after timestamp %d",
+			intg.Resource, intg.LastEventUpdatedAt.Time.UnixMilli())
+		if err := updateLastEventUpdatedAt(ctx, intg.ID, start.UnixMilli()); err != nil {
 			log.Error().Err(err).Msg("failed to to update last_event_updated_at")
 		}
 		return nil
@@ -376,6 +369,10 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 	totalSendTime := int64(0)
 
 	scanIDMap := make(map[string]bool)
+
+	// this var tracks the latest scan in the retrived scans
+	var latestScanUpdatedAt int64
+
 	for _, scan := range scansList {
 		//This map is required as we might have duplicates in the scansList
 		//for the containers
@@ -384,13 +381,19 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 		}
 		scanIDMap[scan.ScanID] = true
 
+		if scan.UpdatedAt >= latestScanUpdatedAt {
+			latestScanUpdatedAt = scan.UpdatedAt
+		}
+
 		profileStart = time.Now()
+
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
 			utils.DetectedNodeScanType[intg.Resource], scan.ScanID,
 			filters.FieldsFilters, model.FetchWindow{})
 		if err != nil {
 			return err
 		}
+
 		totalQueryTime = totalQueryTime + time.Since(profileStart).Milliseconds()
 
 		if len(results) == 0 {
@@ -417,47 +420,27 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 				updatedResults = append(updatedResults, utils.ToMap[T](r))
 			}
 		}
+
 		updatedResults = injectNodeDataMap(updatedResults, common, intg.IntegrationType, ctx)
-		messageByte, err := json.Marshal(updatedResults)
-		if err != nil {
-			return err
-		}
 
 		extras := utils.ToMap[any](common)
 		extras["scan_type"] = intg.Resource
 
 		profileStart = time.Now()
-		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
-		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
+
+		err = integrationModel.SendNotification(ctx, updatedResults, extras)
 		if err != nil {
-			NotificationRecordsCounts.WithLabelValues(
-				intg.Resource,
-				intg.IntegrationType,
-				"error",
-				func() string {
-					ns, _ := directory.ExtractNamespace(ctx)
-					return string(ns)
-				}(),
-			).Add(float64(len(updatedResults)))
 			return err
 		}
-		NotificationRecordsCounts.WithLabelValues(
-			intg.Resource,
-			intg.IntegrationType,
-			"success",
-			func() string {
-				ns, _ := directory.ExtractNamespace(ctx)
-				return string(ns)
-			}(),
-		).Add(float64(len(updatedResults)))
+
+		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
 
 		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken:%d",
 			intg.Resource, len(results), intg.IntegrationType,
 			intg.ID, time.Since(profileStart).Milliseconds())
 	}
 
-	// TODO: find the actual last_event_updated_at
-	if err := updateLastEventUpdatedAt(ctx, intg.ID, start); err != nil {
+	if err := updateLastEventUpdatedAt(ctx, intg.ID, latestScanUpdatedAt); err != nil {
 		log.Error().Err(err).Msg("failed to to update last_event_updated_at")
 	}
 
@@ -471,18 +454,17 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 	return nil
 }
 
-func updateLastEventUpdatedAt(ctx context.Context, intgId int32, updatedAt time.Time) error {
+func updateLastEventUpdatedAt(ctx context.Context, intgId int32, updatedAt int64) error {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("unable to get sql client")
 		return err
 	}
 
-	// TODO: get last scan or alert updated_at filed
 	last := postgresql_db.UpdateIntegrationLastEventUpdatedAtParams{
 		ID: intgId,
 		LastEventUpdatedAt: sql.NullTime{
-			Time:  updatedAt,
+			Time:  time.UnixMilli(updatedAt),
 			Valid: true,
 		},
 	}

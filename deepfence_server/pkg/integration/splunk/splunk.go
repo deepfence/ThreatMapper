@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -31,20 +29,14 @@ func New(ctx context.Context, b []byte) (Splunk, error) {
 	return s, nil
 }
 
-func (s Splunk) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (s Splunk) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "splunk-send-notification")
 	defer span.End()
 
 	s.client = utils.GetInsecureHTTPClient()
-	var msg []map[string]interface{}
-	d := json.NewDecoder(strings.NewReader(message))
-	if err := d.Decode(&msg); err != nil {
-		fmt.Println("Failed to unmarshal message for splunk", err)
-		return err
-	}
 
-	numRoutines := (len(msg) / 10)
+	numRoutines := (len(message) / 10)
 	if numRoutines == 0 {
 		numRoutines = 1
 	} else if numRoutines > 10 {
@@ -65,7 +57,7 @@ func (s Splunk) SendNotification(ctx context.Context, message string, extras map
 	}()
 
 	var buffer bytes.Buffer
-	for _, payload := range msg {
+	for _, payload := range message {
 		currentMicro := time.Now().UnixMicro()
 		payload["timestamp"] = currentMicro
 		payload["@timestamp"] = currentMicro

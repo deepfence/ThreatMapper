@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
@@ -22,7 +23,7 @@ func New(ctx context.Context, b []byte) (*HTTPEndpoint, error) {
 	return &h, nil
 }
 
-func (h HTTPEndpoint) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (h HTTPEndpoint) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "http-endpoiint-send-notification")
 	defer span.End()
@@ -30,11 +31,15 @@ func (h HTTPEndpoint) SendNotification(ctx context.Context, message string, extr
 	var req *http.Request
 	var err error
 
-	payloadBytes := []byte(message)
+	payload, err := json.Marshal(message)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to marshal message")
+		return err
+	}
 
 	// send message to this http url using http
 	// Set up the HTTP request.
-	req, err = http.NewRequest("POST", h.Config.URL, bytes.NewBuffer(payloadBytes))
+	req, err = http.NewRequest("POST", h.Config.URL, bytes.NewBuffer(payload))
 	if err != nil {
 		span.EndWithErr(err)
 		return err
@@ -44,9 +49,6 @@ func (h HTTPEndpoint) SendNotification(ctx context.Context, message string, extr
 		req.Header.Set("Authorization", h.Config.AuthHeader)
 	}
 
-	if err != nil {
-		return err
-	}
 	req.Header.Set("Content-Type", "application/json")
 
 	// Make the HTTP request.

@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/processors"
 	"github.com/hibiken/asynq"
 	"github.com/prometheus/client_golang/prometheus"
@@ -23,7 +22,7 @@ func NewMetrics(mode string) *prometheus.Registry {
 	case "ingester":
 		registry.MustRegister(processors.CommitNeo4jRecordsCounts, processors.KafkaTopicsLag)
 	case "worker":
-		registry.MustRegister(newWorkerCollector(), cronjobs.NotificationRecordsCounts)
+		registry.MustRegister(newWorkerCollector())
 	}
 
 	return registry

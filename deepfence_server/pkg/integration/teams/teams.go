@@ -44,22 +44,14 @@ func (t Teams) FormatMessage(message map[string]interface{}, position int, entir
 	return entiremsg.String()
 }
 
-func (t Teams) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (t Teams) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "teams-send-notification")
 	defer span.End()
 
 	t.client = utils.GetHTTPClient()
 
-	var msg []map[string]interface{}
-	d := json.NewDecoder(strings.NewReader(message))
-	d.UseNumber()
-	if err := d.Decode(&msg); err != nil {
-		log.Info().Msgf("Failed to unmarshal message for teams: %v", err)
-		return err
-	}
-
-	numRoutines := (len(msg) / 10)
+	numRoutines := (len(message) / 10)
 	if numRoutines == 0 {
 		numRoutines = 1
 	} else if numRoutines > 10 {
@@ -82,13 +74,13 @@ func (t Teams) SendNotification(ctx context.Context, message string, extras map[
 	startIndex := 0
 	endIndex := 0
 
-	for endIndex < len(msg) {
+	for endIndex < len(message) {
 		startIndex = endIndex
 		endIndex += BatchSize
-		if endIndex > len(msg) {
-			endIndex = len(msg)
+		if endIndex > len(message) {
+			endIndex = len(message)
 		}
-		t.enqueueNotification(msg[startIndex:endIndex], senderChan)
+		t.enqueueNotification(message[startIndex:endIndex], senderChan)
 	}
 	return nil
 }
