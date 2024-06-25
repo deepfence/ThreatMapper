@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { generatePath, useSearchParams } from 'react-router-dom';
 import {
   createColumnHelper,
   Dropdown,
@@ -11,7 +11,9 @@ import {
 } from 'ui-components';
 
 import { ModelContainerImage } from '@/api/generated';
+import { DFLink } from '@/components/DFLink';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { PopOutIcon } from '@/components/icons/common/PopOut';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
 import {
@@ -164,19 +166,76 @@ export const RegistryImageTagsTable = ({
       columnHelper.accessor('vulnerability_scan_status', {
         enableSorting: false,
         header: () => <TruncatedText text={'Vulnerability scan status'} />,
-        cell: (info) => <ScanStatusBadge status={info.getValue()} />,
+        cell: (info) => {
+          const badge = <ScanStatusBadge status={info.getValue()} />;
+          if (info.row.original.vulnerability_latest_scan_id) {
+            return (
+              <div className="flex gap-2 items-center">
+                <div>{badge}</div>
+                <DFLink
+                  to={generatePath('/vulnerability/scan-results/:scanId', {
+                    scanId: info.row.original.vulnerability_latest_scan_id,
+                  })}
+                  target="_blank"
+                  className="h-4 w-4 shrink-0"
+                >
+                  <PopOutIcon />
+                </DFLink>
+              </div>
+            );
+          }
+          return badge;
+        },
         maxSize: 50,
       }),
       columnHelper.accessor('secret_scan_status', {
         enableSorting: false,
         header: () => <TruncatedText text={'Secrets scan status'} />,
-        cell: (info) => <ScanStatusBadge status={info.getValue()} />,
+        cell: (info) => {
+          const badge = <ScanStatusBadge status={info.getValue()} />;
+          if (info.row.original.secret_latest_scan_id) {
+            return (
+              <div className="flex gap-2 items-center">
+                <div>{badge}</div>
+                <DFLink
+                  to={generatePath('/secret/scan-results/:scanId', {
+                    scanId: info.row.original.secret_latest_scan_id,
+                  })}
+                  target="_blank"
+                  className="h-4 w-4 shrink-0"
+                >
+                  <PopOutIcon />
+                </DFLink>
+              </div>
+            );
+          }
+          return badge;
+        },
         maxSize: 50,
       }),
       columnHelper.accessor('malware_scan_status', {
         enableSorting: false,
         header: () => <TruncatedText text={'Malware scan status'} />,
-        cell: (info) => <ScanStatusBadge status={info.getValue()} />,
+        cell: (info) => {
+          const badge = <ScanStatusBadge status={info.getValue()} />;
+          if (info.row.original.malware_latest_scan_id) {
+            return (
+              <div className="flex gap-2 items-center">
+                <div>{badge}</div>
+                <DFLink
+                  to={generatePath('/malware/scan-results/:scanId', {
+                    scanId: info.row.original.malware_latest_scan_id,
+                  })}
+                  target="_blank"
+                  className="h-4 w-4 shrink-0"
+                >
+                  <PopOutIcon />
+                </DFLink>
+              </div>
+            );
+          }
+          return badge;
+        },
         maxSize: 50,
       }),
     ],
