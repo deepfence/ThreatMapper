@@ -86,7 +86,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 				return err
 			}
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.VulnerabilityScanStatus,
+				Topic:   utils.TopicWithNamespace(utils.VulnerabilityScanStatus, string(tenantID)),
 				Value:   sb,
 				Headers: rh,
 			}
@@ -177,7 +177,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 			log.Error().Msg(err.Error())
 		} else {
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.VulnerabilityScan,
+				Topic:   utils.TopicWithNamespace(utils.VulnerabilityScan, string(tenantID)),
 				Value:   cb,
 				Headers: rh,
 			}

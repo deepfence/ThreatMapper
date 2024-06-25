@@ -552,7 +552,7 @@ func (h *Handler) SendScanStatus(
 		return
 	}
 	h.IngestChan <- &kgo.Record{
-		Topic:   scanStatusType,
+		Topic:   utils.TopicWithNamespace(scanStatusType, string(tenantID)),
 		Value:   cb,
 		Headers: rh,
 	}

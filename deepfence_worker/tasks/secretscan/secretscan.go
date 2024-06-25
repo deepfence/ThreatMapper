@@ -137,7 +137,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 				return err
 			}
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.SecretScanStatus,
+				Topic:   utils.TopicWithNamespace(utils.SecretScanStatus, string(tenantID)),
 				Value:   sb,
 				Headers: []kgo.RecordHeader{{Key: "namespace", Value: []byte(tenantID)}},
 			}
@@ -250,7 +250,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 			log.Error().Msg(err.Error())
 		} else {
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.SecretScan,
+				Topic:   utils.TopicWithNamespace(utils.SecretScan, string(tenantID)),
 				Value:   cb,
 				Headers: []kgo.RecordHeader{{Key: "namespace", Value: []byte(tenantID)}},
 			}

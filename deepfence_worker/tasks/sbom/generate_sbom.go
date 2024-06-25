@@ -98,7 +98,7 @@ func (s SbomGenerator) GenerateSbom(ctx context.Context, task *asynq.Task) error
 				return err
 			}
 			s.ingestC <- &kgo.Record{
-				Topic:   utils.VulnerabilityScanStatus,
+				Topic:   utils.TopicWithNamespace(utils.VulnerabilityScanStatus, string(tenantID)),
 				Value:   sb,
 				Headers: rh,
 			}

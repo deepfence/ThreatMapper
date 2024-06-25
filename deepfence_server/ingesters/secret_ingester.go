@@ -37,7 +37,7 @@ func (tc *SecretIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   utils.SecretScan,
+				Topic:   utils.TopicWithNamespace(utils.SecretScan, string(tenantID)),
 				Value:   cb,
 				Headers: rh,
 			}
@@ -73,7 +73,7 @@ func (tc *SecretScanStatusIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   utils.SecretScanStatus,
+				Topic:   utils.TopicWithNamespace(utils.SecretScanStatus, string(tenantID)),
 				Value:   cb,
 				Headers: rh,
 			}
