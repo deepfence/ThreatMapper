@@ -156,7 +156,7 @@ func (h *Handler) AddAuditLog(namespace string, params postgresql_db.CreateAudit
 	}
 
 	h.IngestChan <- &kgo.Record{
-		Topic: utils.AuditLogs,
+		Topic: utils.TopicWithNamespace(utils.AuditLogs, namespace),
 		Value: data,
 		Headers: []kgo.RecordHeader{
 			{Key: "namespace", Value: []byte(namespace)},

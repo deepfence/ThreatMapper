@@ -38,7 +38,7 @@ func (tc *CloudResourceIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   utils.CloudResource,
+				Topic:   utils.TopicWithNamespace(utils.CloudResource, string(tenantID)),
 				Value:   cb,
 				Headers: rh,
 			}
@@ -75,7 +75,7 @@ func (tc *CloudResourceRefreshStatusIngester) Ingest(
 			log.Error().Msg(err.Error())
 		} else {
 			ingestC <- &kgo.Record{
-				Topic:   utils.CloudResourceRefreshStatus,
+				Topic:   utils.TopicWithNamespace(utils.CloudResourceRefreshStatus, string(tenantID)),
 				Value:   cb,
 				Headers: rh,
 			}
