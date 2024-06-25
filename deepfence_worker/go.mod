@@ -2,6 +2,8 @@ module github.com/deepfence/ThreatMapper/deepfence_worker
 
 go 1.21.1
 
+toolchain go1.22.0
+
 replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
 
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils
@@ -32,6 +34,7 @@ require (
 	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.1.0
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20231201173641-092afefd00a2
+	github.com/deepfence/match-scanner v0.0.0-20240625090843-26ab71d8eaf7
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/hibiken/asynq v0.24.1
