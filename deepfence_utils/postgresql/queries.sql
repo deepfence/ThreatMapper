@@ -776,7 +776,12 @@ UPDATE integration
 SET last_event_updated_at = $2
 WHERE id = $1;
 
--- name: UpdateIntegrationMetrics :exec
+-- name: SetIntegrationMetrics :exec
 UPDATE integration
 SET metrics = $2
+WHERE id = $1;
+
+-- name: GetIntegrationMetrics :one
+SELECT metrics
+FROM integration
 WHERE id = $1;

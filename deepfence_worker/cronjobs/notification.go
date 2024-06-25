@@ -17,6 +17,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/integrations"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
@@ -25,6 +26,7 @@ import (
 )
 
 const NOTIFICATION_INTERVAL = 60000 //in milliseconds
+
 var ErrUnsupportedScan = errors.New("unsupported scan type in integration")
 
 var fieldsMap = map[string]map[string]string{
@@ -127,7 +129,8 @@ type SendNotificationsTaskParams struct {
 func TriggerSendNotifications(ctx context.Context, task *asynq.Task) error {
 	log := log.WithCtx(ctx)
 
-	log.Debug().Msgf("TriggerSendNotifications at timestamp %s", time.Now())
+	log.Debug().Msg("Execute TriggerSendNotifications")
+	defer log.Debug().Msg("Execute TriggerSendNotifications - Done")
 
 	worker, err := directory.Worker(ctx)
 	if err != nil {
@@ -314,7 +317,7 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			scansList = append(scansList, scansInfo...)
 		}
 	}
-	neo4j_query_nc := time.Since(profileStart).Milliseconds()
+	neo4j_query_nc := time.Since(profileStart)
 
 	profileStart = time.Now()
 	if reqC != nil {
@@ -326,9 +329,9 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			scansList = append(scansList, containerScanInfo...)
 		}
 	}
-	neo4j_query_c := time.Since(profileStart).Milliseconds()
+	neo4j_query_c := time.Since(profileStart)
 
-	neo4j_query_default := int64(0)
+	neo4j_query_default := time.Duration(0)
 	if reqNC == nil && reqC == nil {
 		profileStart = time.Now()
 		reqDefault := reporters_search.SearchScanReq{}
@@ -343,7 +346,7 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 		} else if len(defaultScanInfo) > 0 {
 			scansList = append(scansList, defaultScanInfo...)
 		}
-		neo4j_query_default = time.Since(profileStart).Milliseconds()
+		neo4j_query_default = time.Since(profileStart)
 	}
 
 	// nothing to notify
@@ -365,8 +368,8 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 	}
 	filters.NodeIds = []model.NodeIdentifier{}
 
-	totalQueryTime := int64(0)
-	totalSendTime := int64(0)
+	totalQueryTime := time.Duration(0)
+	totalSendTime := time.Duration(0)
 
 	scanIDMap := make(map[string]bool)
 
@@ -394,7 +397,7 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			return err
 		}
 
-		totalQueryTime = totalQueryTime + time.Since(profileStart).Milliseconds()
+		totalQueryTime = totalQueryTime + time.Since(profileStart)
 
 		if len(results) == 0 {
 			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanID, filters)
@@ -430,27 +433,32 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 
 		err = integrationModel.SendNotification(ctx, updatedResults, extras)
 		if err != nil {
+			updateIntegrationMetrics(ctx, intg,
+				integrations.Metrics{Ok: 0, Error: int64(len(updatedResults))})
 			return err
+		} else {
+			updateIntegrationMetrics(ctx, intg,
+				integrations.Metrics{Ok: int64(len(updatedResults)), Error: 0})
 		}
 
-		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
+		totalSendTime = totalSendTime + time.Since(profileStart)
 
-		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken:%d",
+		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken: %s",
 			intg.Resource, len(results), intg.IntegrationType,
-			intg.ID, time.Since(profileStart).Milliseconds())
+			intg.ID, time.Since(profileStart))
 	}
 
 	if err := updateLastEventUpdatedAt(ctx, intg.ID, latestScanUpdatedAt); err != nil {
 		log.Error().Err(err).Msg("failed to to update last_event_updated_at")
 	}
 
-	log.Info().Msgf("%s Total Time taken for integration %s: %d", intg.Resource,
-		intg.IntegrationType, time.Since(start).Milliseconds())
-	log.Debug().Msgf("Time taken for neo4j_query_nc: %d", neo4j_query_nc)
-	log.Debug().Msgf("Time taken for neo4j_query_c: %d", neo4j_query_c)
-	log.Debug().Msgf("Time taken for neo4j_query_default: %d", neo4j_query_default)
-	log.Debug().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
-	log.Debug().Msgf("Time taken for sending data : %d", totalSendTime)
+	log.Info().Msgf("%s Total Time taken for integration %s: %s", intg.Resource,
+		intg.IntegrationType, time.Since(start))
+	log.Debug().Msgf("Time taken for neo4j_query_nc: %s", neo4j_query_nc)
+	log.Debug().Msgf("Time taken for neo4j_query_c: %s", neo4j_query_c)
+	log.Debug().Msgf("Time taken for neo4j_query_default: %s", neo4j_query_default)
+	log.Debug().Msgf("Time taken for neo4j_query_2: %s", totalQueryTime)
+	log.Debug().Msgf("Time taken for sending data : %s", totalSendTime)
 	return nil
 }
 
@@ -470,6 +478,26 @@ func updateLastEventUpdatedAt(ctx context.Context, intgId int32, updatedAt int64
 	}
 
 	if err := pgClient.UpdateIntegrationLastEventUpdatedAt(ctx, last); err != nil {
+		log.Error().Err(err).Msg("failed to update last event updated at")
+		return err
+	}
+
+	return nil
+}
+
+func updateIntegrationMetrics(ctx context.Context, intg postgresql_db.Integration, metrics integrations.Metrics) error {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("unable to get sql client")
+		return err
+	}
+
+	param := postgresql_db.SetIntegrationMetricsParams{
+		ID:      intg.ID,
+		Metrics: intg.Metrics.Update(metrics),
+	}
+
+	if err := pgClient.SetIntegrationMetrics(ctx, param); err != nil {
 		log.Error().Err(err).Msg("failed to update last event updated at")
 		return err
 	}

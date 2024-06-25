@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/processors"
@@ -22,12 +24,13 @@ func NewMetrics(mode string) *prometheus.Registry {
 	case "ingester":
 		registry.MustRegister(processors.CommitNeo4jRecordsCounts, processors.KafkaTopicsLag)
 	case "worker":
-		registry.MustRegister(newWorkerCollector())
+		registry.MustRegister(newWorkerCollector(), newIntegrationCollector())
 	}
 
 	return registry
 }
 
+// worker tasks metrics
 type WorkerCollector struct {
 	tasks *prometheus.Desc
 }
@@ -184,6 +187,59 @@ func (collector *WorkerCollector) Collect(ch chan<- prometheus.Metric) {
 				float64(t.archived), ns, t.queue, name, "archived")
 			ch <- prometheus.MustNewConstMetric(collector.tasks, prometheus.GaugeValue,
 				float64(t.completed), ns, t.queue, name, "completed")
+		}
+
+	}
+
+}
+
+// integreation metrics
+type IntegrationCollector struct {
+	integration *prometheus.Desc
+}
+
+func newIntegrationCollector() *IntegrationCollector {
+	return &IntegrationCollector{
+		integration: prometheus.NewDesc(
+			"integration_metrics",
+			"integration by type and metrics",
+			[]string{"namespace", "id", "type", "status"}, nil,
+		),
+	}
+}
+
+func (collector *IntegrationCollector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- collector.integration
+}
+
+func (collector *IntegrationCollector) Collect(ch chan<- prometheus.Metric) {
+
+	for _, namespace := range directory.GetAllNamespaces() {
+
+		ctx := directory.NewContextWithNameSpace(namespace)
+		ns := string(namespace)
+
+		log := log.WithCtx(ctx)
+
+		pgClient, err := directory.PostgresClient(ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get sql client")
+			return
+		}
+
+		integrations, err := pgClient.GetIntegrations(ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get configured integraions")
+			return
+		}
+
+		log.Info().Msg("collect integration counts")
+
+		for _, intg := range integrations {
+			ch <- prometheus.MustNewConstMetric(collector.integration, prometheus.CounterValue,
+				float64(intg.Metrics.Ok), ns, strconv.Itoa(int(intg.ID)), intg.IntegrationType, "ok")
+			ch <- prometheus.MustNewConstMetric(collector.integration, prometheus.CounterValue,
+				float64(intg.Metrics.Error), ns, strconv.Itoa(int(intg.ID)), intg.IntegrationType, "error")
 		}
 
 	}

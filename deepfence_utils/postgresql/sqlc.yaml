@@ -9,6 +9,7 @@ sql:
         out: "postgresql-db"
         emit_json_tags: true
         json_tags_case_style: "snake"
+        # sql_package: "pgx/v5"
         overrides:
           - column: "integration.metrics"
             go_type:

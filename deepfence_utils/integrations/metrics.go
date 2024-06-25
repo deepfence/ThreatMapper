@@ -1,19 +1,23 @@
 package integrations
 
-import "encoding/json"
+import (
+	"database/sql/driver"
+	"encoding/json"
+)
 
 type Metrics struct {
-	Ok    int64
-	Error int64
+	Ok    int64 `json:"ok,omitempty"`
+	Error int64 `json:"error,omitempty"`
 }
 
-func (m *Metrics) Update(ok, error int64) {
-	if ok >= 0 {
-		m.Ok += ok
+func (m *Metrics) Update(n Metrics) *Metrics {
+	if n.Ok > 0 {
+		m.Ok += n.Ok
 	}
-	if error >= 0 {
-		m.Error += error
+	if n.Error > 0 {
+		m.Error += n.Error
 	}
+	return m
 }
 
 func (m *Metrics) Scan(src interface{}) error {
@@ -28,4 +32,8 @@ func (m *Metrics) Scan(src interface{}) error {
 	}
 
 	return json.Unmarshal(data, m)
+}
+
+func (m Metrics) Value() (driver.Value, error) {
+	return json.Marshal(m)
 }

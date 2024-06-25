@@ -1815,6 +1815,19 @@ func (q *Queries) GetIntegrationFromID(ctx context.Context, id int32) (Integrati
 	return i, err
 }
 
+const getIntegrationMetrics = `-- name: GetIntegrationMetrics :one
+SELECT metrics
+FROM integration
+WHERE id = $1
+`
+
+func (q *Queries) GetIntegrationMetrics(ctx context.Context, id int32) (*integrations.Metrics, error) {
+	row := q.db.QueryRowContext(ctx, getIntegrationMetrics, id)
+	var metrics *integrations.Metrics
+	err := row.Scan(&metrics)
+	return metrics, err
+}
+
 const getIntegrations = `-- name: GetIntegrations :many
 SELECT id, resource, filters, integration_type, interval_minutes, last_sent_time, config, error_msg, created_by_user_id, created_at, updated_at, last_event_updated_at, metrics
 FROM integration
@@ -2722,6 +2735,22 @@ func (q *Queries) GetVisibleSettings(ctx context.Context) ([]Setting, error) {
 	return items, nil
 }
 
+const setIntegrationMetrics = `-- name: SetIntegrationMetrics :exec
+UPDATE integration
+SET metrics = $2
+WHERE id = $1
+`
+
+type SetIntegrationMetricsParams struct {
+	ID      int32                 `json:"id"`
+	Metrics *integrations.Metrics `json:"metrics"`
+}
+
+func (q *Queries) SetIntegrationMetrics(ctx context.Context, arg SetIntegrationMetricsParams) error {
+	_, err := q.db.ExecContext(ctx, setIntegrationMetrics, arg.ID, arg.Metrics)
+	return err
+}
+
 const updateContainerRegistry = `-- name: UpdateContainerRegistry :one
 UPDATE container_registry
 SET name=$1,
@@ -2847,22 +2876,6 @@ type UpdateIntegrationLastEventUpdatedAtParams struct {
 
 func (q *Queries) UpdateIntegrationLastEventUpdatedAt(ctx context.Context, arg UpdateIntegrationLastEventUpdatedAtParams) error {
 	_, err := q.db.ExecContext(ctx, updateIntegrationLastEventUpdatedAt, arg.ID, arg.LastEventUpdatedAt)
-	return err
-}
-
-const updateIntegrationMetrics = `-- name: UpdateIntegrationMetrics :exec
-UPDATE integration
-SET metrics = $2
-WHERE id = $1
-`
-
-type UpdateIntegrationMetricsParams struct {
-	ID      int32                 `json:"id"`
-	Metrics *integrations.Metrics `json:"metrics"`
-}
-
-func (q *Queries) UpdateIntegrationMetrics(ctx context.Context, arg UpdateIntegrationMetricsParams) error {
-	_, err := q.db.ExecContext(ctx, updateIntegrationMetrics, arg.ID, arg.Metrics)
 	return err
 }
 
