@@ -7,6 +7,7 @@ import {
   getReportBenchmarkList,
   getReportNodeType,
 } from '@/features/integrations/pages/DownloadReport';
+import { getBenchmarkPrettyName } from '@/utils/enum';
 
 const getDisplayNodeTypeValue = (resource: string, nodeType: string) => {
   if (resource === UtilsReportFiltersScanTypeEnum.CloudCompliance) {
@@ -76,7 +77,7 @@ export const ComplianceForm = ({
             {getReportBenchmarkList(provider)?.map((provider) => {
               return (
                 <ListboxOption value={provider} key={provider}>
-                  {provider}
+                  {getBenchmarkPrettyName(provider)}
                 </ListboxOption>
               );
             })}
