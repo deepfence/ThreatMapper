@@ -262,6 +262,15 @@ func processForResource(ctx context.Context, integration postgresql_db.Integrati
 	}
 }
 
+// check if last_event_updated_at time is available
+// or default to time.Now() - NOTIFICATION_INTERVAL
+func getLastEventUpdatedAt(eTime sql.NullTime, defaultTime time.Time) string {
+	if eTime.Valid {
+		return strconv.FormatInt(eTime.Time.UnixMilli(), 10)
+	}
+	return strconv.FormatInt(defaultTime.UnixMilli()-NOTIFICATION_INTERVAL, 10)
+}
+
 func processIntegration[T any](ctx context.Context, intg postgresql_db.Integration) error {
 
 	log := log.WithCtx(ctx)
@@ -277,22 +286,13 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 
 	start := time.Now()
 
-	// check if last_event_updated_at time is available
-	// or default to time.Now() - NOTIFICATION_INTERVAL
-	updatedAt := func(eTime sql.NullTime) string {
-		if intg.LastEventUpdatedAt.Valid {
-			return strconv.FormatInt(eTime.Time.UnixMilli(), 10)
-		}
-		return strconv.FormatInt(start.UnixMilli()-NOTIFICATION_INTERVAL, 10)
-	}
-
 	filters.FieldsFilters = reporters.FieldsFilters{}
 	filters.FieldsFilters.CompareFilters = append(
 		filters.FieldsFilters.CompareFilters,
 		reporters.CompareFilter{
 			FieldName:   "updated_at",
 			GreaterThan: true,
-			FieldValue:  updatedAt(intg.LastEventUpdatedAt),
+			FieldValue:  getLastEventUpdatedAt(intg.LastEventUpdatedAt, start),
 		},
 	)
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
