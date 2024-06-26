@@ -353,9 +353,6 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 	if len(scansList) == 0 {
 		log.Info().Msgf("No %s scans after timestamp %d",
 			intg.Resource, intg.LastEventUpdatedAt.Time.UnixMilli())
-		if err := updateLastEventUpdatedAt(ctx, intg.ID, start.UnixMilli()); err != nil {
-			log.Error().Err(err).Msg("failed to to update last_event_updated_at")
-		}
 		return nil
 	}
 
