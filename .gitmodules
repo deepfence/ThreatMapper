@@ -21,7 +21,7 @@
 [submodule "deepfence_agent/plugins/YaraHunter"]
 	path = deepfence_agent/plugins/YaraHunter
 	url = https://github.com/deepfence/YaraHunter.git
-	branch = use-scanner-lib
+	branch = main
 [submodule "deepfence_agent/plugins/yara-rules"]
 	path = deepfence_agent/plugins/yara-rules
 	url = https://github.com/deepfence/yara-rules
