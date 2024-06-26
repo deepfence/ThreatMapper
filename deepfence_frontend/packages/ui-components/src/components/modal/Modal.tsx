@@ -101,6 +101,8 @@ const contentCva = cva(
       'text-p1 text-text-text-and-icon',
       // padding
       'px-5',
+      'data-[state=closed]:animate-modal-slide-out',
+      'data-[state=open]:animate-modal-slide-in',
     ),
   ],
   {
@@ -111,10 +113,6 @@ const contentCva = cva(
         l: 'w-[640px]',
         xl: 'w-[720px]',
         xxl: 'w-[800px]',
-      },
-      open: {
-        true: 'animate-modal-slide-in',
-        // false: 'animate-pop-out',
       },
     },
     defaultVariants: {
@@ -145,12 +143,13 @@ export const Modal: FC<ModalProps> = ({
         <DialogPrimitive.Overlay
           className={cn(
             'fixed inset-0 bg-black/50 dark:bg-bg-left-nav/80 flex justify-center items-center',
+            'data-[state=closed]:animate-opacity-out',
+            'data-[state=open]:animate-opacity-in',
           )}
         >
           <DialogPrimitive.Content
             className={contentCva({
               size,
-              open: wasOpen,
             })}
             onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
           >
