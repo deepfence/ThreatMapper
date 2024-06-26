@@ -68,7 +68,7 @@ func IsMessagingFormat(integrationType string) bool {
 // Integration is the interface for all integrations
 type Integration interface {
 	// extras are additional fields that are not part of the message
-	SendNotification(ctx context.Context, message string, extras map[string]interface{}) error
+	SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error
 	ValidateConfig(*validator.Validate) error
 	IsValidCredential(ctx context.Context) (bool, error)
 }

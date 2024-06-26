@@ -50,11 +50,6 @@ func Notify[T any](ctx context.Context, res []T, common model.ScanResultsCommon,
 
 		// inject node details to results
 		updatedResults := injectNodeData[T](res, common, integrationRow.IntegrationType)
-		messageByte, err := json.MarshalIndent(updatedResults, "", "  ")
-		if err != nil {
-			log.Error().Msgf("Error marshalling message: %v", err)
-			return err
-		}
 
 		integrationModel, err := integration.GetIntegration(ctx, integrationRow.IntegrationType, iByte)
 		if err != nil {
@@ -67,7 +62,7 @@ func Notify[T any](ctx context.Context, res []T, common model.ScanResultsCommon,
 		// add scantype
 		extras["scan_type"] = scanType
 
-		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
+		err = integrationModel.SendNotification(ctx, updatedResults, extras)
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}

@@ -197,6 +197,8 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 
 	worker.AddOneShotHandler(utils.SendNotificationTask, cronjobs.SendNotifications)
 
+	worker.AddOneShotHandler(utils.TriggerSendNotificationsTask, cronjobs.TriggerSendNotifications)
+
 	worker.AddRetryableHandler(utils.ReportGeneratorTask, reports.GenerateReport)
 
 	worker.AddOneShotHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports)

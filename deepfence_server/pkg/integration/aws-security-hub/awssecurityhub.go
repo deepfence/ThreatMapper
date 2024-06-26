@@ -51,7 +51,7 @@ func New(ctx context.Context, b []byte) (*AwsSecurityHub, error) {
 	return &s, nil
 }
 
-func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (a AwsSecurityHub) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	ctx, span := telemetry.NewSpan(ctx, "integrations", "aws-security-hub-send-notification")
 	defer span.End()
@@ -98,14 +98,8 @@ func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, ex
 	}
 
 	svc := securityhub.New(sess)
-	var msg []map[string]interface{}
-	d := json.NewDecoder(strings.NewReader(message))
-	d.UseNumber()
-	if err := d.Decode(&msg); err != nil {
-		fmt.Println("Failed to marshal JSON data", err)
-		return nil
-	}
-	fs := a.mapPayloadToFindings(msg, resource, *id.Account)
+
+	fs := a.mapPayloadToFindings(message, resource, *id.Account)
 
 	// Split the JSON data into batches of 100
 	var batches []*securityhub.BatchImportFindingsInput

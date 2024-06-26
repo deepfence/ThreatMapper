@@ -87,21 +87,12 @@ func (e Email) FormatMessage(message []map[string]interface{}) string {
 	return entiremsg.String()
 }
 
-func (e Email) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (e Email) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "email-send-notification")
 	defer span.End()
 
-	// formatting : unmarshal into payload
-	var msg []map[string]interface{}
-
-	d := json.NewDecoder(strings.NewReader(message))
-	d.UseNumber()
-	if err := d.Decode(&msg); err != nil {
-		return err
-	}
-
-	m := e.FormatMessage(msg)
+	m := e.FormatMessage(message)
 	emailSender, err := sendemail.NewEmailSender(ctx)
 	if err != nil {
 		return err

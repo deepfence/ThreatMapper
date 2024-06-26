@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
@@ -19,7 +20,7 @@ func New(ctx context.Context, b []byte) (*GoogleChronicle, error) {
 	return &p, nil
 }
 
-func (g GoogleChronicle) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (g GoogleChronicle) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "google-chronicle-send-notification")
 	defer span.End()
@@ -27,11 +28,15 @@ func (g GoogleChronicle) SendNotification(ctx context.Context, message string, e
 	var req *http.Request
 	var err error
 
-	payloadBytes := []byte(message)
+	payload, err := json.Marshal(message)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to marshal message")
+		return err
+	}
 
 	// send message to this elasticsearch using http
 	// Set up the HTTP request.
-	req, err = http.NewRequest("POST", g.Config.URL, bytes.NewBuffer(payloadBytes))
+	req, err = http.NewRequest("POST", g.Config.URL, bytes.NewBuffer(payload))
 	if err != nil {
 		span.EndWithErr(err)
 		return err

@@ -38,7 +38,7 @@ func New(ctx context.Context, b []byte) (*PagerDuty, error) {
 	return &p, nil
 }
 
-func (p PagerDuty) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (p PagerDuty) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "pagerduty-send-notification")
 	defer span.End()
@@ -53,14 +53,7 @@ func (p PagerDuty) SendNotification(ctx context.Context, message string, extras 
 		return nil
 	}
 
-	var err error
-	var msg []map[string]interface{}
-	d := json.NewDecoder(strings.NewReader(message))
-	d.UseNumber()
-	if err = d.Decode(&msg); err != nil {
-		return err
-	}
-	m := p.FormatMessage(msg)
+	m := p.FormatMessage(message)
 
 	sev := pagerdutySeverityMapping[p.Severity]
 	if sev == "" {
@@ -80,8 +73,7 @@ func (p PagerDuty) SendNotification(ctx context.Context, message string, extras 
 		},
 	}
 
-	err = createPagerDutyEvent(p.Config.APIKey, incident)
-	if err != nil {
+	if err := createPagerDutyEvent(p.Config.APIKey, incident); err != nil {
 		log.Error().Msgf("PagerDuty: %+v", err)
 		span.EndWithErr(err)
 	}
