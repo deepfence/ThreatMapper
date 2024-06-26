@@ -7,6 +7,7 @@ import {
   getReportBenchmarkList,
   getReportNodeType,
 } from '@/features/integrations/pages/DownloadReport';
+import { getBenchmarkPrettyName } from '@/utils/enum';
 
 export const CloudComplianceForm = ({
   setProvider,
@@ -77,7 +78,7 @@ export const CloudComplianceForm = ({
             {getReportBenchmarkList(provider)?.map((provider) => {
               return (
                 <ListboxOption value={provider} key={provider}>
-                  {provider}
+                  {getBenchmarkPrettyName(provider)}
                 </ListboxOption>
               );
             })}
