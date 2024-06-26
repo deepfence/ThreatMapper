@@ -281,6 +281,8 @@ func SetCloudScannerControls() {
 			return SendAgentDiagnosticLogs(req,
 				[]string{dfUtils.GetDfInstallDir() + "/var/log/supervisor",
 					dfUtils.GetDfInstallDir() + "/var/log/fenced/cloud-scanner-log",
+					dfUtils.GetDfInstallDir() + "/var/log/fenced/cloud-resource-refresh-log",
+					dfUtils.GetDfInstallDir() + "/var/log/fenced/status",
 					dfUtils.GetDfInstallDir() + "/var/log/deepfenced",
 					dfUtils.GetDfInstallDir() + "/.steampipe/logs"},
 				[]string{})

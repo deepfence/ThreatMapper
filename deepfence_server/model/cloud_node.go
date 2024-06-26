@@ -78,13 +78,13 @@ type CloudNodeAccountInfo struct {
 	NodeID               string           `json:"node_id"`
 	NodeName             string           `json:"node_name"`
 	AccountName          string           `json:"account_name"`
-	CloudProvider        string           `json:"cloud_provider"`
+	CloudProvider        string           `json:"cloud_provider" enum:"aws,gcp,azure,aws_org,gcp_org,azure_org"`
 	CompliancePercentage float64          `json:"compliance_percentage"`
 	Active               bool             `json:"active"`
 	LastScanID           string           `json:"last_scan_id"`
 	LastScanStatus       string           `json:"last_scan_status"`
 	RefreshMessage       string           `json:"refresh_message"`
-	RefreshStatus        string           `json:"refresh_status"`
+	RefreshStatus        string           `json:"refresh_status" enum:"STARTING,IN_PROGRESS,ERROR,COMPLETE"`
 	ScanStatusMap        map[string]int64 `json:"scan_status_map"`
 	Version              string           `json:"version"`
 	HostNodeID           string           `json:"host_node_id"`
@@ -102,6 +102,10 @@ func (v CloudNodeAccountInfo) NodeType() string {
 
 func (CloudNodeAccountInfo) ExtendedField() string {
 	return ""
+}
+
+func (v CloudNodeAccountInfo) id() string {
+	return v.NodeID
 }
 
 func (v CloudNodeAccountInfo) ScanType() utils.Neo4jScanType {
@@ -226,6 +230,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			MERGE (r:Node{node_id:$host_node_id, node_type: "cloud_agent"})
 			WITH $param as row, r
 			MERGE (n:CloudNode{node_id:row.node_id})
+			ON CREATE SET n.refresh_status = 'STARTING', n.refresh_message = ''
 			MERGE (r) -[:HOSTS]-> (n)
 			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version,
 			r.node_name=$host_node_id, r.active = true, r.agent_running=true, r.updated_at = TIMESTAMP()`,
@@ -241,6 +246,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			MERGE (m:CloudNode{node_id: $parent_node_id})
 			WITH $param as row, r, m
 			MERGE (n:CloudNode{node_id:row.node_id})
+			ON CREATE SET n.refresh_status = 'STARTING', n.refresh_message = ''
 			MERGE (m) -[:IS_CHILD]-> (n)
 			MERGE (r) -[:HOSTS]-> (n)
 			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version, 

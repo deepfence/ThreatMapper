@@ -920,6 +920,9 @@ func (d *OpenAPIDocs) AddCompletionOperations() {
 	d.AddOperation("completeCloudResources", http.MethodPost, "/deepfence/complete/cloud-resources",
 		"Get Completion for cloud resources fields", "Complete cloud resources info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeCloudAccount", http.MethodPost, "/deepfence/complete/cloud-account",
+		"Get Completion for cloud account fields", "Complete cloud account info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 	d.AddOperation("completeComplianceInfo", http.MethodPost, "/deepfence/complete/compliance",
 		"Get Completion for compliance fields", "Complete compliance info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
