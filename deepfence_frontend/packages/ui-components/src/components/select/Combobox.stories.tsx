@@ -53,7 +53,7 @@ const OPTIONS = [
 ];
 
 const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
-  const [selected, setSelected] = useState<(typeof OPTIONS)[number]>(OPTIONS[0]);
+  const [selected, setSelected] = useState<(typeof OPTIONS)[number] | null>(OPTIONS[0]);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
   const [loading, setLoading] = useState(false);
 
