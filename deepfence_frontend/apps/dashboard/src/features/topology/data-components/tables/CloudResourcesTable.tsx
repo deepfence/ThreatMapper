@@ -154,7 +154,6 @@ function SearchableServiceType() {
   return (
     <Combobox
       value={selected}
-      nullable
       multiple
       onEndReached={onEndReached}
       startIcon={

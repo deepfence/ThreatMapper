@@ -454,7 +454,6 @@ const Filters = () => {
         </Combobox>
         <Combobox
           value={searchParams.get('secretScanStatus')}
-          nullable
           onQueryChange={(query) => {
             setSecretScanStatusSearchText(query);
           }}

@@ -185,7 +185,6 @@ function Filters() {
           value={KUBERNETES_STATUSES.find((status) => {
             return status.value === searchParams.get('kubernetesStatus');
           })}
-          nullable
           onQueryChange={(query) => {
             setKubernetesStatusSearchText(query);
           }}

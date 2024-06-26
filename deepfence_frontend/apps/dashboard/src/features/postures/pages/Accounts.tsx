@@ -390,7 +390,6 @@ const Filters = () => {
         </Combobox>
         <Combobox
           value={searchParams.get('complianceScanStatus')}
-          nullable
           onQueryChange={(query) => {
             setComplianceScanStatusSearchText(query);
           }}

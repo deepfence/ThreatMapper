@@ -52,7 +52,7 @@ const OPTIONS = [
   },
 ];
 
-const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
+const SingleSelectTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<(typeof OPTIONS)[number] | null>(null);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
   const [loading, setLoading] = useState(false);
@@ -71,7 +71,6 @@ const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
   return (
     <Combobox
       value={selected}
-      nullable
       onQueryChange={(query) => {
         setQuery(query);
       }}
@@ -98,12 +97,12 @@ const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
   );
 };
 
-export const SingleSelectNullable: StoryObj<typeof Combobox> = {
-  render: SingleSelectNullableTemplate,
+export const SingleSelect: StoryObj<typeof Combobox> = {
+  render: SingleSelectTemplate,
   args: {},
 };
 
-const SingleSelectNullableWithStringValuesTemplate: StoryFn<typeof Combobox> = () => {
+const SingleSelectWithStringValuesTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<string | null>(null);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
 
@@ -112,7 +111,6 @@ const SingleSelectNullableWithStringValuesTemplate: StoryFn<typeof Combobox> = (
   return (
     <Combobox
       value={selected}
-      nullable
       triggerVariant="select"
       onQueryChange={(query) => {
         setQuery(query);
@@ -144,63 +142,12 @@ const SingleSelectNullableWithStringValuesTemplate: StoryFn<typeof Combobox> = (
   );
 };
 
-export const SingleSelectNullableStringValuesAndSelectTrigger: StoryObj<typeof Combobox> =
-  {
-    render: SingleSelectNullableWithStringValuesTemplate,
-    args: {},
-  };
-
-const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
-  const [selected, setSelected] = useState<(typeof OPTIONS)[number]>(OPTIONS[0]);
-  const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
-  const [loading, setLoading] = useState(false);
-
-  const [query, setQuery] = useState('');
-
-  function fetchMoreData() {
-    // we can use query here as well
-    setLoading(true);
-    setTimeout(() => {
-      setOptions([...options, ...OPTIONS]);
-      setLoading(false);
-    }, 1000);
-  }
-
-  return (
-    <Combobox
-      value={selected}
-      onQueryChange={(query) => {
-        setQuery(query);
-      }}
-      label="Select your value"
-      onChange={(value) => {
-        setSelected(value);
-      }}
-      getDisplayValue={() => {
-        return 'PropertyName';
-      }}
-      onEndReached={() => {
-        fetchMoreData();
-      }}
-      loading={loading}
-    >
-      {options.map((person, index) => {
-        return (
-          <ComboboxOption key={`${person.id}-${index}`} value={person}>
-            {person.name}
-          </ComboboxOption>
-        );
-      })}
-    </Combobox>
-  );
-};
-
-export const SingleSelectNonNullable: StoryObj<typeof Combobox> = {
-  render: SingleSelectNonNullableTemplate,
+export const SingleSelectStringValuesAndSelectTrigger: StoryObj<typeof Combobox> = {
+  render: SingleSelectWithStringValuesTemplate,
   args: {},
 };
 
-const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
+const MultiSelectTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<typeof OPTIONS>([]);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
   const [loading, setLoading] = useState(false);
@@ -228,7 +175,6 @@ const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
       }}
       clearAllElement="Clear filters"
       multiple
-      nullable
       getDisplayValue={() => {
         return 'PropertyName';
       }}
@@ -248,12 +194,12 @@ const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
   );
 };
 
-export const MultiSelectNullable: StoryObj<typeof Combobox> = {
-  render: MultiSelectNullableTemplate,
+export const MultiSelect: StoryObj<typeof Combobox> = {
+  render: MultiSelectTemplate,
   args: {},
 };
 
-const MultiSelectNullableWithSelectVariantTemplate: StoryFn<typeof Combobox> = () => {
+const MultiSelectWithSelectVariantTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<typeof OPTIONS>([]);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
   const [loading, setLoading] = useState(false);
@@ -282,7 +228,6 @@ const MultiSelectNullableWithSelectVariantTemplate: StoryFn<typeof Combobox> = (
       }}
       clearAllElement="Clear"
       multiple
-      nullable
       placeholder="Please select..."
       getDisplayValue={(value) => {
         return value.length ? `${value.length} selected` : null;
@@ -306,64 +251,12 @@ const MultiSelectNullableWithSelectVariantTemplate: StoryFn<typeof Combobox> = (
   );
 };
 
-export const MultiSelectNullableWithSelectVariant: StoryObj<typeof Combobox> = {
-  render: MultiSelectNullableWithSelectVariantTemplate,
+export const MultiSelectWithSelectVariant: StoryObj<typeof Combobox> = {
+  render: MultiSelectWithSelectVariantTemplate,
   args: {},
 };
 
-const MultiSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
-  const [selected, setSelected] = useState<typeof OPTIONS>([]);
-  const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
-  const [loading, setLoading] = useState(false);
-
-  const [query, setQuery] = useState('');
-
-  function fetchMoreData() {
-    // we can use query here as well
-    setLoading(true);
-    setTimeout(() => {
-      setOptions([...options, ...OPTIONS]);
-      setLoading(false);
-    }, 1000);
-  }
-
-  return (
-    <Combobox
-      value={selected}
-      onQueryChange={(query) => {
-        setQuery(query);
-      }}
-      label="Select your value"
-      clearAllElement="Clear filters"
-      onChange={(value) => {
-        setSelected(value);
-      }}
-      multiple
-      getDisplayValue={() => {
-        return 'PropertyName';
-      }}
-      onEndReached={() => {
-        fetchMoreData();
-      }}
-      loading={loading}
-    >
-      {options.map((person, index) => {
-        return (
-          <ComboboxOption key={`${person.id}-${index}`} value={person}>
-            {person.name}
-          </ComboboxOption>
-        );
-      })}
-    </Combobox>
-  );
-};
-
-export const MultiSelectNonNullable: StoryObj<typeof Combobox> = {
-  render: MultiSelectNonNullableTemplate,
-  args: {},
-};
-
-const MultiSelectNonNullableTemplateInsideDialog: StoryFn<typeof Combobox> = () => {
+const MultiSelectTemplateInsideDialog: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<typeof OPTIONS>([]);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
   const [loading, setLoading] = useState(false);
@@ -421,7 +314,7 @@ const MultiSelectNonNullableTemplateInsideDialog: StoryFn<typeof Combobox> = () 
   );
 };
 
-export const MultiSelectNonNullableInsideDialog: StoryObj<typeof Combobox> = {
-  render: MultiSelectNonNullableTemplateInsideDialog,
+export const MultiSelectInsideDialog: StoryObj<typeof Combobox> = {
+  render: MultiSelectTemplateInsideDialog,
   args: {},
 };
