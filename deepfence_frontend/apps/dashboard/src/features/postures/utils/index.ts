@@ -122,7 +122,7 @@ export function getDeleteConfirmationDisplayName(
 }
 
 export const isRefreshAccountFailed = (status: string): boolean => {
-  if (status.length && ModelCloudNodeAccountInfoRefreshStatusEnum.Error === status) {
+  if (status?.length && ModelCloudNodeAccountInfoRefreshStatusEnum.Error === status) {
     return true;
   }
   return false;

@@ -152,10 +152,10 @@ const DetailsComponent = ({
     );
   }
 
-  type DynamicType = 'subscription_id' | 'project_id';
+  type DynamicKeyType = 'subscription_id' | 'project_id';
   function getHiddenFields(
     cloud: string,
-  ): Array<DynamicType | keyof ModelCloudCompliance> {
+  ): Array<DynamicKeyType | keyof ModelCloudCompliance> {
     if (cloud === ModelCloudNodeAccountsListReqCloudProviderEnum.Azure) {
       return ['account_id', 'project_id'];
     } else if (cloud === ModelCloudNodeAccountsListReqCloudProviderEnum.Gcp) {
@@ -166,7 +166,7 @@ const DetailsComponent = ({
     return [];
   }
 
-  function getPriorityFields(cloud: string) {
+  function getPriorityField(cloud: string) {
     if (cloud === ModelCloudNodeAccountsListReqCloudProviderEnum.Azure) {
       return 'subscription_id';
     } else if (cloud === ModelCloudNodeAccountsListReqCloudProviderEnum.Gcp) {
@@ -196,7 +196,7 @@ const DetailsComponent = ({
       priorityFields: [
         'cloud_provider',
         'region',
-        getPriorityFields(cloudPosture.cloud_provider),
+        getPriorityField(cloudPosture.cloud_provider),
         'compliance_check_type',
         'control_id',
         'group',

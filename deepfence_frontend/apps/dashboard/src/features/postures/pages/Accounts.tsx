@@ -44,6 +44,7 @@ import {
 import { ConfigureScanModal } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
+import { SearchableCloudAccountName } from '@/components/forms/SearchableCloudAccountName';
 import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
@@ -284,6 +285,7 @@ const usePostureAccounts = () => {
       aws_accounts: searchParams.getAll('aws_accounts'),
       gcp_accounts: searchParams.getAll('gcp_accounts'),
       azure_accounts: searchParams.getAll('azure_accounts'),
+      accountNames: searchParams.getAll('accountNames'),
       hosts: searchParams.getAll('hosts'),
       clusters: searchParams.getAll('clusters'),
     }),
@@ -300,6 +302,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   azure_accounts = 'azure_accounts',
   hosts = 'hosts',
   clusters = 'clusters',
+  accountNames = 'accountNames',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -316,6 +319,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   azure_accounts: 'Subscription',
   hosts: 'Account',
   clusters: 'Account',
+  accountNames: 'Name',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -471,6 +475,27 @@ const Filters = () => {
                   value.forEach((id) => {
                     prev.append(`${nodeType}_accounts`, id);
                   });
+                  prev.delete('page');
+                  return prev;
+                });
+              }}
+            />
+            <SearchableCloudAccountName
+              cloudProvider={nodeType as CloudNodeType}
+              defaultSelectedAccounts={searchParams.getAll('accountNames')}
+              onChange={(values) => {
+                setSearchParams((prev) => {
+                  prev.delete('accountNames');
+                  values.forEach((value) => {
+                    prev.append('accountNames', value);
+                  });
+                  prev.delete('page');
+                  return prev;
+                });
+              }}
+              onClearAll={() => {
+                setSearchParams((prev) => {
+                  prev.delete('accountNames');
                   prev.delete('page');
                   return prev;
                 });
@@ -1286,11 +1311,28 @@ const AccountTable = ({
           ),
         ...columnWidth.node_name,
       }),
-      columnHelper.accessor('active', {
-        ...columnWidth.active,
-        header: () => 'Active',
-        cell: (info) => {
-          return info.getValue() ? 'Yes' : 'No';
+      columnHelper.accessor('compliance_percentage', {
+        ...columnWidth.compliance_percentage,
+        header: () => 'Compliance %',
+        cell: (cell) => {
+          const percent = Number(cell.getValue());
+          const isScanned = !!cell.row.original.last_scan_status;
+
+          if (isScanned) {
+            return (
+              <span
+                style={{
+                  color: getColorForCompliancePercent(theme, percent),
+                }}
+              >
+                {formatPercentage(percent, {
+                  maximumFractionDigits: 1,
+                })}
+              </span>
+            );
+          } else {
+            return <span>Unknown</span>;
+          }
         },
       }),
       columnHelper.accessor('last_scan_status', {
@@ -1322,28 +1364,11 @@ const AccountTable = ({
         header: () => 'Scan status',
         ...columnWidth.last_scan_status,
       }),
-      columnHelper.accessor('compliance_percentage', {
-        ...columnWidth.compliance_percentage,
-        header: () => 'Compliance %',
-        cell: (cell) => {
-          const percent = Number(cell.getValue());
-          const isScanned = !!cell.row.original.last_scan_status;
-
-          if (isScanned) {
-            return (
-              <span
-                style={{
-                  color: getColorForCompliancePercent(theme, percent),
-                }}
-              >
-                {formatPercentage(percent, {
-                  maximumFractionDigits: 1,
-                })}
-              </span>
-            );
-          } else {
-            return <span>Unknown</span>;
-          }
+      columnHelper.accessor('active', {
+        ...columnWidth.active,
+        header: () => 'Active',
+        cell: (info) => {
+          return info.getValue() ? 'Yes' : 'No';
         },
       }),
     ];
@@ -1351,7 +1376,7 @@ const AccountTable = ({
     if (isCloudNonOrgNode(nodeType) || isCloudOrgNode(nodeType)) {
       columns.splice(
         3,
-        1,
+        0,
         columnHelper.accessor('account_name', {
           ...columnWidth.account_name,
           header: () => 'Name',
@@ -1359,13 +1384,10 @@ const AccountTable = ({
             return <TruncatedText text={info.getValue()} />;
           },
         }),
-        columnHelper.accessor('active', {
-          ...columnWidth.active,
-          header: () => 'Active',
-          cell: (info) => {
-            return info.getValue() ? 'Yes' : 'No';
-          },
-        }),
+      );
+      columns.splice(
+        6,
+        0,
         columnHelper.accessor('refresh_status', {
           ...columnWidth.refresh_status,
           header: () => 'Refresh status',
@@ -1377,7 +1399,7 @@ const AccountTable = ({
                 />
               );
             }
-            return <TruncatedText text={startCase(info.getValue().toLowerCase())} />;
+            return <TruncatedText text={startCase(info.getValue()?.toLowerCase())} />;
           },
         }),
       );
