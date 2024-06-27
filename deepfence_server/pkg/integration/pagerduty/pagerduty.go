@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/PagerDuty/go-pagerduty"
+	intgerr "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/errors"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -97,15 +98,11 @@ func createPagerDutyEvent(pagerDutyAPIToken string, event pagerduty.V2Event) err
 	client := utils.GetHTTPClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return intgerr.CheckHTTPError(err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("unexpected response status: %s", resp.Status)
-	}
-
-	return nil
+	return intgerr.CheckResponseCode(resp, http.StatusOK)
 }
 
 func (p PagerDuty) FormatMessage(message []map[string]interface{}) string {
@@ -133,7 +130,7 @@ func IsValidCreds(p PagerDuty) (bool, error) {
 	var req *http.Request
 	var err error
 
-	req, err = http.NewRequest("POST", url, nil)
+	req, err = http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		return false, err
 	}
@@ -150,7 +147,7 @@ func IsValidCreds(p PagerDuty) (bool, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == http.StatusOK {
 		return true, nil
 	}
 	// todo: check response body for error message like invalid api key or something

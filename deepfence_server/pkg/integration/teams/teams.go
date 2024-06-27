@@ -10,9 +10,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/rs/zerolog/log"
 )
 
 const BatchSize = 5

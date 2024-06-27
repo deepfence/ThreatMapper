@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	intgerr "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/errors"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -149,8 +150,9 @@ func (s Slack) SendNotification(ctx context.Context, message []map[string]interf
 
 		// send message to this webhookURL using http
 		// Set up the HTTP request.
-		req, err := http.NewRequest("POST", s.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
+		req, err := http.NewRequest(http.MethodPost, s.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
 		if err != nil {
+			log.Error().Err(err).Msg("error create http request")
 			span.EndWithErr(err)
 			return err
 		}
@@ -160,8 +162,9 @@ func (s Slack) SendNotification(ctx context.Context, message []map[string]interf
 		client := utils.GetHTTPClient()
 		resp, err := client.Do(req)
 		if err != nil {
+			log.Error().Err(err).Msg("error on http request")
 			span.EndWithErr(err)
-			return err
+			return intgerr.CheckHTTPError(err)
 		}
 
 		// Check the response status code.
@@ -210,7 +213,7 @@ func (s Slack) IsValidCredential(ctx context.Context) (bool, error) {
 
 	// send message to this webhookURL using http
 	// Set up the HTTP request.
-	req, err := http.NewRequest("POST", s.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
+	req, err := http.NewRequest(http.MethodPost, s.Config.WebhookURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return false, err

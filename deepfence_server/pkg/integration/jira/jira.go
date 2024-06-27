@@ -45,7 +45,7 @@ func (j Jira) SendNotification(ctx context.Context, message []map[string]interfa
 
 	client, err := jira.NewClient(auth.Client(), strings.TrimSpace(j.Config.JiraSiteURL))
 	if err != nil {
-		log.Error().Msgf(err.Error())
+		log.Error().Err(err).Msgf("error create jira client")
 		span.EndWithErr(err)
 		return err
 	}
@@ -117,7 +117,7 @@ func (j Jira) SendNotification(ctx context.Context, message []map[string]interfa
 		log.Error().Msgf(err.Error())
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Error().Msgf(err.Error())
+			log.Error().Err(err).Msgf("error adding jira issue attachment")
 		}
 		log.Error().Msgf("jira attachment error reponse: %s", string(body))
 		span.EndWithErr(err)
