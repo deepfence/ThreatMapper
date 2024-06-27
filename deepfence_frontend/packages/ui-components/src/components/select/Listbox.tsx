@@ -1,8 +1,13 @@
 import {
+  Field,
   Listbox as HUIListbox,
+  ListboxButton,
+  ListboxOption as HUIListboxOption,
   ListboxOptionProps as HUIListboxOptionProps,
+  ListboxOptions,
   ListboxProps as HUIListboxProps,
 } from '@headlessui/react';
+import { Label } from '@radix-ui/react-label';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { cva } from 'cva';
 import { isEmpty, isNil } from 'lodash-es';
@@ -212,124 +217,126 @@ export function Listbox<TType, TActualType>({
         multiple: !!multiple,
       }}
     >
-      <HUIListbox {...props} value={value} disabled={disabled} multiple={multiple}>
-        {({ open }) => {
-          return (
-            <div className="flex flex-col w-full">
-              {label && (
-                <HUIListbox.Label
-                  htmlFor={_id}
-                  className={cn(
-                    'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
-                    {
-                      'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
-                    },
-                  )}
-                >
-                  {required && <span>*</span>}
-                  {label}
-                </HUIListbox.Label>
-              )}
+      <Field className="flex flex-col">
+        {label ? (
+          <Label
+            htmlFor={_id}
+            className={cn(
+              'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
+              {
+                'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
+              },
+            )}
+          >
+            {required && <span>*</span>}
+            {label}
+          </Label>
+        ) : null}
 
-              <PopoverPrimitive.Root open={open}>
-                <PopoverPrimitive.Trigger asChild>
-                  <HUIListbox.Button
-                    id={_id}
-                    className={cn(
-                      buttonCva({
-                        color,
-                        variant,
-                      }),
-                    )}
-                  >
-                    <div className="flex gap-x-2 items-center">
-                      {startIcon ? (
-                        <div className="w-4 h-4 shrink-0">{startIcon}</div>
-                      ) : null}
-                      <span className="truncate text-start block text-p4a">
-                        {getPlaceholderValue(value, getDisplayValue, placeholder)}
-                      </span>
-                    </div>
-                    <div
-                      className={cn('absolute inset-y-0 right-0 flex pr-3', {
-                        'gap-[18px]': multiple,
-                      })}
+        <HUIListbox {...props} value={value} disabled={disabled} multiple={multiple}>
+          {({ open }) => {
+            return (
+              <div className="flex flex-col w-full">
+                <PopoverPrimitive.Root open={open}>
+                  <PopoverPrimitive.Trigger asChild>
+                    <ListboxButton
+                      id={_id}
+                      className={cn(
+                        buttonCva({
+                          color,
+                          variant,
+                        }),
+                      )}
                     >
-                      <SelectArrow />
-                      {multiple && Array.isArray(value) && value.length > 0 ? (
-                        <div className="relative flex items-center">
-                          <Badge
-                            data-testid="listboxCountBadgeId"
-                            color="blueLight"
-                            variant="filled"
-                            size="small"
-                            label={value?.length}
-                          />
-                        </div>
-                      ) : null}
-                    </div>
-                  </HUIListbox.Button>
-                </PopoverPrimitive.Trigger>
-                <PopoverPrimitive.Portal>
-                  <PopoverPrimitive.Content align="start" sideOffset={2} asChild>
-                    <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)] bg-bg-card border border-bg-grid-border rounded-[5px] overflow-hidden shadow-md dark:shadow-none">
-                      <HUIListbox.Options>
-                        <div
-                          className={cn(
-                            'max-h-60 w-full select-none',
-                            'text-p7',
-                            'overflow-auto',
-                            'focus:visible:outline-none',
-                            // text
-                            'text-text-text-and-icon',
-                          )}
-                        >
-                          <OptionsWrapper noDataText={noDataText}>
-                            {children}
-                          </OptionsWrapper>
-                          {loading ? (
-                            <div className="pt-2 pb-1 px-2 flex items-center">
-                              <CircleSpinner size="sm" />
-                            </div>
-                          ) : (
-                            <InfiniteLoadingObserverElement
-                              onVisible={() => {
-                                onEndReached?.();
-                              }}
-                            />
-                          )}
-                        </div>
-                        {multiple ? (
-                          <>
-                            <Separator />
-                            <HUIListbox.Option disabled value="listbox-clearall-option">
-                              <div className="flex items-center justify-center py-[6px]">
-                                <button
-                                  onClick={() => {
-                                    onClearAll?.();
-                                  }}
-                                  className="flex dark:text-accent-accent text-text-link items-center text-p6"
-                                >
-                                  {clearAll}
-                                </button>
-                              </div>
-                            </HUIListbox.Option>
-                          </>
+                      <div className="flex gap-x-2 items-center">
+                        {startIcon ? (
+                          <div className="w-4 h-4 shrink-0">{startIcon}</div>
                         ) : null}
-                      </HUIListbox.Options>
-                    </div>
-                  </PopoverPrimitive.Content>
-                </PopoverPrimitive.Portal>
-              </PopoverPrimitive.Root>
-              {helperText && (
-                <div className="pt-1.5">
-                  <HelperText color={color} text={helperText} />
-                </div>
-              )}
-            </div>
-          );
-        }}
-      </HUIListbox>
+                        <span className="truncate text-start block text-p4a">
+                          {getPlaceholderValue(value, getDisplayValue, placeholder)}
+                        </span>
+                      </div>
+                      <div
+                        className={cn('absolute inset-y-0 right-0 flex pr-3', {
+                          'gap-[18px]': multiple,
+                        })}
+                      >
+                        <SelectArrow />
+                        {multiple && Array.isArray(value) && value.length > 0 ? (
+                          <div className="relative flex items-center">
+                            <Badge
+                              data-testid="listboxCountBadgeId"
+                              color="blueLight"
+                              variant="filled"
+                              size="small"
+                              label={value?.length}
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    </ListboxButton>
+                  </PopoverPrimitive.Trigger>
+                  <PopoverPrimitive.Portal>
+                    <PopoverPrimitive.Content align="start" sideOffset={2} asChild>
+                      <div className="data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down w-[var(--radix-popper-anchor-width)] bg-bg-card border border-bg-grid-border rounded-[5px] overflow-hidden shadow-md dark:shadow-none">
+                        <ListboxOptions>
+                          <div
+                            className={cn(
+                              'max-h-60 w-full select-none',
+                              'text-p7',
+                              'overflow-auto',
+                              'focus:visible:outline-none',
+                              // text
+                              'text-text-text-and-icon',
+                            )}
+                          >
+                            <OptionsWrapper noDataText={noDataText}>
+                              {children}
+                            </OptionsWrapper>
+                            {loading ? (
+                              <div className="pt-2 pb-1 px-2 flex items-center">
+                                <CircleSpinner size="sm" />
+                              </div>
+                            ) : (
+                              <InfiniteLoadingObserverElement
+                                onVisible={() => {
+                                  onEndReached?.();
+                                }}
+                              />
+                            )}
+                          </div>
+                          {multiple ? (
+                            <>
+                              <Separator />
+                              <HUIListboxOption disabled value="listbox-clearall-option">
+                                <div className="flex items-center justify-center py-[6px]">
+                                  <button
+                                    onClick={() => {
+                                      onClearAll?.();
+                                    }}
+                                    className="flex dark:text-accent-accent text-text-link items-center text-p6"
+                                  >
+                                    {clearAll}
+                                  </button>
+                                </div>
+                              </HUIListboxOption>
+                            </>
+                          ) : null}
+                        </ListboxOptions>
+                      </div>
+                    </PopoverPrimitive.Content>
+                  </PopoverPrimitive.Portal>
+                </PopoverPrimitive.Root>
+              </div>
+            );
+          }}
+        </HUIListbox>
+        {helperText && (
+          <div className="pt-1.5">
+            <HelperText color={color} text={helperText} />
+          </div>
+        )}
+      </Field>
     </ListboxContext.Provider>
   );
 }
@@ -358,7 +365,7 @@ export function ListboxOption<TType>({
   const { multiple } = useContext(ListboxContext);
 
   return (
-    <HUIListbox.Option
+    <HUIListboxOption
       className={({ active, selected }) => {
         return cn(
           'relative select-none',
@@ -382,7 +389,7 @@ export function ListboxOption<TType>({
           {children}
         </>
       )}
-    </HUIListbox.Option>
+    </HUIListboxOption>
   );
 }
 function getPlaceholderValue<T extends unknown | unknown[]>(

@@ -297,7 +297,7 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 
 	// dont want unique tasks for SendNotification
 	jobID, err = s.cron.AddFunc("@every 60s",
-		s.enqueueTask(namespace, utils.SendNotificationTask, false, utils.LowTaskOpts()...))
+		s.enqueueTask(namespace, utils.TriggerSendNotificationsTask, false, utils.DefaultTaskOpts()...))
 	if err != nil {
 		return err
 	}
@@ -331,7 +331,7 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 1h",
+	jobID, err = s.cron.AddFunc("@every 15m",
 		s.enqueueTask(namespace, utils.AsynqDeleteAllArchivedTasks, true, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err

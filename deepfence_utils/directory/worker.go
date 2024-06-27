@@ -70,8 +70,12 @@ func (ws WorkEnqueuer) Enqueue(taskEnum string, data []byte, opts ...asynq.Optio
 
 // utility func to use when task name is used as task id to ensure unique task is enqueued
 func (ws WorkEnqueuer) EnqueueUnique(taskEnum string, data []byte, opts ...asynq.Option) error {
-	opts = append(opts, asynq.TaskID(taskEnum))
-	return ws.Enqueue(taskEnum, data, opts...)
+	return ws.Enqueue(taskEnum, data, append(opts, asynq.TaskID(taskEnum))...)
+}
+
+// utility func to use when task name is used as task id to ensure unique task is enqueued
+func (ws WorkEnqueuer) EnqueueUniqueWithTaskID(taskEnum string, taskID string, data []byte, opts ...asynq.Option) error {
+	return ws.Enqueue(taskEnum, data, append(opts, asynq.TaskID(taskID))...)
 }
 
 func (ws WorkEnqueuer) DeleteAllArchivedTasks() (int, []error) {

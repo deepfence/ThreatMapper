@@ -48,6 +48,7 @@ const (
 	MalwareScanTask                   = "task_malware_scan"
 	ReportGeneratorTask               = "tasks_generate_report"
 	ComputeThreatTask                 = "compute_threat"
+	TriggerSendNotificationsTask      = "trigger_send_notifications"
 	SendNotificationTask              = "tasks_send_notification"
 	CloudComplianceControlsTask       = "cloud_compliance_controls"
 	CachePostureProviders             = "cache_posture_providers"

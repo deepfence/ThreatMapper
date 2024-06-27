@@ -24,7 +24,7 @@ func New(ctx context.Context, b []byte) (*Jira, error) {
 	return &h, nil
 }
 
-func (j Jira) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (j Jira) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "jira-send-notification")
 	defer span.End()
@@ -45,7 +45,7 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 
 	client, err := jira.NewClient(auth.Client(), strings.TrimSpace(j.Config.JiraSiteURL))
 	if err != nil {
-		log.Error().Msgf(err.Error())
+		log.Error().Err(err).Msgf("error create jira client")
 		span.EndWithErr(err)
 		return err
 	}
@@ -89,15 +89,10 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 
 	// parse message in case of custom fields
 	var msgWithCustomFields []map[string]interface{}
+	var payload string
 	if len(j.Config.CustomFields) > 0 {
-		var msg []map[string]interface{}
-		err = json.Unmarshal([]byte(message), &msg)
-		if err != nil {
-			log.Error().Msgf(err.Error())
-			return err
-		}
 
-		for _, m := range msg {
+		for _, m := range message {
 			customFields := make(map[string]interface{})
 			for _, f := range j.Config.CustomFields {
 				if value, ok := m[f]; ok {
@@ -114,15 +109,15 @@ func (j Jira) SendNotification(ctx context.Context, message string, extras map[s
 			return err
 		}
 
-		message = string(finalByte)
+		payload = string(finalByte)
 	}
 
-	attachment, resp, err := client.Issue.PostAttachment(issue.ID, strings.NewReader(message), "scan-results.json")
+	attachment, resp, err := client.Issue.PostAttachment(issue.ID, strings.NewReader(payload), "scan-results.json")
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Error().Msgf(err.Error())
+			log.Error().Err(err).Msgf("error adding jira issue attachment")
 		}
 		log.Error().Msgf("jira attachment error reponse: %s", string(body))
 		span.EndWithErr(err)

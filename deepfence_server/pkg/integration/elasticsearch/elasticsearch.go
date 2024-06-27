@@ -10,6 +10,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	intgerr "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/errors"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
@@ -23,23 +24,16 @@ func New(ctx context.Context, b []byte) (*ElasticSearch, error) {
 	return &p, nil
 }
 
-func (e ElasticSearch) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (e ElasticSearch) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "elasticsearch-send-notification")
 	defer span.End()
 
-	var req *http.Request
 	var err error
-	var msg []map[string]interface{}
-	d := json.NewDecoder(strings.NewReader(message))
-	d.UseNumber()
-	if err := d.Decode(&msg); err != nil {
-		return err
-	}
 
 	payloadMsg := ""
 	meta := "{\"index\":{\"_index\":\"" + e.Config.Index + "\"}}\n"
-	for _, payload := range msg {
+	for _, payload := range message {
 		pl, err := json.Marshal(payload)
 		if err != nil {
 			return err
@@ -50,8 +44,9 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	// send message to this elasticsearch using http
 	// Set up the HTTP request.
 	endpointURL := strings.TrimRight(e.Config.EndpointURL, "/")
-	req, err = http.NewRequest(http.MethodPost, endpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
+	req, err := http.NewRequest(http.MethodPost, endpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
 	if err != nil {
+		log.Error().Err(err).Msg("error on create http request")
 		span.EndWithErr(err)
 		return err
 	}
@@ -65,17 +60,13 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message string, ext
 	// Make the HTTP request.
 	resp, err := utils.GetHTTPClient().Do(req)
 	if err != nil {
+		log.Error().Err(err).Msg("error on http request")
 		span.EndWithErr(err)
-		return err
+		return intgerr.CheckHTTPError(err)
 	}
 	defer resp.Body.Close()
 
-	// Check the response status code.
-	if resp.StatusCode != http.StatusOK {
-		return err
-	}
-
-	return nil
+	return intgerr.CheckResponseCode(resp, http.StatusOK)
 }
 
 func (e ElasticSearch) IsValidCredential(ctx context.Context) (bool, error) {
@@ -103,8 +94,8 @@ func (e ElasticSearch) IsValidCredential(ctx context.Context) (bool, error) {
 
 	// Check the status code
 	if resp.StatusCode != http.StatusOK {
-		log.Error().Msgf("Elasticsearch index validation failed. Status code: %d", resp.StatusCode)
-		return false, fmt.Errorf("Elasticsearch index validation failed. Status code: %d", resp.StatusCode)
+		log.Error().Msgf("elasticsearch index validation failed. Status code: %d", resp.StatusCode)
+		return false, fmt.Errorf("elasticsearch index validation failed. Status code: %d", resp.StatusCode)
 	}
 
 	return true, nil

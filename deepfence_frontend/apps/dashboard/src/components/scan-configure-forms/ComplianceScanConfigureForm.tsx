@@ -109,7 +109,7 @@ export const scanPostureApiAction = async ({
   let nodeType = body._nodeType.toString();
   const checkTypes = body._checkTypes.toString()?.split(',') as Array<ModelBenchmarkType>;
 
-  const isCloudScan = !isNonCloudNode(nodeType);
+  const isCloudScan = isCloudOrgNode(nodeType) || isCloudNonOrgNode(nodeType);
 
   if (isKubernetesNode(nodeType as ComplianceScanNodeTypeEnum)) {
     nodeType = 'cluster';

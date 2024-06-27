@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom';
 
 import { act, fireEvent, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { useEffect, useState } from 'react';
 import { describe, expect } from 'vitest';
 
@@ -55,7 +56,6 @@ describe('Combobox', () => {
       return (
         <Combobox
           value={selected}
-          nullable
           onQueryChange={(query) => {
             setQuery(query);
           }}
@@ -81,16 +81,15 @@ describe('Combobox', () => {
     const triggerBtn = screen.getByTestId('comboboxTriggerButtonId');
     expect(triggerBtn).toHaveTextContent('PropertyName');
     await act(async () => {
-      return triggerBtn.click();
+      return userEvent.click(triggerBtn);
     });
 
     const op1 = screen.getByRole('option', {
       name: 'Jon',
     });
-
     expect(op1).toBeInTheDocument();
     await act(async () => {
-      return op1.click();
+      return userEvent.click(op1);
     });
     expect(triggerBtn).toHaveTextContent('Jon');
   });
@@ -104,7 +103,6 @@ describe('Combobox', () => {
         <Combobox
           triggerVariant="select"
           value={selected}
-          nullable
           onQueryChange={(query) => {
             setQuery(query);
           }}
@@ -130,7 +128,7 @@ describe('Combobox', () => {
     const triggerBtn = screen.getByTestId('comboboxTriggerButtonId');
     expect(triggerBtn).toHaveTextContent('PropertyName');
     await act(async () => {
-      return triggerBtn.click();
+      return userEvent.click(triggerBtn);
     });
 
     const op1 = screen.getByRole('option', {
@@ -139,7 +137,7 @@ describe('Combobox', () => {
 
     expect(op1).toBeInTheDocument();
     await act(async () => {
-      return op1.click();
+      return userEvent.click(op1);
     });
     expect(triggerBtn).toHaveTextContent('Jon');
   });
@@ -163,7 +161,6 @@ describe('Combobox', () => {
           }}
           clearAllElement="Clear filters"
           multiple
-          nullable
           getDisplayValue={() => {
             return 'PropertyName';
           }}
@@ -183,7 +180,7 @@ describe('Combobox', () => {
     const triggerBtn = screen.getByTestId('comboboxTriggerButtonId');
     expect(triggerBtn).toHaveTextContent('PropertyName');
     await act(async () => {
-      return triggerBtn.click();
+      return userEvent.click(triggerBtn);
     });
 
     const op1 = screen.getByRole('option', {
@@ -192,7 +189,7 @@ describe('Combobox', () => {
 
     expect(op1).toBeInTheDocument();
     await act(async () => {
-      return op1.click();
+      return userEvent.click(op1);
     });
     expect(triggerBtn).toHaveTextContent('1');
   });
@@ -219,7 +216,6 @@ describe('Combobox', () => {
       return (
         <Combobox
           multiple
-          nullable
           value={selected}
           onQueryChange={(query) => {
             setQuery(query);
@@ -248,7 +244,7 @@ describe('Combobox', () => {
     const triggerBtn = screen.getByTestId('comboboxTriggerButtonId');
     expect(triggerBtn).toHaveTextContent('PropertyName');
     await act(async () => {
-      return triggerBtn.click();
+      return userEvent.click(triggerBtn);
     });
 
     const op1 = screen.getByRole('option', {

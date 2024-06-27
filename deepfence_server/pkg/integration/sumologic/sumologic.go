@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
 
+	intgerr "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/errors"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -39,7 +39,7 @@ func (s SumoLogic) FormatMessage(message []map[string]interface{}) (bytes.Buffer
 	return buffer, nil
 }
 
-func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[string]interface{}) error {
+func (s SumoLogic) SendNotification(ctx context.Context, data []map[string]interface{}, extra map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "sumologic-send-notification")
 	defer span.End()
@@ -47,25 +47,17 @@ func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[
 	// Create an HTTP client with a timeout
 	client := utils.GetHTTPClient()
 
-	var d []map[string]interface{}
-	dec := json.NewDecoder(strings.NewReader(data))
-	dec.UseNumber()
-	if err := dec.Decode(&d); err != nil {
-		log.Error().Msgf("%v", err)
-		return nil
-	}
-
-	msg, err := s.FormatMessage(d)
+	msg, err := s.FormatMessage(data)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		return nil
+		return err
 	}
 
 	// Create a new request to send the JSON data to Sumo Logic
-	req, err := http.NewRequest("POST", s.Config.HTTPEndpoint, bytes.NewBuffer(msg.Bytes()))
+	req, err := http.NewRequest(http.MethodPost, s.Config.HTTPEndpoint, bytes.NewBuffer(msg.Bytes()))
 	if err != nil {
 		log.Error().Msgf("Failed to create HTTP request: %v", err)
-		return nil
+		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -73,18 +65,11 @@ func (s SumoLogic) SendNotification(ctx context.Context, data string, extra map[
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error().Msgf("Failed to send data to Sumo Logic: %v", err)
-		return nil
+		return intgerr.CheckHTTPError(err)
 	}
 	defer resp.Body.Close()
 
-	// Check the response status code
-	if resp.StatusCode != http.StatusOK {
-		log.Error().Msgf("Failed to send data to Sumo Logic: %v", resp.Status)
-		return nil
-	}
-
-	log.Debug().Msg("Data sent to Sumo Logic successfully")
-	return nil
+	return intgerr.CheckResponseCode(resp, http.StatusOK)
 }
 
 // todo

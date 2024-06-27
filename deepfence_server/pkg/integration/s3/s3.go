@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/klauspost/compress/gzip"
@@ -28,7 +28,7 @@ func New(ctx context.Context, b []byte) (*S3, error) {
 	return &s, nil
 }
 
-func (s S3) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+func (s S3) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "s3-send-notification")
 	defer span.End()
@@ -50,7 +50,8 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 
 		sess, err = session.NewSession(&awsConfig)
 		if err != nil {
-			return fmt.Errorf("error creating session: %v", err)
+			log.Error().Err(err).Msg("Failed to create AWS session")
+			return err
 		}
 
 	} else {
@@ -59,27 +60,27 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 			Credentials: credentials.NewStaticCredentials(s.Config.AWSAccessKey, s.Config.AWSSecretKey, ""),
 		})
 		if err != nil {
-			fmt.Println("Failed to create AWS session", err)
+			log.Error().Err(err).Msg("Failed to create AWS session")
 			return err
 		}
 	}
 
 	// Marshal your JSON data into a byte slice
-	jsonBytes := []byte(message)
+	payload, err := json.Marshal(message)
 	if err != nil {
-		fmt.Println("Failed to marshal JSON data", err)
+		log.Error().Err(err).Msg("failed to marshal message")
 		return err
 	}
 
 	s.Buffer.Reset()
 	gzWriter, err := gzip.NewWriterLevel(s.Buffer, gzip.DefaultCompression)
 	if err != nil {
-		fmt.Println("Failed to get the gzip writer", err)
+		log.Error().Err(err).Msg("Failed to get the gzip writer")
 		span.EndWithErr(err)
 		return err
 	}
 
-	_, _ = gzWriter.Write(jsonBytes)
+	_, _ = gzWriter.Write(payload)
 	gzWriter.Close()
 	// Upload the JSON data to S3
 	svc := s3.New(sess)
@@ -91,12 +92,12 @@ func (s S3) SendNotification(ctx context.Context, message string, extras map[str
 		Key:             aws.String(s.Config.S3FolderName + "/" + utils.GetDatetimeNow() + ".json"),
 	})
 	if err != nil {
-		fmt.Println("Failed to upload JSON data to S3", err)
+		log.Error().Err(err).Msg("Failed to upload JSON data to S3")
 		span.EndWithErr(err)
 		return err
 	}
 
-	fmt.Println("JSON data uploaded successfully")
+	log.Info().Msg("JSON data uploaded successfully")
 	return nil
 }
 
@@ -117,7 +118,7 @@ func (s S3) IsValidCredential(ctx context.Context) (bool, error) {
 
 		sess, err = session.NewSession(&awsConfig)
 		if err != nil {
-			fmt.Printf("error creating session: %v", err)
+			log.Error().Err(err).Msg("error creating aws session")
 			return false, err
 		}
 	} else {
@@ -126,7 +127,7 @@ func (s S3) IsValidCredential(ctx context.Context) (bool, error) {
 			Credentials: credentials.NewStaticCredentials(s.Config.AWSAccessKey, s.Config.AWSSecretKey, ""),
 		})
 		if err != nil {
-			fmt.Println("Failed to create AWS session", err)
+			log.Error().Err(err).Msg("error creating aws session")
 			return false, err
 		}
 	}
@@ -135,7 +136,7 @@ func (s S3) IsValidCredential(ctx context.Context) (bool, error) {
 
 	_, err = svc.ListBuckets(nil)
 	if err != nil {
-		fmt.Println("Failed to list buckets", err)
+		log.Error().Err(err).Msg("Failed to list buckets")
 		return false, err
 	}
 

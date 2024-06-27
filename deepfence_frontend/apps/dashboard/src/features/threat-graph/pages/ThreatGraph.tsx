@@ -159,7 +159,6 @@ const Filters = () => {
           value={THREAT_TYPES.find((threatType) => {
             return threatType.value === searchParams.get('type');
           })}
-          nullable
           onQueryChange={(query) => {
             setThreatTypeSearchText(query);
           }}
@@ -190,7 +189,6 @@ const Filters = () => {
           value={THREAT_GRAPH_SCOPE.find((scope) => {
             return scope.value === searchParams.get('cloud_resource_only');
           })}
-          nullable
           onQueryChange={(query) => {
             setScopeSearchText(query);
           }}

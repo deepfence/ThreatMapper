@@ -5,19 +5,19 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
-	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/integrations"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
@@ -27,12 +27,7 @@ import (
 
 const NOTIFICATION_INTERVAL = 60000 //in milliseconds
 
-var (
-	NotificationRecordsCounts = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "notification_records_total",
-		Help: "Total number of records sent by notification types",
-	}, []string{"resource", "type", "status", "namespace"})
-)
+var ErrUnsupportedScan = errors.New("unsupported scan type in integration")
 
 var fieldsMap = map[string]map[string]string{
 	utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
@@ -60,7 +55,8 @@ var fieldsMap = map[string]map[string]string{
 		"part":               "Part",
 		"signature_to_match": "Matched Signature",
 		"updated_at":         "updated_at"},
-	utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]: {"class": "Class",
+	utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]: {
+		"class":             "Class",
 		"complete_filename": "File Name",
 		"file_sev_score":    "File Severity Score",
 		"file_severity":     "File Severity",
@@ -126,17 +122,21 @@ func init() {
 	}
 }
 
-func SendNotifications(ctx context.Context, task *asynq.Task) error {
-	// //This lock is to ensure only one notification handler runs at a time
-	// notificationLock.Lock()
-	// defer notificationLock.Unlock()
+type SendNotificationsTaskParams struct {
+	PgID int32 `json:"pg_id"`
+}
 
+func TriggerSendNotifications(ctx context.Context, task *asynq.Task) error {
 	log := log.WithCtx(ctx)
 
-	start := time.Now()
-	log.Info().Msgf("SendNotifications task for timestamp %s starting", string(task.Payload()))
-	defer log.Info().Msgf("SendNotifications task for timestamp %s ended elapsed: %s",
-		string(task.Payload()), time.Now().Sub(start))
+	log.Debug().Msg("Execute TriggerSendNotifications")
+	defer log.Debug().Msg("Execute TriggerSendNotifications - Done")
+
+	worker, err := directory.Worker(ctx)
+	if err != nil {
+		log.Error().Msgf("Error getting workerCrx: %v", err)
+		return nil
+	}
 
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
@@ -145,7 +145,7 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 	}
 	integrations, err := pgClient.GetIntegrations(ctx)
 	if err != nil {
-		log.Error().Msgf("Error getting postgresCtx: %v", err)
+		log.Error().Msgf("Error getting integrations: %v", err)
 		return nil
 	}
 
@@ -155,159 +155,136 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 		return nil
 	}
 
-	wg := sync.WaitGroup{}
-	wg.Add(len(integrations))
-
-	for _, integrationRow := range integrations {
-		if integrationRow.ErrorMsg.String != "" &&
-			time.Since(integrationRow.LastSentTime.Time) < NotificationErrorBackoff {
+	for _, ig := range integrations {
+		// check if integration can be triggered
+		if ig.ErrorMsg.String != "" &&
+			time.Since(ig.LastSentTime.Time) < NotificationErrorBackoff {
 			log.Info().Msgf("Skipping integration for %s rowId: %d due to error: %s "+
 				"occured at last attempt, %s ago",
-				integrationRow.IntegrationType, integrationRow.ID,
-				integrationRow.ErrorMsg.String, time.Since(integrationRow.LastSentTime.Time))
-			wg.Done()
+				ig.IntegrationType, ig.ID,
+				ig.ErrorMsg.String, time.Since(ig.LastSentTime.Time))
 			continue
 		}
 
-		go func(integration postgresql_db.Integration) {
-			defer wg.Done()
-			log.Info().Msgf("Processing integration for %s rowId: %d",
-				integration.IntegrationType, integration.ID)
+		params := SendNotificationsTaskParams{PgID: ig.ID}
 
-			err := processIntegrationRow(integration, ctx, task)
+		data, err := json.Marshal(params)
+		if err != nil {
+			log.Error().Err(err).Msg("failsed to marshal payload")
+		}
 
-			log.Info().Msgf("Processed integration for %s rowId: %d",
-				integration.IntegrationType, integration.ID)
+		uniqueTaskID := fmt.Sprintf("%d-%s-%d", ig.ID, ig.IntegrationType, ig.LastSentTime.Time.UnixMilli())
 
-			update_row := err != nil || (err == nil && integration.ErrorMsg.Valid)
-			if update_row {
-				var params postgresql_db.UpdateIntegrationStatusParams
-				if err != nil {
-					log.Error().Msgf("Error on integration %v", err)
-					params = postgresql_db.UpdateIntegrationStatusParams{
-						ID: integration.ID,
-						ErrorMsg: sql.NullString{
-							String: err.Error(),
-							Valid:  true,
-						},
-					}
-				} else {
-					params = postgresql_db.UpdateIntegrationStatusParams{
-						ID: integration.ID,
-						ErrorMsg: sql.NullString{
-							String: "",
-							Valid:  false,
-						},
-					}
-				}
-				err = pgClient.UpdateIntegrationStatus(ctx, params)
-				if err != nil {
-					log.Error().Msg(err.Error())
-				}
-			}
-		}(integrationRow)
+		if err := worker.EnqueueUniqueWithTaskID(utils.SendNotificationTask, uniqueTaskID,
+			data, utils.LowTaskOpts()...); err != nil {
+			log.Error().Err(err).Msgf("failed to enque SendNotificationTask for %d %s",
+				ig.ID, ig.IntegrationType)
+		}
 	}
-	wg.Wait()
 
 	return nil
 }
 
-func processIntegrationRow(integrationRow postgresql_db.Integration, ctx context.Context, task *asynq.Task) error {
-	switch integrationRow.Resource {
-	case utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]:
-		return processIntegration[model.Vulnerability](ctx, task, integrationRow)
-	case utils.ScanTypeDetectedNode[utils.NEO4JSecretScan]:
-		return processIntegration[model.Secret](ctx, task, integrationRow)
-	case utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]:
-		return processIntegration[model.Malware](ctx, task, integrationRow)
-	case utils.ScanTypeDetectedNode[utils.NEO4JComplianceScan]:
-		return processIntegration[model.Compliance](ctx, task, integrationRow)
-	case utils.ScanTypeDetectedNode[utils.NEO4JCloudComplianceScan]:
-		return processIntegration[model.CloudCompliance](ctx, task, integrationRow)
+func SendNotifications(ctx context.Context, task *asynq.Task) error {
+
+	log := log.WithCtx(ctx)
+
+	start := time.Now()
+
+	var params SendNotificationsTaskParams
+	if err := json.Unmarshal(task.Payload(), &params); err != nil {
+		log.Error().Err(err).Msg("failed to unmarshal task payload")
+		return nil
 	}
-	return errors.New("No integration type")
-}
 
-func injectNodeDatamap(results []map[string]interface{}, common model.ScanResultsCommon,
-	integrationType string, ctx context.Context) []map[string]interface{} {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Msgf("Error getting postgresCtx: %v", err)
+		return nil
+	}
+	intg, err := pgClient.GetIntegrationFromID(ctx, params.PgID)
+	if err != nil {
+		log.Error().Msgf("Error getting postgresCtx: %v", err)
+		return nil
+	}
 
-	for _, r := range results {
-		//m := utils.ToMap[T](r)
-		r["node_id"] = common.NodeID
-		r["scan_id"] = common.ScanID
-		r["node_name"] = common.NodeName
-		r["node_type"] = common.NodeType
-		if common.ContainerName != "" {
-			r["docker_container_name"] = common.ContainerName
-		}
-		if common.ImageName != "" {
-			r["docker_image_name"] = common.ImageName
-		}
-		if common.HostName != "" {
-			r["host_name"] = common.HostName
-			filter := reporters_search.SearchFilter{
-				Filters: reporters.FieldsFilters{
-					ContainsFilter: reporters.ContainsFilter{
-						FieldsValues: map[string][]interface{}{
-							"host_name": {common.HostName},
-						},
-					},
+	log.Info().Msgf("SendNotification id: %d type: %s", intg.ID, intg.IntegrationType)
+	defer func() {
+		log.Info().Msgf("SendNotification id: %d type: %s elapsed: %s", intg.ID, intg.IntegrationType, time.Since(start))
+	}()
+
+	err = processForResource(ctx, intg)
+
+	update_row := err != nil || (intg.ErrorMsg.Valid && err == nil)
+	if update_row {
+		var params postgresql_db.UpdateIntegrationStatusParams
+		if err != nil {
+			log.Error().Msgf("Error on integration %v", err)
+			params = postgresql_db.UpdateIntegrationStatusParams{
+				ID: intg.ID,
+				ErrorMsg: sql.NullString{
+					String: err.Error(),
+					Valid:  true,
 				},
 			}
-			eFilter := reporters_search.SearchFilter{}
-			hosts, err := reporters_search.SearchReport[model.Host](
-				ctx, filter, eFilter, nil, model.FetchWindow{})
-			if err == nil {
-				r["cloud_account_id"] = hosts[0].CloudAccountID
+		} else {
+			params = postgresql_db.UpdateIntegrationStatusParams{
+				ID: intg.ID,
+				ErrorMsg: sql.NullString{
+					String: "",
+					Valid:  false,
+				},
 			}
 		}
-		if common.KubernetesClusterName != "" {
-			r["kubernetes_cluster_name"] = common.KubernetesClusterName
+		err = pgClient.UpdateIntegrationStatus(ctx, params)
+		if err != nil {
+			log.Error().Msg(err.Error())
 		}
-
-		if _, ok := r["updated_at"]; ok {
-			flag := integration.IsMessagingFormat(integrationType)
-			if flag {
-				r["updated_at"] = utils.PrintableTimeStamp(r["updated_at"])
-			}
-		}
-
-		if _, ok := r["created_at"]; ok {
-			flag := integration.IsMessagingFormat(integrationType)
-			if flag {
-				r["created_at"] = utils.PrintableTimeStamp(r["created_at"])
-			}
-		}
-
 	}
 
-	return results
+	return nil
 }
 
-func processIntegration[T any](ctx context.Context, task *asynq.Task, integrationRow postgresql_db.Integration) error {
+func processForResource(ctx context.Context, integration postgresql_db.Integration) error {
+	switch integration.Resource {
+	case utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]:
+		return processIntegration[model.Vulnerability](ctx, integration)
+	case utils.ScanTypeDetectedNode[utils.NEO4JSecretScan]:
+		return processIntegration[model.Secret](ctx, integration)
+	case utils.ScanTypeDetectedNode[utils.NEO4JMalwareScan]:
+		return processIntegration[model.Malware](ctx, integration)
+	case utils.ScanTypeDetectedNode[utils.NEO4JComplianceScan]:
+		return processIntegration[model.Compliance](ctx, integration)
+	case utils.ScanTypeDetectedNode[utils.NEO4JCloudComplianceScan]:
+		return processIntegration[model.CloudCompliance](ctx, integration)
+	default:
+		return errors.New("unknown resource type in integration")
+	}
+}
+
+// check if last_event_updated_at time is available
+// or default to time.Now() - NOTIFICATION_INTERVAL
+func getLastEventUpdatedAt(eTime sql.NullTime, defaultTime time.Time) string {
+	if eTime.Valid {
+		return strconv.FormatInt(eTime.Time.UnixMilli(), 10)
+	}
+	return strconv.FormatInt(defaultTime.UnixMilli()-NOTIFICATION_INTERVAL, 10)
+}
+
+func processIntegration[T any](ctx context.Context, intg postgresql_db.Integration) error {
 
 	log := log.WithCtx(ctx)
 
 	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "process-integration")
 	defer span.End()
 
-	startTime := time.Now()
 	var filters model.IntegrationFilters
-	err := json.Unmarshal(integrationRow.Filters, &filters)
+	err := json.Unmarshal(intg.Filters, &filters)
 	if err != nil {
 		return err
 	}
 
-	// get ts from message
-	ts, err := strconv.ParseInt(string(task.Payload()), 10, 64)
-	if err != nil {
-		return err
-	}
-
-	last30sTimeStamp := ts - NOTIFICATION_INTERVAL
-
-	log.Debug().Msgf("Check for %s scans to notify at timestamp (%d,%d)",
-		integrationRow.Resource, last30sTimeStamp, ts)
+	start := time.Now()
 
 	filters.FieldsFilters = reporters.FieldsFilters{}
 	filters.FieldsFilters.CompareFilters = append(
@@ -315,7 +292,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		reporters.CompareFilter{
 			FieldName:   "updated_at",
 			GreaterThan: true,
-			FieldValue:  strconv.FormatInt(last30sTimeStamp, 10),
+			FieldValue:  getLastEventUpdatedAt(intg.LastEventUpdatedAt, start),
 		},
 	)
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
@@ -323,10 +300,10 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 	}
 
 	scansList := []model.ScanInfo{}
-	scanType, ok := utils.DetectedNodeScanType[integrationRow.Resource]
+	scanType, ok := utils.DetectedNodeScanType[intg.Resource]
 	if !ok {
-		log.Error().Msgf("Unsupported scan type in integration: %v", integrationRow)
-		return errors.New("Unsupported scan type in integration")
+		log.Error().Msgf("error %s: %v", ErrUnsupportedScan, intg)
+		return ErrUnsupportedScan
 	}
 
 	reqNC, reqC := integrationFilters2SearchScanReqs(filters)
@@ -340,7 +317,7 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 			scansList = append(scansList, scansInfo...)
 		}
 	}
-	neo4j_query_nc := time.Since(profileStart).Milliseconds()
+	neo4j_query_nc := time.Since(profileStart)
 
 	profileStart = time.Now()
 	if reqC != nil {
@@ -352,9 +329,9 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 			scansList = append(scansList, containerScanInfo...)
 		}
 	}
-	neo4j_query_c := time.Since(profileStart).Milliseconds()
+	neo4j_query_c := time.Since(profileStart)
 
-	neo4j_query_default := int64(0)
+	neo4j_query_default := time.Duration(0)
 	if reqNC == nil && reqC == nil {
 		profileStart = time.Now()
 		reqDefault := reporters_search.SearchScanReq{}
@@ -369,29 +346,33 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		} else if len(defaultScanInfo) > 0 {
 			scansList = append(scansList, defaultScanInfo...)
 		}
-		neo4j_query_default = time.Since(profileStart).Milliseconds()
+		neo4j_query_default = time.Since(profileStart)
 	}
 
 	// nothing to notify
 	if len(scansList) == 0 {
-		log.Info().Msgf("No %s scans to notify at timestamp (%d,%d)",
-			integrationRow.Resource, last30sTimeStamp, ts)
+		log.Info().Msgf("No %s scans after timestamp %d",
+			intg.Resource, intg.LastEventUpdatedAt.Time.UnixMilli())
 		return nil
 	}
 
-	log.Info().Msgf("list of %s scans to notify: %+v", integrationRow.Resource, scansList)
+	log.Info().Msgf("list of %s scans to notify: %+v", intg.Resource, scansList)
 
 	filters = model.IntegrationFilters{}
-	err = json.Unmarshal(integrationRow.Filters, &filters)
+	err = json.Unmarshal(intg.Filters, &filters)
 	if err != nil {
 		return err
 	}
 	filters.NodeIds = []model.NodeIdentifier{}
 
-	totalQueryTime := int64(0)
-	totalSendTime := int64(0)
+	totalQueryTime := time.Duration(0)
+	totalSendTime := time.Duration(0)
 
 	scanIDMap := make(map[string]bool)
+
+	// this var tracks the latest scan in the retrived scans
+	var latestScanUpdatedAt int64
+
 	for _, scan := range scansList {
 		//This map is required as we might have duplicates in the scansList
 		//for the containers
@@ -400,83 +381,124 @@ func processIntegration[T any](ctx context.Context, task *asynq.Task, integratio
 		}
 		scanIDMap[scan.ScanID] = true
 
+		if scan.UpdatedAt >= latestScanUpdatedAt {
+			latestScanUpdatedAt = scan.UpdatedAt
+		}
+
 		profileStart = time.Now()
+
 		results, common, err := reporters_scan.GetScanResults[T](ctx,
-			utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanID,
+			utils.DetectedNodeScanType[intg.Resource], scan.ScanID,
 			filters.FieldsFilters, model.FetchWindow{})
 		if err != nil {
 			return err
 		}
-		totalQueryTime = totalQueryTime + time.Since(profileStart).Milliseconds()
+
+		totalQueryTime = totalQueryTime + time.Since(profileStart)
 
 		if len(results) == 0 {
 			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanID, filters)
 			continue
 		}
 
-		iByte, err := json.Marshal(integrationRow)
+		iByte, err := json.Marshal(intg)
 		if err != nil {
 			return err
 		}
 
-		integrationModel, err := integration.GetIntegration(ctx, integrationRow.IntegrationType, iByte)
+		integrationModel, err := integration.GetIntegration(ctx, intg.IntegrationType, iByte)
 		if err != nil {
 			return err
 		}
 		var updatedResults []map[string]interface{}
 		// inject node details to results
-		if integration.IsMessagingFormat(integrationRow.IntegrationType) {
-			updatedResults = FormatForMessagingApps(results, integrationRow.Resource)
+		if integration.IsMessagingFormat(intg.IntegrationType) {
+			updatedResults = FormatForMessagingApps(results, intg.Resource)
 		} else {
 			updatedResults = []map[string]interface{}{}
 			for _, r := range results {
 				updatedResults = append(updatedResults, utils.ToMap[T](r))
 			}
 		}
-		updatedResults = injectNodeDatamap(updatedResults, common, integrationRow.IntegrationType, ctx)
-		messageByte, err := json.Marshal(updatedResults)
-		if err != nil {
-			return err
-		}
+
+		updatedResults = injectNodeDataMap(updatedResults, common, intg.IntegrationType, ctx)
 
 		extras := utils.ToMap[any](common)
-		extras["scan_type"] = integrationRow.Resource
+		extras["scan_type"] = intg.Resource
 
 		profileStart = time.Now()
-		err = integrationModel.SendNotification(ctx, string(messageByte), extras)
-		totalSendTime = totalSendTime + time.Since(profileStart).Milliseconds()
+
+		err = integrationModel.SendNotification(ctx, updatedResults, extras)
 		if err != nil {
-			NotificationRecordsCounts.WithLabelValues(
-				integrationRow.Resource,
-				integrationRow.IntegrationType,
-				"error",
-				func() string {
-					ns, _ := directory.ExtractNamespace(ctx)
-					return string(ns)
-				}(),
-			).Add(float64(len(updatedResults)))
+			updateIntegrationMetrics(ctx, intg,
+				integrations.Metrics{Ok: 0, Error: int64(len(updatedResults))})
 			return err
+		} else {
+			updateIntegrationMetrics(ctx, intg,
+				integrations.Metrics{Ok: int64(len(updatedResults)), Error: 0})
 		}
-		NotificationRecordsCounts.WithLabelValues(
-			integrationRow.Resource,
-			integrationRow.IntegrationType,
-			"success",
-			func() string {
-				ns, _ := directory.ExtractNamespace(ctx)
-				return string(ns)
-			}(),
-		).Add(float64(len(updatedResults)))
-		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken:%d",
-			integrationRow.Resource, len(results), integrationRow.IntegrationType,
-			integrationRow.ID, time.Since(profileStart).Milliseconds())
+
+		totalSendTime = totalSendTime + time.Since(profileStart)
+
+		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken: %s",
+			intg.Resource, len(results), intg.IntegrationType,
+			intg.ID, time.Since(profileStart))
 	}
-	log.Info().Msgf("%s Total Time taken for integration %s: %d", integrationRow.Resource,
-		integrationRow.IntegrationType, time.Since(startTime).Milliseconds())
-	log.Debug().Msgf("Time taken for neo4j_query_nc: %d", neo4j_query_nc)
-	log.Debug().Msgf("Time taken for neo4j_query_c: %d", neo4j_query_c)
-	log.Debug().Msgf("Time taken for neo4j_query_default: %d", neo4j_query_default)
-	log.Debug().Msgf("Time taken for neo4j_query_2: %d", totalQueryTime)
-	log.Debug().Msgf("Time taken for sending data : %d", totalSendTime)
+
+	if err := updateLastEventUpdatedAt(ctx, intg.ID, latestScanUpdatedAt); err != nil {
+		log.Error().Err(err).Msg("failed to to update last_event_updated_at")
+	}
+
+	log.Info().Msgf("%s Total Time taken for integration %s: %s", intg.Resource,
+		intg.IntegrationType, time.Since(start))
+	log.Debug().Msgf("Time taken for neo4j_query_nc: %s", neo4j_query_nc)
+	log.Debug().Msgf("Time taken for neo4j_query_c: %s", neo4j_query_c)
+	log.Debug().Msgf("Time taken for neo4j_query_default: %s", neo4j_query_default)
+	log.Debug().Msgf("Time taken for neo4j_query_2: %s", totalQueryTime)
+	log.Debug().Msgf("Time taken for sending data : %s", totalSendTime)
+	return nil
+}
+
+func updateLastEventUpdatedAt(ctx context.Context, intgId int32, updatedAt int64) error {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("unable to get sql client")
+		return err
+	}
+
+	last := postgresql_db.UpdateIntegrationLastEventUpdatedAtParams{
+		ID: intgId,
+		LastEventUpdatedAt: sql.NullTime{
+			Time:  time.UnixMilli(updatedAt),
+			Valid: true,
+		},
+	}
+
+	if err := pgClient.UpdateIntegrationLastEventUpdatedAt(ctx, last); err != nil {
+		log.Error().Err(err).Msg("failed to update last event updated at")
+		return err
+	}
+
+	return nil
+}
+
+func updateIntegrationMetrics(ctx context.Context, intg postgresql_db.Integration, metrics integrations.Metrics) error {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("unable to get sql client")
+		return err
+	}
+
+	param := postgresql_db.SetIntegrationMetricsParams{
+		ID:      intg.ID,
+		Metrics: intg.Metrics.Update(metrics),
+	}
+
+	if err := pgClient.SetIntegrationMetrics(ctx, param); err != nil {
+		log.Error().Err(err).Msg("failed to update last event updated at")
+		return err
+	}
+
 	return nil
 }
 
@@ -552,4 +574,60 @@ func integrationFilters2SearchScanReqs(filters model.IntegrationFilters) (*repor
 	}
 
 	return reqNC, reqC
+}
+
+func injectNodeDataMap(results []map[string]interface{}, common model.ScanResultsCommon,
+	integrationType string, ctx context.Context) []map[string]interface{} {
+
+	for _, r := range results {
+		//m := utils.ToMap[T](r)
+		r["node_id"] = common.NodeID
+		r["scan_id"] = common.ScanID
+		r["node_name"] = common.NodeName
+		r["node_type"] = common.NodeType
+		if common.ContainerName != "" {
+			r["docker_container_name"] = common.ContainerName
+		}
+		if common.ImageName != "" {
+			r["docker_image_name"] = common.ImageName
+		}
+		if common.HostName != "" {
+			r["host_name"] = common.HostName
+			filter := reporters_search.SearchFilter{
+				Filters: reporters.FieldsFilters{
+					ContainsFilter: reporters.ContainsFilter{
+						FieldsValues: map[string][]interface{}{
+							"host_name": {common.HostName},
+						},
+					},
+				},
+			}
+			eFilter := reporters_search.SearchFilter{}
+			hosts, err := reporters_search.SearchReport[model.Host](
+				ctx, filter, eFilter, nil, model.FetchWindow{})
+			if err == nil {
+				r["cloud_account_id"] = hosts[0].CloudAccountID
+			}
+		}
+		if common.KubernetesClusterName != "" {
+			r["kubernetes_cluster_name"] = common.KubernetesClusterName
+		}
+
+		if _, ok := r["updated_at"]; ok {
+			flag := integration.IsMessagingFormat(integrationType)
+			if flag {
+				r["updated_at"] = utils.PrintableTimeStamp(r["updated_at"])
+			}
+		}
+
+		if _, ok := r["created_at"]; ok {
+			flag := integration.IsMessagingFormat(integrationType)
+			if flag {
+				r["created_at"] = utils.PrintableTimeStamp(r["created_at"])
+			}
+		}
+
+	}
+
+	return results
 }

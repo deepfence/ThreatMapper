@@ -1,7 +1,13 @@
 import {
   Combobox as HUICombobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption as HUIComboboxOption,
   ComboboxOptionProps as HUIComboboxOptionProps,
+  ComboboxOptions,
   ComboboxProps as HUIComboboxProps,
+  Field,
+  Label,
 } from '@headlessui/react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { Slot } from '@radix-ui/react-slot';
@@ -75,10 +81,9 @@ const OptionsWrapper = ({ children }: { children: React.ReactNode }) => {
 };
 type ComboboxProps<
   TValue,
-  TNullable extends boolean | undefined,
   TMultiple extends boolean | undefined,
   TTag extends ElementType,
-> = HUIComboboxProps<TValue, TNullable, TMultiple, TTag> & {
+> = HUIComboboxProps<TValue, TMultiple, TTag> & {
   triggerVariant?: 'button' | 'select';
   color?: 'error' | 'default';
   helperText?: string;
@@ -100,16 +105,10 @@ let DEFAULT_COMBOBOX_TAG: React.ExoticComponent<{
 }>;
 
 export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBOBOX_TAG>(
-  props: ComboboxProps<TValue, true, true, TTag>,
+  props: ComboboxProps<TValue, true, TTag>,
 ): JSX.Element;
 export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBOBOX_TAG>(
-  props: ComboboxProps<TValue, true, false, TTag>,
-): JSX.Element;
-export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBOBOX_TAG>(
-  props: ComboboxProps<TValue, false, false, TTag>,
-): JSX.Element;
-export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBOBOX_TAG>(
-  props: ComboboxProps<TValue, false, true, TTag>,
+  props: ComboboxProps<TValue, false, TTag>,
 ): JSX.Element;
 export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBOBOX_TAG>({
   children,
@@ -130,7 +129,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
   helperText,
   color = 'default',
   ...props
-}: ComboboxProps<TValue, boolean | undefined, boolean | undefined, TTag>) {
+}: ComboboxProps<TValue, boolean | undefined, TTag>) {
   const inputBtnId = useId();
 
   return (
@@ -139,36 +138,35 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
         multiple: !!multiple,
       }}
     >
-      <HUICombobox
-        {...(props as any)}
-        disabled={disabled}
-        value={value}
-        multiple={multiple}
-      >
-        {({ open }) => {
-          return (
-            <div className="relative flex flex-col">
-              {label?.length && (
-                <HUICombobox.Label
-                  htmlFor={inputBtnId}
-                  className={cn(
-                    'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
-                    {
-                      'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
-                    },
-                  )}
-                >
-                  {label}
-                </HUICombobox.Label>
-              )}
+      <Field className={'relative flex flex-col'}>
+        {label?.length ? (
+          <Label
+            htmlFor={inputBtnId}
+            className={cn(
+              'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
+              {
+                'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
+              },
+            )}
+          >
+            {label}
+          </Label>
+        ) : null}
+        <HUICombobox
+          {...(props as any)}
+          disabled={disabled}
+          value={value}
+          multiple={multiple}
+        >
+          {({ open }) => {
+            return (
               <div className="flex items-center">
                 <PopoverPrimitive.Root open={open}>
                   <PopoverPrimitive.Trigger asChild>
                     {triggerVariant === 'button' ? (
-                      <HUICombobox.Button
+                      <ComboboxButton
                         id={inputBtnId}
                         data-testid="comboboxTriggerButtonId"
-                        as={Slot}
                         className={cn(
                           // display
                           'flex items-center gap-1.5 w-fit',
@@ -184,24 +182,22 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           },
                         )}
                       >
-                        <button tabIndex={0}>
-                          {startIcon ?? <ButtonStartIcon />}
-                          {getDisplayValue?.(value as unknown as any) ?? placeholder}
-                          {endIcon}
-                          {multiple && Array.isArray(value) && value.length > 0 ? (
-                            <div className="relative flex items-center">
-                              <Badge
-                                color="blue"
-                                variant="filled"
-                                size="small"
-                                label={value?.length}
-                              />
-                            </div>
-                          ) : null}
-                        </button>
-                      </HUICombobox.Button>
+                        {startIcon ?? <ButtonStartIcon />}
+                        {getDisplayValue?.(value as unknown as any) ?? placeholder}
+                        {endIcon}
+                        {multiple && Array.isArray(value) && value.length > 0 ? (
+                          <div className="relative flex items-center">
+                            <Badge
+                              color="blue"
+                              variant="filled"
+                              size="small"
+                              label={value?.length}
+                            />
+                          </div>
+                        ) : null}
+                      </ComboboxButton>
                     ) : (
-                      <HUICombobox.Button
+                      <ComboboxButton
                         id={inputBtnId}
                         data-testid="comboboxTriggerButtonId"
                         as={Slot}
@@ -230,7 +226,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                             <CaretDownIcon />
                           </div>
                         </button>
-                      </HUICombobox.Button>
+                      </ComboboxButton>
                     )}
                   </PopoverPrimitive.Trigger>
 
@@ -255,7 +251,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           >
                             <SearchIcon />
                           </span>
-                          <HUICombobox.Input
+                          <ComboboxInput
                             placeholder="Search"
                             data-testid="comboboxSearchInputId"
                             className={cn(
@@ -272,7 +268,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                         </div>
 
                         <Separator />
-                        <HUICombobox.Options>
+                        <ComboboxOptions>
                           <div
                             className={cn(
                               'max-h-60 w-full select-none',
@@ -298,7 +294,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                           {multiple ? (
                             <>
                               <Separator />
-                              <HUICombobox.Option
+                              <HUIComboboxOption
                                 disabled
                                 value="combobox-clearall-option"
                               >
@@ -312,10 +308,10 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                                     {clearAllElement}
                                   </button>
                                 </div>
-                              </HUICombobox.Option>
+                              </HUIComboboxOption>
                             </>
                           ) : null}
-                        </HUICombobox.Options>
+                        </ComboboxOptions>
 
                         <UnmountDetectionElement
                           onUnmount={() => {
@@ -336,15 +332,15 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                   </div>
                 )}
               </div>
-              {helperText && triggerVariant === 'select' && (
-                <div className="pt-1.5">
-                  <HelperText color={color} text={helperText} />
-                </div>
-              )}
-            </div>
-          );
-        }}
-      </HUICombobox>
+            );
+          }}
+        </HUICombobox>
+        {helperText && triggerVariant === 'select' && (
+          <div className="pt-1.5">
+            <HelperText color={color} text={helperText} />
+          </div>
+        )}
+      </Field>
     </ListboxContext.Provider>
   );
 }
@@ -355,8 +351,8 @@ export function ComboboxOption<TType>({
 }: HUIComboboxOptionProps<'li', TType>) {
   const { multiple } = useContext(ListboxContext);
   return (
-    <HUICombobox.Option
-      className={({ active, selected }) => {
+    <HUIComboboxOption
+      className={({ focus, selected }) => {
         return cn(
           'relative select-none',
           'pt-1.5 pb-1.5 px-3',
@@ -364,7 +360,7 @@ export function ComboboxOption<TType>({
           'cursor-pointer text-p4a',
           'dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar',
           {
-            'dark:bg-bg-grid-header bg-bg-breadcrumb-bar text-p4a': active,
+            'dark:bg-bg-grid-header bg-bg-breadcrumb-bar text-p4a': focus,
             'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value text-p4a':
               selected,
           },
@@ -380,7 +376,7 @@ export function ComboboxOption<TType>({
           </>
         );
       }}
-    </HUICombobox.Option>
+    </HUIComboboxOption>
   );
 }
 
