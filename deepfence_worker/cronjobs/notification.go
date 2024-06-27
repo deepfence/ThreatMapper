@@ -278,8 +278,20 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 	ctx, span := telemetry.NewSpan(ctx, "cronjobs", "process-integration")
 	defer span.End()
 
+	// get integration object
+	iByte, err := json.Marshal(intg)
+	if err != nil {
+		return err
+	}
+
+	integrationModel, err := integration.GetIntegration(ctx, intg.IntegrationType, iByte)
+	if err != nil {
+		return err
+	}
+
+	// get filters
 	var filters model.IntegrationFilters
-	err := json.Unmarshal(intg.Filters, &filters)
+	err = json.Unmarshal(intg.Filters, &filters)
 	if err != nil {
 		return err
 	}
@@ -401,15 +413,6 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			continue
 		}
 
-		iByte, err := json.Marshal(intg)
-		if err != nil {
-			return err
-		}
-
-		integrationModel, err := integration.GetIntegration(ctx, intg.IntegrationType, iByte)
-		if err != nil {
-			return err
-		}
 		var updatedResults []map[string]interface{}
 		// inject node details to results
 		if integration.IsMessagingFormat(intg.IntegrationType) {
@@ -430,11 +433,11 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 
 		err = integrationModel.SendNotification(ctx, updatedResults, extras)
 		if err != nil {
-			updateIntegrationMetrics(ctx, intg,
+			updateIntegrationMetrics(ctx, intg.ID,
 				integrations.Metrics{Ok: 0, Error: int64(len(updatedResults))})
 			return err
 		} else {
-			updateIntegrationMetrics(ctx, intg,
+			updateIntegrationMetrics(ctx, intg.ID,
 				integrations.Metrics{Ok: int64(len(updatedResults)), Error: 0})
 		}
 
@@ -482,16 +485,21 @@ func updateLastEventUpdatedAt(ctx context.Context, intgId int32, updatedAt int64
 	return nil
 }
 
-func updateIntegrationMetrics(ctx context.Context, intg postgresql_db.Integration, metrics integrations.Metrics) error {
+func updateIntegrationMetrics(ctx context.Context, intgID int32, metrics integrations.Metrics) error {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("unable to get sql client")
 		return err
 	}
 
-	param := postgresql_db.SetIntegrationMetricsParams{
-		ID:      intg.ID,
-		Metrics: intg.Metrics.Update(metrics),
+	param := postgresql_db.SetIntegrationMetricsParams{ID: intgID}
+
+	old, err := pgClient.GetIntegrationMetrics(ctx, intgID)
+	if err != nil {
+		log.Error().Err(err).Msg("unable to get latest metrics from db")
+		param.Metrics = &metrics
+	} else {
+		param.Metrics = old.Update(metrics)
 	}
 
 	if err := pgClient.SetIntegrationMetrics(ctx, param); err != nil {
@@ -579,6 +587,8 @@ func integrationFilters2SearchScanReqs(filters model.IntegrationFilters) (*repor
 func injectNodeDataMap(results []map[string]interface{}, common model.ScanResultsCommon,
 	integrationType string, ctx context.Context) []map[string]interface{} {
 
+	flag := integration.IsMessagingFormat(integrationType)
+
 	for _, r := range results {
 		//m := utils.ToMap[T](r)
 		r["node_id"] = common.NodeID
@@ -614,14 +624,12 @@ func injectNodeDataMap(results []map[string]interface{}, common model.ScanResult
 		}
 
 		if _, ok := r["updated_at"]; ok {
-			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
 				r["updated_at"] = utils.PrintableTimeStamp(r["updated_at"])
 			}
 		}
 
 		if _, ok := r["created_at"]; ok {
-			flag := integration.IsMessagingFormat(integrationType)
 			if flag {
 				r["created_at"] = utils.PrintableTimeStamp(r["created_at"])
 			}
