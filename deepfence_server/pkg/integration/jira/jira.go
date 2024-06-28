@@ -168,3 +168,7 @@ func (j Jira) IsValidCredential(ctx context.Context) (bool, error) {
 
 	return true, nil
 }
+
+func (a Jira) SendSummaryLink() bool {
+	return a.Config.SendSummary
+}

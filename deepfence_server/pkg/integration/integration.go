@@ -58,17 +58,33 @@ func GetIntegration(ctx context.Context, integrationType string, b []byte) (Inte
 func IsMessagingFormat(integrationType string) bool {
 	retVal := false
 	switch integrationType {
-	case constants.Slack, constants.Teams, constants.PagerDuty,
-		constants.Email, constants.Jira:
+	case constants.Slack,
+		constants.Teams,
+		constants.PagerDuty,
+		constants.Email,
+		constants.Jira:
 		retVal = true
 	}
 	return retVal
 }
 
+func SupportsSummaryLink(integrationType string) bool {
+	switch integrationType {
+	case constants.Slack,
+		constants.Teams,
+		constants.Email,
+		constants.Jira:
+		return true
+	}
+	return false
+}
+
 // Integration is the interface for all integrations
 type Integration interface {
 	// extras are additional fields that are not part of the message
+	// if SendSummaryLink is true then message array is expected to be scan summay
 	SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error
 	ValidateConfig(*validator.Validate) error
 	IsValidCredential(ctx context.Context) (bool, error)
+	SendSummaryLink() bool
 }

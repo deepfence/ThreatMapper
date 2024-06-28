@@ -120,3 +120,7 @@ func (s Splunk) Sender(in chan []byte, wg *sync.WaitGroup) {
 func (s Splunk) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
+
+func (a Splunk) SendSummaryLink() bool {
+	return false
+}

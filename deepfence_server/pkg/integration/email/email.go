@@ -127,3 +127,7 @@ func (e Email) IsEmailConfigured(ctx context.Context) bool {
 func (e Email) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
+
+func (a Email) SendSummaryLink() bool {
+	return a.Config.SendSummary
+}

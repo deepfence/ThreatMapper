@@ -65,3 +65,7 @@ func (g GoogleChronicle) SendNotification(ctx context.Context, message []map[str
 func (g GoogleChronicle) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
+
+func (a GoogleChronicle) SendSummaryLink() bool {
+	return false
+}

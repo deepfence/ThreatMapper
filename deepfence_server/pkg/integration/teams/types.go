@@ -18,7 +18,8 @@ type Teams struct {
 }
 
 type Config struct {
-	WebhookURL string `json:"webhook_url" validate:"required,url" required:"true"`
+	WebhookURL  string `json:"webhook_url" validate:"required,url" required:"true"`
+	SendSummary bool   `json:"send_summary"`
 }
 
 // Payloads

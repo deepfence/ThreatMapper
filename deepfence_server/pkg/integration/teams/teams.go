@@ -173,3 +173,7 @@ func (t Teams) IsValidCredential(ctx context.Context) (bool, error) {
 
 	return true, nil
 }
+
+func (a Teams) SendSummaryLink() bool {
+	return a.Config.SendSummary
+}

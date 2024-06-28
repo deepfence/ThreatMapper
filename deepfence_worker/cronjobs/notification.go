@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
@@ -20,6 +21,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/integrations"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
@@ -385,89 +387,178 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 	// this var tracks the latest scan in the retrived scans
 	var latestScanUpdatedAt int64
 
-	for _, scan := range scansList {
-		//This map is required as we might have duplicates in the scansList
-		//for the containers
-		if _, ok := scanIDMap[scan.ScanID]; ok {
-			continue
-		}
-		scanIDMap[scan.ScanID] = true
-
-		if scan.UpdatedAt >= latestScanUpdatedAt {
-			latestScanUpdatedAt = scan.UpdatedAt
-		}
-
-		profileStart = time.Now()
-
-		results, common, err := reporters_scan.GetScanResults[T](ctx,
-			utils.DetectedNodeScanType[intg.Resource], scan.ScanID,
-			filters.FieldsFilters, model.FetchWindow{})
-		if err != nil {
-			return err
-		}
-
-		totalQueryTime = totalQueryTime + time.Since(profileStart)
-
-		if len(results) == 0 {
-			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanID, filters)
-			continue
-		}
-
-		var updatedResults []map[string]interface{}
-		// inject node details to results
-		if integration.IsMessagingFormat(intg.IntegrationType) {
-			updatedResults = FormatForMessagingApps(results, intg.Resource)
-		} else {
-			updatedResults = []map[string]interface{}{}
-			for _, r := range results {
-				updatedResults = append(updatedResults, utils.ToMap[T](r))
-			}
-		}
-
-		updatedResults = injectNodeDataMap(updatedResults, common, intg.IntegrationType, ctx)
-
-		extras := utils.ToMap[any](common)
-		extras["scan_type"] = intg.Resource
-
-		profileStart = time.Now()
-
-		err = integrationModel.SendNotification(ctx, updatedResults, extras)
-		if err != nil {
-			updateIntegrationMetrics(ctx, intg.ID,
-				integrations.Metrics{Ok: 0, Error: int64(len(updatedResults))})
-			return err
-		} else {
-			updateIntegrationMetrics(ctx, intg.ID,
-				integrations.Metrics{Ok: int64(len(updatedResults)), Error: 0})
-		}
-
-		totalSendTime = totalSendTime + time.Since(profileStart)
-
-		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken: %s",
-			intg.Resource, len(results), intg.IntegrationType,
-			intg.ID, time.Since(profileStart))
-	}
-
-	if err := updateLastEventUpdatedAt(ctx, intg.ID, latestScanUpdatedAt); err != nil {
-		log.Error().Err(err).Msg("failed to to update last_event_updated_at")
-	}
-
-	log.Info().Msgf("%s Total Time taken for integration %s: %s", intg.Resource,
-		intg.IntegrationType, time.Since(start))
-	log.Debug().Msgf("Time taken for neo4j_query_nc: %s", neo4j_query_nc)
-	log.Debug().Msgf("Time taken for neo4j_query_c: %s", neo4j_query_c)
-	log.Debug().Msgf("Time taken for neo4j_query_default: %s", neo4j_query_default)
-	log.Debug().Msgf("Time taken for neo4j_query_2: %s", totalQueryTime)
-	log.Debug().Msgf("Time taken for sending data : %s", totalSendTime)
-	return nil
-}
-
-func updateLastEventUpdatedAt(ctx context.Context, intgId int32, updatedAt int64) error {
+	// need sql client update status, event updated_at and metrics
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("unable to get sql client")
 		return err
 	}
+
+	// format data to send it as a summary and link
+	if integrationModel.SendSummaryLink() {
+
+		log.Info().Msgf("sending scan summary for integration %d type %s for %s",
+			intg.ID, intg.IntegrationType, intg.Resource)
+
+		consoleURL, err := setting.GetManagementConsoleURL(ctx, pgClient)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get console url")
+			return err
+		}
+
+		scans := []map[string]interface{}{}
+		for _, scan := range scansList {
+			// This map is required as we might have
+			// duplicates in the scansList for the containers
+			if _, ok := scanIDMap[scan.ScanID]; ok {
+				continue
+			}
+			scanIDMap[scan.ScanID] = true
+
+			if scan.UpdatedAt >= latestScanUpdatedAt {
+				latestScanUpdatedAt = scan.UpdatedAt
+			}
+
+			summary := utils.ToMap[any](scan)
+			summary["scan_result_link"] = scanResultLink(consoleURL, scan.NodeType, intg.Resource, scan.ScanID)
+
+			scans = append(scans, summary)
+		}
+
+		err = integrationModel.SendNotification(ctx, scans, map[string]interface{}{})
+		if err != nil {
+			updateIntegrationMetrics(ctx, pgClient, intg.ID,
+				integrations.Metrics{Ok: 0, Error: int64(len(scans))})
+			return err
+		} else {
+			updateIntegrationMetrics(ctx, pgClient, intg.ID,
+				integrations.Metrics{Ok: int64(len(scans)), Error: 0})
+		}
+
+	} else {
+		// send all results as json
+		for _, scan := range scansList {
+			// This map is required as we might have
+			// duplicates in the scansList for the containers
+			if _, ok := scanIDMap[scan.ScanID]; ok {
+				continue
+			}
+			scanIDMap[scan.ScanID] = true
+
+			if scan.UpdatedAt >= latestScanUpdatedAt {
+				latestScanUpdatedAt = scan.UpdatedAt
+			}
+
+			profileStart = time.Now()
+
+			results, common, err := reporters_scan.GetScanResults[T](ctx,
+				utils.DetectedNodeScanType[intg.Resource], scan.ScanID,
+				filters.FieldsFilters, model.FetchWindow{})
+			if err != nil {
+				return err
+			}
+
+			totalQueryTime = totalQueryTime + time.Since(profileStart)
+
+			if len(results) == 0 {
+				log.Info().Msgf("No Results filtered for scan id: %s with filters %+v",
+					scan.ScanID, filters)
+				continue
+			}
+
+			var updatedResults []map[string]interface{}
+			// inject node details to results
+			if integration.IsMessagingFormat(intg.IntegrationType) {
+				updatedResults = FormatForMessagingApps(results, intg.Resource)
+			} else {
+				updatedResults = []map[string]interface{}{}
+				for _, r := range results {
+					updatedResults = append(updatedResults, utils.ToMap[T](r))
+				}
+			}
+
+			updatedResults = injectNodeDataMap(updatedResults, common, intg.IntegrationType, ctx)
+
+			extras := utils.ToMap[any](common)
+			extras["scan_type"] = intg.Resource
+
+			profileStart = time.Now()
+
+			err = integrationModel.SendNotification(ctx, updatedResults, extras)
+			if err != nil {
+				updateIntegrationMetrics(ctx, pgClient, intg.ID,
+					integrations.Metrics{Ok: 0, Error: int64(len(updatedResults))})
+				return err
+			} else {
+				updateIntegrationMetrics(ctx, pgClient, intg.ID,
+					integrations.Metrics{Ok: int64(len(updatedResults)), Error: 0})
+			}
+
+			totalSendTime = totalSendTime + time.Since(profileStart)
+
+			log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken: %s",
+				intg.Resource, len(results), intg.IntegrationType,
+				intg.ID, time.Since(profileStart))
+		}
+
+		log.Info().Msgf("%s Total Time taken for integration %s: %s", intg.Resource,
+			intg.IntegrationType, time.Since(start))
+		log.Debug().Msgf("Time taken for neo4j_query_nc: %s", neo4j_query_nc)
+		log.Debug().Msgf("Time taken for neo4j_query_c: %s", neo4j_query_c)
+		log.Debug().Msgf("Time taken for neo4j_query_default: %s", neo4j_query_default)
+		log.Debug().Msgf("Time taken for neo4j_query_2: %s", totalQueryTime)
+		log.Debug().Msgf("Time taken for sending data : %s", totalSendTime)
+
+	}
+
+	// update the last event update_at
+	if err := updateLastEventUpdatedAt(ctx, pgClient, intg.ID, latestScanUpdatedAt); err != nil {
+		log.Error().Err(err).Msg("failed to to update last_event_updated_at")
+	}
+
+	return nil
+}
+
+func scanResultLink(consoleURL string, nodeType string, scanType string, scanID string) string {
+
+	switch scanType {
+
+	case "Vulnerability":
+		return fmt.Sprintf("%s/vulnerability/scan-results/%s", consoleURL, scanID)
+
+	case "Secret":
+		return fmt.Sprintf("%s/secret/scan-results/%s", consoleURL, scanID)
+
+	case "Malware":
+		return fmt.Sprintf("%s/malware/scan-results/%s", consoleURL, scanID)
+
+	case "Compliance":
+		if nodeType == "host" {
+			return fmt.Sprintf("%s/posture/scan-results/linux/%s", consoleURL, scanID)
+		} else if nodeType == "cluster" {
+			return fmt.Sprintf("%s/posture/scan-results/kubernetes/%s", consoleURL, scanID)
+		} else {
+			return fmt.Sprintf("%s/posture", consoleURL)
+		}
+
+	case "CloudCompliance":
+		if strings.Contains(scanID, "aws") {
+			return fmt.Sprintf("%s/posture/cloud/scan-results/aws/%s", consoleURL, scanID)
+		} else if strings.Contains(scanID, "azure") {
+			return fmt.Sprintf("%s/posture/cloud/scan-results/aws/%s", consoleURL, scanID)
+		} else if strings.Contains(scanID, "gcp") {
+			return fmt.Sprintf("%s/posture/cloud/scan-results/gcp/%s", consoleURL, scanID)
+		} else {
+			return fmt.Sprintf("%s/posture", consoleURL)
+		}
+
+	default:
+		return consoleURL
+	}
+}
+
+func updateLastEventUpdatedAt(ctx context.Context, pgClient *postgresql_db.Queries,
+	intgId int32, updatedAt int64) error {
 
 	last := postgresql_db.UpdateIntegrationLastEventUpdatedAtParams{
 		ID: intgId,
@@ -485,12 +576,8 @@ func updateLastEventUpdatedAt(ctx context.Context, intgId int32, updatedAt int64
 	return nil
 }
 
-func updateIntegrationMetrics(ctx context.Context, intgID int32, metrics integrations.Metrics) error {
-	pgClient, err := directory.PostgresClient(ctx)
-	if err != nil {
-		log.Error().Err(err).Msg("unable to get sql client")
-		return err
-	}
+func updateIntegrationMetrics(ctx context.Context, pgClient *postgresql_db.Queries,
+	intgID int32, metrics integrations.Metrics) error {
 
 	param := postgresql_db.SetIntegrationMetricsParams{ID: intgID}
 
