@@ -62,6 +62,7 @@ export const postureQueries = createQueryKeys('posture', {
     aws_accounts?: string[];
     gcp_accounts?: string[];
     azure_accounts?: string[];
+    accountNames?: string[];
     hosts?: string[];
     clusters?: string[];
   }) => {
@@ -76,6 +77,7 @@ export const postureQueries = createQueryKeys('posture', {
       aws_accounts,
       gcp_accounts,
       azure_accounts,
+      accountNames,
       hosts,
       clusters,
     } = filters;
@@ -141,6 +143,10 @@ export const postureQueries = createQueryKeys('posture', {
 
         if (clusters && clusters.length) {
           searchReq.node_filter.filters.contains_filter.filter_in!['node_id'] = clusters;
+        }
+        if (accountNames && accountNames.length) {
+          searchReq.node_filter.filters.contains_filter.filter_in!['account_name'] =
+            accountNames;
         }
 
         if (complianceScanStatus) {

@@ -97,7 +97,7 @@ const FILTER_SEARCHPARAMS: Record<string, string> = {
   cloudProvider: 'Cloud provider',
   serviceType: 'Service type',
   aws_account_ids: 'AWS account',
-  gcp_account_ids: 'GCP account',
+  gcp_account_ids: 'GCP project',
   azure_account_ids: 'Azure subscription',
 };
 
@@ -304,7 +304,7 @@ function Filters() {
         />
         <SearchableCloudAccountsList
           cloudProvider="gcp"
-          displayValue="GCP account"
+          displayValue={FILTER_SEARCHPARAMS['gcp_account_ids']}
           defaultSelectedAccounts={searchParams.getAll('gcp_account_ids')}
           onClearAll={() => {
             setSearchParams((prev) => {

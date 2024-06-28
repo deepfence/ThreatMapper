@@ -1,5 +1,6 @@
 import {
   ModelCloudComplianceStatusEnum,
+  ModelCloudNodeAccountInfoRefreshStatusEnum,
   ModelCloudNodeAccountsListReqCloudProviderEnum,
   ModelComplianceStatusEnum,
 } from '@/api/generated';
@@ -69,6 +70,10 @@ export function getDisplayNameOfNodeType(
     return 'Subscription';
   } else if (nodeType === ModelCloudNodeAccountsListReqCloudProviderEnum.AzureOrg) {
     return 'Tenant';
+  } else if (nodeType === ModelCloudNodeAccountsListReqCloudProviderEnum.Gcp) {
+    return 'Project';
+  } else if (nodeType === ModelCloudNodeAccountsListReqCloudProviderEnum.GcpOrg) {
+    return 'Organization Project';
   } else {
     return 'Account';
   }
@@ -84,6 +89,10 @@ export function getSearchableCloudAccountDisplayName(
     return 'Subscription';
   } else if (nodeType === ModelCloudNodeAccountsListReqCloudProviderEnum.AzureOrg) {
     return 'Tenant';
+  } else if (nodeType === ModelCloudNodeAccountsListReqCloudProviderEnum.Gcp) {
+    return 'Project';
+  } else if (nodeType === ModelCloudNodeAccountsListReqCloudProviderEnum.GcpOrg) {
+    return 'Organization project';
   } else if (isCloudOrgNode(nodeType)) {
     return 'Organization account';
   } else {
@@ -101,9 +110,20 @@ export function getDeleteConfirmationDisplayName(
     return 'The Selected subscription, resources and scans related to the subscription will be deleted.';
   } else if (nodeType === ModelCloudNodeAccountsListReqCloudProviderEnum.AzureOrg) {
     return 'The Selected tenant, child subscriptions related to tenant, resources and scans related to tenant will be deleted.';
+  } else if (nodeType === ModelCloudNodeAccountsListReqCloudProviderEnum.Gcp) {
+    return 'The Selected project, resources and scans related to the project will be deleted.';
+  } else if (nodeType === ModelCloudNodeAccountsListReqCloudProviderEnum.GcpOrg) {
+    return 'The Selected organization project, child projects related to organization project, resources and scans related to organization project will be deleted.';
   } else if (isCloudOrgNode()) {
-    return 'The Selected org cloud account, child accounts related to org account, resources and scans related to the cloud accounts will be deleted.';
+    return 'The Selected organization cloud account, child accounts related to organization account, resources and scans related to the cloud accounts will be deleted.';
   } else {
     return 'The Selected cloud account, resources and scans related to the account will be deleted.';
   }
 }
+
+export const isRefreshAccountFailed = (status: string): boolean => {
+  if (status?.length && ModelCloudNodeAccountInfoRefreshStatusEnum.Error === status) {
+    return true;
+  }
+  return false;
+};

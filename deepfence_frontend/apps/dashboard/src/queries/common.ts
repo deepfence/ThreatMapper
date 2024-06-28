@@ -13,7 +13,7 @@ import {
   ModelNodeIdentifierNodeTypeEnum,
   ModelScanListReq,
 } from '@/api/generated';
-import { ScanTypeEnum } from '@/types/common';
+import { CloudNodeType, ScanTypeEnum } from '@/types/common';
 import { getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 
@@ -314,6 +314,61 @@ export const commonQueries = createQueryKeys('common', {
 
         return {
           data: response.value.possible_values?.slice(0, size) || [],
+        };
+      },
+    };
+  },
+  searchCloudAccountName: (filters: {
+    fieldName: string;
+    searchText: string;
+    size: number;
+    cloudProvider: CloudNodeType;
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async ({ pageParam = 0 }) => {
+        const { searchText, cloudProvider, size, fieldName } = filters;
+
+        const scanResultsReq: CompletionCompletionNodeFieldReq = {
+          scan_id: '',
+          completion: searchText,
+          field_name: fieldName,
+          filters: {
+            compare_filter: null,
+            contains_filter: {
+              filter_in: {
+                cloud_provider: [cloudProvider],
+              },
+            },
+            order_filter: { order_fields: [] },
+            match_filter: { filter_in: {} },
+          },
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+
+        const api = apiWrapper({
+          fn: getScanResultCompletionApiClient().completeCloudAccount,
+        });
+        const response = await api({
+          completionCompletionNodeFieldReq: scanResultsReq,
+        });
+
+        if (!response.ok) {
+          throw response.error;
+        }
+
+        if (response.value === null) {
+          // TODO: handle this case with 404 status maybe
+          throw new Error('Error getting cloud service');
+        }
+
+        return {
+          data:
+            response.value?.possible_values?.slice(0, size).filter((value) => !!value) ||
+            [],
         };
       },
     };

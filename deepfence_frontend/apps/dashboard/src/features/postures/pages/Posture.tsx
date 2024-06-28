@@ -157,6 +157,8 @@ function getAccountProductName(provider: ModelPostureProvider) {
     return 'Clusters';
   } else if (provider.name === ModelCloudNodeAccountsListReqCloudProviderEnum.Azure) {
     return 'Subscriptions';
+  } else if (provider.name === ModelCloudNodeAccountsListReqCloudProviderEnum.Gcp) {
+    return 'Projects';
   } else if (!isNonCloudNode(provider.name ?? '')) {
     return 'Accounts';
   }
