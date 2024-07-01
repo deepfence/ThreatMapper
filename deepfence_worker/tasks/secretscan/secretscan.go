@@ -21,6 +21,7 @@ import (
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	tasks "github.com/deepfence/golang_deepfence_sdk/utils/tasks"
+	"github.com/deepfence/match-scanner/pkg/config"
 	"github.com/hibiken/asynq"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -228,8 +229,14 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		log.Error().Msg(err.Error())
 	}
 
+	var sessionSecretScanner = core.GetSession()
+
 	// init secret scan
-	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName, scanCtx)
+	secrets := []output.SecretFound{}
+	err = secretScan.Scan(scanCtx, secretScan.DirScan, config.Config2Filter(sessionSecretScanner.ExtractorConfig),
+		dir, "", params.ScanID, func(sf output.SecretFound, s string) {
+			secrets = append(secrets, sf)
+		})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		hardErr = err
@@ -241,7 +248,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		pb.SecretInfo
 	}
 
-	for _, c := range output.SecretsToSecretInfos(scanResult.Secrets) {
+	for _, c := range output.SecretsToSecretInfos(secrets) {
 		var r secretScanResult
 		r.SecretScanParameters = params
 		r.SecretInfo = *c          //nolint:govet
@@ -264,5 +271,4 @@ func initSecretScanner() {
 	var sessionSecretScanner = core.GetSession()
 	// init secret scan builds hs db
 	signature.ProcessSignatures(sessionSecretScanner.Config.Signatures)
-	signature.BuildHsDb()
 }

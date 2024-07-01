@@ -9,7 +9,7 @@
 [submodule "deepfence_agent/plugins/SecretScanner"]
 	path = deepfence_agent/plugins/SecretScanner
 	url = https://github.com/deepfence/SecretScanner
-	branch = main
+	branch = generic-lib
 [submodule "deepfence_agent/plugins/compliance"]
 	path = deepfence_agent/plugins/compliance
 	url = https://github.com/deepfence/compliance
