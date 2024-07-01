@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -19,6 +20,9 @@ import (
 
 var (
 	cloudAccountNodeType = ctl.ResourceTypeToString(ctl.CloudAccount)
+	refreshAccountFilter = reporters.FieldsFilters{
+		ContainsFilter: reporters.ContainsFilter{FieldsValues: map[string][]interface{}{"refresh_status": {"COMPLETE", "ERROR"}}},
+	}
 )
 
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
@@ -124,10 +128,16 @@ func (h *Handler) RefreshCloudAccountHandler(w http.ResponseWriter, r *http.Requ
 		nodeIdentifiers[i] = model.NodeIdentifier{NodeID: id, NodeType: cloudAccountNodeType}
 	}
 
-	cloudNodeIds, err := reporters_scan.GetCloudAccountIDs(r.Context(), nodeIdentifiers)
+	cloudNodeIds, err := reporters_scan.GetCloudAccountIDs(r.Context(), nodeIdentifiers, &refreshAccountFilter)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	if len(cloudNodeIds) == 0 {
+		// Refresh already in progress for all requested cloud accounts
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 

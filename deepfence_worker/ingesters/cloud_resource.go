@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingestersUtil "github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -276,42 +276,14 @@ func CommitFuncCloudResourceRefreshStatus(ctx context.Context, ns string, cs []i
 }
 
 func ResourceRefreshStatusToMaps(data []ingestersUtil.CloudResourceRefreshStatus) []map[string]interface{} {
-	statusBuff := map[string]map[string]interface{}{}
-	for _, i := range data {
-		statusMap := i.ToMap()
+	statuses := make([]map[string]interface{}, len(data))
 
-		cloudNodeId, ok := statusMap["cloud_node_id"].(string)
-		if !ok {
-			log.Error().Msgf("failed to convert cloud_node_id to string, data: %v", statusMap)
-			continue
-		}
+	sort.Slice(data, func(i, j int) bool {
+		return data[i].UpdatedAt < data[j].UpdatedAt
+	})
 
-		newStatus, ok := statusMap["refresh_status"].(string)
-		if !ok {
-			log.Error().Msgf("failed to convert refresh_status to string, data: %v", statusMap)
-			continue
-		}
-
-		old, found := statusBuff[cloudNodeId]
-		if !found {
-			statusBuff[cloudNodeId] = statusMap
-		} else {
-			oldStatus, ok := old["refresh_status"].(string)
-			if !ok {
-				log.Error().Msgf("failed to convert refresh_status to string, data: %v", old)
-				continue
-			}
-			if newStatus != oldStatus {
-				if newStatus == utils.ScanStatusSuccess ||
-					newStatus == utils.ScanStatusFailed || newStatus == utils.ScanStatusCancelled {
-					statusBuff[cloudNodeId] = statusMap
-				}
-			}
-		}
-	}
-	statuses := []map[string]interface{}{}
-	for _, v := range statusBuff {
-		statuses = append(statuses, v)
+	for i, d := range data {
+		statuses[i] = d.ToMap()
 	}
 	return statuses
 }

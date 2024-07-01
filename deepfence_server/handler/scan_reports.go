@@ -418,7 +418,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	regular, k8s, _, _ := extractBulksNodes(reqs.NodeIDs)
 
-	cloudNodeIds, err := reportersScan.GetCloudAccountIDs(ctx, regular)
+	cloudNodeIds, err := reportersScan.GetCloudAccountIDs(ctx, regular, nil)
 	if err != nil {
 		h.respondError(err, w)
 		return

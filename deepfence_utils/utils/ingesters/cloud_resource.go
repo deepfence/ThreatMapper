@@ -192,6 +192,7 @@ type CloudResourceRefreshStatus struct {
 	CloudNodeID    string `json:"cloud_node_id"`
 	RefreshMessage string `json:"refresh_message"`
 	RefreshStatus  string `json:"refresh_status"`
+	UpdatedAt      int64  `json:"updated_at"`
 }
 
 func (c *CloudResourceRefreshStatus) ToMap() map[string]interface{} {

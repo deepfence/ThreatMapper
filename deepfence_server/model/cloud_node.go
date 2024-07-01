@@ -84,7 +84,7 @@ type CloudNodeAccountInfo struct {
 	LastScanID           string           `json:"last_scan_id"`
 	LastScanStatus       string           `json:"last_scan_status"`
 	RefreshMessage       string           `json:"refresh_message"`
-	RefreshStatus        string           `json:"refresh_status" enum:"STARTING,IN_PROGRESS,ERROR,COMPLETE"`
+	RefreshStatus        string           `json:"refresh_status" enum:"QUEUED,STARTING,IN_PROGRESS,ERROR,COMPLETE"`
 	ScanStatusMap        map[string]int64 `json:"scan_status_map"`
 	Version              string           `json:"version"`
 	HostNodeID           string           `json:"host_node_id"`
@@ -230,7 +230,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			MERGE (r:Node{node_id:$host_node_id, node_type: "cloud_agent"})
 			WITH $param as row, r
 			MERGE (n:CloudNode{node_id:row.node_id})
-			ON CREATE SET n.refresh_status = 'STARTING', n.refresh_message = ''
+			ON CREATE SET n.refresh_status = '`+utils.ScanStatusStarting+`', n.refresh_message = ''
 			MERGE (r) -[:HOSTS]-> (n)
 			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version,
 			r.node_name=$host_node_id, r.active = true, r.agent_running=true, r.updated_at = TIMESTAMP()`,
@@ -246,7 +246,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			MERGE (m:CloudNode{node_id: $parent_node_id})
 			WITH $param as row, r, m
 			MERGE (n:CloudNode{node_id:row.node_id})
-			ON CREATE SET n.refresh_status = 'STARTING', n.refresh_message = ''
+			ON CREATE SET n.refresh_status = '`+utils.ScanStatusStarting+`', n.refresh_message = ''
 			MERGE (m) -[:IS_CHILD]-> (n)
 			MERGE (r) -[:HOSTS]-> (n)
 			SET n+= row, n.active = true, n.updated_at = TIMESTAMP(), n.version = row.version, 
@@ -532,58 +532,14 @@ func (c *CloudAccountRefreshReq) SetCloudAccountRefresh(ctx context.Context) err
 
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as cloudNode
-		MERGE (n:CloudNodeRefresh{node_id: cloudNode})
-		SET n.refresh = true, n.updated_at = TIMESTAMP()`,
+		MATCH (m:CloudNode{node_id: cloudNode})
+		SET m.refresh_status = '`+utils.ScanStatusStarting+`', m.refresh_message = ''`,
 		map[string]interface{}{
 			"batch": c.NodeIDs,
 		}); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)
-}
-
-func (c *CloudAccountRefreshReq) GetCloudAccountRefresh(ctx context.Context) ([]string, error) {
-
-	ctx, span := telemetry.NewSpan(ctx, "model", "get-cloud-account-refresh")
-	defer span.End()
-
-	var updatedNodeIDs []string
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return updatedNodeIDs, err
-	}
-
-	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close(ctx)
-
-	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
-	if err != nil {
-		return updatedNodeIDs, err
-	}
-	defer tx.Close(ctx)
-
-	res, err := tx.Run(ctx, `
-		UNWIND $batch as cloudNode
-		MATCH (n:CloudNodeRefresh{node_id: cloudNode})
-		WHERE n.refresh=true
-		WITH n, n.node_id as deletedNodeID
-		DELETE n
-		RETURN deletedNodeID`,
-		map[string]interface{}{
-			"batch": c.NodeIDs,
-		})
-	if err != nil {
-		return updatedNodeIDs, err
-	}
-	recs, err := res.Collect(ctx)
-	if err != nil {
-		return updatedNodeIDs, err
-	}
-
-	for _, rec := range recs {
-		updatedNodeIDs = append(updatedNodeIDs, rec.Values[0].(string))
-	}
-	return updatedNodeIDs, tx.Commit(ctx)
 }
 
 type CloudAccountDeleteReq struct {

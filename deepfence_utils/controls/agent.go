@@ -27,6 +27,7 @@ const (
 	StartCloudComplianceScan
 	StopCloudComplianceScan
 	CloudScannerJobCount
+	CloudScannerResourceRefreshCount
 )
 
 type ScanResource int
@@ -160,8 +161,9 @@ type CloudComplianceScanBenchmark struct {
 }
 
 type RefreshResourcesRequest struct {
-	NodeId   string       `json:"node_id" required:"true"`
-	NodeType ScanResource `json:"node_type" required:"true"`
+	NodeId    string       `json:"node_id" required:"true"`
+	AccountID string       `json:"account_id" required:"true"`
+	NodeType  ScanResource `json:"node_type" required:"true"`
 }
 
 type StopSecretScanRequest StartSecretScanRequest
