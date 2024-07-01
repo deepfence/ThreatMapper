@@ -72,8 +72,7 @@ func SupportsSummaryLink(integrationType string) bool {
 	switch integrationType {
 	case constants.Slack,
 		constants.Teams,
-		constants.Email,
-		constants.Jira:
+		constants.Email:
 		return true
 	}
 	return false

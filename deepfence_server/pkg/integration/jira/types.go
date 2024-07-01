@@ -23,7 +23,6 @@ type Config struct {
 	IsAuthToken    bool     `json:"isAuthToken"`
 	APIToken       string   `json:"api_token" validate:"omitempty,min=32,max=300,jira_auth_key"`
 	CustomFields   []string `json:"custom_fields"`
-	SendSummary    bool     `json:"send_summary"`
 }
 
 func (j Jira) ValidateConfig(validate *validator.Validate) error {

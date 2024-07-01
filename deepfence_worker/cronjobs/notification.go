@@ -394,17 +394,17 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 		return err
 	}
 
+	consoleURL, err := setting.GetManagementConsoleURL(ctx, pgClient)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get console url")
+		return err
+	}
+
 	// format data to send it as a summary and link
 	if integrationModel.SendSummaryLink() {
 
 		log.Info().Msgf("sending scan summary for integration %d type %s for %s",
 			intg.ID, intg.IntegrationType, intg.Resource)
-
-		consoleURL, err := setting.GetManagementConsoleURL(ctx, pgClient)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to get console url")
-			return err
-		}
 
 		scans := []map[string]interface{}{}
 		for _, scan := range scansList {
@@ -481,6 +481,7 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 
 			extras := utils.ToMap[any](common)
 			extras["scan_type"] = intg.Resource
+			extras["scan_result_link"] = scanResultLink(consoleURL, scan.NodeType, intg.Resource, scan.ScanID)
 
 			profileStart = time.Now()
 
