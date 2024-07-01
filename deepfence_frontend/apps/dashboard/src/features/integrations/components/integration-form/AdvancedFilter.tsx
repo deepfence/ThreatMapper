@@ -77,6 +77,8 @@ export const AdvancedFilters = ({
     setSelectedCloudAccounts([]);
   }, [notificationType, cloudProvider]);
 
+  const severities = [...SeverityEnumList];
+
   return (
     <div className="col-span-2 mt-6">
       <div className="flex text-text-input-value ">
@@ -254,7 +256,7 @@ export const AdvancedFilters = ({
                 return value && value.length ? `${value.length} selected` : '';
               }}
             >
-              {SeverityEnumList.map((severity) => {
+              {severities.map((severity) => {
                 return (
                   <ListboxOption key={severity} value={severity}>
                     {getSeverityPrettyName(severity)}

@@ -90,7 +90,10 @@ export const isJiraIntegration = (integrationType: string) => {
 };
 
 export const isCloudComplianceNotification = (notificationType: string) => {
-  return notificationType && notificationType === 'CloudCompliance';
+  return (
+    (notificationType && notificationType === 'CloudCompliance') ||
+    notificationType.toLowerCase() === 'cloud_compliance'
+  );
 };
 
 export const isComplianceNotification = (notificationType: string) => {
@@ -156,7 +159,7 @@ export const API_SCAN_TYPE_MAP: Record<string, ScanTypeEnum> = {
 
 export const scanTypes = ['Secret', 'Vulnerability', 'Malware'];
 
-export const getDisplayNotification = (notificationType: string) => {
+export const getNotificationPrettyName = (notificationType: string) => {
   if (isCloudTrailNotification(notificationType)) {
     return 'CloudTrail Alert';
   } else if (isUserActivityNotification(notificationType)) {
