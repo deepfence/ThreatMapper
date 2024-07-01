@@ -9,10 +9,12 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/spf13/cast"
 )
 
 const BatchSize = 5
@@ -31,20 +33,21 @@ func (t Teams) FormatMessage(message map[string]interface{}, position int, entir
 	if position == 1 {
 		entiremsg.WriteString("**")
 		entiremsg.WriteString(t.Resource)
-		entiremsg.WriteString("**<br><br>")
+		entiremsg.WriteString("**\n\n")
 	}
 	entiremsg.WriteString("**#")
 	entiremsg.WriteString(strconv.Itoa(position))
-	entiremsg.WriteString("**<br>")
+	entiremsg.WriteString("**\n")
 
 	for key, val := range message {
-		entiremsg.WriteString(fmt.Sprintf("**%s**:%s<br>", key, val))
+		entiremsg.WriteString(fmt.Sprintf("**%s**:%s\n", key, val))
 	}
-	entiremsg.WriteString("<br>")
+	entiremsg.WriteString("\n")
 	return entiremsg.String()
 }
 
-func (t Teams) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
+func (t Teams) SendNotification(ctx context.Context,
+	message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "teams-send-notification")
 	defer span.End()
@@ -58,7 +61,7 @@ func (t Teams) SendNotification(ctx context.Context, message []map[string]interf
 		numRoutines = 10
 	}
 
-	senderChan := make(chan *Payload, 500)
+	senderChan := make(chan any, 500)
 	var wg sync.WaitGroup
 	for i := 0; i < numRoutines; i++ {
 		wg.Add(1)
@@ -80,13 +83,16 @@ func (t Teams) SendNotification(ctx context.Context, message []map[string]interf
 		if endIndex > len(message) {
 			endIndex = len(message)
 		}
-		t.enqueueNotification(message[startIndex:endIndex], senderChan)
+		if !t.SendSummaryLink() {
+			t.enqueueNotification(message[startIndex:endIndex], senderChan)
+		} else {
+			t.enqueueSummaryNotification(message[startIndex:endIndex], senderChan)
+		}
 	}
 	return nil
 }
 
-func (t Teams) enqueueNotification(payloads []map[string]interface{},
-	senderChan chan *Payload) {
+func (t Teams) enqueueNotification(payloads []map[string]interface{}, senderChan chan any) {
 
 	var message strings.Builder
 	var b strings.Builder
@@ -103,7 +109,85 @@ func (t Teams) enqueueNotification(payloads []map[string]interface{},
 	senderChan <- &payload
 }
 
-func (t Teams) Sender(in chan *Payload, wg *sync.WaitGroup) {
+func (t Teams) enqueueSummaryNotification(payloads []map[string]interface{}, senderChan chan any) {
+
+	for _, m := range payloads {
+
+		ac := NewAdaptiveCards()
+
+		body := []map[string]interface{}{}
+
+		// header
+		body = append(
+			body,
+			map[string]interface{}{
+				"type":   "TextBlock",
+				"size":   "medium",
+				"weight": "bolder",
+				"style":  "heading",
+				"text":   fmt.Sprintf("Deepfence %s Scan", t.Resource),
+			},
+		)
+
+		// info
+		startedAt := time.UnixMilli(cast.ToInt64(m["created_at"])).Format(time.RFC1123)
+		completedAt := time.UnixMilli(cast.ToInt64(m["updated_at"])).Format(time.RFC1123)
+		body = append(
+			body,
+			map[string]interface{}{
+				"type": "TextBlock",
+				"text": fmt.Sprintf("**Node Type:** %s", m["node_type"]),
+				"warp": "true",
+			},
+			map[string]interface{}{
+				"type": "TextBlock",
+				"text": fmt.Sprintf("**Node Name:** %s", m["node_name"]),
+				"warp": "true",
+			},
+			map[string]interface{}{
+				"type": "TextBlock",
+				"text": fmt.Sprintf("**Started On:** %s", startedAt),
+				"warp": "true",
+			},
+			map[string]interface{}{
+				"type": "TextBlock",
+				"text": fmt.Sprintf("**Completed On:** %s", completedAt),
+				"warp": "true",
+			},
+		)
+
+		// Severity section
+		var severity string = ""
+		for k, v := range m["severity_counts"].(map[string]int32) {
+			severity += fmt.Sprintf("> _%s:_ %d\n", k, v)
+		}
+
+		body = append(
+			body,
+			map[string]interface{}{
+				"type": "TextBlock",
+				"text": fmt.Sprintf("**%s Severity Count:**\n%s", t.Resource, severity),
+				"warp": "true",
+			},
+		)
+
+		body = append(
+			body,
+			map[string]interface{}{
+				"type": "TextBlock",
+				"text": fmt.Sprintf("[Click here](%s) to view scan results on Console", m["scan_result_link"]),
+			},
+		)
+
+		ac.AddAttachment(NewAttachment(NewContent(body, nil)))
+
+		// send summary card
+		senderChan <- &ac
+	}
+
+}
+
+func (t Teams) Sender(in chan any, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for {

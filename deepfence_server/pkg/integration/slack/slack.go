@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"slices"
 	"time"
 
 	intgerr "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/errors"
@@ -136,7 +135,7 @@ func (s Slack) FormatSummaryMessage(message []map[string]interface{}) []map[stri
 				"type": "header",
 				"text": map[string]interface{}{
 					"type":  "plain_text",
-					"text":  fmt.Sprintf("%s Scan", s.Resource),
+					"text":  fmt.Sprintf("Deepfence %s Scan", s.Resource),
 					"emoji": true,
 				},
 			},
@@ -170,18 +169,10 @@ func (s Slack) FormatSummaryMessage(message []map[string]interface{}) []map[stri
 			},
 		)
 
-		// sort by map key
-		sev := m["severity_counts"].(map[string]int32)
-		keys := make([]string, 0, len(sev))
-		for k := range m {
-			keys = append(keys, k)
-		}
-		slices.Sort(keys)
-
 		// Severity section
 		var severity string = ""
-		for k := range sev {
-			severity += fmt.Sprintf(">_%s:_ %d\n", k, sev[k])
+		for k, v := range m["severity_counts"].(map[string]int32) {
+			severity += fmt.Sprintf(">_%s:_ %d\n", k, v)
 		}
 
 		blocks = append(
