@@ -18,7 +18,7 @@ ARG TARGETARCH
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl ca-certificates
 
-# for docker 
+# for docker
 RUN <<EOF
 set -eux
 
@@ -158,7 +158,7 @@ COPY plugins/deepfence_shipper/deepfence_shipper /home/deepfence/bin/shipper
 COPY plugins/deepfence_shipper/routes.yaml /home/deepfence/routes.yaml
 
 COPY --from=secret_build /home/deepfence/usr/SecretScanner /home/deepfence/bin/secret-scanner
-# COPY --from=secret_build /home/deepfence/usr/config.yaml /home/deepfence/bin/secret-scanner/config
+COPY --from=secret_build /home/deepfence/usr/config.yaml /home/deepfence/bin/secret-scanner/config
 COPY --from=package_build /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=package_build /usr/local/bin/package-scanner /home/deepfence/bin
 COPY --from=malware_build /usr/local/yara/lib /usr/lib
@@ -167,7 +167,7 @@ COPY --from=malware_build /home/deepfence/usr/config.yaml /home/deepfence/bin/ya
 COPY --from=compliance_build /usr/bin/compliance /usr/local/bin/compliance_check/compliance
 COPY --from=compliance_build /usr/bin/compliance /home/deepfence/bin/compliance
 
-# copy bins 
+# copy bins
 COPY --from=downloads /usr/local/bin/docker /usr/local/bin/docker
 COPY --from=downloads /usr/local/bin/vessel /usr/local/bin/vessel
 COPY --from=downloads /usr/local/bin/nerdctl /usr/local/bin/nerdctl

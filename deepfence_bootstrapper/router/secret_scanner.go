@@ -126,10 +126,10 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 	}
 
 	newRules := "new_secret_rules.tar.gz"
-	configPath := path.Join(dfUtils.GetDfInstallDir(), "/home/deepfence/bin/secret-scanner/config")
+	rulesPath := path.Join(dfUtils.GetDfInstallDir(), "/home/deepfence/bin/secret-scanner/rules")
 
 	if err := downloadFile(newRules, req.SecretsRulesURL); err != nil {
-		log.Error().Err(err).Msg("failed to downlaod secrets rules")
+		log.Error().Err(err).Msg("failed to download secrets rules")
 		return err
 	}
 	defer os.Remove(newRules)
@@ -142,7 +142,7 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 	}
 
 	// remove old rules
-	os.RemoveAll(configPath)
+	os.RemoveAll(rulesPath)
 
 	data, err := os.ReadFile(newRules)
 	if err != nil {
@@ -150,7 +150,7 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 		return err
 	}
 
-	if err := utils.ExtractTarGz(bytes.NewReader(data), configPath); err != nil {
+	if err := utils.ExtractTarGz(bytes.NewReader(data), rulesPath); err != nil {
 		log.Error().Err(err).Msg("failed to extract rules")
 		return err
 	}
