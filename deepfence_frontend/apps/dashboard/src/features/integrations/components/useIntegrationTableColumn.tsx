@@ -1,4 +1,4 @@
-import { has, isEmpty } from 'lodash-es';
+import { has, isEmpty, startCase } from 'lodash-es';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import {
@@ -18,7 +18,7 @@ import {
   severityMap,
 } from '@/features/integrations/pages/IntegrationAdd';
 
-import { IntegrationType } from './integration-form/utils';
+import { getNotificationPrettyName, IntegrationType } from './integration-form/utils';
 
 const ActionDropdown = ({
   row,
@@ -603,7 +603,7 @@ export const useIntegrationTableColumn = (
         maxSize: 75,
       }),
       columnHelper.accessor('notification_type', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => startCase(getNotificationPrettyName(cell.getValue() ?? '')),
         header: () => 'Notification type',
         minSize: 65,
         size: 70,

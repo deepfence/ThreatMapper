@@ -274,9 +274,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       const filters = _filters.fields_filters.contains_filter.filter_in;
       const newFilter = {
         ...filters,
-        [severityMap[_notificationType ?? ''] || 'severity']: severityFilter.map(
-          (severity) => severity.toLowerCase(),
-        ),
+        [severityMap[_notificationType ?? ''] || 'severity']: severityFilter,
       };
       _filters.fields_filters.contains_filter.filter_in = newFilter;
     }

@@ -33,6 +33,8 @@ export const CommonForm = ({
     return getReportNodeType(resource);
   }, [resource]);
 
+  const severities = resource ? [...SeverityEnumList] : [];
+
   return (
     <>
       <Listbox
@@ -77,7 +79,7 @@ export const CommonForm = ({
           setSeverity([]);
         }}
       >
-        {[...SeverityEnumList].splice(0, SeverityEnumList.length - 1).map((resource) => {
+        {severities.map((resource) => {
           return (
             <ListboxOption value={resource} key={resource}>
               {upperFirst(resource)}

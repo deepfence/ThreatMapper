@@ -9,7 +9,7 @@ import { AdvancedFilters } from './AdvancedFilter';
 import { FieldSelection } from './FieldSelection';
 import { TextInputType } from './TextInputType';
 import {
-  getDisplayNotification,
+  getNotificationPrettyName,
   IntegrationType,
   isCloudComplianceNotification,
   isCloudTrailNotification,
@@ -57,7 +57,7 @@ export const NotificationTypeField = ({
         placeholder="Select notification type"
         label="Notification Type"
         getDisplayValue={() => {
-          return getDisplayNotification(notificationType);
+          return getNotificationPrettyName(notificationType);
         }}
         required
       >
@@ -65,7 +65,7 @@ export const NotificationTypeField = ({
           (notification) => {
             return (
               <ListboxOption key={notification} value={notification}>
-                {getDisplayNotification(notification)}
+                {getNotificationPrettyName(notification)}
               </ListboxOption>
             );
           },
