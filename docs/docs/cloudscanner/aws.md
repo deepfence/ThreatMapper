@@ -81,6 +81,8 @@ module "deepfence-cloud-scanner_example_single-account" {
   mgmt-console-url              = "<Console URL>"
   mgmt-console-port             = "443"
   deepfence-key                 = "<Deepfence key>"
+  # AWS Account Name (Optional, for easy identification)
+  account_name                  = ""
   image                         = "quay.io/deepfenceio/cloud_scanner_ce:THREATMAPPER_VERSION"
   # Task CPU Units (Default: 4 vCPU)
   cpu                           = "4096"
