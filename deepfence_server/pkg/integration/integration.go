@@ -71,8 +71,7 @@ func IsMessagingFormat(integrationType string) bool {
 func SupportsSummaryLink(integrationType string) bool {
 	switch integrationType {
 	case constants.Slack,
-		constants.Teams,
-		constants.Email:
+		constants.Teams:
 		return true
 	}
 	return false
