@@ -325,16 +325,16 @@ func AddNewCloudComplianceScan(
 			}
 		}
 	}
-	nt := controls.KubernetesCluster
-	if nodeType == controls.ResourceTypeToString(controls.Host) {
-		nt = controls.Host
-	}
 	var action []byte
 	var hostNodeID, hostNeo4jNodeType string
 
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || nodeType == controls.ResourceTypeToString(controls.Host) {
 		hostNodeID = nodeID
 		hostNeo4jNodeType = neo4jNodeType
+		nt := controls.KubernetesCluster
+		if nodeType == controls.ResourceTypeToString(controls.Host) {
+			nt = controls.Host
+		}
 		internalReq, _ := json.Marshal(controls.StartComplianceScanRequest{
 			NodeID:   nodeID,
 			NodeType: nt,
@@ -374,7 +374,7 @@ func AddNewCloudComplianceScan(
 
 		internalReq, _ := json.Marshal(controls.StartCloudComplianceScanRequest{
 			NodeID:   nodeID,
-			NodeType: nt,
+			NodeType: controls.CloudAccount,
 			BinArgs:  map[string]string{"scan_id": scanID, "benchmark_types": strings.Join(benchmarkTypes, ",")},
 			ScanDetails: controls.CloudComplianceScanDetails{
 				ScanId:     scanID,

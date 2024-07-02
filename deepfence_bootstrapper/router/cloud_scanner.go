@@ -89,7 +89,7 @@ func RefreshResources(req ctl.RefreshResourcesRequest) error {
 	return nil
 }
 
-func GetCloudScannerJobCount() int32 {
+func GetCloudScannerJobCount(action ctl.ActionID) int32 {
 	conn, err := net.Dial("unix", CloudScannerSocketPath)
 	if err != nil {
 		log.Error().Err(err).Msgf("GetCloudScannerJobCount: error in creating cloud compliance scanner client with socket %s", CloudScannerSocketPath)
@@ -98,7 +98,7 @@ func GetCloudScannerJobCount() int32 {
 	defer conn.Close()
 
 	jobCountReq := map[string]interface{}{
-		"action": ctl.CloudScannerJobCount,
+		"action": action,
 	}
 	jobCountReqBytes, err := json.Marshal(jobCountReq)
 	if err != nil {
@@ -127,50 +127,4 @@ func GetCloudScannerJobCount() int32 {
 		}
 		return jobCount
 	}
-}
-
-func GetCloudNodeID() (string, error) {
-	cloudNodeID := ""
-	conn, err := net.Dial("unix", CloudScannerSocketPath)
-	if err != nil {
-		log.Error().Err(err).Msgf("Error creating cloud scanner client with socket %s", CloudScannerSocketPath)
-		return cloudNodeID, err
-	}
-	defer conn.Close()
-	reqMap := make(map[string]interface{})
-	reqMap["GetCloudNodeID"] = true
-	cloudNodeIDReq := map[string]interface{}{
-		"args": reqMap,
-	}
-
-	cloudNodeIDReqBytes, err := json.Marshal(cloudNodeIDReq)
-	if err != nil {
-		log.Error().Err(err).Msg("Error in converting request into valid json")
-		return cloudNodeID, err
-	}
-
-	_, err = conn.Write(cloudNodeIDReqBytes)
-	if err != nil {
-		log.Error().Err(err).Msgf("Error in writing data to unix socket %s", CloudScannerSocketPath)
-		return cloudNodeID, err
-	}
-
-	responseTimeout := 10 * time.Second
-	deadline := time.Now().Add(responseTimeout)
-	buf := make([]byte, 1024)
-	for {
-		conn.SetReadDeadline(deadline)
-		n, err := conn.Read(buf[:])
-		if err != nil {
-			log.Error().Err(err).Msg("Error in read")
-			return cloudNodeID, err
-		}
-
-		count, err := fmt.Sscan(string(buf[0:n]), &cloudNodeID)
-		if err != nil || count != 1 {
-			return cloudNodeID, err
-		}
-		break
-	}
-	return cloudNodeID, err
 }

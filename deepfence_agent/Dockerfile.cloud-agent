@@ -29,7 +29,11 @@ WORKDIR /opt/steampipe
 
 USER deepfence
 
-ENV DF_INSTALL_DIR=/home/deepfence
+ENV DF_INSTALL_DIR=/home/deepfence \
+    STEAMPIPE_AWS_PLUGIN_VERSION=0.118.1 \
+    STEAMPIPE_GCP_PLUGIN_VERSION=0.43.0 \
+    STEAMPIPE_AZURE_PLUGIN_VERSION=0.49.0 \
+    STEAMPIPE_AZURE_AD_PLUGIN_VERSION=0.12.0
 
 COPY supervisord-cloud.conf /home/deepfence/supervisord.conf
 COPY --from=steampipe /usr/local/bin/steampipe /usr/local/bin/steampipe
@@ -37,7 +41,7 @@ COPY --from=steampipe /usr/local/bin/steampipe /usr/local/bin/steampipe
 RUN steampipe service start \
     && steampipe plugin install steampipe \
     # plugin version should be in sync with Deepfence fork https://github.com/deepfence/steampipe-plugin-aws
-    && steampipe plugin install aws@0.118.1 gcp@0.43.0 azure@0.49.0 azuread@0.12.0 \
+    && steampipe plugin install aws@${STEAMPIPE_AWS_PLUGIN_VERSION} gcp@${STEAMPIPE_GCP_PLUGIN_VERSION} azure@${STEAMPIPE_AZURE_PLUGIN_VERSION} azuread@${STEAMPIPE_AZURE_AD_PLUGIN_VERSION} \
     && git clone https://github.com/turbot/steampipe-mod-aws-compliance.git --branch v0.79 --depth 1 \
     && git clone https://github.com/turbot/steampipe-mod-gcp-compliance.git --branch v0.21 --depth 1 \
     && git clone https://github.com/turbot/steampipe-mod-azure-compliance.git --branch v0.35 --depth 1 \
@@ -56,10 +60,10 @@ ENV PUBLISH_CLOUD_RESOURCES_INTERVAL_MINUTES=5 \
 
 EXPOSE 8080
 
-COPY --from=steampipe /usr/local/bin/steampipe-plugin-aws.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/aws@latest/steampipe-plugin-aws.plugin
-COPY --from=steampipe /usr/local/bin/steampipe-plugin-gcp.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/gcp@latest/steampipe-plugin-gcp.plugin
-COPY --from=steampipe /usr/local/bin/steampipe-plugin-azure.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/azure@latest/steampipe-plugin-azure.plugin
-COPY --from=steampipe /usr/local/bin/steampipe-plugin-azuread.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/azuread@latest/steampipe-plugin-azuread.plugin
+COPY --from=steampipe /usr/local/bin/steampipe-plugin-aws.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/aws@${STEAMPIPE_AWS_PLUGIN_VERSION}/steampipe-plugin-aws.plugin
+COPY --from=steampipe /usr/local/bin/steampipe-plugin-gcp.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/gcp@${STEAMPIPE_GCP_PLUGIN_VERSION}/steampipe-plugin-gcp.plugin
+COPY --from=steampipe /usr/local/bin/steampipe-plugin-azure.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/azure@${STEAMPIPE_AZURE_PLUGIN_VERSION}/steampipe-plugin-azure.plugin
+COPY --from=steampipe /usr/local/bin/steampipe-plugin-azuread.plugin /home/deepfence/.steampipe/plugins/hub.steampipe.io/plugins/turbot/azuread@${STEAMPIPE_AZURE_AD_PLUGIN_VERSION}/steampipe-plugin-azuread.plugin
 
 COPY plugins/cloud-scanner/cloud_scanner /home/deepfence/bin/cloud_scanner
 
