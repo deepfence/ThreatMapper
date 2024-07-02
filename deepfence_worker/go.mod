@@ -34,7 +34,7 @@ require (
 	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.1.0
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20240626143546-e4ec9311fdf9
-	github.com/deepfence/match-scanner v0.0.0-20240627065846-d2405fb72cfb
+	github.com/deepfence/match-scanner v0.0.0-20240701181002-ece6f13f296f
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/hibiken/asynq v0.24.1

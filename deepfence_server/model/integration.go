@@ -27,6 +27,7 @@ type IntegrationAddReq struct {
 	IntegrationType  string                 `json:"integration_type" required:"true"`
 	NotificationType string                 `json:"notification_type" required:"true"`
 	Filters          IntegrationFilters     `json:"filters"`
+	SendSummary      bool                   `json:"send_summary"`
 }
 
 type IntegrationFilters struct {

@@ -19,8 +19,9 @@ func (s Slack) ValidateConfig(validate *validator.Validate) error {
 }
 
 type Config struct {
-	WebhookURL string `json:"webhook_url" validate:"required,url" required:"true"`
-	Channel    string `json:"channel" validate:"required,min=1" required:"true"`
+	WebhookURL  string `json:"webhook_url" validate:"required,url" required:"true"`
+	Channel     string `json:"channel" validate:"required,min=1" required:"true"`
+	SendSummary bool   `json:"send_summary"`
 }
 
 type Payload struct {

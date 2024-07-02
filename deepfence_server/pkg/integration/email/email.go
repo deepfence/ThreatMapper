@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -35,69 +33,49 @@ func New(ctx context.Context, b []byte) (*Email, error) {
 	return &h, nil
 }
 
-func (e Email) FormatMessage(message []map[string]interface{}) string {
-	var entiremsg strings.Builder
-	entiremsg.WriteString("*")
-	entiremsg.WriteString(e.Resource)
-	entiremsg.WriteString("*\n\n")
+func (e Email) FormatMessage(message []map[string]interface{},
+	extras map[string]interface{}) (string, map[string][]byte) {
 
-	// Prepare the sorted keys so that the output has the records in same order
-	var keys []string
-	if len(message) > 0 {
-		keys = make([]string, 0, len(message[0]))
-		for key := range message[0] {
-			keys = append(keys, key)
-		}
+	var msg strings.Builder
+	var attachments = map[string][]byte{}
 
-		sort.Strings(keys)
-	}
-
-	for k, v := range message {
-		entiremsg.WriteString("#")
-		entiremsg.WriteString(strconv.Itoa(k + 1))
-		entiremsg.WriteString("\n")
-		for _, key := range keys {
-			if val, ok := v[key]; ok {
-				fmtVal := ""
-				if val != nil {
-					fmtVal = fmt.Sprintf("%v", val)
+	for k, v := range extras {
+		if v != "" {
+			if k == "severity_counts" {
+				s := ""
+				for i, j := range v.(map[string]int32) {
+					s = fmt.Sprintf("   %s: %d\r\n", i, j)
 				}
-				entiremsg.WriteString(key)
-				entiremsg.WriteString(": ")
-				entiremsg.WriteString(fmtVal)
-				entiremsg.WriteString("\n")
-				delete(v, key)
+				msg.WriteString(fmt.Sprintf("%s:\r\n%s", k, s))
+			} else {
+				msg.WriteString(fmt.Sprintf("%s: %v\r\n", k, v))
 			}
 		}
-
-		// This is to handle if we have unprocessed data in the map
-		// Possilbe if all the records are not uniform
-		for key, val := range v {
-			fmtVal := ""
-			if val != nil {
-				fmtVal = fmt.Sprintf("%v", val)
-			}
-			entiremsg.WriteString(key)
-			entiremsg.WriteString(": ")
-			entiremsg.WriteString(fmtVal)
-			entiremsg.WriteString("\n")
-		}
-		entiremsg.WriteString("\n")
 	}
-	return entiremsg.String()
+
+	r, err := json.Marshal(message)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to marshal results")
+	}
+
+	attachments["scan-results.json"] = r
+
+	return msg.String(), attachments
 }
 
-func (e Email) SendNotification(ctx context.Context, message []map[string]interface{}, extras map[string]interface{}) error {
+func (e Email) SendNotification(ctx context.Context,
+	message []map[string]interface{}, extras map[string]interface{}) error {
 
 	_, span := telemetry.NewSpan(ctx, "integrations", "email-send-notification")
 	defer span.End()
 
-	m := e.FormatMessage(message)
+	m, a := e.FormatMessage(message, extras)
 	emailSender, err := sendemail.NewEmailSender(ctx)
 	if err != nil {
 		return err
 	}
-	return emailSender.Send([]string{e.Config.EmailID}, "Deepfence Subscription", m, "", nil)
+	return emailSender.Send([]string{e.Config.EmailID},
+		fmt.Sprintf("Deepfence %s Subscription", e.Resource), m, "", a)
 }
 
 func (e Email) IsEmailConfigured(ctx context.Context) bool {
@@ -126,4 +104,8 @@ func (e Email) IsEmailConfigured(ctx context.Context) bool {
 // In case of email basic validation and regex check should be enough
 func (e Email) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
+}
+
+func (e Email) SendSummaryLink() bool {
+	return e.Config.SendSummary
 }

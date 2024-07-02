@@ -76,3 +76,7 @@ func (s SumoLogic) SendNotification(ctx context.Context, data []map[string]inter
 func (s SumoLogic) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
+
+func (s SumoLogic) SendSummaryLink() bool {
+	return false
+}

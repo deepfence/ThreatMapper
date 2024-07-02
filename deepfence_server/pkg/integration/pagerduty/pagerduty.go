@@ -158,3 +158,7 @@ func IsValidCreds(p PagerDuty) (bool, error) {
 func (p PagerDuty) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
+
+func (p PagerDuty) SendSummaryLink() bool {
+	return false
+}

@@ -53,7 +53,15 @@ func (j Jira) SendNotification(ctx context.Context, message []map[string]interfa
 	extraStr := []string{}
 	for k, v := range extras {
 		if v != "" {
-			extraStr = append(extraStr, fmt.Sprintf("%s: %v", k, v))
+			if k == "severity_counts" {
+				s := ""
+				for i, j := range v.(map[string]int32) {
+					s = fmt.Sprintf("  %s: %d\n", i, j)
+				}
+				extraStr = append(extraStr, fmt.Sprintf("%s:\n%s", k, s))
+			} else {
+				extraStr = append(extraStr, fmt.Sprintf("%s: %v\n", k, v))
+			}
 		}
 	}
 
@@ -167,4 +175,8 @@ func (j Jira) IsValidCredential(ctx context.Context) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (j Jira) SendSummaryLink() bool {
+	return false
 }
