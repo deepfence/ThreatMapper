@@ -84,7 +84,7 @@ type CloudNodeAccountInfo struct {
 	LastScanID           string           `json:"last_scan_id"`
 	LastScanStatus       string           `json:"last_scan_status"`
 	RefreshMessage       string           `json:"refresh_message"`
-	RefreshStatus        string           `json:"refresh_status" enum:"QUEUED,STARTING,IN_PROGRESS,ERROR,COMPLETE"`
+	RefreshStatus        string           `json:"refresh_status" enum:"STARTING,IN_PROGRESS,ERROR,COMPLETE"`
 	ScanStatusMap        map[string]int64 `json:"scan_status_map"`
 	Version              string           `json:"version"`
 	HostNodeID           string           `json:"host_node_id"`
