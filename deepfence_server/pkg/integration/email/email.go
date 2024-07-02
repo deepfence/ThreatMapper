@@ -40,14 +40,17 @@ func (e Email) FormatMessage(message []map[string]interface{},
 	var attachments = map[string][]byte{}
 
 	for k, v := range extras {
-		if k == "severity_counts" {
-			s := ""
-			for i, j := range v.(map[string]int32) {
-				s = fmt.Sprintf(" %s: %d", i, j)
+		if v != "" {
+			if k == "severity_counts" {
+				s := ""
+				for i, j := range v.(map[string]int32) {
+					s = fmt.Sprintf("   %s: %d\r\n", i, j)
+				}
+				msg.WriteString(fmt.Sprintf("%s:\r\n%s", k, s))
+			} else {
+				msg.WriteString(fmt.Sprintf("%s: %v\r\n", k, v))
 			}
-			msg.WriteString(fmt.Sprintf("%s\n: %v", k, s))
 		}
-		msg.WriteString(fmt.Sprintf("%s: %v", k, v))
 	}
 
 	r, err := json.Marshal(message)

@@ -14,5 +14,5 @@ const (
 	ErrIntegrationTypeCannotBeUpdated = "integration type cannot be updated"
 	ErrIntegrationTypeEmpty           = "integration type cannot be empty"
 	ErrNotificationTypeEmpty          = "notification type cannot be empty"
-	ErrSendSummaryNotSupported        = "notification type doesnot support sending summary links"
+	ErrSendSummaryNotSupported        = "notification type does not support sending summary links"
 )

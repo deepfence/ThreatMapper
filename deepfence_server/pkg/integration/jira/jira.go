@@ -56,11 +56,12 @@ func (j Jira) SendNotification(ctx context.Context, message []map[string]interfa
 			if k == "severity_counts" {
 				s := ""
 				for i, j := range v.(map[string]int32) {
-					s = fmt.Sprintf(" %s: %d", i, j)
+					s = fmt.Sprintf("  %s: %d\n", i, j)
 				}
-				extraStr = append(extraStr, fmt.Sprintf("%s\n: %s", k, s))
+				extraStr = append(extraStr, fmt.Sprintf("%s:\n%s", k, s))
+			} else {
+				extraStr = append(extraStr, fmt.Sprintf("%s: %v\n", k, v))
 			}
-			extraStr = append(extraStr, fmt.Sprintf("%s: %v", k, v))
 		}
 	}
 
