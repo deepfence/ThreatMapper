@@ -91,7 +91,7 @@ export const isJiraIntegration = (integrationType: string) => {
 
 export const isCloudComplianceNotification = (notificationType: string) => {
   return (
-    (notificationType && notificationType === 'CloudCompliance') ||
+    (notificationType && notificationType.toLowerCase() === 'cloudcompliance') ||
     notificationType.toLowerCase() === 'cloud_compliance'
   );
 };
