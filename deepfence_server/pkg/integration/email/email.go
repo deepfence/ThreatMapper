@@ -37,9 +37,16 @@ func (e Email) FormatMessage(message []map[string]interface{},
 	extras map[string]interface{}) (string, map[string][]byte) {
 
 	var msg strings.Builder
-	var attachments map[string][]byte = map[string][]byte{}
+	var attachments = map[string][]byte{}
 
 	for k, v := range extras {
+		if k == "severity_counts" {
+			s := ""
+			for i, j := range v.(map[string]int32) {
+				s = fmt.Sprintf(" %s: %d", i, j)
+			}
+			msg.WriteString(fmt.Sprintf("%s\n: %v", k, s))
+		}
 		msg.WriteString(fmt.Sprintf("%s: %v", k, v))
 	}
 
@@ -96,6 +103,6 @@ func (e Email) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (a Email) SendSummaryLink() bool {
-	return a.Config.SendSummary
+func (e Email) SendSummaryLink() bool {
+	return e.Config.SendSummary
 }

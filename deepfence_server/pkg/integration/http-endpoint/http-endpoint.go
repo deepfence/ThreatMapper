@@ -104,6 +104,6 @@ func (h HTTPEndpoint) IsValidCredential(ctx context.Context) (bool, error) {
 	return resp.StatusCode == http.StatusOK, nil
 }
 
-func (a HTTPEndpoint) SendSummaryLink() bool {
+func (h HTTPEndpoint) SendSummaryLink() bool {
 	return false
 }

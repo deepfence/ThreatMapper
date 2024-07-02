@@ -101,6 +101,6 @@ func (e ElasticSearch) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (a ElasticSearch) SendSummaryLink() bool {
+func (e ElasticSearch) SendSummaryLink() bool {
 	return false
 }

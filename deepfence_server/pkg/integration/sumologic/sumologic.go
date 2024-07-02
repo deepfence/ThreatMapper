@@ -77,6 +77,6 @@ func (s SumoLogic) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (a SumoLogic) SendSummaryLink() bool {
+func (s SumoLogic) SendSummaryLink() bool {
 	return false
 }

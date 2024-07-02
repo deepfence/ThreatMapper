@@ -143,6 +143,6 @@ func (s S3) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (a S3) SendSummaryLink() bool {
+func (s S3) SendSummaryLink() bool {
 	return false
 }

@@ -157,7 +157,7 @@ func (t Teams) enqueueSummaryNotification(payloads []map[string]interface{}, sen
 		)
 
 		// Severity section
-		var severity string = ""
+		var severity = ""
 		for k, v := range m["severity_counts"].(map[string]int32) {
 			severity += fmt.Sprintf("> _%s:_ %d\n", k, v)
 		}
@@ -258,6 +258,6 @@ func (t Teams) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (a Teams) SendSummaryLink() bool {
-	return a.Config.SendSummary
+func (t Teams) SendSummaryLink() bool {
+	return t.Config.SendSummary
 }

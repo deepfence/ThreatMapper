@@ -66,6 +66,6 @@ func (g GoogleChronicle) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (a GoogleChronicle) SendSummaryLink() bool {
+func (g GoogleChronicle) SendSummaryLink() bool {
 	return false
 }

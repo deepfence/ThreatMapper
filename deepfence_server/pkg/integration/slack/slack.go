@@ -170,7 +170,7 @@ func (s Slack) FormatSummaryMessage(message []map[string]interface{}) []map[stri
 		)
 
 		// Severity section
-		var severity string = ""
+		var severity = ""
 		for k, v := range m["severity_counts"].(map[string]int32) {
 			severity += fmt.Sprintf(">_%s:_ %d\n", k, v)
 		}
@@ -342,6 +342,6 @@ func (s Slack) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (a Slack) SendSummaryLink() bool {
-	return a.Config.SendSummary
+func (s Slack) SendSummaryLink() bool {
+	return s.Config.SendSummary
 }

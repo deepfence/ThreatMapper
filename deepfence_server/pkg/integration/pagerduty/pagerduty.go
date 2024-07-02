@@ -159,6 +159,6 @@ func (p PagerDuty) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (a PagerDuty) SendSummaryLink() bool {
+func (p PagerDuty) SendSummaryLink() bool {
 	return false
 }

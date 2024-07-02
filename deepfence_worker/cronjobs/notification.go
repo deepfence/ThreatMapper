@@ -27,10 +27,6 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-const NOTIFICATION_INTERVAL = 60000 //in milliseconds
-
-var ErrUnsupportedScan = errors.New("unsupported scan type in integration")
-
 var fieldsMap = map[string]map[string]string{
 	utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
 		"cve_severity":          "Severity",
@@ -97,12 +93,13 @@ var fieldsMap = map[string]map[string]string{
 	},
 }
 
-const DefaultNotificationErrorBackoff = 15 * time.Minute
+var NotificationErrorBackoff time.Duration
 
-var (
-	NotificationErrorBackoff time.Duration
-	// notificationLock         sync.Mutex
-)
+var ErrUnsupportedScan = errors.New("unsupported scan type in integration")
+
+const DefaultNotificationInterval = 60000 // in milliseconds
+
+const DefaultNotificationErrorBackoff = 15 * time.Minute
 
 func init() {
 	backoffTimeStr := os.Getenv("DEEPFENCE_NOTIFICATION_ERROR_BACKOFF_MINUTES")
@@ -152,7 +149,7 @@ func TriggerSendNotifications(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// check if any integrations are configured
-	if len(integrations) <= 0 {
+	if len(integrations) == 0 {
 		log.Warn().Msg("No integrations configured to notify")
 		return nil
 	}
@@ -217,8 +214,8 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 
 	err = processForResource(ctx, intg)
 
-	update_row := err != nil || (intg.ErrorMsg.Valid && err == nil)
-	if update_row {
+	updateStatus := err != nil || (intg.ErrorMsg.Valid && err == nil)
+	if updateStatus {
 		var params postgresql_db.UpdateIntegrationStatusParams
 		if err != nil {
 			log.Error().Msgf("Error on integration %v", err)
@@ -270,7 +267,7 @@ func getLastEventUpdatedAt(eTime sql.NullTime, defaultTime time.Time) string {
 	if eTime.Valid {
 		return strconv.FormatInt(eTime.Time.UnixMilli(), 10)
 	}
-	return strconv.FormatInt(defaultTime.UnixMilli()-NOTIFICATION_INTERVAL, 10)
+	return strconv.FormatInt(defaultTime.UnixMilli()-DefaultNotificationInterval, 10)
 }
 
 func processIntegration[T any](ctx context.Context, intg postgresql_db.Integration) error {
@@ -300,13 +297,15 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 
 	start := time.Now()
 
+	lastUpdatedAt := getLastEventUpdatedAt(intg.LastEventUpdatedAt, start)
+
 	filters.FieldsFilters = reporters.FieldsFilters{}
 	filters.FieldsFilters.CompareFilters = append(
 		filters.FieldsFilters.CompareFilters,
 		reporters.CompareFilter{
 			FieldName:   "updated_at",
 			GreaterThan: true,
-			FieldValue:  getLastEventUpdatedAt(intg.LastEventUpdatedAt, start),
+			FieldValue:  lastUpdatedAt,
 		},
 	)
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
@@ -331,7 +330,7 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			scansList = append(scansList, scansInfo...)
 		}
 	}
-	neo4j_query_nc := time.Since(profileStart)
+	neo4jQueryNc := time.Since(profileStart)
 
 	profileStart = time.Now()
 	if reqC != nil {
@@ -343,9 +342,9 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			scansList = append(scansList, containerScanInfo...)
 		}
 	}
-	neo4j_query_c := time.Since(profileStart)
+	neo4jQueryC := time.Since(profileStart)
 
-	neo4j_query_default := time.Duration(0)
+	neo4jQueryDefault := time.Duration(0)
 	if reqNC == nil && reqC == nil {
 		profileStart = time.Now()
 		reqDefault := reporters_search.SearchScanReq{}
@@ -360,13 +359,12 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 		} else if len(defaultScanInfo) > 0 {
 			scansList = append(scansList, defaultScanInfo...)
 		}
-		neo4j_query_default = time.Since(profileStart)
+		neo4jQueryDefault = time.Since(profileStart)
 	}
 
 	// nothing to notify
 	if len(scansList) == 0 {
-		log.Info().Msgf("No %s scans after timestamp %d",
-			intg.Resource, intg.LastEventUpdatedAt.Time.UnixMilli())
+		log.Info().Msgf("No %s scans after timestamp %s", intg.Resource, lastUpdatedAt)
 		return nil
 	}
 
@@ -458,7 +456,7 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 				return err
 			}
 
-			totalQueryTime = totalQueryTime + time.Since(profileStart)
+			totalQueryTime += time.Since(profileStart)
 
 			if len(results) == 0 {
 				log.Info().Msgf("No Results filtered for scan id: %s with filters %+v",
@@ -481,7 +479,9 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 
 			extras := utils.ToMap[any](common)
 			extras["scan_type"] = intg.Resource
+			// applicable only for scans
 			extras["scan_result_link"] = scanResultLink(consoleURL, scan.NodeType, intg.Resource, scan.ScanID)
+			extras["severity_counts"] = scan.SeverityCounts
 
 			profileStart = time.Now()
 
@@ -495,7 +495,7 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 					integrations.Metrics{Ok: int64(len(updatedResults)), Error: 0})
 			}
 
-			totalSendTime = totalSendTime + time.Since(profileStart)
+			totalSendTime += time.Since(profileStart)
 
 			log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken: %s",
 				intg.Resource, len(results), intg.IntegrationType,
@@ -504,9 +504,9 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 
 		log.Info().Msgf("%s Total Time taken for integration %s: %s", intg.Resource,
 			intg.IntegrationType, time.Since(start))
-		log.Debug().Msgf("Time taken for neo4j_query_nc: %s", neo4j_query_nc)
-		log.Debug().Msgf("Time taken for neo4j_query_c: %s", neo4j_query_c)
-		log.Debug().Msgf("Time taken for neo4j_query_default: %s", neo4j_query_default)
+		log.Debug().Msgf("Time taken for neo4j_query_nc: %s", neo4jQueryNc)
+		log.Debug().Msgf("Time taken for neo4j_query_c: %s", neo4jQueryC)
+		log.Debug().Msgf("Time taken for neo4j_query_default: %s", neo4jQueryDefault)
 		log.Debug().Msgf("Time taken for neo4j_query_2: %s", totalQueryTime)
 		log.Debug().Msgf("Time taken for sending data : %s", totalSendTime)
 
@@ -534,22 +534,24 @@ func scanResultLink(consoleURL string, nodeType string, scanType string, scanID 
 		return fmt.Sprintf("%s/malware/scan-results/%s", consoleURL, scanID)
 
 	case "Compliance":
-		if nodeType == "host" {
+		switch nodeType {
+		case "host":
 			return fmt.Sprintf("%s/posture/scan-results/linux/%s", consoleURL, scanID)
-		} else if nodeType == "cluster" {
+		case "cluster":
 			return fmt.Sprintf("%s/posture/scan-results/kubernetes/%s", consoleURL, scanID)
-		} else {
+		default:
 			return fmt.Sprintf("%s/posture", consoleURL)
 		}
 
 	case "CloudCompliance":
-		if strings.Contains(scanID, "aws") {
+		switch {
+		case strings.Contains(scanID, "aws"):
 			return fmt.Sprintf("%s/posture/cloud/scan-results/aws/%s", consoleURL, scanID)
-		} else if strings.Contains(scanID, "azure") {
-			return fmt.Sprintf("%s/posture/cloud/scan-results/aws/%s", consoleURL, scanID)
-		} else if strings.Contains(scanID, "gcp") {
+		case strings.Contains(scanID, "azure"):
+			return fmt.Sprintf("%s/posture/cloud/scan-results/azure/%s", consoleURL, scanID)
+		case strings.Contains(scanID, "gcp"):
 			return fmt.Sprintf("%s/posture/cloud/scan-results/gcp/%s", consoleURL, scanID)
-		} else {
+		default:
 			return fmt.Sprintf("%s/posture", consoleURL)
 		}
 
@@ -559,10 +561,10 @@ func scanResultLink(consoleURL string, nodeType string, scanType string, scanID 
 }
 
 func updateLastEventUpdatedAt(ctx context.Context, pgClient *postgresql_db.Queries,
-	intgId int32, updatedAt int64) error {
+	intgID int32, updatedAt int64) error {
 
 	last := postgresql_db.UpdateIntegrationLastEventUpdatedAtParams{
-		ID: intgId,
+		ID: intgID,
 		LastEventUpdatedAt: sql.NullTime{
 			Time:  time.UnixMilli(updatedAt),
 			Valid: true,
@@ -578,7 +580,7 @@ func updateLastEventUpdatedAt(ctx context.Context, pgClient *postgresql_db.Queri
 }
 
 func updateIntegrationMetrics(ctx context.Context, pgClient *postgresql_db.Queries,
-	intgID int32, metrics integrations.Metrics) error {
+	intgID int32, metrics integrations.Metrics) {
 
 	param := postgresql_db.SetIntegrationMetricsParams{ID: intgID}
 
@@ -592,10 +594,9 @@ func updateIntegrationMetrics(ctx context.Context, pgClient *postgresql_db.Queri
 
 	if err := pgClient.SetIntegrationMetrics(ctx, param); err != nil {
 		log.Error().Err(err).Msg("failed to update last event updated at")
-		return err
+		return
 	}
 
-	return nil
 }
 
 func FormatForMessagingApps[T any](results []T, resourceType string) []map[string]interface{} {
@@ -678,7 +679,6 @@ func injectNodeDataMap(results []map[string]interface{}, common model.ScanResult
 	flag := integration.IsMessagingFormat(integrationType)
 
 	for _, r := range results {
-		//m := utils.ToMap[T](r)
 		r["node_id"] = common.NodeID
 		r["scan_id"] = common.ScanID
 		r["node_name"] = common.NodeName
