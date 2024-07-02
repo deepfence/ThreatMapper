@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { upperFirst } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { cn } from 'tailwind-preset';
 import {
   Badge,
   Button,
@@ -109,7 +109,7 @@ function Filters() {
           }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['agentRunning']}
         >
-          {['On', 'Off']
+          {['Yes', 'No']
             .filter((item) => {
               if (!agentRunningSearchText.length) return true;
               return item.toLowerCase().includes(agentRunningSearchText.toLowerCase());
@@ -347,7 +347,7 @@ function useSearchClustersWithPagination() {
       clusterIds: searchParams.getAll('clusters'),
       agentRunning: searchParams
         .getAll('agentRunning')
-        .map((value) => (value === 'On' ? true : false)),
+        .map((value) => (value === 'Yes' ? true : false)),
     }),
     keepPreviousData: true,
   });
@@ -458,7 +458,14 @@ const DataTable = ({
       }),
       columnHelper.accessor('agent_running', {
         cell: (info) => {
-          return <TruncatedText text={upperFirst(info.getValue() + '' || 'false')} />;
+          return (
+            <TruncatedText
+              text={info.getValue() ? 'Yes' : 'No'}
+              className={cn({
+                'text-status-success': info.getValue(),
+              })}
+            />
+          );
         },
         header: () => <span>Agent running</span>,
         minSize: 60,

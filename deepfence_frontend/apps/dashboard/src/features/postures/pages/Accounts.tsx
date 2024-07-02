@@ -10,6 +10,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
+import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -915,6 +916,7 @@ const ActionDropdown = ({
                 if (!scanId || !nodeType) return;
                 onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
+              color="error"
             >
               Delete latest scan
             </DropdownItem>
@@ -1338,23 +1340,17 @@ const AccountTable = ({
         cell: (info) => {
           if (nodeType?.endsWith?.('_org')) {
             const data = info.row.original.scan_status_map ?? {};
-            const keys = Object.keys(data);
-            const statuses = Object.keys(data).map((current, index) => {
+            const statuses = Object.keys(data).map((current) => {
               return (
-                <>
-                  <div className="flex gap-x-1.5 items-center" key={current}>
-                    <span className="text-text-input-value font-medium">
-                      {data[current]}
-                    </span>
-                    <ScanStatusBadge status={current ?? ''} />
-                    {index < keys.length - 1 ? (
-                      <div className="mx-2 w-px h-[20px] bg-bg-grid-border" />
-                    ) : null}
-                  </div>
-                </>
+                <div className="flex gap-x-1.5 items-center" key={current}>
+                  <span className="text-text-input-value font-medium">
+                    {data[current]}
+                  </span>
+                  <ScanStatusBadge status={current ?? ''} />
+                </div>
               );
             });
-            return <div className="flex gap-x-1.5">{statuses}</div>;
+            return <div className="space-y-1.5 py-1">{statuses}</div>;
           } else {
             const value = info.getValue();
             return <ScanStatusBadge status={value ?? ''} />;
@@ -1367,7 +1363,11 @@ const AccountTable = ({
         ...columnWidth.active,
         header: () => 'Active',
         cell: (info) => {
-          return info.getValue() ? 'Yes' : 'No';
+          return (
+            <span className={cn({ 'text-status-success': info.getValue() })}>
+              {info.getValue() ? 'Yes' : 'No'}
+            </span>
+          );
         },
       }),
     ];
@@ -1380,7 +1380,9 @@ const AccountTable = ({
           ...columnWidth.account_name,
           header: () => 'Name',
           cell: (info) => {
-            return <TruncatedText text={info.getValue()} />;
+            return (
+              <TruncatedText text={info.getValue() || info.row.original.node_name} />
+            );
           },
         }),
       );
