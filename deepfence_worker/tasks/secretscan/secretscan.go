@@ -1,8 +1,11 @@
 package secretscan
 
 import (
+	"archive/tar"
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"io/ioutil" //nolint:staticcheck
 	"os"
 	"os/exec"
@@ -24,9 +27,16 @@ import (
 	"github.com/deepfence/match-scanner/pkg/config"
 	"github.com/hibiken/asynq"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"gopkg.in/yaml.v2"
 )
 
 var ScanMap sync.Map
+
+var extractorConfig = `
+exclude_extensions: [ ".exe", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".psd", ".xcf", ".zip", ".tar", ".tar.gz", ".ttf", ".lock", ".pem", ".so", ".jar", ".gz" ]
+exclude_paths: ["/var/lib/docker", "/var/lib/containerd", "/dev", "/proc", "/usr/lib", "/sys", "/boot", "/run", ".home/kubernetes"]
+max_file_size: 1073741824
+`
 
 var secretsRulesFile = "config.yaml"
 var secretsRulesDir = "/"
@@ -216,6 +226,10 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	}
 
 	log.Info().Msgf("command: %s", cmd.String())
+	err = scanCtx.Checkpoint("Before skopeo download")
+	if err != nil {
+		return err
+	}
 
 	if out, err := workerUtils.RunCommand(cmd); err != nil {
 		log.Error().Err(err).Msg(cmd.String())
@@ -226,15 +240,27 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 
 	err = scanCtx.Checkpoint("After skopeo download")
 	if err != nil {
-		log.Error().Msg(err.Error())
+		return err
 	}
 
-	var sessionSecretScanner = core.GetSession()
+	f, err := os.Open(imgTar)
+	if err != nil {
+		return err
+	}
+	extractTarFromReader(f, filepath.Join(dir, "root"))
 
+	err = scanCtx.Checkpoint("After extraction")
+	if err != nil {
+		return err
+	}
+
+
+	cfg := config.Config{}
+	yaml.Unmarshal([]byte(extractorConfig), &cfg)
 	// init secret scan
 	secrets := []output.SecretFound{}
-	err = secretScan.Scan(scanCtx, secretScan.DirScan, config.Config2Filter(sessionSecretScanner.ExtractorConfig),
-		dir, "", params.ScanID, func(sf output.SecretFound, s string) {
+	err = secretScan.Scan(scanCtx, secretScan.DirScan, config.Config2Filter(cfg),
+		"", filepath.Join(dir, "root"), params.ScanID, func(sf output.SecretFound, s string) {
 			secrets = append(secrets, sf)
 		})
 	if err != nil {
@@ -271,4 +297,44 @@ func initSecretScanner() {
 	var sessionSecretScanner = core.GetSession()
 	// init secret scan builds hs db
 	signature.ProcessSignatures(sessionSecretScanner.Config.Signatures)
+}
+
+func extractTarFromReader(reader io.Reader, destDir string) error {
+	tr := tar.NewReader(reader)
+
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break // End of tar archive
+		}
+		if err != nil {
+			return fmt.Errorf("failed to read tar header: %w", err)
+		}
+
+		target := filepath.Join(destDir, header.Name)
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if err := os.MkdirAll(target, 0755); err != nil {
+				return fmt.Errorf("failed to create directory: %w", err)
+			}
+		case tar.TypeReg:
+			if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
+				return fmt.Errorf("failed to create directory: %w", err)
+			}
+			fileToWrite, err := os.Create(target)
+			if err != nil {
+				return fmt.Errorf("failed to create file: %w", err)
+			}
+			if _, err := io.Copy(fileToWrite, tr); err != nil {
+				fileToWrite.Close()
+				return fmt.Errorf("failed to write file: %w", err)
+			}
+			fileToWrite.Close()
+		default:
+			return fmt.Errorf("unknown tar header type: %d", header.Typeflag)
+		}
+	}
+
+	return nil
 }
