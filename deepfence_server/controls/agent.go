@@ -674,7 +674,8 @@ func ExtractRefreshResourceAction(ctx context.Context, nodeID string, maxWork in
 	r, err := tx.Run(ctx, `
 		MATCH(n:Node{node_id:$id}) -[:HOSTS]-> (r:CloudNode)
 		WHERE r.refresh_status = '`+utils.ScanStatusStarting+`'
-		AND NOT COALESCE(r.cloud_compliance_scan_status, '') IN ['`+utils.ScanStatusStarting+`', '`+utils.ScanStatusInProgress+`']
+		AND r.cloud_provider in ['`+model.PostureProviderAWS+`','`+model.PostureProviderGCP+`','`+model.PostureProviderAzure+`']
+		AND COALESCE(r.cloud_compliance_scan_status, '') <> '`+utils.ScanStatusInProgress+`'
 		WITH r LIMIT $max_work
 		SET r.refresh_status = '`+utils.ScanStatusInProgress+`', r.refresh_message = ''
 		WITH r
