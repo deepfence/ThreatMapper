@@ -298,6 +298,18 @@ func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.SendSummary {
+		if integration.SupportsSummaryLink(req.IntegrationType) {
+			req.Config["send_summary"] = True
+		} else {
+			err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrSendSummaryNotSupported})
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
+			return
+		}
+	}
+
 	// check if integration is valid
 	/*err = i.SendNotification("validating integration")
 	if err != nil {
