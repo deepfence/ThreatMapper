@@ -1,3 +1,4 @@
+import { merge } from 'lodash-es';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Listbox, ListboxOption } from 'ui-components';
@@ -125,7 +126,9 @@ export const NotificationTypeField = ({
         <AdvancedFilters
           notificationType={notificationType}
           cloudProvider={cloud}
-          filters={data?.filters}
+          filters={merge(data?.filters, {
+            sendSummary: data?.config?.send_summary,
+          })}
         />
       ) : null}
 

@@ -16,7 +16,7 @@ import { useIntersection } from 'react-use';
 import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
-import { Badge, Checkbox, CircleSpinner, Separator } from '@/main';
+import { Badge, Checkbox, CircleSpinner, Separator, Tooltip } from '@/main';
 export type ColorType = 'default' | 'error';
 
 const ListboxContext = createContext<{
@@ -148,6 +148,30 @@ const SelectArrow = () => {
   );
 };
 
+export const InfoStandardIcon = () => {
+  return (
+    <svg
+      version="1.1"
+      width="100%"
+      height="100%"
+      viewBox="0 0 36 36"
+      preserveAspectRatio="xMidYMid meet"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+    >
+      <circle cx="17.97" cy="10.45" r="1.4" fill="currentColor" />
+      <path
+        fill="currentColor"
+        d="M21,25H19V14.1H16a1,1,0,0,0,0,2h1V25H15a1,1,0,0,0,0,2h6a1,1,0,0,0,0-2Z"
+      />
+      <path
+        fill="currentColor"
+        d="M18,34A16,16,0,1,1,34,18,16,16,0,0,1,18,34ZM18,4A14,14,0,1,0,32,18,14,14,0,0,0,18,4Z"
+      />
+    </svg>
+  );
+};
+
 const OptionsWrapper = ({
   children,
   noDataText,
@@ -176,6 +200,7 @@ interface ListboxProps<TType, TActualType>
   variant?: 'underline' | 'default';
   children?: React.ReactNode;
   label?: string;
+  labelInfo?: string;
   clearAll?: React.ReactNode;
   onClearAll?: () => void;
   placeholder?: string;
@@ -194,6 +219,7 @@ export function Listbox<TType, TActualType>({
   children,
   value,
   label,
+  labelInfo,
   clearAll,
   onClearAll,
   placeholder,
@@ -222,14 +248,24 @@ export function Listbox<TType, TActualType>({
           <Label
             htmlFor={_id}
             className={cn(
-              'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
+              'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px] items-center gap-x-1.5 flex',
               {
                 'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
               },
             )}
           >
-            {required && <span>*</span>}
-            {label}
+            <span>
+              {required && <span>*</span>}
+              {label}
+            </span>
+
+            {labelInfo ? (
+              <Tooltip content={labelInfo} triggerAsChild>
+                <span className="block w-4 h-4">
+                  <InfoStandardIcon />
+                </span>
+              </Tooltip>
+            ) : null}
           </Label>
         ) : null}
 

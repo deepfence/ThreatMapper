@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useUpdateEffect } from 'react-use';
 import { Listbox, ListboxOption } from 'ui-components';
 
@@ -26,10 +27,65 @@ import {
   getClustersFilter,
   getHostsFilter,
   getImagesFilter,
+  IntegrationType,
   isCloudComplianceNotification,
   isComplianceNotification,
   scanTypes,
 } from './utils';
+
+const sendSummaryList = [
+  {
+    value: true,
+    label: 'Send scan summary',
+  },
+  {
+    value: false,
+    label: 'Send complete scan results',
+  },
+];
+
+const SendSummary = ({ sendSummary }: { sendSummary: boolean | undefined }) => {
+  const [value, setValue] = useState(!!sendSummary);
+  return (
+    <Listbox
+      name="sendSummary"
+      getDisplayValue={() => sendSummaryList.find((item) => item.value === value)!.label}
+      value={value}
+      variant="underline"
+      onChange={(value) => {
+        setValue(value);
+      }}
+      label="Send summary"
+      labelInfo="Either send scan summary or send complete scan results"
+    >
+      {sendSummaryList.map((item) => {
+        return (
+          <ListboxOption key={item.label} value={item.value}>
+            {item.label}
+          </ListboxOption>
+        );
+      })}
+    </Listbox>
+  );
+};
+/**
+ *
+ * @param notificationType
+ * @returns boolean when scan type is vulnerability, secret, malware or compliance and
+ * integration is slack or teams
+ */
+const canSendScanSummary = (notificationType: string) => {
+  const { integrationType } = useParams() as {
+    integrationType: string;
+  };
+  return (
+    ((integrationType === IntegrationType.slack ||
+      integrationType === IntegrationType.microsoftTeams) &&
+      scanTypes.includes(notificationType)) ||
+    isComplianceNotification(notificationType) ||
+    isCloudComplianceNotification(notificationType)
+  );
+};
 
 export const AdvancedFilters = ({
   notificationType,
@@ -38,7 +94,7 @@ export const AdvancedFilters = ({
 }: {
   notificationType: string;
   cloudProvider?: string;
-  filters?: ModelIntegrationFilters;
+  filters?: ModelIntegrationFilters & { sendSummary: boolean };
 }) => {
   const fieldFilters = filters?.fields_filters;
   // severity
@@ -83,6 +139,10 @@ export const AdvancedFilters = ({
         <div className="text-h5">Advanced Filter (Optional)</div>
       </div>
       <div className="grid grid-cols-2 gap-y-8 gap-x-8 pt-4">
+        {canSendScanSummary(notificationType) ? (
+          <SendSummary sendSummary={filters?.sendSummary} />
+        ) : null}
+
         {isCloudComplianceNotification(notificationType) && cloudProvider ? (
           <SearchableCloudAccountsList
             label={`${cloudProvider} Account`}
