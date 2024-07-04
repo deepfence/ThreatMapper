@@ -33,7 +33,7 @@ import {
   scanTypes,
 } from './utils';
 
-const sendSummaryList = [
+const sendSummaryOption = [
   {
     value: true,
     label: 'Send scan summary',
@@ -49,7 +49,9 @@ const SendSummary = ({ sendSummary }: { sendSummary: boolean | undefined }) => {
   return (
     <Listbox
       name="sendSummary"
-      getDisplayValue={() => sendSummaryList.find((item) => item.value === value)!.label}
+      getDisplayValue={() =>
+        sendSummaryOption.find((item) => item.value === value)!.label
+      }
       value={value}
       variant="underline"
       onChange={(value) => {
@@ -58,7 +60,7 @@ const SendSummary = ({ sendSummary }: { sendSummary: boolean | undefined }) => {
       label="Send summary"
       labelInfo="Either send scan summary or send complete scan results"
     >
-      {sendSummaryList.map((item) => {
+      {sendSummaryOption.map((item) => {
         return (
           <ListboxOption key={item.label} value={item.value}>
             {item.label}
