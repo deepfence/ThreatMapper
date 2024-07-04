@@ -13616,9 +13616,11 @@
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "refresh_message": { "type": "string" },
-          "refresh_status": {
-            "enum": ["STARTING", "IN_PROGRESS", "ERROR", "COMPLETE"],
-            "type": "string"
+          "refresh_status": { "type": "string" },
+          "refresh_status_map": {
+            "type": "object",
+            "additionalProperties": { "type": "integer" },
+            "nullable": true
           },
           "scan_status_map": {
             "type": "object",
@@ -14587,7 +14589,8 @@
           "config": { "type": "object", "additionalProperties": {}, "nullable": true },
           "filters": { "$ref": "#/components/schemas/ModelIntegrationFilters" },
           "integration_type": { "type": "string" },
-          "notification_type": { "type": "string" }
+          "notification_type": { "type": "string" },
+          "send_summary": { "type": "boolean" }
         }
       },
       "ModelIntegrationFilters": {
@@ -14625,7 +14628,8 @@
           "filters": { "$ref": "#/components/schemas/ModelIntegrationFilters" },
           "id": { "type": "integer" },
           "integration_type": { "type": "string" },
-          "notification_type": { "type": "string" }
+          "notification_type": { "type": "string" },
+          "send_summary": { "type": "boolean" }
         }
       },
       "ModelInviteUserRequest": {

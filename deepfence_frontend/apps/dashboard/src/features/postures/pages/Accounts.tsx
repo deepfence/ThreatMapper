@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
-import { capitalize, startCase } from 'lodash-es';
+import { capitalize } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -66,7 +66,6 @@ import { getColorForCompliancePercent } from '@/constants/charts';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
-import { RefreshAccountStatusError } from '@/features/postures/components/RefreshAccountStatusError';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import {
   getDeleteConfirmationDisplayName,
@@ -1393,14 +1392,28 @@ const AccountTable = ({
           ...columnWidth.refresh_status,
           header: () => 'Refresh status',
           cell: (info) => {
-            if (isRefreshAccountFailed(info.getValue())) {
-              return (
-                <RefreshAccountStatusError
-                  errorMessage={info.row.original.refresh_message ?? 'Unknown error'}
-                />
-              );
+            if (nodeType?.endsWith?.('_org')) {
+              const data = info.row.original.refresh_status_map ?? {};
+              const statuses = Object.keys(data).map((current) => {
+                return (
+                  <div className="flex gap-x-1.5 items-center" key={current}>
+                    <span className="text-text-input-value font-medium">
+                      {data[current]}
+                    </span>
+                    <ScanStatusBadge
+                      status={current}
+                      errorMessage={info.row.original.refresh_message}
+                    />
+                  </div>
+                );
+              });
+              return <div className="space-y-1.5 py-1">{statuses}</div>;
+            } else {
+              <ScanStatusBadge
+                status={info.getValue() ?? ''}
+                errorMessage={info.row.original.refresh_message}
+              />;
             }
-            return <TruncatedText text={startCase(info.getValue()?.toLowerCase())} />;
           },
         }),
       );

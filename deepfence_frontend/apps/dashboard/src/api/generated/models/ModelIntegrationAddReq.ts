@@ -50,6 +50,12 @@ export interface ModelIntegrationAddReq {
      * @memberof ModelIntegrationAddReq
      */
     notification_type: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelIntegrationAddReq
+     */
+    send_summary?: boolean;
 }
 
 /**
@@ -77,6 +83,7 @@ export function ModelIntegrationAddReqFromJSONTyped(json: any, ignoreDiscriminat
         'filters': !exists(json, 'filters') ? undefined : ModelIntegrationFiltersFromJSON(json['filters']),
         'integration_type': json['integration_type'],
         'notification_type': json['notification_type'],
+        'send_summary': !exists(json, 'send_summary') ? undefined : json['send_summary'],
     };
 }
 
@@ -93,6 +100,7 @@ export function ModelIntegrationAddReqToJSON(value?: ModelIntegrationAddReq | nu
         'filters': ModelIntegrationFiltersToJSON(value.filters),
         'integration_type': value.integration_type,
         'notification_type': value.notification_type,
+        'send_summary': value.send_summary,
     };
 }
 
