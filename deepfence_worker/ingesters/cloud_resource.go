@@ -266,7 +266,8 @@ func CommitFuncCloudResourceRefreshStatus(ctx context.Context, ns string, cs []i
 		UNWIND $batch as row
 		MATCH (n:CloudNode{node_id: row.cloud_node_id})
 		SET n.refresh_status = row.refresh_status,
-			n.refresh_message = row.refresh_message`,
+			n.refresh_message = row.refresh_message,
+			n.refresh_updated_at = row.updated_at`,
 		map[string]interface{}{
 			"batch": ResourceRefreshStatusToMaps(cs),
 		},

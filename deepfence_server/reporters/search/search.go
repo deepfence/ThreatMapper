@@ -444,6 +444,11 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 			if err != nil {
 				log.Error().Msgf("Error in populating status of org %v", err)
 			}
+
+			node.RefreshStatusMap, err = getRefreshStatusMap(ctx, node.NodeID)
+			if err != nil {
+				log.Error().Msgf("Error in populating refresh status of org %v", err)
+			}
 		}
 		res = append(res, node)
 	}
@@ -478,6 +483,42 @@ func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map
 				ORDER BY s1.updated_at DESC LIMIT 1
 			}
 	RETURN last_scan_status, count(last_scan_status) `
+	r, err := tx.Run(ctx, query, map[string]interface{}{})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := r.Collect(ctx)
+	if err != nil {
+		return res, err
+	}
+	for _, rec := range recs {
+		res[rec.Values[0].(string)] = rec.Values[1].(int64)
+	}
+	return res, nil
+}
+
+func getRefreshStatusMap(ctx context.Context, nodeID string) (map[string]int64, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "search", "get-scan-status-map")
+	defer span.End()
+
+	res := map[string]int64{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close(ctx)
+	query := `MATCH (n:CloudNode{node_id:"` + nodeID + `"}) -[:IS_CHILD] -> (m:CloudNode)
+			  RETURN m.refresh_status, count(m.refresh_status) `
 	r, err := tx.Run(ctx, query, map[string]interface{}{})
 	if err != nil {
 		return res, err
