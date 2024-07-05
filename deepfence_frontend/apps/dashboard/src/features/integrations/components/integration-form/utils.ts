@@ -166,3 +166,13 @@ export const getDisplayNotification = (notificationType: string) => {
   }
   return notificationType;
 };
+
+export const canSendScanSummary = (notificationType: string, integrationType: string) => {
+  return (
+    ((integrationType === IntegrationType.slack ||
+      integrationType === IntegrationType.microsoftTeams) &&
+      scanTypes.includes(notificationType)) ||
+    isComplianceNotification(notificationType) ||
+    isCloudComplianceNotification(notificationType)
+  );
+};

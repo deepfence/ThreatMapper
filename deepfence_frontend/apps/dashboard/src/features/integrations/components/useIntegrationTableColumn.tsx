@@ -652,7 +652,6 @@ export const useIntegrationTableColumn = (
             node_ids?: Array<{ node_id: string; node_type: string }> | null;
             custom_fields?: string[];
             container_names?: string[];
-            send_summary?: boolean;
           } = {};
           const filters = row.original.filters;
           const containFilter = filters?.fields_filters?.contains_filter;
@@ -681,14 +680,9 @@ export const useIntegrationTableColumn = (
 
           const configs = row.original.config;
           const customFields = configs?.custom_fields;
-          const isSendScanSummary = configs?.send_summary;
 
           if (customFields) {
             displayFilters.custom_fields = customFields;
-          }
-
-          if (isSendScanSummary) {
-            displayFilters.send_summary = isSendScanSummary;
           }
 
           if (isEmpty(displayFilters)) {

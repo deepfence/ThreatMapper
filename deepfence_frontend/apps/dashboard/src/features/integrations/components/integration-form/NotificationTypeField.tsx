@@ -1,15 +1,17 @@
 import { merge } from 'lodash-es';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Listbox, ListboxOption } from 'ui-components';
+import { Checkbox, Listbox, ListboxOption, Tooltip } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
+import { InfoStandardIcon } from '@/components/icons/common/InfoStandard';
 import { ScanTypeEnum } from '@/types/common';
 
 import { AdvancedFilters } from './AdvancedFilter';
 import { FieldSelection } from './FieldSelection';
 import { TextInputType } from './TextInputType';
 import {
+  canSendScanSummary,
   getDisplayNotification,
   IntegrationType,
   isCloudComplianceNotification,
@@ -19,6 +21,24 @@ import {
   isVulnerabilityNotification,
 } from './utils';
 
+const SendScanSumaryCheckbox = ({ sendSummaryOnly }: { sendSummaryOnly: boolean }) => {
+  const [checked, setChecked] = useState(sendSummaryOnly);
+  return (
+    <div className="flex gap-x-1.5 items-center col-span-2">
+      <Checkbox
+        name="sendSummary"
+        label="Send scan summary only?"
+        checked={checked}
+        onCheckedChange={(check: boolean) => setChecked(check)}
+      />
+      <Tooltip content="By default complete scan results are sent. If you wish to send only scan summary, check this checkbox.">
+        <div className="w-4 h-4">
+          <InfoStandardIcon />
+        </div>
+      </Tooltip>
+    </div>
+  );
+};
 export const NotificationTypeField = ({
   fieldErrors,
   defaultNotificationType,
@@ -81,6 +101,10 @@ export const NotificationTypeField = ({
           ) : null} */}
       </Listbox>
 
+      {canSendScanSummary(notificationType, integrationType) ? (
+        <SendScanSumaryCheckbox sendSummaryOnly={data?.config?.send_summary ?? false} />
+      ) : null}
+
       {isCloudComplianceNotification(notificationType) &&
         integrationType !== IntegrationType.s3 && (
           <Listbox
@@ -126,9 +150,7 @@ export const NotificationTypeField = ({
         <AdvancedFilters
           notificationType={notificationType}
           cloudProvider={cloud}
-          filters={merge(data?.filters, {
-            sendSummary: data?.config?.send_summary,
-          })}
+          filters={data?.filters}
         />
       ) : null}
 
