@@ -1,8 +1,8 @@
 import {
   ModelCloudComplianceStatusEnum,
-  ModelCloudNodeAccountInfoRefreshStatusEnum,
   ModelCloudNodeAccountsListReqCloudProviderEnum,
   ModelComplianceStatusEnum,
+  ModelScanInfoStatusEnum,
 } from '@/api/generated';
 
 export const isCloudNonOrgNode = (nodeType?: string) => {
@@ -122,7 +122,7 @@ export function getDeleteConfirmationDisplayName(
 }
 
 export const isRefreshAccountFailed = (status: string): boolean => {
-  if (status?.length && ModelCloudNodeAccountInfoRefreshStatusEnum.Error === status) {
+  if (status?.length && ModelScanInfoStatusEnum.Error === status) {
     return true;
   }
   return false;
