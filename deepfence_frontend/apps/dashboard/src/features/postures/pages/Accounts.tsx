@@ -1409,10 +1409,12 @@ const AccountTable = ({
               });
               return <div className="space-y-1.5 py-1">{statuses}</div>;
             } else {
-              <ScanStatusBadge
-                status={info.getValue() ?? ''}
-                errorMessage={info.row.original.refresh_message}
-              />;
+              return (
+                <ScanStatusBadge
+                  status={info.getValue() ?? ''}
+                  errorMessage={info.row.original.refresh_message}
+                />
+              );
             }
           },
         }),
