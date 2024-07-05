@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
@@ -20,14 +21,11 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/integrations"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 )
-
-const NOTIFICATION_INTERVAL = 60000 //in milliseconds
-
-var ErrUnsupportedScan = errors.New("unsupported scan type in integration")
 
 var fieldsMap = map[string]map[string]string{
 	utils.ScanTypeDetectedNode[utils.NEO4JVulnerabilityScan]: {
@@ -95,12 +93,13 @@ var fieldsMap = map[string]map[string]string{
 	},
 }
 
-const DefaultNotificationErrorBackoff = 15 * time.Minute
+var NotificationErrorBackoff time.Duration
 
-var (
-	NotificationErrorBackoff time.Duration
-	// notificationLock         sync.Mutex
-)
+var ErrUnsupportedScan = errors.New("unsupported scan type in integration")
+
+const DefaultNotificationInterval = 60000 // in milliseconds
+
+const DefaultNotificationErrorBackoff = 15 * time.Minute
 
 func init() {
 	backoffTimeStr := os.Getenv("DEEPFENCE_NOTIFICATION_ERROR_BACKOFF_MINUTES")
@@ -150,7 +149,7 @@ func TriggerSendNotifications(ctx context.Context, task *asynq.Task) error {
 	}
 
 	// check if any integrations are configured
-	if len(integrations) <= 0 {
+	if len(integrations) == 0 {
 		log.Warn().Msg("No integrations configured to notify")
 		return nil
 	}
@@ -215,8 +214,8 @@ func SendNotifications(ctx context.Context, task *asynq.Task) error {
 
 	err = processForResource(ctx, intg)
 
-	update_row := err != nil || (intg.ErrorMsg.Valid && err == nil)
-	if update_row {
+	updateStatus := err != nil || (intg.ErrorMsg.Valid && err == nil)
+	if updateStatus {
 		var params postgresql_db.UpdateIntegrationStatusParams
 		if err != nil {
 			log.Error().Msgf("Error on integration %v", err)
@@ -268,7 +267,7 @@ func getLastEventUpdatedAt(eTime sql.NullTime, defaultTime time.Time) string {
 	if eTime.Valid {
 		return strconv.FormatInt(eTime.Time.UnixMilli(), 10)
 	}
-	return strconv.FormatInt(defaultTime.UnixMilli()-NOTIFICATION_INTERVAL, 10)
+	return strconv.FormatInt(defaultTime.UnixMilli()-DefaultNotificationInterval, 10)
 }
 
 func processIntegration[T any](ctx context.Context, intg postgresql_db.Integration) error {
@@ -298,13 +297,15 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 
 	start := time.Now()
 
+	lastUpdatedAt := getLastEventUpdatedAt(intg.LastEventUpdatedAt, start)
+
 	filters.FieldsFilters = reporters.FieldsFilters{}
 	filters.FieldsFilters.CompareFilters = append(
 		filters.FieldsFilters.CompareFilters,
 		reporters.CompareFilter{
 			FieldName:   "updated_at",
 			GreaterThan: true,
-			FieldValue:  getLastEventUpdatedAt(intg.LastEventUpdatedAt, start),
+			FieldValue:  lastUpdatedAt,
 		},
 	)
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
@@ -329,7 +330,7 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			scansList = append(scansList, scansInfo...)
 		}
 	}
-	neo4j_query_nc := time.Since(profileStart)
+	neo4jQueryNc := time.Since(profileStart)
 
 	profileStart = time.Now()
 	if reqC != nil {
@@ -341,9 +342,9 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			scansList = append(scansList, containerScanInfo...)
 		}
 	}
-	neo4j_query_c := time.Since(profileStart)
+	neo4jQueryC := time.Since(profileStart)
 
-	neo4j_query_default := time.Duration(0)
+	neo4jQueryDefault := time.Duration(0)
 	if reqNC == nil && reqC == nil {
 		profileStart = time.Now()
 		reqDefault := reporters_search.SearchScanReq{}
@@ -358,13 +359,12 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 		} else if len(defaultScanInfo) > 0 {
 			scansList = append(scansList, defaultScanInfo...)
 		}
-		neo4j_query_default = time.Since(profileStart)
+		neo4jQueryDefault = time.Since(profileStart)
 	}
 
 	// nothing to notify
 	if len(scansList) == 0 {
-		log.Info().Msgf("No %s scans after timestamp %d",
-			intg.Resource, intg.LastEventUpdatedAt.Time.UnixMilli())
+		log.Info().Msgf("No %s scans after timestamp %s", intg.Resource, lastUpdatedAt)
 		return nil
 	}
 
@@ -385,9 +385,23 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 	// this var tracks the latest scan in the retrived scans
 	var latestScanUpdatedAt int64
 
+	// need sql client update status, event updated_at and metrics
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("unable to get sql client")
+		return err
+	}
+
+	consoleURL, err := setting.GetManagementConsoleURL(ctx, pgClient)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get console url")
+		return err
+	}
+
+	// apply filters while fetching results
 	for _, scan := range scansList {
-		//This map is required as we might have duplicates in the scansList
-		//for the containers
+		// This map is required as we might have
+		// duplicates in the scansList for the containers
 		if _, ok := scanIDMap[scan.ScanID]; ok {
 			continue
 		}
@@ -406,71 +420,137 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			return err
 		}
 
-		totalQueryTime = totalQueryTime + time.Since(profileStart)
+		totalQueryTime += time.Since(profileStart)
 
+		// skip if no results
 		if len(results) == 0 {
-			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v", scan.ScanID, filters)
+			log.Info().Msgf("No Results filtered for scan id: %s with filters %+v",
+				scan.ScanID, filters)
 			continue
 		}
 
-		var updatedResults []map[string]interface{}
-		// inject node details to results
-		if integration.IsMessagingFormat(intg.IntegrationType) {
-			updatedResults = FormatForMessagingApps(results, intg.Resource)
-		} else {
-			updatedResults = []map[string]interface{}{}
-			for _, r := range results {
-				updatedResults = append(updatedResults, utils.ToMap[T](r))
+		// check if scan summary has to be sent
+		if integrationModel.SendSummaryLink() {
+
+			summary := utils.ToMap[any](scan)
+			summary["scan_result_link"] = scanResultLink(consoleURL, scan.NodeType, intg.Resource, scan.ScanID)
+
+			// send summary
+			err = integrationModel.SendNotification(
+				ctx,
+				[]map[string]interface{}{summary},
+				map[string]interface{}{},
+			)
+			if err != nil {
+				updateIntegrationMetrics(ctx, pgClient, intg.ID,
+					integrations.Metrics{Ok: 0, Error: 1, IsSummary: true})
+				return err
+			} else {
+				updateIntegrationMetrics(ctx, pgClient, intg.ID,
+					integrations.Metrics{Ok: 1, Error: 0, IsSummary: true})
 			}
-		}
 
-		updatedResults = injectNodeDataMap(updatedResults, common, intg.IntegrationType, ctx)
-
-		extras := utils.ToMap[any](common)
-		extras["scan_type"] = intg.Resource
-
-		profileStart = time.Now()
-
-		err = integrationModel.SendNotification(ctx, updatedResults, extras)
-		if err != nil {
-			updateIntegrationMetrics(ctx, intg.ID,
-				integrations.Metrics{Ok: 0, Error: int64(len(updatedResults))})
-			return err
 		} else {
-			updateIntegrationMetrics(ctx, intg.ID,
-				integrations.Metrics{Ok: int64(len(updatedResults)), Error: 0})
+
+			var updatedResults []map[string]interface{}
+			// inject node details to results
+			if integration.IsMessagingFormat(intg.IntegrationType) {
+				updatedResults = FormatForMessagingApps(results, intg.Resource)
+			} else {
+				updatedResults = []map[string]interface{}{}
+				for _, r := range results {
+					updatedResults = append(updatedResults, utils.ToMap[T](r))
+				}
+			}
+
+			updatedResults = injectNodeDataMap(updatedResults, common, intg.IntegrationType, ctx)
+
+			extras := utils.ToMap[any](common)
+			extras["scan_type"] = intg.Resource
+			// applicable only for scans
+			extras["scan_result_link"] = scanResultLink(consoleURL, scan.NodeType, intg.Resource, scan.ScanID)
+			extras["severity_counts"] = scan.SeverityCounts
+
+			profileStart = time.Now()
+
+			err = integrationModel.SendNotification(ctx, updatedResults, extras)
+			if err != nil {
+				updateIntegrationMetrics(ctx, pgClient, intg.ID,
+					integrations.Metrics{Ok: 0, Error: int64(len(updatedResults)), IsSummary: false})
+				return err
+			} else {
+				updateIntegrationMetrics(ctx, pgClient, intg.ID,
+					integrations.Metrics{Ok: int64(len(updatedResults)), Error: 0, IsSummary: false})
+			}
+			totalSendTime += time.Since(profileStart)
+
+			log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken: %s",
+				intg.Resource, len(results), intg.IntegrationType,
+				intg.ID, time.Since(profileStart))
 		}
-
-		totalSendTime = totalSendTime + time.Since(profileStart)
-
-		log.Info().Msgf("Notification sent %s scan %d messages using %s id %d, time taken: %s",
-			intg.Resource, len(results), intg.IntegrationType,
-			intg.ID, time.Since(profileStart))
-	}
-
-	if err := updateLastEventUpdatedAt(ctx, intg.ID, latestScanUpdatedAt); err != nil {
-		log.Error().Err(err).Msg("failed to to update last_event_updated_at")
 	}
 
 	log.Info().Msgf("%s Total Time taken for integration %s: %s", intg.Resource,
 		intg.IntegrationType, time.Since(start))
-	log.Debug().Msgf("Time taken for neo4j_query_nc: %s", neo4j_query_nc)
-	log.Debug().Msgf("Time taken for neo4j_query_c: %s", neo4j_query_c)
-	log.Debug().Msgf("Time taken for neo4j_query_default: %s", neo4j_query_default)
+	log.Debug().Msgf("Time taken for neo4j_query_nc: %s", neo4jQueryNc)
+	log.Debug().Msgf("Time taken for neo4j_query_c: %s", neo4jQueryC)
+	log.Debug().Msgf("Time taken for neo4j_query_default: %s", neo4jQueryDefault)
 	log.Debug().Msgf("Time taken for neo4j_query_2: %s", totalQueryTime)
 	log.Debug().Msgf("Time taken for sending data : %s", totalSendTime)
+
+	// update the last event update_at
+	if err := updateLastEventUpdatedAt(ctx, pgClient, intg.ID, latestScanUpdatedAt); err != nil {
+		log.Error().Err(err).Msg("failed to to update last_event_updated_at")
+	}
+
 	return nil
 }
 
-func updateLastEventUpdatedAt(ctx context.Context, intgId int32, updatedAt int64) error {
-	pgClient, err := directory.PostgresClient(ctx)
-	if err != nil {
-		log.Error().Err(err).Msg("unable to get sql client")
-		return err
+func scanResultLink(consoleURL string, nodeType string, scanType string, scanID string) string {
+
+	switch scanType {
+
+	case "Vulnerability":
+		return fmt.Sprintf("%s/vulnerability/scan-results/%s", consoleURL, scanID)
+
+	case "Secret":
+		return fmt.Sprintf("%s/secret/scan-results/%s", consoleURL, scanID)
+
+	case "Malware":
+		return fmt.Sprintf("%s/malware/scan-results/%s", consoleURL, scanID)
+
+	case "Compliance":
+		switch nodeType {
+		case "host":
+			return fmt.Sprintf("%s/posture/scan-results/linux/%s", consoleURL, scanID)
+		case "cluster":
+			return fmt.Sprintf("%s/posture/scan-results/kubernetes/%s", consoleURL, scanID)
+		default:
+			return fmt.Sprintf("%s/posture", consoleURL)
+		}
+
+	case "CloudCompliance":
+		switch {
+		case strings.Contains(scanID, "aws"):
+			return fmt.Sprintf("%s/posture/cloud/scan-results/aws/%s", consoleURL, scanID)
+		case strings.Contains(scanID, "azure"):
+			return fmt.Sprintf("%s/posture/cloud/scan-results/azure/%s", consoleURL, scanID)
+		case strings.Contains(scanID, "gcp"):
+			return fmt.Sprintf("%s/posture/cloud/scan-results/gcp/%s", consoleURL, scanID)
+		default:
+			return fmt.Sprintf("%s/posture", consoleURL)
+		}
+
+	default:
+		return consoleURL
 	}
+}
+
+func updateLastEventUpdatedAt(ctx context.Context, pgClient *postgresql_db.Queries,
+	intgID int32, updatedAt int64) error {
 
 	last := postgresql_db.UpdateIntegrationLastEventUpdatedAtParams{
-		ID: intgId,
+		ID: intgID,
 		LastEventUpdatedAt: sql.NullTime{
 			Time:  time.UnixMilli(updatedAt),
 			Valid: true,
@@ -485,12 +565,8 @@ func updateLastEventUpdatedAt(ctx context.Context, intgId int32, updatedAt int64
 	return nil
 }
 
-func updateIntegrationMetrics(ctx context.Context, intgID int32, metrics integrations.Metrics) error {
-	pgClient, err := directory.PostgresClient(ctx)
-	if err != nil {
-		log.Error().Err(err).Msg("unable to get sql client")
-		return err
-	}
+func updateIntegrationMetrics(ctx context.Context, pgClient *postgresql_db.Queries,
+	intgID int32, metrics integrations.Metrics) {
 
 	param := postgresql_db.SetIntegrationMetricsParams{ID: intgID}
 
@@ -504,10 +580,9 @@ func updateIntegrationMetrics(ctx context.Context, intgID int32, metrics integra
 
 	if err := pgClient.SetIntegrationMetrics(ctx, param); err != nil {
 		log.Error().Err(err).Msg("failed to update last event updated at")
-		return err
+		return
 	}
 
-	return nil
 }
 
 func FormatForMessagingApps[T any](results []T, resourceType string) []map[string]interface{} {
@@ -590,7 +665,6 @@ func injectNodeDataMap(results []map[string]interface{}, common model.ScanResult
 	flag := integration.IsMessagingFormat(integrationType)
 
 	for _, r := range results {
-		//m := utils.ToMap[T](r)
 		r["node_id"] = common.NodeID
 		r["scan_id"] = common.ScanID
 		r["node_name"] = common.NodeName

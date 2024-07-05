@@ -100,3 +100,7 @@ func (e ElasticSearch) IsValidCredential(ctx context.Context) (bool, error) {
 
 	return true, nil
 }
+
+func (e ElasticSearch) SendSummaryLink() bool {
+	return false
+}

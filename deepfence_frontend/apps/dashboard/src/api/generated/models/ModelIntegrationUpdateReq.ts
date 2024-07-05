@@ -56,6 +56,12 @@ export interface ModelIntegrationUpdateReq {
      * @memberof ModelIntegrationUpdateReq
      */
     notification_type?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelIntegrationUpdateReq
+     */
+    send_summary?: boolean;
 }
 
 /**
@@ -82,6 +88,7 @@ export function ModelIntegrationUpdateReqFromJSONTyped(json: any, ignoreDiscrimi
         'id': !exists(json, 'id') ? undefined : json['id'],
         'integration_type': !exists(json, 'integration_type') ? undefined : json['integration_type'],
         'notification_type': !exists(json, 'notification_type') ? undefined : json['notification_type'],
+        'send_summary': !exists(json, 'send_summary') ? undefined : json['send_summary'],
     };
 }
 
@@ -99,6 +106,7 @@ export function ModelIntegrationUpdateReqToJSON(value?: ModelIntegrationUpdateRe
         'id': value.id,
         'integration_type': value.integration_type,
         'notification_type': value.notification_type,
+        'send_summary': value.send_summary,
     };
 }
 

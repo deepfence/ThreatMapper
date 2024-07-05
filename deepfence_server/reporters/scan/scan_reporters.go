@@ -398,7 +398,7 @@ func GetPodContainerIDs(ctx context.Context, podIds []model.NodeIdentifier) ([]m
 	return res, nil
 }
 
-func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdentifier) ([]model.NodeIdentifier, error) {
+func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdentifier, filters *reporters.FieldsFilters) ([]model.NodeIdentifier, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-cloud-account-ids")
 	defer span.End()
@@ -418,9 +418,15 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 	}
 	defer tx.Close(ctx)
 
+	filterClauses := mo.None[reporters.FieldsFilters]()
+	if filters != nil {
+		filterClauses = mo.Some(*filters)
+	}
+
 	nres, err := tx.Run(ctx, `
 		MATCH (n:CloudNode)
 		WHERE n.node_id IN $node_ids
+		`+reporters.ParseFieldFilters2CypherWhereConditions(`n`, filterClauses, false)+`
 		RETURN n.node_id, n.cloud_provider`,
 		map[string]interface{}{"node_ids": NodeIdentifierToIDList(cloudProviderIds)})
 	if err != nil {
@@ -432,6 +438,7 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 		return res, err
 	}
 	orgNodeIds := []string{}
+	childNodeIDs := []string{}
 	for _, rec := range recs {
 		cloudProvider := rec.Values[1].(string)
 		if cloudProvider == model.PostureProviderAWSOrg || cloudProvider == model.PostureProviderGCPOrg || cloudProvider == model.PostureProviderAzureOrg {
@@ -442,13 +449,16 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 			NodeID:   rec.Values[0].(string),
 			NodeType: controls.ResourceTypeToString(controls.CloudAccount),
 		})
+		childNodeIDs = append(childNodeIDs, rec.Values[0].(string))
 	}
 	if len(orgNodeIds) > 0 {
 		nres, err = tx.Run(ctx, `
 		MATCH (n:CloudNode) -[:IS_CHILD] -> (m)
-		WHERE n.node_id IN $node_ids
+		WHERE n.node_id IN $node_ids 
+		AND NOT m.node_id IN $child_node_ids
+		`+reporters.ParseFieldFilters2CypherWhereConditions(`m`, filterClauses, false)+`
 		RETURN m.node_id`,
-			map[string]interface{}{"node_ids": orgNodeIds})
+			map[string]interface{}{"node_ids": orgNodeIds, "child_node_ids": childNodeIDs})
 		if err != nil {
 			return res, err
 		}

@@ -1,4 +1,3 @@
-import { upperCase } from 'lodash-es';
 import { useMemo, useState } from 'react';
 import { Listbox, ListboxOption } from 'ui-components';
 

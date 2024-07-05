@@ -27,6 +27,7 @@ type IntegrationAddReq struct {
 	IntegrationType  string                 `json:"integration_type" required:"true"`
 	NotificationType string                 `json:"notification_type" required:"true"`
 	Filters          IntegrationFilters     `json:"filters"`
+	SendSummary      bool                   `json:"send_summary"`
 }
 
 type IntegrationFilters struct {
@@ -157,6 +158,7 @@ type IntegrationUpdateReq struct {
 	NotificationType string                 `json:"notification_type"`
 	Filters          IntegrationFilters     `json:"filters"`
 	IntegrationID    string                 `path:"integration_id" validate:"required" required:"true"`
+	SendSummary      bool                   `json:"send_summary"`
 }
 
 func (i *IntegrationUpdateReq) UpdateIntegration(ctx context.Context, pgClient *postgresqlDb.Queries, integration postgresqlDb.Integration) error {

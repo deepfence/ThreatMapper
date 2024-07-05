@@ -84,7 +84,13 @@ export interface ModelCloudNodeAccountInfo {
      * @type {string}
      * @memberof ModelCloudNodeAccountInfo
      */
-    refresh_status?: ModelCloudNodeAccountInfoRefreshStatusEnum;
+    refresh_status?: string;
+    /**
+     * 
+     * @type {{ [key: string]: number; }}
+     * @memberof ModelCloudNodeAccountInfo
+     */
+    refresh_status_map?: { [key: string]: number; } | null;
     /**
      * 
      * @type {{ [key: string]: number; }}
@@ -112,17 +118,6 @@ export const ModelCloudNodeAccountInfoCloudProviderEnum = {
     AzureOrg: 'azure_org'
 } as const;
 export type ModelCloudNodeAccountInfoCloudProviderEnum = typeof ModelCloudNodeAccountInfoCloudProviderEnum[keyof typeof ModelCloudNodeAccountInfoCloudProviderEnum];
-
-/**
- * @export
- */
-export const ModelCloudNodeAccountInfoRefreshStatusEnum = {
-    Starting: 'STARTING',
-    InProgress: 'IN_PROGRESS',
-    Error: 'ERROR',
-    Complete: 'COMPLETE'
-} as const;
-export type ModelCloudNodeAccountInfoRefreshStatusEnum = typeof ModelCloudNodeAccountInfoRefreshStatusEnum[keyof typeof ModelCloudNodeAccountInfoRefreshStatusEnum];
 
 
 /**
@@ -155,6 +150,7 @@ export function ModelCloudNodeAccountInfoFromJSONTyped(json: any, ignoreDiscrimi
         'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
         'refresh_message': !exists(json, 'refresh_message') ? undefined : json['refresh_message'],
         'refresh_status': !exists(json, 'refresh_status') ? undefined : json['refresh_status'],
+        'refresh_status_map': !exists(json, 'refresh_status_map') ? undefined : json['refresh_status_map'],
         'scan_status_map': !exists(json, 'scan_status_map') ? undefined : json['scan_status_map'],
         'version': !exists(json, 'version') ? undefined : json['version'],
     };
@@ -180,6 +176,7 @@ export function ModelCloudNodeAccountInfoToJSON(value?: ModelCloudNodeAccountInf
         'node_name': value.node_name,
         'refresh_message': value.refresh_message,
         'refresh_status': value.refresh_status,
+        'refresh_status_map': value.refresh_status_map,
         'scan_status_map': value.scan_status_map,
         'version': value.version,
     };

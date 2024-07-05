@@ -433,3 +433,7 @@ func (a AwsSecurityHub) mapPayloadToFindings(msg []map[string]interface{}, resou
 func (a AwsSecurityHub) IsValidCredential(ctx context.Context) (bool, error) {
 	return true, nil
 }
+
+func (a AwsSecurityHub) SendSummaryLink() bool {
+	return false
+}

@@ -1,6 +1,6 @@
 import { capitalize } from 'lodash-es';
 import { cn } from 'tailwind-preset';
-import { CircleSpinner } from 'ui-components';
+import { CircleSpinner, Tooltip } from 'ui-components';
 
 import {
   ErrorIcon,
@@ -22,10 +22,12 @@ export const ScanStatusBadge = ({
   status,
   className,
   justIcon = false,
+  errorMessage,
 }: {
   status: string;
   className?: string;
   justIcon?: boolean;
+  errorMessage?: string;
 }) => {
   const wrapperClassName = cn(
     'flex items-center gap-1.5 text-text-text-and-icon text-p4a',
@@ -49,10 +51,23 @@ export const ScanStatusBadge = ({
   } else if (isScanFailed(status)) {
     return (
       <div className={wrapperClassName}>
-        <span className={cn(iconWrapper, 'text-status-error')}>
-          <ErrorIcon />
-        </span>
-        {!justIcon ? <TruncatedText text={scanStatus} /> : null}
+        {errorMessage ? (
+          <Tooltip content={errorMessage}>
+            <div className="flex items-center gap-x-1.5">
+              <span className={cn(iconWrapper, 'text-status-error')}>
+                <ErrorIcon />
+              </span>
+              {!justIcon ? <TruncatedText text={scanStatus} /> : null}
+            </div>
+          </Tooltip>
+        ) : (
+          <>
+            <span className={cn(iconWrapper, 'text-status-error')}>
+              <ErrorIcon />
+            </span>
+            {!justIcon ? <TruncatedText text={scanStatus} /> : null}
+          </>
+        )}
       </div>
     );
   } else if (isNeverScanned(status)) {

@@ -69,7 +69,7 @@ func GetAgentActions(ctx context.Context, agentID model.AgentID, consoleURL stri
 		actions = append(actions, upgradeActions...)
 	}
 
-	scanActions, scanErr := ExtractStartingAgentScans(ctx, nodeID, workNumToExtract)
+	scanActions, scanErr := ExtractStartingAgentScans(ctx, nodeID, agentType, workNumToExtract)
 	workNumToExtract -= len(scanActions)
 	if scanErr == nil {
 		actions = append(actions, scanActions...)
@@ -312,7 +312,7 @@ func hasPendingAgentScans(ctx context.Context, client neo4j.DriverWithContext, n
 	return len(records) != 0, err
 }
 
-func ExtractStartingAgentScans(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
+func ExtractStartingAgentScans(ctx context.Context, nodeID string, agentType string, maxWork int) ([]controls.Action, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "extract-starting-agent-scans")
 	defer span.End()
@@ -340,14 +340,28 @@ func ExtractStartingAgentScans(ctx context.Context, nodeID string, maxWork int) 
 	}
 	defer tx.Close(ctx)
 
-	r, err := tx.Run(ctx, `MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
+	var r neo4j.ResultWithContext
+	if agentType == controls.CLOUD_AGENT {
+		r, err = tx.Run(ctx, `MATCH (c:CloudNode) <- [:SCANNED] - (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
+		WHERE s.status = '`+utils.ScanStatusStarting+`'
+		AND c.refresh_status = 'COMPLETE'
+		AND c.active = true
+		AND s.retries < 3
+		WITH s ORDER BY s.is_priority DESC, s.updated_at ASC LIMIT $max_work
+		SET s.status = '`+utils.ScanStatusInProgress+`', s.updated_at = TIMESTAMP()
+		WITH s
+		RETURN s.trigger_action`,
+			map[string]interface{}{"id": nodeID, "max_work": maxWork})
+	} else {
+		r, err = tx.Run(ctx, `MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
 		WHERE s.status = '`+utils.ScanStatusStarting+`'
 		AND s.retries < 3
 		WITH s ORDER BY s.is_priority DESC, s.updated_at ASC LIMIT $max_work
 		SET s.status = '`+utils.ScanStatusInProgress+`', s.updated_at = TIMESTAMP()
 		WITH s
 		RETURN s.trigger_action`,
-		map[string]interface{}{"id": nodeID, "max_work": maxWork})
+			map[string]interface{}{"id": nodeID, "max_work": maxWork})
+	}
 
 	if err != nil {
 		return res, err
@@ -629,8 +643,7 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeID string, maxWork int,
 
 }
 
-func ExtractRefreshResourceAction(ctx context.Context, nodeID string,
-	maxWork int) ([]controls.Action, error) {
+func ExtractRefreshResourceAction(ctx context.Context, nodeID string, maxWork int) ([]controls.Action, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "control", "extract-pending-refresh-resources")
 	defer span.End()
@@ -659,15 +672,15 @@ func ExtractRefreshResourceAction(ctx context.Context, nodeID string,
 	defer tx.Close(ctx)
 
 	r, err := tx.Run(ctx, `
-		MATCH(n:Node{node_id:$id}) -[:HOSTS]-> (c:CloudNode)
-		MATCH(r:CloudNodeRefresh{node_id:c.node_id})
-		WHERE r.refresh=true
-		WITH HEAD(collect(r)) AS rnode 
-		WHERE rnode IS NOT NULL
-		WITH rnode, rnode.node_id AS node_id
-		DETACH DELETE rnode
-		RETURN node_id`,
-		map[string]interface{}{"id": nodeID})
+		MATCH(n:Node{node_id:$id}) -[:HOSTS]-> (r:CloudNode)
+		WHERE r.refresh_status = '`+utils.ScanStatusStarting+`'
+		AND r.cloud_provider in ['`+model.PostureProviderAWS+`','`+model.PostureProviderGCP+`','`+model.PostureProviderAzure+`']
+		AND COALESCE(r.cloud_compliance_scan_status, '') <> '`+utils.ScanStatusInProgress+`'
+		WITH r LIMIT $max_work
+		SET r.refresh_status = '`+utils.ScanStatusInProgress+`', r.refresh_message = ''
+		WITH r
+		RETURN r.node_id, r.node_name AS account_id`,
+		map[string]interface{}{"id": nodeID, "max_work": maxWork})
 
 	if err != nil {
 		return res, err
@@ -683,13 +696,14 @@ func ExtractRefreshResourceAction(ctx context.Context, nodeID string,
 
 	for _, record := range records {
 		var action controls.Action
-		if record.Values[0] == nil {
+		if record.Values[0] == nil || record.Values[1] == nil {
 			log.Error().Msgf("Invalid CloudNode ID, skipping")
 			continue
 		}
 
 		req := controls.RefreshResourcesRequest{}
 		req.NodeId = record.Values[0].(string)
+		req.AccountID = record.Values[1].(string)
 		req.NodeType = controls.CloudAccount
 
 		reqBytes, err := json.Marshal(req)

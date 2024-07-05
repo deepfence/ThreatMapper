@@ -119,25 +119,29 @@ func (ct *OpenapiClient) StartControlsWatching(nodeID string,
 
 const (
 	MaxAgentWorkload      = 2
-	MaxCloudAgentWorkload = 1
+	MaxCloudAgentWorkload = 2
 )
 
 func GetScannersWorkloads(nodeType string) int32 {
-	res := int32(0)
-	var secret, malware, vuln, cloud int32
 	if nodeType == ctl.CLOUD_AGENT {
-		cloud = GetCloudScannerJobCount()
+		var cloudPostureScan, cloudResourceRefreshCount int32
+
+		cloudPostureScan = GetCloudScannerJobCount(ctl.CloudScannerJobCount)
+		cloudResourceRefreshCount = GetCloudScannerJobCount(ctl.CloudScannerResourceRefreshCount)
+
+		log.Info().Msgf("workloads = cloud posture: %d, cloud resource refresh: %d", cloudPostureScan, cloudResourceRefreshCount)
+		return cloudPostureScan + cloudResourceRefreshCount
 	} else {
+		var secret, malware, vuln int32
+
 		secret = GetSecretScannerJobCount()
 		malware = GetMalwareScannerJobCount()
 		vuln = GetPackageScannerJobCount()
-	}
 
-	//TODO: Add more scanners workload
-	log.Info().Msgf("workloads = vuln: %d, secret: %d, malware: %d, cloud: %d",
-		vuln, secret, malware, cloud)
-	res = secret + malware + vuln + cloud
-	return res
+		//TODO: Add more scanners workload
+		log.Info().Msgf("workloads = vuln: %d, secret: %d, malware: %d", vuln, secret, malware)
+		return secret + malware + vuln
+	}
 }
 
 var upgrade atomic.Bool

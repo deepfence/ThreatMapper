@@ -44,6 +44,18 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.SendSummary {
+		if integration.SupportsSummaryLink(req.IntegrationType) {
+			req.Config["send_summary"] = True
+		} else {
+			err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrSendSummaryNotSupported})
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
+			return
+		}
+	}
+
 	req.Config["filter_hash"], err = GetFilterHash(req.Filters)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -284,6 +296,18 @@ func (h *Handler) UpdateIntegration(w http.ResponseWriter, r *http.Request) {
 			log.Error().Msg(err.Error())
 		}
 		return
+	}
+
+	if req.SendSummary {
+		if integration.SupportsSummaryLink(req.IntegrationType) {
+			req.Config["send_summary"] = True
+		} else {
+			err = httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrSendSummaryNotSupported})
+			if err != nil {
+				log.Error().Msg(err.Error())
+			}
+			return
+		}
 	}
 
 	// check if integration is valid
