@@ -14587,7 +14587,8 @@
           "config": { "type": "object", "additionalProperties": {}, "nullable": true },
           "filters": { "$ref": "#/components/schemas/ModelIntegrationFilters" },
           "integration_type": { "type": "string" },
-          "notification_type": { "type": "string" }
+          "notification_type": { "type": "string" },
+          "send_summary": { "type": "boolean" }
         }
       },
       "ModelIntegrationFilters": {
@@ -14625,7 +14626,8 @@
           "filters": { "$ref": "#/components/schemas/ModelIntegrationFilters" },
           "id": { "type": "integer" },
           "integration_type": { "type": "string" },
-          "notification_type": { "type": "string" }
+          "notification_type": { "type": "string" },
+          "send_summary": { "type": "boolean" }
         }
       },
       "ModelInviteUserRequest": {

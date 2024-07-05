@@ -318,6 +318,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
           notification_type: _notificationType,
           config: getConfigBodyNotificationType(formData, _integrationType as string),
           filters: _filters,
+          send_summary: formData.get('sendSummary') === 'on',
         },
       });
     } else {
@@ -327,6 +328,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
           notification_type: _notificationType,
           config: getConfigBodyNotificationType(formData, _integrationType as string),
           filters: _filters,
+          send_summary: formData.get('sendSummary') === 'on',
         },
       });
     }
