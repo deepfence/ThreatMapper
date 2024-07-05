@@ -1,4 +1,3 @@
-import { merge } from 'lodash-es';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Checkbox, Listbox, ListboxOption, Tooltip } from 'ui-components';
@@ -21,7 +20,7 @@ import {
   isVulnerabilityNotification,
 } from './utils';
 
-const SendScanSumaryCheckbox = ({ sendSummaryOnly }: { sendSummaryOnly: boolean }) => {
+const SendScanSummaryCheckbox = ({ sendSummaryOnly }: { sendSummaryOnly: boolean }) => {
   const [checked, setChecked] = useState(sendSummaryOnly);
   return (
     <div className="flex gap-x-1.5 items-center col-span-2">
@@ -102,7 +101,7 @@ export const NotificationTypeField = ({
       </Listbox>
 
       {canSendScanSummary(notificationType, integrationType) ? (
-        <SendScanSumaryCheckbox sendSummaryOnly={data?.config?.send_summary ?? false} />
+        <SendScanSummaryCheckbox sendSummaryOnly={data?.config?.send_summary ?? false} />
       ) : null}
 
       {isCloudComplianceNotification(notificationType) &&
