@@ -21,6 +21,7 @@ import { ModelEmailConfigurationAdd, ModelEmailConfigurationResp } from '@/api/g
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { UnsavedChangesWarningModal } from '@/features/settings/components/UnsavedChangesWarningModal';
 import { invalidateAllQueries, queries } from '@/queries';
 import { get403Message, getFieldErrors, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -262,8 +263,30 @@ const EmailConfigurationModal = ({
   const { data, state } = fetcher;
   const [emailProvider, setEmailProvider] = useState<string>('Google SMTP');
 
+  const [formHasUnsavedChanges, setFormHasUnsavedChanges] = useState<boolean>(false);
+  const [showUnsavedChangesWarningModal, setShowUnsavedChangesWarningModal] =
+    useState<boolean>(false);
+
+  useEffect(() => {
+    if (fetcher.formData?.get('testEmail')) {
+      setFormHasUnsavedChanges(true);
+    } else if (fetcher.data?.success) {
+      setFormHasUnsavedChanges(false);
+    }
+  }, [setFormHasUnsavedChanges, fetcher]);
+
   return (
-    <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
+    <SlidingModal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => {
+        if (formHasUnsavedChanges) {
+          setShowUnsavedChangesWarningModal(true);
+        } else {
+          setShowDialog(false);
+        }
+      }}
+    >
       <SlidingModalHeader>
         <SlidingModalHeaderWrapper>Add email configuration</SlidingModalHeaderWrapper>
       </SlidingModalHeader>
@@ -329,7 +352,13 @@ const EmailConfigurationModal = ({
               <Button
                 variant="outline"
                 type="button"
-                onClick={() => setShowDialog(false)}
+                onClick={() => {
+                  if (formHasUnsavedChanges) {
+                    setShowUnsavedChangesWarningModal(true);
+                  } else {
+                    setShowDialog(false);
+                  }
+                }}
               >
                 Cancel
               </Button>
@@ -354,6 +383,18 @@ const EmailConfigurationModal = ({
             </div>
           </fetcher.Form>
         )}
+
+        {showUnsavedChangesWarningModal ? (
+          <UnsavedChangesWarningModal
+            onWarnModalClose={(state) => {
+              if (state) {
+                setShowDialog(false);
+              } else {
+                setShowUnsavedChangesWarningModal(false);
+              }
+            }}
+          />
+        ) : null}
       </SlidingModalContent>
     </SlidingModal>
   );

@@ -76,7 +76,6 @@ import {
   isKubernetesNodeType,
   isLinuxNodeType,
   isNonCloudNode,
-  isRefreshAccountFailed,
 } from '@/features/postures/utils';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
