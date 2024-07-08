@@ -16,7 +16,6 @@ import (
 	"github.com/deepfence/SecretScanner/core"
 	"github.com/deepfence/SecretScanner/output"
 	secretScan "github.com/deepfence/SecretScanner/scan"
-	"github.com/deepfence/SecretScanner/signature"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
@@ -38,7 +37,7 @@ exclude_paths: ["/var/lib/docker", "/var/lib/containerd", "/dev", "/proc", "/usr
 max_file_size: 1073741824
 `
 
-var secretsRulesFile = "config.yaml"
+var secretsRulesFile = "secret.yar"
 var secretsRulesDir = "/"
 var secretsRulesHash = ""
 var secretsRuleLock = new(sync.Mutex)
@@ -254,7 +253,6 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		return err
 	}
 
-
 	cfg := config.Config{}
 	yaml.Unmarshal([]byte(extractorConfig), &cfg)
 	// init secret scan
@@ -294,9 +292,8 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 }
 
 func initSecretScanner() {
-	var sessionSecretScanner = core.GetSession()
-	// init secret scan builds hs db
-	signature.ProcessSignatures(sessionSecretScanner.Config.Signatures)
+	// init secret scan
+	core.GetSession()
 }
 
 func extractTarFromReader(reader io.Reader, destDir string) error {
