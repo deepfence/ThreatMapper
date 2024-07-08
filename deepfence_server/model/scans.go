@@ -616,5 +616,11 @@ type ComplinaceScanResultsGroupReq struct {
 }
 
 type ComplinaceScanResultsGroupResp struct {
-	Groups map[string]map[string]int64 `json:"groups"`
+	Groups map[string]ComplinaceScanResultControlGroup `json:"groups"`
+}
+
+type ComplinaceScanResultControlGroup struct {
+	Title          string           `json:"title,omitempty"`
+	Counts         map[string]int64 `json:"counts,omitempty"`
+	BenchmarkTypes []string         `json:"benchmark_types,omitempty"`
 }
