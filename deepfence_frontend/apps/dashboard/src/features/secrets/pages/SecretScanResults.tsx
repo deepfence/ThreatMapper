@@ -93,7 +93,13 @@ import {
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-import { SeverityEnum, SeverityEnumList } from '@/utils/enum';
+import {
+  getMaskedUnmaskedPrettyName,
+  getSeverityPrettyName,
+  SeverityEnum,
+  SeverityEnumList,
+  SeverityValueType,
+} from '@/utils/enum';
 import { abbreviateNumber } from '@/utils/number';
 import {
   isScanComplete,
@@ -283,6 +289,22 @@ const action = async ({
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   visibility: 'Masked/Unmasked',
   severity: 'Severity',
+};
+const getPrettyNameForAppliedFilters = ({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) => {
+  switch (key) {
+    case 'severity':
+      return getSeverityPrettyName(value as SeverityValueType);
+    case 'visibility':
+      return getMaskedUnmaskedPrettyName(value);
+    default:
+      return value;
+  }
 };
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
@@ -1320,7 +1342,7 @@ const Filters = () => {
                       return prev;
                     });
                   }}
-                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                  text={`${FILTER_SEARCHPARAMS[key]}: ${getPrettyNameForAppliedFilters({ key, value })}`}
                 />
               );
             })}

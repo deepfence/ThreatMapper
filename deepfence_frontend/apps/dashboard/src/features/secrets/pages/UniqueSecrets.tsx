@@ -34,7 +34,7 @@ import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
-import { SeverityEnumList } from '@/utils/enum';
+import { getSeverityPrettyName, SeverityEnumList, SeverityValueType } from '@/utils/enum';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -60,6 +60,22 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   containers: 'Container',
   containerImages: 'Container Images',
   clusters: 'Clusters',
+};
+
+const getPrettyNameForAppliedFilters = ({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) => {
+  switch (key) {
+    case 'severity':
+      return getSeverityPrettyName(value as SeverityValueType);
+
+    default:
+      return value;
+  }
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -244,7 +260,10 @@ const Filters = () => {
               <FilterBadge
                 key={`${key}-${value}`}
                 onRemove={onFilterRemove({ key, value })}
-                text={value}
+                text={getPrettyNameForAppliedFilters({
+                  key,
+                  value,
+                })}
                 label={FILTER_SEARCHPARAMS[key]}
               />
             );

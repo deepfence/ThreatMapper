@@ -37,6 +37,7 @@ import { getScanResultsApiClient } from '@/api/api';
 import {
   ModelBenchmarkType,
   ModelCloudCompliance,
+  ModelCloudComplianceStatusEnum,
   ModelScanInfo,
   ModelScanResultsMaskRequestMaskActionEnum,
   UtilsReportFiltersNodeTypeEnum,
@@ -103,7 +104,11 @@ import {
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-import { getBenchmarkPrettyName } from '@/utils/enum';
+import {
+  getBenchmarkPrettyName,
+  getMaskedUnmaskedPrettyName,
+  getPostureStatusPrettyName,
+} from '@/utils/enum';
 import { abbreviateNumber } from '@/utils/number';
 import {
   isScanComplete,
@@ -996,6 +1001,23 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
 };
+
+const getPrettyNameForAppliedFilters = ({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) => {
+  switch (key) {
+    case 'visibility':
+      return getMaskedUnmaskedPrettyName(value);
+    case 'status':
+      return getPostureStatusPrettyName(value as ModelCloudComplianceStatusEnum);
+    default:
+      return value;
+  }
+};
 const Filters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [maskedQuery, setMaskedQuery] = useState('');
@@ -1236,7 +1258,7 @@ const Filters = () => {
               <FilterBadge
                 key={`${key}-${value}`}
                 onRemove={onFilterRemove({ key, value })}
-                text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                text={`${FILTER_SEARCHPARAMS[key]}: ${getPrettyNameForAppliedFilters({ key, value })}`}
               />
             );
           })}
