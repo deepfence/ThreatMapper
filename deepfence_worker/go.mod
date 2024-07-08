@@ -118,7 +118,6 @@ require (
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/flier/gohs v1.2.2 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
 	github.com/github/go-spdx/v2 v2.2.0 // indirect
 	github.com/go-chi/jwtauth/v5 v5.3.1 // indirect
