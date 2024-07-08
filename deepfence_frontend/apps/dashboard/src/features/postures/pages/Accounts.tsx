@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
-import { capitalize } from 'lodash-es';
+import { capitalize, startCase } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -326,6 +326,21 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
 };
+const getPrettyNameForAppliedFilters = ({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) => {
+  switch (key) {
+    case 'status':
+      return startCase(value);
+
+    default:
+      return value;
+  }
+};
 const Filters = () => {
   const { nodeType } = useParams() as {
     nodeType: string;
@@ -592,7 +607,10 @@ const Filters = () => {
               <FilterBadge
                 key={`${key}-${value}`}
                 onRemove={onFilterRemove({ key, value })}
-                text={value}
+                text={getPrettyNameForAppliedFilters({
+                  key,
+                  value,
+                })}
                 label={FILTER_SEARCHPARAMS[key]}
               />
             );

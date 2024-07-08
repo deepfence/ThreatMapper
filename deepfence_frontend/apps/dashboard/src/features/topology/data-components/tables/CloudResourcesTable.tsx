@@ -122,6 +122,22 @@ function getCloudProviderPrettyName(provider: ModelCloudResourceCloudProviderEnu
   }
 }
 
+const getPrettyNameForAppliedFilters = ({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) => {
+  switch (key) {
+    case 'cloudProvider':
+      return getCloudProviderPrettyName(value as ModelCloudResourceCloudProviderEnum);
+
+    default:
+      return value;
+  }
+};
+
 function SearchableServiceType() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchText, setSearchText] = useState('');
@@ -358,7 +374,10 @@ function Filters() {
                 <FilterBadge
                   key={`${key}-${value}`}
                   onRemove={onFilterRemove({ key, value })}
-                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                  text={`${FILTER_SEARCHPARAMS[key]}: ${getPrettyNameForAppliedFilters({
+                    key,
+                    value,
+                  })}`}
                 />
               );
             })}

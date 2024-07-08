@@ -266,6 +266,22 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   }, 0);
 };
 
+const getPrettyNameForAppliedFilters = ({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) => {
+  switch (key) {
+    case 'cloudProvider':
+      return CLOUD_PROVIDERS.find((item) => item.value === value)?.label ?? '';
+
+    default:
+      return value;
+  }
+};
+
 function Filters() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [vulnerabilityScanStatusSearchText, setVulnerabilityScanStatusSearchText] =
@@ -591,7 +607,10 @@ function Filters() {
               <FilterBadge
                 key={`${key}-${value}`}
                 onRemove={onFilterRemove({ key, value })}
-                text={value}
+                text={getPrettyNameForAppliedFilters({
+                  key,
+                  value,
+                })}
                 label={FILTER_SEARCHPARAMS[key]}
               />
             );
