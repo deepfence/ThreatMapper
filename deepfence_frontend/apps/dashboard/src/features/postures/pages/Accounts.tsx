@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
-import { capitalize, startCase } from 'lodash-es';
+import { capitalize, startCase, upperFirst } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -1323,8 +1323,10 @@ const AccountTable = ({
           );
         },
         header: () =>
-          getDisplayNameOfNodeType(
-            nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+          upperFirst(
+            getDisplayNameOfNodeType(
+              nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+            ).toLowerCase(),
           ),
         ...columnWidth.node_name,
       }),
@@ -1335,7 +1337,7 @@ const AccountTable = ({
           const percent = Number(cell.getValue());
           const isScanned = !!cell.row.original.last_scan_status;
 
-          if (isScanned) {
+          if (isScanned || isCloudOrgNode(nodeType)) {
             return (
               <span
                 style={{
@@ -1354,7 +1356,7 @@ const AccountTable = ({
       }),
       columnHelper.accessor('last_scan_status', {
         cell: (info) => {
-          if (nodeType?.endsWith?.('_org')) {
+          if (isCloudOrgNode(nodeType)) {
             const data = info.row.original.scan_status_map ?? {};
             const statuses = Object.keys(data).map((current) => {
               return (
@@ -1409,7 +1411,7 @@ const AccountTable = ({
           ...columnWidth.refresh_status,
           header: () => 'Refresh status',
           cell: (info) => {
-            if (nodeType?.endsWith?.('_org')) {
+            if (isCloudOrgNode(nodeType)) {
               const data = info.row.original.refresh_status_map ?? {};
               const statuses = Object.keys(data).map((current) => {
                 return (
@@ -1855,7 +1857,7 @@ const AccountWithTab = () => {
   };
 
   const [currentTab, setTab] = useState(() => {
-    return nodeType.endsWith('_org') ? 'org-accounts' : 'accounts';
+    return isCloudOrgNode(nodeType) ? 'org-accounts' : 'accounts';
   });
   const { navigate } = usePageNavigation();
 
