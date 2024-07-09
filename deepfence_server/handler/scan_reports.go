@@ -1319,7 +1319,7 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(120*time.Second))
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
@@ -1327,12 +1327,15 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 	defer tx.Close(ctx)
 
 	query := `
-	MATCH (n:CloudComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:CloudCompliance) ` +
-		reporters.ParseFieldFilters2CypherWhereConditions("c", mo.Some(req.FieldsFilter), true) +
+	MATCH (n:CloudComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:CloudCompliance)
+	` + reporters.ParseFieldFilters2CypherWhereConditions("c", mo.Some(req.FieldsFilter), true) +
 		`
-		WITH n,c
+	CALL {
+		WITH c
 		MATCH (e:CloudComplianceControl{control_id:c.full_control_id})
-		RETURN c.full_control_id as control_id, collect(c.status) as status, COLLECT(DISTINCT e.compliance_type) as compliance_type, e.title as title
+		RETURN COLLECT(DISTINCT e.compliance_type) as compliance_type
+	}
+	RETURN c.full_control_id as control_id, collect(c.status) as status, compliance_type, c.title as title
 	`
 
 	log.Debug().Msgf("Count Cloud ComplianceScan Results Group Handler query: %s", query)

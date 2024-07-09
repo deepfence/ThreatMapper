@@ -90,6 +90,8 @@ func initNeo4jDatabase(ctx context.Context) error {
 	RunDisplayError(ctx, session, "CREATE INDEX CloudResourceDepth IF NOT EXISTS FOR (n:CloudResource) ON (n.depth)")
 	RunDisplayError(ctx, session, "CREATE INDEX CloudResourceLinked IF NOT EXISTS FOR (n:CloudResource) ON (n.linked)")
 
+	RunDisplayError(ctx, session, "CREATE INDEX CloudComplianceControlByControlID IF NOT EXISTS FOR (n:CloudComplianceControl) ON (n.control_id)")
+
 	//Set the base updated_at field on the ALIAS relationship
 	RunDisplayError(ctx, session, "WITH TIMESTAMP() as T MATCH(:ContainerImage) -[a:ALIAS]-> (:ImageTag) WHERE a.updated_at IS NULL SET a.updated_at=T")
 
