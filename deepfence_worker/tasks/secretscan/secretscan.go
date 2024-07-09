@@ -291,7 +291,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	}
 
 	for _, cc := range scanResult {
-		for i := range cc.StringsToMatch {
+		for i := range cc.Matches {
 			c := out.SecretToSecretInfo(cc, i)
 			var r secretScanResult
 			r.SecretScanParameters = params
