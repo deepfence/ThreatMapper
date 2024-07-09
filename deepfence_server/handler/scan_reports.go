@@ -1266,10 +1266,10 @@ func (h *Handler) CountComplianceScanResultsGroupHandler(w http.ResponseWriter, 
 		h.respondError(err, w)
 	}
 
-	results := map[string]model.ComplinaceScanResultControlGroup{}
+	results := map[string]model.ComplianceScanResultControlGroup{}
 
 	for _, rec := range recs {
-		r := model.ComplinaceScanResultControlGroup{
+		r := model.ComplianceScanResultControlGroup{
 			Counts:         groupArrayToMap(rec.Values[1].([]interface{})),
 			BenchmarkTypes: cast.ToStringSlice(rec.Values[2].(string)),
 			Title:          rec.Values[3].(string),
@@ -1278,7 +1278,7 @@ func (h *Handler) CountComplianceScanResultsGroupHandler(w http.ResponseWriter, 
 	}
 
 	err = httpext.JSON(w, http.StatusOK,
-		model.ComplinaceScanResultsGroupResp{Groups: results})
+		model.ComplianceScanResultsGroupResp{Groups: results})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 	}
@@ -1319,7 +1319,7 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(120*time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		h.respondError(err, w)
@@ -1352,10 +1352,10 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 		h.respondError(err, w)
 	}
 
-	results := map[string]model.ComplinaceScanResultControlGroup{}
+	results := map[string]model.ComplianceScanResultControlGroup{}
 
 	for _, rec := range recs {
-		r := model.ComplinaceScanResultControlGroup{
+		r := model.ComplianceScanResultControlGroup{
 			Counts:         groupArrayToMap(rec.Values[1].([]interface{})),
 			BenchmarkTypes: cast.ToStringSlice(rec.Values[2].([]interface{})),
 			Title:          rec.Values[3].(string),
@@ -1364,7 +1364,7 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 	}
 
 	err = httpext.JSON(w, http.StatusOK,
-		model.ComplinaceScanResultsGroupResp{Groups: results})
+		model.ComplianceScanResultsGroupResp{Groups: results})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 	}

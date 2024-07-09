@@ -603,6 +603,40 @@ func (CloudCompliance) GetJSONCategory() string {
 	return "severity"
 }
 
+type CloudComplianceControl struct {
+	ControlID              string   `json:"control_id"`
+	Documentation          string   `json:"documentation"`
+	Active                 bool     `json:"active"`
+	Description            string   `json:"description"`
+	CloudProvider          string   `json:"cloud_provider"`
+	Title                  string   `json:"title"`
+	Executable             bool     `json:"executable"`
+	CategoryHierarchyShort string   `json:"category_hierarchy_short"`
+	CategoryHierarchy      []string `json:"category_hierarchy"`
+	Service                string   `json:"service"`
+	ParentControlHierarchy []string `json:"parent_control_hierarchy"`
+	ComplianceType         string   `json:"compliance_type"`
+	Disabled               bool     `json:"disabled"`
+	Category               string   `json:"category"`
+	NodeID                 string   `json:"node_id"`
+}
+
+func (CloudComplianceControl) NodeType() string {
+	return "CloudComplianceControl"
+}
+
+func (CloudComplianceControl) ExtendedField() string {
+	return ""
+}
+
+func (v CloudComplianceControl) GetCategory() string {
+	return v.ComplianceType
+}
+
+func (CloudComplianceControl) GetJSONCategory() string {
+	return "compliance_type"
+}
+
 type ScanReportFieldsResponse struct {
 	Vulnerability []string `json:"vulnerability"`
 	Secret        []string `json:"secret"`
@@ -615,11 +649,11 @@ type ComplinaceScanResultsGroupReq struct {
 	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
 }
 
-type ComplinaceScanResultsGroupResp struct {
-	Groups map[string]ComplinaceScanResultControlGroup `json:"groups"`
+type ComplianceScanResultsGroupResp struct {
+	Groups map[string]ComplianceScanResultControlGroup `json:"groups"`
 }
 
-type ComplinaceScanResultControlGroup struct {
+type ComplianceScanResultControlGroup struct {
 	Title          string           `json:"title,omitempty"`
 	Counts         map[string]int64 `json:"counts,omitempty"`
 	BenchmarkTypes []string         `json:"benchmark_types,omitempty"`
