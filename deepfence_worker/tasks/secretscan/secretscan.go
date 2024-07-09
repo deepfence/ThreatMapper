@@ -105,6 +105,14 @@ func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error 
 	return nil
 }
 
+func SecretsToSecretInfos(out []output.SecretFound) []*pb.SecretInfo {
+	res := make([]*pb.SecretInfo, 0)
+	for _, v := range out {
+		res = append(res, output.SecretToSecretInfo(v))
+	}
+	return res
+}
+
 func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error {
 
 	log := log.WithCtx(ctx)
@@ -272,7 +280,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		pb.SecretInfo
 	}
 
-	for _, c := range output.SecretsToSecretInfos(secrets) {
+	for _, c := range SecretsToSecretInfos(secrets) {
 		var r secretScanResult
 		r.SecretScanParameters = params
 		r.SecretInfo = *c          //nolint:govet
