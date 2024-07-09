@@ -36,7 +36,7 @@ import (
 var (
 	failOnCompileWarning = false
 	secretRulesDir       = "/usr/local/secret"
-	secretRulesPath      = "/usr/local/secret/yara-rules"
+	secretRulesPath      = "/usr/local/secret/secret-yara-rules"
 	secretConfigPath     = "/secret-config/config.yaml"
 	opts                 *secretConfig.Options
 	yaraconfig           config.Config
