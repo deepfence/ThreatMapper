@@ -13,34 +13,44 @@ import (
 	"sync"
 	"time"
 
-	"github.com/deepfence/SecretScanner/core"
-	"github.com/deepfence/SecretScanner/output"
-	secretScan "github.com/deepfence/SecretScanner/scan"
+	out "github.com/deepfence/SecretScanner/output"
+	"github.com/deepfence/YaraHunter/pkg/output"
+	"github.com/deepfence/golang_deepfence_sdk/utils/tasks"
+	"github.com/hibiken/asynq"
+
+	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
+	secretScanConstants "github.com/deepfence/YaraHunter/constants"
+	secretConfig "github.com/deepfence/YaraHunter/pkg/config"
+	secretScan "github.com/deepfence/YaraHunter/pkg/scan"
+	yararules "github.com/deepfence/YaraHunter/pkg/yararules"
+	config "github.com/deepfence/match-scanner/pkg/config"
+
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
-	tasks "github.com/deepfence/golang_deepfence_sdk/utils/tasks"
-	"github.com/deepfence/match-scanner/pkg/config"
-	"github.com/hibiken/asynq"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"gopkg.in/yaml.v2"
+)
+
+var (
+	failOnCompileWarning = false
+	secretRulesDir       = "/usr/local/secret"
+	secretRulesPath      = "/usr/local/secret/yara-rules"
+	secretConfigPath     = "/secret-config/config.yaml"
+	opts                 *secretConfig.Options
+	yaraconfig           config.Config
+	yr                   *yararules.YaraRules
 )
 
 var ScanMap sync.Map
 
-var extractorConfig = `
-exclude_extensions: [ ".exe", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".psd", ".xcf", ".zip", ".tar", ".tar.gz", ".ttf", ".lock", ".pem", ".so", ".jar", ".gz" ]
-exclude_paths: ["/var/lib/docker", "/var/lib/containerd", "/dev", "/proc", "/usr/lib", "/sys", "/boot", "/run", ".home/kubernetes"]
-max_file_size: 1073741824
-`
+var secretRulesHash = ""
+var secretRuleLock = new(sync.Mutex)
 
-var secretsRulesFile = "secret.yar"
-var secretsRulesDir = "/"
-var secretsRulesHash = ""
-var secretsRuleLock = new(sync.Mutex)
+func init() {
+	ScanMap = sync.Map{}
+}
 
 type SecretScan struct {
 	ingestC chan *kgo.Record
@@ -50,27 +60,31 @@ func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 	return SecretScan{ingestC: ingest}
 }
 
-func checkSecretsRulesUpdate(ctx context.Context) error {
+func checkSecretRulesUpdate(ctx context.Context) error {
 	// fetch rules url
 	path, hash, err := threatintel.FetchSecretsRulesInfo(ctx)
 	if err != nil {
 		return err
 	}
 
-	secretsRuleLock.Lock()
-	defer secretsRuleLock.Unlock()
+	secretRuleLock.Lock()
+	defer secretRuleLock.Unlock()
 
-	if secretsRulesHash != hash {
-		secretsRulesHash = hash
+	if secretRulesHash != hash {
+		secretRulesHash = hash
 
 		// remove old rules
-		os.RemoveAll(filepath.Join(secretsRulesDir, secretsRulesFile))
+		os.RemoveAll(secretRulesPath)
+		os.MkdirAll(secretRulesDir, 0755)
 
 		log.Info().Msgf("update rules from path: %s", path)
-		if err := workerUtils.UpdateRules(ctx, path, secretsRulesDir); err != nil {
+		if err := workerUtils.UpdateRules(ctx, path, secretRulesDir); err != nil {
 			return err
 		}
-		initSecretScanner()
+		opts, yaraconfig, yr, err = initSecretScanner()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -93,42 +107,32 @@ func (s SecretScan) StopSecretScan(ctx context.Context, task *asynq.Task) error 
 
 	obj, found := ScanMap.Load(scanID)
 	if !found {
-		log.Error().Msgf("SecretScanner::Failed to Stop scan, may have already completed or errored out, ScanID: %s", scanID)
+		log.Error().Msgf("Failed to Stop scan, may be already completed or errored out, ScanID: %s", scanID)
 		return nil
 	}
 
-	scanCtx := obj.(*tasks.ScanContext)
-	scanCtx.StopTriggered.Store(true)
-	scanCtx.Cancel()
-	log.Error().Msgf("SecretScanner::Stop request submitted, ScanID: %s", scanID)
+	scanner := obj.(*tasks.ScanContext)
+	scanner.StopTriggered.Store(true)
+	scanner.Cancel()
+	log.Error().Msgf("Stop request submitted, ScanID: %s", scanID)
 
 	return nil
-}
 
-func SecretsToSecretInfos(out []output.SecretFound) []*pb.SecretInfo {
-	res := make([]*pb.SecretInfo, 0)
-	for _, v := range out {
-		res = append(res, output.SecretToSecretInfo(v))
-	}
-	return res
 }
 
 func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error {
 
 	log := log.WithCtx(ctx)
 
-	if err := checkSecretsRulesUpdate(ctx); err != nil {
-		log.Error().Err(err).Msg("failed to update secrets rules")
+	if err := checkSecretRulesUpdate(ctx); err != nil {
+		log.Error().Err(err).Msg("failed to update secret rules")
 		return err
 	}
 
+	var err error
 	tenantID, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return err
-	}
-	if len(tenantID) == 0 {
-		log.Error().Msg("tenant-id/namespace is empty")
-		return nil
 	}
 
 	log.Info().Msgf("payload: %s ", string(task.Payload()))
@@ -136,24 +140,17 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	var params utils.SecretScanParameters
 
 	if err := json.Unmarshal(task.Payload(), &params); err != nil {
-		log.Error().Msg(err.Error())
-		return nil
+		return err
 	}
 
-	if params.RegistryID == "" {
-		log.Error().Msgf("registry id is empty in params %+v", params)
-		return nil
-	}
-
-	//Set this "hardErr" variable to appropriate error if
-	//an error has caused used to abort/return from this function
-	var hardErr error
 	res, scanCtx := tasks.StartStatusReporter(params.ScanID,
 		func(status tasks.ScanStatus) error {
 			sb, err := json.Marshal(status)
 			if err != nil {
+				log.Error().Msgf("%v", err)
 				return err
 			}
+
 			s.ingestC <- &kgo.Record{
 				Topic:   utils.TopicWithNamespace(utils.SecretScanStatus, string(tenantID)),
 				Value:   sb,
@@ -166,7 +163,7 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 			FAILED:      utils.ScanStatusFailed,
 			SUCCESS:     utils.ScanStatusSuccess,
 		},
-		time.Minute*20,
+		time.Minute*10,
 	)
 
 	ScanMap.Store(params.ScanID, scanCtx)
@@ -174,22 +171,33 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	defer func() {
 		log.Info().Msgf("Removing from scan map, scan_id: %s", params.ScanID)
 		ScanMap.Delete(params.ScanID)
-		res <- hardErr
+		res <- err
 		close(res)
 	}()
+
+	if params.RegistryID == "" {
+		return fmt.Errorf("registry id is empty in params %+v: %w", params, err)
+	}
+
+	// opts, yaraconfig, yr = initSecretScanner()
+	yrScanner, err := yr.NewScanner()
+	if err != nil {
+		return err
+	}
+
+	// scanResult, err := secretScan.ExtractAndScanFromTar(dir, imagename)
+	secretScanner := secretScan.New(*opts.HostMountPath, yaraconfig, yrScanner, params.ScanID)
 
 	// send inprogress status
 	err = scanCtx.Checkpoint("After initialization")
 	if err != nil {
-		log.Error().Msg(err.Error())
+		return err
 	}
 
 	// get registry credentials
 	authDir, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryID)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		hardErr = err
-		return nil
+		return err
 	}
 
 	defer func() {
@@ -222,7 +230,6 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 
 	authFile := authDir + "/config.json"
 	imgTar := dir + "/save-output.tar"
-
 	var cmd *exec.Cmd
 	if authDir != "" {
 		cmd = exec.Command("skopeo", []string{"copy", "--insecure-policy", "--src-tls-verify=false",
@@ -232,17 +239,16 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 			"docker://" + imageName, "docker-archive:" + imgTar}...)
 	}
 
-	log.Info().Msgf("command: %s", cmd.String())
 	err = scanCtx.Checkpoint("Before skopeo download")
 	if err != nil {
 		return err
 	}
 
+	log.Info().Msgf("command: %s", cmd.String())
 	if out, err := workerUtils.RunCommand(cmd); err != nil {
 		log.Error().Err(err).Msg(cmd.String())
 		log.Error().Msgf("output: %s", out.String())
-		hardErr = err
-		return nil
+		return err
 	}
 
 	err = scanCtx.Checkpoint("After skopeo download")
@@ -255,24 +261,28 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		return err
 	}
 	extractTarFromReader(f, filepath.Join(dir, "root"))
+	f.Close()
 
-	err = scanCtx.Checkpoint("After extraction")
+	err = scanCtx.Checkpoint("After tar extraction")
 	if err != nil {
 		return err
 	}
 
-	cfg := config.Config{}
-	yaml.Unmarshal([]byte(extractorConfig), &cfg)
-	// init secret scan
-	secrets := []output.SecretFound{}
-	err = secretScan.Scan(scanCtx, secretScan.DirScan, config.Config2Filter(cfg),
-		"", filepath.Join(dir, "root"), params.ScanID, func(sf output.SecretFound, s string) {
-			secrets = append(secrets, sf)
-		})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		hardErr = err
-		return nil
+		return err
+	}
+
+	var scanResult []output.IOCFound
+
+	err = secretScanner.Scan(scanCtx, secretScan.DirScan,
+		"", filepath.Join(dir, "root"),
+		params.ScanID, func(i output.IOCFound, s string) {
+			scanResult = append(scanResult, i)
+		})
+	if err != nil {
+		log.Error().Msgf("Trying to scan %v err: %v", imageName, err)
+		return err
 	}
 
 	type secretScanResult struct {
@@ -280,7 +290,8 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		pb.SecretInfo
 	}
 
-	for _, c := range SecretsToSecretInfos(secrets) {
+	for _, cc := range scanResult {
+		c := out.SecretToSecretInfo(cc)
 		var r secretScanResult
 		r.SecretScanParameters = params
 		r.SecretInfo = *c          //nolint:govet
@@ -299,9 +310,26 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	return nil
 }
 
-func initSecretScanner() {
-	// init secret scan
-	core.GetSession()
+func initSecretScanner() (*secretConfig.Options, config.Config, *yararules.YaraRules, error) {
+	opts := secretConfig.NewDefaultOptions()
+	opts.RulesPath = &secretRulesPath
+	opts.ConfigPath = &secretConfigPath
+	opts.FailOnCompileWarning = &failOnCompileWarning
+
+	yaraconfig, err := config.ParseConfig(*opts.ConfigPath)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return nil, yaraconfig, nil, err
+	}
+
+	yr := yararules.New(*opts.RulesPath)
+	err = yr.Compile(secretScanConstants.Filescan, *opts.FailOnCompileWarning)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return nil, yaraconfig, nil, err
+	}
+
+	return opts, yaraconfig, yr, nil
 }
 
 func extractTarFromReader(reader io.Reader, destDir string) error {
