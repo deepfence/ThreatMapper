@@ -432,11 +432,11 @@ const DataTable = () => {
                 }}
                 target="_blank"
               >
-                <TruncatedText text={info.getValue()} />
+                <TruncatedText text={info.getValue() || info.row.original.node_id} />
               </DFLink>
             );
           }
-          return <TruncatedText text={info.getValue()} />;
+          return <TruncatedText text={info.getValue() || info.row.original.node_id} />;
         },
         header: () => 'Name',
         minSize: 100,
