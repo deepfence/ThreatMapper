@@ -291,18 +291,20 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 	}
 
 	for _, cc := range scanResult {
-		c := out.SecretToSecretInfo(cc)
-		var r secretScanResult
-		r.SecretScanParameters = params
-		r.SecretInfo = *c          //nolint:govet
-		cb, err := json.Marshal(r) //nolint:govet
-		if err != nil {
-			log.Error().Msg(err.Error())
-		} else {
-			s.ingestC <- &kgo.Record{
-				Topic:   utils.TopicWithNamespace(utils.SecretScan, string(tenantID)),
-				Value:   cb,
-				Headers: []kgo.RecordHeader{{Key: "namespace", Value: []byte(tenantID)}},
+		for i := range cc.StringsToMatch {
+			c := out.SecretToSecretInfo(cc, i)
+			var r secretScanResult
+			r.SecretScanParameters = params
+			r.SecretInfo = *c          //nolint:govet
+			cb, err := json.Marshal(r) //nolint:govet
+			if err != nil {
+				log.Error().Msg(err.Error())
+			} else {
+				s.ingestC <- &kgo.Record{
+					Topic:   utils.TopicWithNamespace(utils.SecretScan, string(tenantID)),
+					Value:   cb,
+					Headers: []kgo.RecordHeader{{Key: "namespace", Value: []byte(tenantID)}},
+				}
 			}
 		}
 	}
