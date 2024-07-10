@@ -32,6 +32,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/samber/lo"
 	"github.com/samber/mo"
+	"github.com/spf13/cast"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -1249,9 +1250,9 @@ func (h *Handler) CountComplianceScanResultsGroupHandler(w http.ResponseWriter, 
 
 	query := `MATCH (n:ComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:Compliance)-[:IS]-(r:ComplianceRule) ` +
 		reporters.ParseFieldFilters2CypherWhereConditions("c", mo.Some(req.FieldsFilter), true) +
-		` RETURN r.node_id as control_id, collect(c.status) as status`
+		` RETURN r.node_id as control_id, collect(c.status) as status, c.compliance_check_type as compliance_check_type, r.description as title`
 
-	log.Debug().Msgf("CountComplianceScanResultsGroupHandler query: %s", query)
+	log.Debug().Msgf("Count ComplianceScan Results Group Handler query: %s", query)
 
 	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_id": req.ScanID})
 	if err != nil {
@@ -1265,14 +1266,19 @@ func (h *Handler) CountComplianceScanResultsGroupHandler(w http.ResponseWriter, 
 		h.respondError(err, w)
 	}
 
-	results := map[string]map[string]int64{}
+	results := map[string]model.ComplianceScanResultControlGroup{}
 
 	for _, rec := range recs {
-		results[rec.Values[0].(string)] = groupArrayToMap(rec.Values[1].([]interface{}))
+		r := model.ComplianceScanResultControlGroup{
+			Counts:         groupArrayToMap(rec.Values[1].([]interface{})),
+			BenchmarkTypes: cast.ToStringSlice(rec.Values[2].(string)),
+			Title:          rec.Values[3].(string),
+		}
+		results[rec.Values[0].(string)] = r
 	}
 
 	err = httpext.JSON(w, http.StatusOK,
-		model.ComplinaceScanResultsGroupResp{Groups: results})
+		model.ComplianceScanResultsGroupResp{Groups: results})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 	}
@@ -1320,11 +1326,19 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 	}
 	defer tx.Close(ctx)
 
-	query := `MATCH (n:CloudComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:CloudCompliance) ` +
-		reporters.ParseFieldFilters2CypherWhereConditions("c", mo.Some(req.FieldsFilter), true) +
-		` RETURN c.full_control_id as control_id, collect(c.status) as status`
+	query := `
+	MATCH (n:CloudComplianceScan{node_id: $scan_id})-[:DETECTED]-(c:CloudCompliance)
+	` + reporters.ParseFieldFilters2CypherWhereConditions("c", mo.Some(req.FieldsFilter), true) +
+		`
+	CALL {
+		WITH c
+		MATCH (e:CloudComplianceControl{control_id:c.full_control_id})
+		RETURN COLLECT(DISTINCT e.compliance_type) as compliance_type
+	}
+	RETURN c.full_control_id as control_id, collect(c.status) as status, compliance_type, c.title as title
+	`
 
-	log.Debug().Msgf("CountCloudComplianceScanResultsGroupHandler query: %s", query)
+	log.Debug().Msgf("Count Cloud ComplianceScan Results Group Handler query: %s", query)
 
 	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_id": req.ScanID})
 	if err != nil {
@@ -1338,14 +1352,19 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 		h.respondError(err, w)
 	}
 
-	results := map[string]map[string]int64{}
+	results := map[string]model.ComplianceScanResultControlGroup{}
 
 	for _, rec := range recs {
-		results[rec.Values[0].(string)] = groupArrayToMap(rec.Values[1].([]interface{}))
+		r := model.ComplianceScanResultControlGroup{
+			Counts:         groupArrayToMap(rec.Values[1].([]interface{})),
+			BenchmarkTypes: cast.ToStringSlice(rec.Values[2].([]interface{})),
+			Title:          rec.Values[3].(string),
+		}
+		results[rec.Values[0].(string)] = r
 	}
 
 	err = httpext.JSON(w, http.StatusOK,
-		model.ComplinaceScanResultsGroupResp{Groups: results})
+		model.ComplianceScanResultsGroupResp{Groups: results})
 	if err != nil {
 		log.Error().Msgf("%v", err)
 	}

@@ -125,3 +125,7 @@ func (h *Handler) GetCompliances(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetCloudCompliances(w http.ResponseWriter, r *http.Request) {
 	getGeneric[model.CloudCompliance](h, w, r, reporters_lookup.GetCloudComplianceReport)
 }
+
+func (h *Handler) GetCloudComplianceControl(w http.ResponseWriter, r *http.Request) {
+	getGeneric[model.CloudComplianceControl](h, w, r, reporters_lookup.GetCloudComplianceControl)
+}
