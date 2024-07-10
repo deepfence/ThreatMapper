@@ -121,6 +121,10 @@ export function getComplianceApiClient() {
     resultCountComplianceScan:
       complianceApi.countResultsComplianceScan.bind(complianceApi),
     listComplianceScan: complianceApi.listComplianceScan.bind(complianceApi),
+    scanResultCloudComplianceCountsByControls:
+      complianceApi.groupResultsCloudCompliance.bind(complianceApi),
+    scanResultComplianceCountsByControls:
+      complianceApi.groupResultsCompliance.bind(complianceApi),
   };
 }
 
@@ -273,6 +277,7 @@ export function getLookupApiClient() {
     lookupCompliances: lookupApi.getCompliances.bind(lookupApi),
     lookupCloudCompliances: lookupApi.getCloudCompliances.bind(lookupApi),
     lookupRegistryAccounts: lookupApi.getRegistryAccount.bind(lookupApi),
+    lookupComplianceControls: lookupApi.getComplianceControls.bind(lookupApi),
   };
 }
 

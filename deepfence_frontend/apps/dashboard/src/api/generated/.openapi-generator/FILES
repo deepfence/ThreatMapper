@@ -85,6 +85,7 @@ models/ModelBulkDeleteScansRequest.ts
 models/ModelCloudAccountDeleteReq.ts
 models/ModelCloudAccountRefreshReq.ts
 models/ModelCloudCompliance.ts
+models/ModelCloudComplianceControl.ts
 models/ModelCloudComplianceScanResult.ts
 models/ModelCloudNodeAccountInfo.ts
 models/ModelCloudNodeAccountRegisterReq.ts
@@ -101,10 +102,11 @@ models/ModelCompliance.ts
 models/ModelComplianceRule.ts
 models/ModelComplianceScanInfo.ts
 models/ModelComplianceScanResult.ts
+models/ModelComplianceScanResultControlGroup.ts
+models/ModelComplianceScanResultsGroupResp.ts
 models/ModelComplianceScanStatusResp.ts
 models/ModelComplianceScanTriggerReq.ts
 models/ModelComplinaceScanResultsGroupReq.ts
-models/ModelComplinaceScanResultsGroupResp.ts
 models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts

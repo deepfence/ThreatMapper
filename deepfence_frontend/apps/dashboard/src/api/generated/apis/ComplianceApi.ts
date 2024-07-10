@@ -20,9 +20,9 @@ import type {
   IngestersCompliance,
   IngestersComplianceScanStatus,
   ModelComplianceScanResult,
+  ModelComplianceScanResultsGroupResp,
   ModelComplianceScanTriggerReq,
   ModelComplinaceScanResultsGroupReq,
-  ModelComplinaceScanResultsGroupResp,
   ModelScanListReq,
   ModelScanListResp,
   ModelScanResultsReq,
@@ -43,12 +43,12 @@ import {
     IngestersComplianceScanStatusToJSON,
     ModelComplianceScanResultFromJSON,
     ModelComplianceScanResultToJSON,
+    ModelComplianceScanResultsGroupRespFromJSON,
+    ModelComplianceScanResultsGroupRespToJSON,
     ModelComplianceScanTriggerReqFromJSON,
     ModelComplianceScanTriggerReqToJSON,
     ModelComplinaceScanResultsGroupReqFromJSON,
     ModelComplinaceScanResultsGroupReqToJSON,
-    ModelComplinaceScanResultsGroupRespFromJSON,
-    ModelComplinaceScanResultsGroupRespToJSON,
     ModelScanListReqFromJSON,
     ModelScanListReqToJSON,
     ModelScanListRespFromJSON,
@@ -138,13 +138,13 @@ export interface ComplianceApiInterface {
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
      */
-    groupResultsCloudComplianceRaw(requestParameters: GroupResultsCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplinaceScanResultsGroupResp>>;
+    groupResultsCloudComplianceRaw(requestParameters: GroupResultsCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplianceScanResultsGroupResp>>;
 
     /**
      * Count Cloud Compliance Results grouped by Control ID
      * Count Cloud Compliance Results by Control ID
      */
-    groupResultsCloudCompliance(requestParameters: GroupResultsCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplinaceScanResultsGroupResp>;
+    groupResultsCloudCompliance(requestParameters: GroupResultsCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanResultsGroupResp>;
 
     /**
      * Count Compliance Results grouped by Control ID
@@ -154,13 +154,13 @@ export interface ComplianceApiInterface {
      * @throws {RequiredError}
      * @memberof ComplianceApiInterface
      */
-    groupResultsComplianceRaw(requestParameters: GroupResultsComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplinaceScanResultsGroupResp>>;
+    groupResultsComplianceRaw(requestParameters: GroupResultsComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplianceScanResultsGroupResp>>;
 
     /**
      * Count Compliance Results grouped by Control ID
      * Count Compliance Results by Control ID
      */
-    groupResultsCompliance(requestParameters: GroupResultsComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplinaceScanResultsGroupResp>;
+    groupResultsCompliance(requestParameters: GroupResultsComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanResultsGroupResp>;
 
     /**
      * Ingest compliance issues found while scanning the agent
@@ -324,7 +324,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Count Cloud Compliance Results grouped by Control ID
      * Count Cloud Compliance Results by Control ID
      */
-    async groupResultsCloudComplianceRaw(requestParameters: GroupResultsCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplinaceScanResultsGroupResp>> {
+    async groupResultsCloudComplianceRaw(requestParameters: GroupResultsCloudComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplianceScanResultsGroupResp>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -347,14 +347,14 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             body: ModelComplinaceScanResultsGroupReqToJSON(requestParameters.modelComplinaceScanResultsGroupReq),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelComplinaceScanResultsGroupRespFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelComplianceScanResultsGroupRespFromJSON(jsonValue));
     }
 
     /**
      * Count Cloud Compliance Results grouped by Control ID
      * Count Cloud Compliance Results by Control ID
      */
-    async groupResultsCloudCompliance(requestParameters: GroupResultsCloudComplianceRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplinaceScanResultsGroupResp> {
+    async groupResultsCloudCompliance(requestParameters: GroupResultsCloudComplianceRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanResultsGroupResp> {
         const response = await this.groupResultsCloudComplianceRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -363,7 +363,7 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
      * Count Compliance Results grouped by Control ID
      * Count Compliance Results by Control ID
      */
-    async groupResultsComplianceRaw(requestParameters: GroupResultsComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplinaceScanResultsGroupResp>> {
+    async groupResultsComplianceRaw(requestParameters: GroupResultsComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelComplianceScanResultsGroupResp>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -386,14 +386,14 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
             body: ModelComplinaceScanResultsGroupReqToJSON(requestParameters.modelComplinaceScanResultsGroupReq),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelComplinaceScanResultsGroupRespFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelComplianceScanResultsGroupRespFromJSON(jsonValue));
     }
 
     /**
      * Count Compliance Results grouped by Control ID
      * Count Compliance Results by Control ID
      */
-    async groupResultsCompliance(requestParameters: GroupResultsComplianceRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplinaceScanResultsGroupResp> {
+    async groupResultsCompliance(requestParameters: GroupResultsComplianceRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanResultsGroupResp> {
         const response = await this.groupResultsComplianceRaw(requestParameters, initOverrides);
         return await response.value();
     }

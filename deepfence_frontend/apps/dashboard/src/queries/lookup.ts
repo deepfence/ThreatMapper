@@ -345,4 +345,32 @@ export const lookupQueries = createQueryKeys('lookup', {
       },
     };
   },
+  complianceControl: (filters: { nodeIds: string[] }) => {
+    const { nodeIds } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const lookupComplianceControls = apiWrapper({
+          fn: getLookupApiClient().lookupComplianceControls,
+        });
+        const lookupComplianceControlsResponse = await lookupComplianceControls({
+          lookupLookupFilter: {
+            node_ids: nodeIds,
+            in_field_filter: [],
+            window: {
+              offset: 0,
+              size: Number.MAX_SAFE_INTEGER, // one node id can return multiple controls with diff. hiererachy
+            },
+          },
+        });
+        if (!lookupComplianceControlsResponse.ok) {
+          throw lookupComplianceControlsResponse.error;
+        }
+
+        return {
+          data: lookupComplianceControlsResponse.value,
+        };
+      },
+    };
+  },
 });
