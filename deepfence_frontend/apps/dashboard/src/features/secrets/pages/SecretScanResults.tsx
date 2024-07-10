@@ -1518,16 +1518,6 @@ const SecretTable = ({
         size: 50,
         maxSize: 70,
       }),
-      columnHelper.accessor('signature_to_match', {
-        enableSorting: false,
-        cell: (info) => {
-          return <TruncatedText text={info.getValue()} />;
-        },
-        header: () => <TruncatedText text="Signature to match" />,
-        minSize: 70,
-        size: 100,
-        maxSize: 150,
-      }),
       columnHelper.accessor('resources', {
         enableSorting: false,
         enableResizing: true,
@@ -1538,15 +1528,6 @@ const SecretTable = ({
         minSize: 100,
         size: 120,
         maxSize: 190,
-      }),
-      columnHelper.accessor('part', {
-        enableSorting: false,
-        enableResizing: true,
-        cell: (info) => <TruncatedText text={info.getValue() || '-'} />,
-        header: () => <TruncatedText text="Part" />,
-        minSize: 40,
-        size: 50,
-        maxSize: 70,
       }),
     ];
 

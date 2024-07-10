@@ -15470,18 +15470,13 @@
         "required": [
           "node_id",
           "starting_index",
-          "relative_starting_index",
-          "relative_ending_index",
           "full_filename",
           "matched_content",
           "masked",
           "updated_at",
           "level",
           "score",
-          "rule_id",
-          "name",
-          "part",
-          "signature_to_match"
+          "name"
         ],
         "type": "object",
         "properties": {
@@ -15494,17 +15489,12 @@
           "matched_content": { "type": "string" },
           "name": { "type": "string" },
           "node_id": { "type": "string" },
-          "part": { "type": "string" },
-          "relative_ending_index": { "type": "integer" },
-          "relative_starting_index": { "type": "integer" },
           "resources": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
-          "rule_id": { "type": "integer" },
           "score": { "type": "number" },
-          "signature_to_match": { "type": "string" },
           "starting_index": { "type": "integer" },
           "updated_at": { "type": "integer" }
         }

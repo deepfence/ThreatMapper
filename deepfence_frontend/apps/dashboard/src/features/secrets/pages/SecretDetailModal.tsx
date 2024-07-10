@@ -155,25 +155,8 @@ const DetailsComponent = ({
   }
 
   const keyValues = getFieldsKeyValue(secret ?? {}, {
-    hiddenFields: [
-      'starting_index',
-      'score',
-      'rule_id',
-      'node_id',
-      'resources',
-      'name',
-      'level',
-    ],
-    priorityFields: [
-      'full_filename',
-      'matched_content',
-      'part',
-      'relative_starting_index',
-      'relative_ending_index',
-      'signature_to_match',
-      'masked',
-      'updated_at',
-    ],
+    hiddenFields: ['starting_index', 'score', 'node_id', 'resources', 'name', 'level'],
+    priorityFields: ['full_filename', 'matched_content', 'masked', 'updated_at'],
   });
 
   return (
