@@ -64,24 +64,6 @@ export interface ModelSecret {
     node_id: string;
     /**
      * 
-     * @type {string}
-     * @memberof ModelSecret
-     */
-    part: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelSecret
-     */
-    relative_ending_index: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelSecret
-     */
-    relative_starting_index: number;
-    /**
-     * 
      * @type {Array<ModelBasicNode>}
      * @memberof ModelSecret
      */
@@ -91,19 +73,7 @@ export interface ModelSecret {
      * @type {number}
      * @memberof ModelSecret
      */
-    rule_id: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelSecret
-     */
     score: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelSecret
-     */
-    signature_to_match: string;
     /**
      * 
      * @type {number}
@@ -143,12 +113,7 @@ export function instanceOfModelSecret(value: object): boolean {
     isInstance = isInstance && "matched_content" in value;
     isInstance = isInstance && "name" in value;
     isInstance = isInstance && "node_id" in value;
-    isInstance = isInstance && "part" in value;
-    isInstance = isInstance && "relative_ending_index" in value;
-    isInstance = isInstance && "relative_starting_index" in value;
-    isInstance = isInstance && "rule_id" in value;
     isInstance = isInstance && "score" in value;
-    isInstance = isInstance && "signature_to_match" in value;
     isInstance = isInstance && "starting_index" in value;
     isInstance = isInstance && "updated_at" in value;
 
@@ -171,13 +136,8 @@ export function ModelSecretFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'matched_content': json['matched_content'],
         'name': json['name'],
         'node_id': json['node_id'],
-        'part': json['part'],
-        'relative_ending_index': json['relative_ending_index'],
-        'relative_starting_index': json['relative_starting_index'],
         'resources': !exists(json, 'resources') ? undefined : (json['resources'] === null ? null : (json['resources'] as Array<any>).map(ModelBasicNodeFromJSON)),
-        'rule_id': json['rule_id'],
         'score': json['score'],
-        'signature_to_match': json['signature_to_match'],
         'starting_index': json['starting_index'],
         'updated_at': json['updated_at'],
     };
@@ -198,13 +158,8 @@ export function ModelSecretToJSON(value?: ModelSecret | null): any {
         'matched_content': value.matched_content,
         'name': value.name,
         'node_id': value.node_id,
-        'part': value.part,
-        'relative_ending_index': value.relative_ending_index,
-        'relative_starting_index': value.relative_starting_index,
         'resources': value.resources === undefined ? undefined : (value.resources === null ? null : (value.resources as Array<any>).map(ModelBasicNodeToJSON)),
-        'rule_id': value.rule_id,
         'score': value.score,
-        'signature_to_match': value.signature_to_match,
         'starting_index': value.starting_index,
         'updated_at': value.updated_at,
     };

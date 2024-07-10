@@ -350,23 +350,6 @@ const UniqueTable = () => {
         size: 50,
         maxSize: 100,
       }),
-      columnHelper.accessor('signature_to_match', {
-        enableResizing: true,
-        enableSorting: false,
-        cell: (info) => <TruncatedText text={info.getValue()} />,
-        header: () => <TruncatedText text="Signature to match" />,
-        minSize: 130,
-        size: 140,
-        maxSize: 145,
-      }),
-      columnHelper.accessor('part', {
-        enableSorting: false,
-        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => <TruncatedText text="Part" />,
-        minSize: 40,
-        size: 50,
-        maxSize: 100,
-      }),
     ];
 
     return columns;
