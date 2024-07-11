@@ -275,6 +275,14 @@ ingress:
     # alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=3600
     # alb.ingress.kubernetes.io/target-type: ip
 
+    ## add an annotation indicating the issuer to use by cert-manager.
+    # cert-manager.io/cluster-issuer: nameOfClusterIssuer
+  
+  tls: []
+  #  - secretName: threat-mapper-tls
+  #    hosts:
+  #      - threat.example.com
+
 router:
   replicaCount: 1
   image:
