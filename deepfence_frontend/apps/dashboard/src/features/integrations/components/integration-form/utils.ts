@@ -173,10 +173,10 @@ export const getNotificationPrettyName = (notificationType: string) => {
 
 export const canSendScanSummary = (notificationType: string, integrationType: string) => {
   return (
-    ((integrationType === IntegrationType.slack ||
+    (integrationType === IntegrationType.slack ||
       integrationType === IntegrationType.microsoftTeams) &&
-      ['Secret', 'Vulnerability', 'Malware'].includes(notificationType)) ||
-    isComplianceNotification(notificationType) ||
-    isCloudComplianceNotification(notificationType)
+    (['Secret', 'Vulnerability', 'Malware'].includes(notificationType) ||
+      isComplianceNotification(notificationType) ||
+      isCloudComplianceNotification(notificationType))
   );
 };
