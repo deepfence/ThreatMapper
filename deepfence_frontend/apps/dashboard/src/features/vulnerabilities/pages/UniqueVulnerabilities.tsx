@@ -32,6 +32,7 @@ import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerabili
 import { TruncatedText } from '@/components/TruncatedText';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
+import { SearchableCVEList } from '@/features/vulnerabilities/components/ScanResults/SearchableCVEList';
 import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum, VulnerabilitySeverityType } from '@/types/common';
@@ -47,6 +48,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   containers = 'containers',
   containerImages = 'containerImages',
   clusters = 'clusters',
+  cveId = 'cveId',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -63,6 +65,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   containers: 'Container',
   containerImages: 'Container Images',
   clusters: 'Clusters',
+  cveId: 'CVE Id',
 };
 
 const getPrettyNameForAppliedFilters = ({
@@ -149,6 +152,27 @@ const Filters = () => {
             );
           })}
         </Combobox>
+        <SearchableCVEList
+          scanId={''}
+          defaultSelectedCVEIds={searchParams.getAll('cveId')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('cveId');
+              values.forEach((value) => {
+                prev.append('cveId', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('cveId');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['liveConnection']}
           multiple
@@ -401,7 +425,12 @@ const UniqueTable = () => {
       }),
       columnHelper.accessor('cve_attack_vector', {
         enableSorting: false,
-        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
+        cell: (info) => {
+          if (!info.getValue().length) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
+          }
+          return <TruncatedText text={info.getValue() ?? ''} />;
+        },
         header: () => <TruncatedText text="Attack vector" />,
         minSize: 100,
         size: 120,
@@ -419,7 +448,9 @@ const UniqueTable = () => {
         enableSorting: false,
         enableResizing: true,
         cell: (info) => {
-          if (!info.getValue().length) return '-';
+          if (!info.getValue().length) {
+            return <div className="ml-[26px] border-b w-[8px] border-text-icon"></div>;
+          }
           return (
             <DFLink href={info.getValue()} target="_blank">
               <div className="w-4 h-4">
@@ -458,6 +489,7 @@ const UniqueTable = () => {
       containerIds: searchParams.getAll('containers'),
       containerImageIds: searchParams.getAll('containerImages'),
       clusterIds: searchParams.getAll('clusters'),
+      cve: searchParams.getAll('cveId'),
     }),
     keepPreviousData: true,
   });
