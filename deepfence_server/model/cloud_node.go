@@ -194,6 +194,7 @@ type CloudNodeComplianceControl struct {
 	ControlID              string   `json:"control_id"`
 	Enabled                bool     `json:"enabled"`
 	ComplianceType         string   `json:"compliance_type"`
+	ProblemTitle           string   `json:"problem_title"`
 }
 
 type PostureProvider struct {

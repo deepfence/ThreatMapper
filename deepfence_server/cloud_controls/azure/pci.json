@@ -1,6 +1,6 @@
 [
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 1 - Install and maintain a firewall configuration to protect cardholder data \u003e PCI DSS requirement 1.3 \u003e PCI DSS requirement 1.3.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 1 - Install and maintain a firewall configuration to protect cardholder data > PCI DSS requirement 1.3 > PCI DSS requirement 1.3.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 1 - Install and maintain a firewall configuration to protect cardholder data",
@@ -25,10 +25,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_1_3_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_1/azure_compliance.benchmark.pci_dss_v321_requirement_1_3/azure_compliance.benchmark.pci_dss_v321_requirement_1_3_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Network ports are not restricted on network security groups associated to your virtual machine"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 1 - Install and maintain a firewall configuration to protect cardholder data \u003e PCI DSS requirement 1.3 \u003e PCI DSS requirement 1.3.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 1 - Install and maintain a firewall configuration to protect cardholder data > PCI DSS requirement 1.3 > PCI DSS requirement 1.3.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 1 - Install and maintain a firewall configuration to protect cardholder data",
@@ -53,10 +54,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_1_3_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_1/azure_compliance.benchmark.pci_dss_v321_requirement_1_3/azure_compliance.benchmark.pci_dss_v321_requirement_1_3_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Storage accounts allow unrestricted network access"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 1 - Install and maintain a firewall configuration to protect cardholder data \u003e PCI DSS requirement 1.3 \u003e PCI DSS requirement 1.3.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 1 - Install and maintain a firewall configuration to protect cardholder data > PCI DSS requirement 1.3 > PCI DSS requirement 1.3.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 1 - Install and maintain a firewall configuration to protect cardholder data",
@@ -81,10 +83,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_1_3_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_1/azure_compliance.benchmark.pci_dss_v321_requirement_1_3/azure_compliance.benchmark.pci_dss_v321_requirement_1_3_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Network ports are not restricted on network security groups associated to your virtual machine"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 1 - Install and maintain a firewall configuration to protect cardholder data \u003e PCI DSS requirement 1.3 \u003e PCI DSS requirement 1.3.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 1 - Install and maintain a firewall configuration to protect cardholder data > PCI DSS requirement 1.3 > PCI DSS requirement 1.3.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 1 - Install and maintain a firewall configuration to protect cardholder data",
@@ -109,10 +112,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_1_3_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_1/azure_compliance.benchmark.pci_dss_v321_requirement_1_3/azure_compliance.benchmark.pci_dss_v321_requirement_1_3_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Storage accounts allow unrestricted network access"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -135,10 +139,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts still have owner permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -161,10 +166,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts still have read permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -187,10 +193,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts have write permissions on Azure resources and are not removed"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -213,10 +220,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Audit finds no usage of custom RBAC roles"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -239,10 +247,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Accounts without owner permissions on Azure resources are not MFA enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -265,10 +274,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Accounts without MFA enablement have write permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -290,10 +300,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "An Azure Active Directory administrator is not provisioned for SQL servers"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -315,10 +326,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "App Service API apps are not only accessible over HTTPS"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -341,10 +353,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Function apps are accessible over non-HTTPS"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -365,10 +378,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Automation account variables are not encrypted"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -391,10 +405,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Only insecure connections to your Azure Cache for Redis are enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -417,10 +432,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Virtual machines do not encrypt temp disks, caches, and data flows between Compute and Storage resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -442,10 +458,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Service Fabric clusters do not have the ClusterProtectionLevel property set to EncryptAndSign"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -467,10 +484,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "SQL databases do not have transparent data encryption enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 3 - Protect stored cardholder data \u003e PCI DSS requirement 3.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 3 - Protect stored cardholder data > PCI DSS requirement 3.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 3 - Protect stored cardholder data",
@@ -493,10 +511,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_3_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_3/azure_compliance.benchmark.pci_dss_v321_requirement_3_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Secure transfer to storage accounts is not enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 4 - Encrypt transmission of cardholder data across open, public networks \u003e PCI DSS requirement 4.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 4 - Encrypt transmission of cardholder data across open, public networks > PCI DSS requirement 4.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 4 - Encrypt transmission of cardholder data across open, public networks",
@@ -518,10 +537,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_4_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_4/azure_compliance.benchmark.pci_dss_v321_requirement_4_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "App Service API apps are not only accessible over HTTPS"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 4 - Encrypt transmission of cardholder data across open, public networks \u003e PCI DSS requirement 4.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 4 - Encrypt transmission of cardholder data across open, public networks > PCI DSS requirement 4.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 4 - Encrypt transmission of cardholder data across open, public networks",
@@ -544,10 +564,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_4_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_4/azure_compliance.benchmark.pci_dss_v321_requirement_4_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Function apps are accessible over non-HTTPS"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 4 - Encrypt transmission of cardholder data across open, public networks \u003e PCI DSS requirement 4.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 4 - Encrypt transmission of cardholder data across open, public networks > PCI DSS requirement 4.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 4 - Encrypt transmission of cardholder data across open, public networks",
@@ -568,10 +589,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_4_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_4/azure_compliance.benchmark.pci_dss_v321_requirement_4_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Automation account variables are not encrypted"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 4 - Encrypt transmission of cardholder data across open, public networks \u003e PCI DSS requirement 4.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 4 - Encrypt transmission of cardholder data across open, public networks > PCI DSS requirement 4.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 4 - Encrypt transmission of cardholder data across open, public networks",
@@ -594,10 +616,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_4_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_4/azure_compliance.benchmark.pci_dss_v321_requirement_4_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Only insecure connections to your Azure Cache for Redis are enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 4 - Encrypt transmission of cardholder data across open, public networks \u003e PCI DSS requirement 4.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 4 - Encrypt transmission of cardholder data across open, public networks > PCI DSS requirement 4.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 4 - Encrypt transmission of cardholder data across open, public networks",
@@ -620,10 +643,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_4_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_4/azure_compliance.benchmark.pci_dss_v321_requirement_4_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Virtual machines do not encrypt temp disks, caches, and data flows between Compute and Storage resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 4 - Encrypt transmission of cardholder data across open, public networks \u003e PCI DSS requirement 4.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 4 - Encrypt transmission of cardholder data across open, public networks > PCI DSS requirement 4.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 4 - Encrypt transmission of cardholder data across open, public networks",
@@ -645,10 +669,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_4_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_4/azure_compliance.benchmark.pci_dss_v321_requirement_4_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Service Fabric clusters do not have the ClusterProtectionLevel property set to EncryptAndSign"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 4 - Encrypt transmission of cardholder data across open, public networks \u003e PCI DSS requirement 4.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 4 - Encrypt transmission of cardholder data across open, public networks > PCI DSS requirement 4.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 4 - Encrypt transmission of cardholder data across open, public networks",
@@ -670,10 +695,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_4_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_4/azure_compliance.benchmark.pci_dss_v321_requirement_4_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "SQL databases do not have transparent data encryption enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 4 - Encrypt transmission of cardholder data across open, public networks \u003e PCI DSS requirement 4.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 4 - Encrypt transmission of cardholder data across open, public networks > PCI DSS requirement 4.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 4 - Encrypt transmission of cardholder data across open, public networks",
@@ -696,10 +722,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_4_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_4/azure_compliance.benchmark.pci_dss_v321_requirement_4_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Secure transfer to storage accounts is not enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs \u003e PCI DSS requirement 5.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs > PCI DSS requirement 5.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs",
@@ -721,10 +748,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_5_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_5/azure_compliance.benchmark.pci_dss_v321_requirement_5_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Azure Security Center has Endpoint Protection that is not being monitored"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs \u003e PCI DSS requirement 5.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs > PCI DSS requirement 5.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs",
@@ -747,10 +775,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_5_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_5/azure_compliance.benchmark.pci_dss_v321_requirement_5_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Vulnerabilities in security configuration on your machines are not remediated"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs \u003e PCI DSS requirement 5.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs > PCI DSS requirement 5.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs",
@@ -773,10 +802,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_5_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_5/azure_compliance.benchmark.pci_dss_v321_requirement_5_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "System updates are not installed on your machines"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs \u003e PCI DSS requirement 5.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs > PCI DSS requirement 5.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs",
@@ -799,10 +829,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_5_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_5/azure_compliance.benchmark.pci_dss_v321_requirement_5_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "A vulnerability assessment solution is not enabled on your virtual machines"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs \u003e PCI DSS requirement 5.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs > PCI DSS requirement 5.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 5 - Protect all systems against malware and regularly update anti-virus software or programs",
@@ -825,10 +856,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_5_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_5/azure_compliance.benchmark.pci_dss_v321_requirement_5_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "SQL databases do not have vulnerability findings resolved"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -850,10 +882,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Azure Security Center has Endpoint Protection that is not being monitored"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -876,10 +909,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Vulnerabilities in security configuration on your machines are not remediated"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -902,10 +936,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "System updates are not installed on your machines"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -928,10 +963,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "A vulnerability assessment solution is not enabled on your virtual machines"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -954,10 +990,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "SQL databases do not have vulnerability findings resolved"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.5 \u003e PCI DSS requirement 6.5.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.5 > PCI DSS requirement 6.5.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -981,10 +1018,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_5/azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "App Service API apps are not only accessible over HTTPS"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.5 \u003e PCI DSS requirement 6.5.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.5 > PCI DSS requirement 6.5.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1009,10 +1047,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_5/azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Function apps are accessible over non-HTTPS"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.5 \u003e PCI DSS requirement 6.5.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.5 > PCI DSS requirement 6.5.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1035,10 +1074,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_5/azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Automation account variables are not encrypted"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.5 \u003e PCI DSS requirement 6.5.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.5 > PCI DSS requirement 6.5.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1063,10 +1103,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_5/azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Only insecure connections to your Azure Cache for Redis are enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.5 \u003e PCI DSS requirement 6.5.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.5 > PCI DSS requirement 6.5.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1091,10 +1132,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_5/azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Virtual machines do not encrypt temp disks, caches, and data flows between Compute and Storage resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.5 \u003e PCI DSS requirement 6.5.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.5 > PCI DSS requirement 6.5.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1118,10 +1160,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_5/azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Service Fabric clusters do not have the ClusterProtectionLevel property set to EncryptAndSign"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.5 \u003e PCI DSS requirement 6.5.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.5 > PCI DSS requirement 6.5.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1145,10 +1188,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_5/azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "SQL databases do not have transparent data encryption enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.5 \u003e PCI DSS requirement 6.5.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.5 > PCI DSS requirement 6.5.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1173,10 +1217,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_5/azure_compliance.benchmark.pci_dss_v321_requirement_6_5_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Secure transfer to storage accounts is not enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.6",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.6",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1198,10 +1243,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_6"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_6",
-    "executable": false
+    "executable": false,
+    "problem_title": "Azure Security Center has Endpoint Protection that is not being monitored"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.6",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.6",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1224,10 +1270,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_6"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_6",
-    "executable": false
+    "executable": false,
+    "problem_title": "Vulnerabilities in security configuration on your machines are not remediated"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.6",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.6",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1250,10 +1297,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_6"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_6",
-    "executable": false
+    "executable": false,
+    "problem_title": "System updates are not installed on your machines"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.6",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.6",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1276,10 +1324,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_6"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_6",
-    "executable": false
+    "executable": false,
+    "problem_title": "A vulnerability assessment solution is not enabled on your virtual machines"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 6 - Develop and maintain secure systems and applications \u003e PCI DSS requirement 6.6",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 6 - Develop and maintain secure systems and applications > PCI DSS requirement 6.6",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 6 - Develop and maintain secure systems and applications",
@@ -1302,10 +1351,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_6_6"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_6/azure_compliance.benchmark.pci_dss_v321_requirement_6_6",
-    "executable": false
+    "executable": false,
+    "problem_title": "SQL databases do not have vulnerability findings resolved"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.1 \u003e PCI DSS requirement 7.1.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.1 > PCI DSS requirement 7.1.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1330,10 +1380,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_1_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_1/azure_compliance.benchmark.pci_dss_v321_requirement_7_1_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "More than 3 owners are designated for your subscription"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.1 \u003e PCI DSS requirement 7.1.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.1 > PCI DSS requirement 7.1.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1357,10 +1408,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_1_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_1/azure_compliance.benchmark.pci_dss_v321_requirement_7_1_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Your subscription only has one owner assigned"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.1 \u003e PCI DSS requirement 7.1.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.1 > PCI DSS requirement 7.1.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1385,10 +1437,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_1_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_1/azure_compliance.benchmark.pci_dss_v321_requirement_7_1_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "More than 3 owners are designated for your subscription"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.1 \u003e PCI DSS requirement 7.1.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.1 > PCI DSS requirement 7.1.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1412,10 +1465,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_1_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_1/azure_compliance.benchmark.pci_dss_v321_requirement_7_1_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Your subscription only has one owner assigned"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.1 \u003e PCI DSS requirement 7.1.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.1 > PCI DSS requirement 7.1.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1440,10 +1494,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_1_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_1/azure_compliance.benchmark.pci_dss_v321_requirement_7_1_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "More than 3 owners are designated for your subscription"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.1 \u003e PCI DSS requirement 7.1.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.1 > PCI DSS requirement 7.1.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1467,10 +1522,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_1_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_1/azure_compliance.benchmark.pci_dss_v321_requirement_7_1_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Your subscription only has one owner assigned"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.2 \u003e PCI DSS requirement 7.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.2 > PCI DSS requirement 7.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1495,10 +1551,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_2/azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts still have owner permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.2 \u003e PCI DSS requirement 7.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.2 > PCI DSS requirement 7.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1523,10 +1580,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_2/azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts still have read permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.2 \u003e PCI DSS requirement 7.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.2 > PCI DSS requirement 7.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1551,10 +1609,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_2/azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts have write permissions on Azure resources and are not removed"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.2 \u003e PCI DSS requirement 7.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.2 > PCI DSS requirement 7.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1579,10 +1638,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_2/azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Audit finds no usage of custom RBAC roles"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.2 \u003e PCI DSS requirement 7.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.2 > PCI DSS requirement 7.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1607,10 +1667,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_2/azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Accounts without owner permissions on Azure resources are not MFA enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.2 \u003e PCI DSS requirement 7.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.2 > PCI DSS requirement 7.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1635,10 +1696,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_2/azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Accounts without MFA enablement have write permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 7 - Restrict access to cardholder data by business need-to-know \u003e PCI DSS requirement 7.2 \u003e PCI DSS requirement 7.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 7 - Restrict access to cardholder data by business need-to-know > PCI DSS requirement 7.2 > PCI DSS requirement 7.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 7 - Restrict access to cardholder data by business need-to-know",
@@ -1662,10 +1724,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_7/azure_compliance.benchmark.pci_dss_v321_requirement_7_2/azure_compliance.benchmark.pci_dss_v321_requirement_7_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "An Azure Active Directory administrator is not provisioned for SQL servers"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1690,10 +1753,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Blocked accounts still have owner permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1718,10 +1782,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Blocked accounts still have read and write permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1746,10 +1811,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts still have owner permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1774,10 +1840,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts still have read permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.2",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.2",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1802,10 +1869,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts have write permissions on Azure resources and are not removed"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1830,10 +1898,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Blocked accounts still have read and write permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1858,10 +1927,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Blocked accounts still have owner permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1886,10 +1956,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "Blocked accounts still have owner permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1914,10 +1985,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "Blocked accounts still have read and write permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1942,10 +2014,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts still have owner permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1970,10 +2043,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts still have read permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.1 \u003e PCI DSS requirement 8.1.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.1 > PCI DSS requirement 8.1.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -1998,10 +2072,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_1/azure_compliance.benchmark.pci_dss_v321_requirement_8_1_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts have write permissions on Azure resources and are not removed"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2025,10 +2100,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Windows Guest Configuration extension is not deployed to enable Guest Configuration assignments on Windows VMs"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2052,10 +2128,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "System-assigned managed identity is not added to enable Guest Configuration assignments on virtual machines with no identities"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2079,10 +2156,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "System-assigned managed identity is not added to enable Guest Configuration assignments on VMs with a user-assigned identity"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2106,10 +2184,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Windows machines do not have a maximum password age of 70 days"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2133,10 +2212,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Windows machines do not restrict the minimum password length to 14 characters"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.3",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.3",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2160,10 +2240,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Windows machines do not prevent re-use of previous 24 passwords"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2187,10 +2268,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "Windows Guest Configuration extension is not deployed to enable Guest Configuration assignments on Windows VMs"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2214,10 +2296,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "System-assigned managed identity is not added to enable Guest Configuration assignments on virtual machines with no identities"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2241,10 +2324,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "System-assigned managed identity is not added to enable Guest Configuration assignments on VMs with a user-assigned identity"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2268,10 +2352,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "Windows machines do not have a maximum password age of 70 days"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2295,10 +2380,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "Windows machines do not restrict the minimum password length to 14 characters"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.2 \u003e PCI DSS requirement 8.2.5",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.2 > PCI DSS requirement 8.2.5",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2322,10 +2408,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_2/azure_compliance.benchmark.pci_dss_v321_requirement_8_2_5",
-    "executable": false
+    "executable": false,
+    "problem_title": "Windows machines do not prevent re-use of previous 24 passwords"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.3 \u003e PCI DSS requirement 8.3.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.3 > PCI DSS requirement 8.3.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2350,10 +2437,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_3/azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts still have owner permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.3 \u003e PCI DSS requirement 8.3.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.3 > PCI DSS requirement 8.3.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2378,10 +2466,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_3/azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts still have read permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.3 \u003e PCI DSS requirement 8.3.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.3 > PCI DSS requirement 8.3.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2406,10 +2495,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_3/azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Guest accounts have write permissions on Azure resources and are not removed"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.3 \u003e PCI DSS requirement 8.3.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.3 > PCI DSS requirement 8.3.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2434,10 +2524,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_3/azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Audit finds no usage of custom RBAC roles"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.3 \u003e PCI DSS requirement 8.3.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.3 > PCI DSS requirement 8.3.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2462,10 +2553,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_3/azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Accounts without owner permissions on Azure resources are not MFA enabled"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.3 \u003e PCI DSS requirement 8.3.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.3 > PCI DSS requirement 8.3.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2490,10 +2582,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_3/azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Accounts without MFA enablement have write permissions on Azure resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 8 - Identify and authenticate access to system components \u003e PCI DSS requirement 8.3 \u003e PCI DSS requirement 8.3.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 8 - Identify and authenticate access to system components > PCI DSS requirement 8.3 > PCI DSS requirement 8.3.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 8 - Identify and authenticate access to system components",
@@ -2517,10 +2610,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_8/azure_compliance.benchmark.pci_dss_v321_requirement_8_3/azure_compliance.benchmark.pci_dss_v321_requirement_8_3_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "An Azure Active Directory administrator is not provisioned for SQL servers"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 10 - Track and monitor all access to network resources and cardholder data \u003e PCI DSS requirement 10.5 \u003e PCI DSS requirement 10.5.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 10 - Track and monitor all access to network resources and cardholder data > PCI DSS requirement 10.5 > PCI DSS requirement 10.5.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 10 - Track and monitor all access to network resources and cardholder data",
@@ -2544,10 +2638,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_10_5_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_10/azure_compliance.benchmark.pci_dss_v321_requirement_10_5/azure_compliance.benchmark.pci_dss_v321_requirement_10_5_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Diagnostic settings for selected resource types are not being audited"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 10 - Track and monitor all access to network resources and cardholder data \u003e PCI DSS requirement 10.5 \u003e PCI DSS requirement 10.5.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 10 - Track and monitor all access to network resources and cardholder data > PCI DSS requirement 10.5 > PCI DSS requirement 10.5.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 10 - Track and monitor all access to network resources and cardholder data",
@@ -2572,10 +2667,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_10_5_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_10/azure_compliance.benchmark.pci_dss_v321_requirement_10_5/azure_compliance.benchmark.pci_dss_v321_requirement_10_5_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Virtual machines are not migrated to new Azure Resource Manager resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 10 - Track and monitor all access to network resources and cardholder data \u003e PCI DSS requirement 10.5 \u003e PCI DSS requirement 10.5.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 10 - Track and monitor all access to network resources and cardholder data > PCI DSS requirement 10.5 > PCI DSS requirement 10.5.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 10 - Track and monitor all access to network resources and cardholder data",
@@ -2600,10 +2696,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_10_5_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_10/azure_compliance.benchmark.pci_dss_v321_requirement_10_5/azure_compliance.benchmark.pci_dss_v321_requirement_10_5_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not enabled on SQL server"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 10 - Track and monitor all access to network resources and cardholder data \u003e PCI DSS requirement 10.5 \u003e PCI DSS requirement 10.5.4",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 10 - Track and monitor all access to network resources and cardholder data > PCI DSS requirement 10.5 > PCI DSS requirement 10.5.4",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 10 - Track and monitor all access to network resources and cardholder data",
@@ -2627,10 +2724,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_10_5_4"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_10/azure_compliance.benchmark.pci_dss_v321_requirement_10_5/azure_compliance.benchmark.pci_dss_v321_requirement_10_5_4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Storage accounts are not migrated to new Azure Resource Manager resources"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 11 - Regularly test security systems and processes \u003e PCI DSS requirement 11.2 \u003e PCI DSS requirement 11.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 11 - Regularly test security systems and processes > PCI DSS requirement 11.2 > PCI DSS requirement 11.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 11 - Regularly test security systems and processes",
@@ -2654,10 +2752,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_11/azure_compliance.benchmark.pci_dss_v321_requirement_11_2/azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Azure Security Center has Endpoint Protection that is not being monitored"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 11 - Regularly test security systems and processes \u003e PCI DSS requirement 11.2 \u003e PCI DSS requirement 11.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 11 - Regularly test security systems and processes > PCI DSS requirement 11.2 > PCI DSS requirement 11.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 11 - Regularly test security systems and processes",
@@ -2682,10 +2781,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_11/azure_compliance.benchmark.pci_dss_v321_requirement_11_2/azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "Vulnerabilities in security configuration on your machines are not remediated"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 11 - Regularly test security systems and processes \u003e PCI DSS requirement 11.2 \u003e PCI DSS requirement 11.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 11 - Regularly test security systems and processes > PCI DSS requirement 11.2 > PCI DSS requirement 11.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 11 - Regularly test security systems and processes",
@@ -2710,10 +2810,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_11/azure_compliance.benchmark.pci_dss_v321_requirement_11_2/azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "System updates are not installed on your machines"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 11 - Regularly test security systems and processes \u003e PCI DSS requirement 11.2 \u003e PCI DSS requirement 11.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 11 - Regularly test security systems and processes > PCI DSS requirement 11.2 > PCI DSS requirement 11.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 11 - Regularly test security systems and processes",
@@ -2738,10 +2839,11 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_11/azure_compliance.benchmark.pci_dss_v321_requirement_11_2/azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "A vulnerability assessment solution is not enabled on your virtual machines"
   },
   {
-    "category_breadcrumb": "PCI DSS 3.2.1 \u003e Requirement 11 - Regularly test security systems and processes \u003e PCI DSS requirement 11.2 \u003e PCI DSS requirement 11.2.1",
+    "category_breadcrumb": "PCI DSS 3.2.1 > Requirement 11 - Regularly test security systems and processes > PCI DSS requirement 11.2 > PCI DSS requirement 11.2.1",
     "category_hierarchy": [
       "PCI DSS 3.2.1",
       "Requirement 11 - Regularly test security systems and processes",
@@ -2766,6 +2868,7 @@
       "azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1"
     ],
     "parent_control_breadcrumb": "azure_compliance.benchmark.pci_dss_v321/azure_compliance.benchmark.pci_dss_v321_requirement_11/azure_compliance.benchmark.pci_dss_v321_requirement_11_2/azure_compliance.benchmark.pci_dss_v321_requirement_11_2_1",
-    "executable": false
+    "executable": false,
+    "problem_title": "SQL databases do not have vulnerability findings resolved"
   }
 ]

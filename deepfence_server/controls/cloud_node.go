@@ -35,7 +35,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID string, cloudPro
 	MATCH (n:CloudComplianceControl{cloud_provider: $cloud_provider})
 	WHERE n.disabled = false
 	AND n.compliance_type in $compliance_type
-	RETURN n.node_id, n.title, n.description, n.service, n.category_hierarchy, n.category_hierarchy_short, n.control_id, n.active, n.compliance_type`
+	RETURN n.node_id, n.title, n.description, n.service, n.category_hierarchy, n.category_hierarchy_short, n.control_id, n.active, n.compliance_type, n.problem_title`
 
 	r, err := tx.Run(
 		ctx,
@@ -72,6 +72,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeID string, cloudPro
 			ControlID:              rec.Values[6].(string),
 			Enabled:                rec.Values[7].(bool),
 			ComplianceType:         rec.Values[8].(string),
+			ProblemTitle:           rec.Values[9].(string),
 		}
 		controls = append(controls, control)
 	}
@@ -90,9 +91,6 @@ func EnableCloudNodeComplianceControls(ctx context.Context, nodeID string, contr
 	}
 
 	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
@@ -123,9 +121,6 @@ func DisableCloudNodeComplianceControls(ctx context.Context, nodeID string, cont
 	}
 
 	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		return err
-	}
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
