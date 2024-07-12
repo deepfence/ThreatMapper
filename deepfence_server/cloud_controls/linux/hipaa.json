@@ -9,13 +9,14 @@
     "description": "Ensure that TLS CA certificate file ownership is set to root:root (Automated)",
     "title": "Ensure that TLS CA certificate file ownership is set to root:root (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chown root:root \u003cpath to TLS CA certificate file\u003e. This sets the individual ownership and group ownership for the TLS CA certificate file to root.",
+    "documentation": "You should run the following command: chown root:root <path to TLS CA certificate file>. This sets the individual ownership and group ownership for the TLS CA certificate file to root.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.9"
     ],
     "parent_control_breadcrumb": "Docker Files3.9",
-    "executable": false
+    "executable": false,
+    "problem_title": "TLS CA certificate file ownership is not set to root:root"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -27,13 +28,14 @@
     "description": "Ensure that the Docker server certificate key file permissions are set to 400 (Automated)",
     "title": "Ensure that the Docker server certificate key file permissions are set to 400 (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chmod 400 \u003cpath to Docker server certificate key file\u003e. This sets the Docker server certificate key file permissions to 400.",
+    "documentation": "You should run the following command: chmod 400 <path to Docker server certificate key file>. This sets the Docker server certificate key file permissions to 400.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.14"
     ],
     "parent_control_breadcrumb": "Docker Files3.14",
-    "executable": false
+    "executable": false,
+    "problem_title": "Docker server certificate key file permissions are not set to 400 (Automated)"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -45,13 +47,14 @@
     "description": "Ensure that Docker server certificate file ownership is set to root:root (Automated)",
     "title": "Ensure that Docker server certificate file ownership is set to root:root (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chown root:root \u003cpath to Docker server certificate file\u003e. This sets the individual ownership and the group ownership for the Docker server certificate file to root.",
+    "documentation": "You should run the following command: chown root:root <path to Docker server certificate file>. This sets the individual ownership and the group ownership for the Docker server certificate file to root.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.11"
     ],
     "parent_control_breadcrumb": "Docker Files3.11",
-    "executable": false
+    "executable": false,
+    "problem_title": "Docker server certificate file ownership is not set to root:root"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -69,7 +72,8 @@
       "3.15"
     ],
     "parent_control_breadcrumb": "Docker Files3.15",
-    "executable": false
+    "executable": false,
+    "problem_title": "Docker socket file ownership is not set to root:docker"
   },
   {
     "category_breadcrumb": "Audit",
@@ -87,7 +91,8 @@
       "1.1.6"
     ],
     "parent_control_breadcrumb": "Audit1.1.6",
-    "executable": false
+    "executable": false,
+    "problem_title": "auditing is not configured for Docker files and directories at /fenced/mnt/host/etc/docker"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -99,13 +104,14 @@
     "description": "Ensure that registry certificate file ownership is set to root:root (Automated)",
     "title": "Ensure that registry certificate file ownership is set to root:root (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chown root:root /fenced/mnt/host/etc/docker/certs.d/\u003cregistry-name\u003e/*. This would set the individual ownership and group ownership for the registry certificate files to root.",
+    "documentation": "You should run the following command: chown root:root /fenced/mnt/host/etc/docker/certs.d/<registry-name>/*. This would set the individual ownership and group ownership for the registry certificate files to root.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.7"
     ],
     "parent_control_breadcrumb": "Docker Files3.7",
-    "executable": false
+    "executable": false,
+    "problem_title": "registry certificate file ownership is not set to root:root"
   },
   {
     "category_breadcrumb": "Docker Daemon Configuration",
@@ -123,7 +129,8 @@
       "2.5"
     ],
     "parent_control_breadcrumb": "Docker Daemon Configuration2.5",
-    "executable": false
+    "executable": false,
+    "problem_title": "insecure registries are still being used"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -135,13 +142,14 @@
     "description": "Ensure that registry certificate file permissions are set to 444 or more restrictively (Automated)",
     "title": "Ensure that registry certificate file permissions are set to 444 or more restrictively (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chmod 444 /fenced/mnt/host/etc/docker/certs.d/\u003cregistry-name\u003e/*. This would set the permissions for the registry certificate files to 444.",
+    "documentation": "You should run the following command: chmod 444 /fenced/mnt/host/etc/docker/certs.d/<registry-name>/*. This would set the permissions for the registry certificate files to 444.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.8"
     ],
     "parent_control_breadcrumb": "Docker Files3.8",
-    "executable": false
+    "executable": false,
+    "problem_title": "Registry certificate file permissions are not set to 444 or more restrictively"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -153,13 +161,14 @@
     "description": "Ensure that TLS CA certificate file permissions are set to 444 or more restrictively (Automated)",
     "title": "Ensure that TLS CA certificate file permissions are set to 444 or more restrictively (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chmod 444 \u003cpath to TLS CA certificate file\u003e. This sets the file permissions on the TLS CA file to 444.",
+    "documentation": "You should run the following command: chmod 444 <path to TLS CA certificate file>. This sets the file permissions on the TLS CA file to 444.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.10"
     ],
     "parent_control_breadcrumb": "Docker Files3.10",
-    "executable": false
+    "executable": false,
+    "problem_title": "TLS CA certificate file permissions for the Automated check are not set to 444 or more restrictive"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -177,7 +186,8 @@
       "3.5"
     ],
     "parent_control_breadcrumb": "Docker Files3.5",
-    "executable": false
+    "executable": false,
+    "problem_title": "The /fenced/mnt/host/etc/docker directory ownership is not set to root:root"
   },
   {
     "category_breadcrumb": "Audit",
@@ -195,7 +205,8 @@
       "1.1.4"
     ],
     "parent_control_breadcrumb": "Audit1.1.4",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not configured for Docker files and directories -/run/containerd"
   },
   {
     "category_breadcrumb": "Audit",
@@ -213,7 +224,8 @@
       "1.1.15"
     ],
     "parent_control_breadcrumb": "Audit1.1.15",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not configured for Docker files and directories - /usr/bin/containerd-shim"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -231,7 +243,8 @@
       "3.6"
     ],
     "parent_control_breadcrumb": "Docker Files3.6",
-    "executable": false
+    "executable": false,
+    "problem_title": "/fenced/mnt/host/etc/docker directory permissions are not set to 755 or more restrictively"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -249,7 +262,8 @@
       "3.22"
     ],
     "parent_control_breadcrumb": "Docker Files3.22",
-    "executable": false
+    "executable": false,
+    "problem_title": "The /fenced/mnt/host/etc/default/docker file permissions are not set to 644 or more restrictive"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -261,13 +275,14 @@
     "description": "Ensure that docker.service file permissions are appropriately set (Automated)",
     "title": "Ensure that docker.service file permissions are appropriately set (Automated)",
     "tags": {},
-    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.service. If the file does not exist, this recommendation is not applicable. If the file exists, run the command chmod 644 \u003cpath\u003e to set the file permissions to 644.",
+    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.service. If the file does not exist, this recommendation is not applicable. If the file exists, run the command chmod 644 <path> to set the file permissions to 644.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.2"
     ],
     "parent_control_breadcrumb": "Docker Files3.2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Docker service file permissions are not appropriately set"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -279,13 +294,14 @@
     "description": "Ensure that the Docker server certificate key file ownership is set to root:root (Automated)",
     "title": "Ensure that the Docker server certificate key file ownership is set to root:root (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chown root:root \u003cpath to Docker server certificate key file\u003e. This sets the individual ownership and group ownership for the Docker server certificate key file to root.",
+    "documentation": "You should run the following command: chown root:root <path to Docker server certificate key file>. This sets the individual ownership and group ownership for the Docker server certificate key file to root.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.13"
     ],
     "parent_control_breadcrumb": "Docker Files3.13",
-    "executable": false
+    "executable": false,
+    "problem_title": "Docker server certificate key file ownership is not set to root:root"
   },
   {
     "category_breadcrumb": "Docker Daemon Configuration",
@@ -303,7 +319,8 @@
       "2.7"
     ],
     "parent_control_breadcrumb": "Docker Daemon Configuration2.7",
-    "executable": false
+    "executable": false,
+    "problem_title": "TLS authentication for Docker daemon is not configured"
   },
   {
     "category_breadcrumb": "Audit",
@@ -321,7 +338,8 @@
       "1.1.18"
     ],
     "parent_control_breadcrumb": "Audit1.1.18",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not configured for Docker files and directories - /usr/bin/runc"
   },
   {
     "category_breadcrumb": "Audit",
@@ -339,7 +357,8 @@
       "1.1.5"
     ],
     "parent_control_breadcrumb": "Audit1.1.5",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not configured for Docker files and directories - /var/lib/docker"
   },
   {
     "category_breadcrumb": "Audit",
@@ -357,7 +376,8 @@
       "1.1.9"
     ],
     "parent_control_breadcrumb": "Audit1.1.9",
-    "executable": false
+    "executable": false,
+    "problem_title": "auditing is not configured for Docker files and directories - docker.socket"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -375,7 +395,8 @@
       "3.17"
     ],
     "parent_control_breadcrumb": "Docker Files3.17",
-    "executable": false
+    "executable": false,
+    "problem_title": "The daemon.json file ownership is not set to root:root"
   },
   {
     "category_breadcrumb": "Audit",
@@ -393,7 +414,8 @@
       "1.1.17"
     ],
     "parent_control_breadcrumb": "Audit1.1.17",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not configured for Docker files and directories - /usr/bin/containerd-shim-runc-v2"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -411,7 +433,8 @@
       "3.21"
     ],
     "parent_control_breadcrumb": "Docker Files3.21",
-    "executable": false
+    "executable": false,
+    "problem_title": "/fenced/mnt/host/etc/sysconfig/docker file ownership is not set to root:root"
   },
   {
     "category_breadcrumb": "Audit",
@@ -429,7 +452,8 @@
       "1.1.10"
     ],
     "parent_control_breadcrumb": "Audit1.1.10",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not configured for Docker files and directories at /fenced/mnt/host/etc/default/docker"
   },
   {
     "category_breadcrumb": "Docker Daemon Configuration",
@@ -447,7 +471,8 @@
       "2.14"
     ],
     "parent_control_breadcrumb": "Docker Daemon Configuration2.14",
-    "executable": false
+    "executable": false,
+    "problem_title": "Containers are not restricted from acquiring new privileges"
   },
   {
     "category_breadcrumb": "User Settings",
@@ -459,13 +484,14 @@
     "description": "Ensure only trusted users are allowed to control Docker daemon (Automated)",
     "title": "Ensure only trusted users are allowed to control Docker daemon (Automated)",
     "tags": {},
-    "documentation": "You should remove any untrusted users from the docker group using command sudo gpasswd -d \u003cyour-user\u003e docker or add trusted users to the docker group using command sudo usermod -aG docker \u003cyour-user\u003e. You should not create a mapping of sensitive directories from the host to container volumes.",
+    "documentation": "You should remove any untrusted users from the docker group using command sudo gpasswd -d <your-user> docker or add trusted users to the docker group using command sudo usermod -aG docker <your-user>. You should not create a mapping of sensitive directories from the host to container volumes.",
     "parent_control_hierarchy": [
       "User Settings",
       "1.1.2"
     ],
     "parent_control_breadcrumb": "User Settings1.1.2",
-    "executable": false
+    "executable": false,
+    "problem_title": "Only untrusted users are allowed to control Docker daemon"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -483,7 +509,8 @@
       "3.19"
     ],
     "parent_control_breadcrumb": "Docker Files3.19",
-    "executable": false
+    "executable": false,
+    "problem_title": "the /fenced/mnt/host/etc/default/docker file ownership is not set to root:root"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -501,7 +528,8 @@
       "3.20"
     ],
     "parent_control_breadcrumb": "Docker Files3.20",
-    "executable": false
+    "executable": false,
+    "problem_title": "The /fenced/mnt/host/etc/sysconfig/docker file permissions are not set to 644 or more restrictive"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -513,13 +541,14 @@
     "description": "Ensure that docker.socket file permissions are set to 644 or more restrictive (Automated)",
     "title": "Ensure that docker.socket file permissions are set to 644 or more restrictive (Automated)",
     "tags": {},
-    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.socket. If the file does not exist, this recommendation is not applicable. If the file does exist, you should run the command chmod 644 \u003cpath\u003e to set the file permissions to 644.",
+    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.socket. If the file does not exist, this recommendation is not applicable. If the file does exist, you should run the command chmod 644 <path> to set the file permissions to 644.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.4"
     ],
     "parent_control_breadcrumb": "Docker Files3.4",
-    "executable": false
+    "executable": false,
+    "problem_title": "docker.socket file permissions are not set to 644 or more restrictive"
   },
   {
     "category_breadcrumb": "Audit",
@@ -537,7 +566,8 @@
       "1.1.14"
     ],
     "parent_control_breadcrumb": "Audit1.1.14",
-    "executable": false
+    "executable": false,
+    "problem_title": "auditing is not configured for Docker files and directories - /usr/bin/containerd"
   },
   {
     "category_breadcrumb": "Audit",
@@ -555,7 +585,8 @@
       "1.1.3"
     ],
     "parent_control_breadcrumb": "Audit1.1.3",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not configured for the Docker daemon"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -567,13 +598,14 @@
     "description": "Ensure that the Docker server certificate file permissions are set to 444 or more restrictively (Automated)",
     "title": "Ensure that the Docker server certificate file permissions are set to 444 or more restrictively (Automated)",
     "tags": {},
-    "documentation": "You should run the following command: chmod 444 \u003cpath to Docker server certificate file\u003e. This sets the file permissions of the Docker server certificate file to 444.",
+    "documentation": "You should run the following command: chmod 444 <path to Docker server certificate file>. This sets the file permissions of the Docker server certificate file to 444.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.12"
     ],
     "parent_control_breadcrumb": "Docker Files3.12",
-    "executable": false
+    "executable": false,
+    "problem_title": "Docker server certificate file permissions are not set to 444 or more restrictive"
   },
   {
     "category_breadcrumb": "Audit",
@@ -591,7 +623,8 @@
       "1.1.13"
     ],
     "parent_control_breadcrumb": "Audit1.1.13",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not configured for Docker files and directories in /etc/sysconfig/docker"
   },
   {
     "category_breadcrumb": "Audit",
@@ -609,7 +642,8 @@
       "1.1.12"
     ],
     "parent_control_breadcrumb": "Audit1.1.12",
-    "executable": false
+    "executable": false,
+    "problem_title": "auditing is not configured for Dockerfiles and directories /fenced/mnt/host/etc/containerd/config.toml"
   },
   {
     "category_breadcrumb": "Audit",
@@ -627,7 +661,8 @@
       "1.1.16"
     ],
     "parent_control_breadcrumb": "Audit1.1.16",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not configured for Docker files and directories - /usr/bin/containerd-shim-runc-v1"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -645,7 +680,8 @@
       "3.18"
     ],
     "parent_control_breadcrumb": "Docker Files3.18",
-    "executable": false
+    "executable": false,
+    "problem_title": "daemon.json file permissions are not set to 644 or more restrictive"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -663,7 +699,8 @@
       "3.16"
     ],
     "parent_control_breadcrumb": "Docker Files3.16",
-    "executable": false
+    "executable": false,
+    "problem_title": "Docker socket file permissions are not set to 660 or more restrictive"
   },
   {
     "category_breadcrumb": "Audit",
@@ -681,7 +718,8 @@
       "1.1.7"
     ],
     "parent_control_breadcrumb": "Audit1.1.7",
-    "executable": false
+    "executable": false,
+    "problem_title": "auditing is not configured for Docker files and directories - docker.service"
   },
   {
     "category_breadcrumb": "Docker Files",
@@ -693,13 +731,14 @@
     "description": "Ensure that docker.socket file ownership is set to root:root (Automated)",
     "title": "Ensure that docker.socket file ownership is set to root:root (Automated)",
     "tags": {},
-    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.socket. If the file does not exist, this recommendation is not applicable. If the file exists, run the command chown root:root \u003cpath\u003e to set the ownership and group ownership for the file to root.",
+    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.socket. If the file does not exist, this recommendation is not applicable. If the file exists, run the command chown root:root <path> to set the ownership and group ownership for the file to root.",
     "parent_control_hierarchy": [
       "Docker Files",
       "3.3"
     ],
     "parent_control_breadcrumb": "Docker Files3.3",
-    "executable": false
+    "executable": false,
+    "problem_title": "docker.socket file ownership is not set to root:root"
   },
   {
     "category_breadcrumb": "Audit",
@@ -717,6 +756,7 @@
       "1.1.11"
     ],
     "parent_control_breadcrumb": "Audit1.1.11",
-    "executable": false
+    "executable": false,
+    "problem_title": "Auditing is not configured for Dockerfiles and directories in /fenced/mnt/host/etc/docker/daemon.json"
   }
 ]

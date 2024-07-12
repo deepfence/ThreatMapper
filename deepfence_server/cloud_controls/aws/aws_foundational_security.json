@@ -1,6 +1,6 @@
 [
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Account",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Account",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Account"
@@ -23,10 +23,11 @@
       "aws_compliance.benchmark.foundational_security_account"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_account",
-    "executable": true
+    "executable": true,
+    "problem_title": "Security contact information is not provided for the AWS account"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ACM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ACM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ACM"
@@ -49,10 +50,11 @@
       "aws_compliance.benchmark.foundational_security_acm"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_acm",
-    "executable": true
+    "executable": true,
+    "problem_title": "Imported ACM certificates are not being renewed after the specified time period"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e API Gateway",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > API Gateway",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "API Gateway"
@@ -75,10 +77,11 @@
       "aws_compliance.benchmark.foundational_security_apigateway"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_apigateway",
-    "executable": true
+    "executable": true,
+    "problem_title": "API Gateway REST and WebSocket API logging is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e API Gateway",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > API Gateway",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "API Gateway"
@@ -101,10 +104,11 @@
       "aws_compliance.benchmark.foundational_security_apigateway"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_apigateway",
-    "executable": true
+    "executable": true,
+    "problem_title": "API Gateway REST API stages are not using SSL certificates for backend authentication"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e API Gateway",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > API Gateway",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "API Gateway"
@@ -127,10 +131,11 @@
       "aws_compliance.benchmark.foundational_security_apigateway"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_apigateway",
-    "executable": true
+    "executable": true,
+    "problem_title": "API Gateway REST API stages do not have AWS X-Ray tracing enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e API Gateway",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > API Gateway",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "API Gateway"
@@ -153,10 +158,11 @@
       "aws_compliance.benchmark.foundational_security_apigateway"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_apigateway",
-    "executable": true
+    "executable": true,
+    "problem_title": "API Gateway is not associated with an AWS WAF web ACL"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e API Gateway",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > API Gateway",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "API Gateway"
@@ -179,10 +185,11 @@
       "aws_compliance.benchmark.foundational_security_apigateway"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_apigateway",
-    "executable": true
+    "executable": true,
+    "problem_title": "API Gateway REST API cache data is not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e API Gateway",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > API Gateway",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "API Gateway"
@@ -205,10 +212,11 @@
       "aws_compliance.benchmark.foundational_security_apigateway"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_apigateway",
-    "executable": true
+    "executable": true,
+    "problem_title": "API Gateway routes do not specify an authorization type"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e API Gateway",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > API Gateway",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "API Gateway"
@@ -231,10 +239,11 @@
       "aws_compliance.benchmark.foundational_security_apigateway"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_apigateway",
-    "executable": true
+    "executable": true,
+    "problem_title": "Access logging is not configured for API Gateway V2 stages"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Athena",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Athena",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Athena"
@@ -257,10 +266,11 @@
       "aws_compliance.benchmark.foundational_security_athena"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_athena",
-    "executable": true
+    "executable": true,
+    "problem_title": "Athena workgroup encryption is not enabled at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Auto Scaling",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Auto Scaling",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Auto Scaling"
@@ -283,10 +293,11 @@
       "aws_compliance.benchmark.foundational_security_autoscaling"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_autoscaling",
-    "executable": true
+    "executable": true,
+    "problem_title": "Auto Scaling groups associated with a load balancer do not use load balancer health checks"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Auto Scaling",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Auto Scaling",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Auto Scaling"
@@ -309,10 +320,11 @@
       "aws_compliance.benchmark.foundational_security_autoscaling"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_autoscaling",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon EC2 Auto Scaling group is not covering multiple Availability Zones"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Auto Scaling",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Auto Scaling",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Auto Scaling"
@@ -335,10 +347,11 @@
       "aws_compliance.benchmark.foundational_security_autoscaling"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_autoscaling",
-    "executable": true
+    "executable": true,
+    "problem_title": "Auto Scaling group is not configuring EC2 instances to require Instance Metadata Service Version 2 (IMDSv2)"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Auto Scaling",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Auto Scaling",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Auto Scaling"
@@ -361,10 +374,11 @@
       "aws_compliance.benchmark.foundational_security_autoscaling"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_autoscaling",
-    "executable": true
+    "executable": true,
+    "problem_title": "Auto Scaling group launch configuration has metadata response hop limit greater than 1"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Auto Scaling",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Auto Scaling",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Auto Scaling"
@@ -387,10 +401,11 @@
       "aws_compliance.benchmark.foundational_security_autoscaling"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_autoscaling",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon EC2 instances launched using Auto Scaling group launch configurations have Public IP addresses"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Auto Scaling",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Auto Scaling",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Auto Scaling"
@@ -413,10 +428,11 @@
       "aws_compliance.benchmark.foundational_security_autoscaling"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_autoscaling",
-    "executable": true
+    "executable": true,
+    "problem_title": "Auto Scaling groups do not use multiple instance types in multiple Availability Zones"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Auto Scaling",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Auto Scaling",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Auto Scaling"
@@ -439,10 +455,11 @@
       "aws_compliance.benchmark.foundational_security_autoscaling"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_autoscaling",
-    "executable": true
+    "executable": true,
+    "problem_title": "EC2 Auto Scaling groups are not using EC2 launch templates"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFormation",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFormation",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFormation"
@@ -465,10 +482,11 @@
       "aws_compliance.benchmark.foundational_security_cloudformation"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudformation",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFormation stacks are not integrated with Simple Notification Service (SNS)"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -491,10 +509,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distributions do not have a default root object configured"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -517,10 +536,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distributions do not have origin access identity enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -543,10 +563,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distributions do not require encryption in transit"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -569,10 +590,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distributions do not have origin failover configured"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -595,10 +617,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distributions do not have logging enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -621,10 +644,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distribution is not using AWS WAF"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -647,10 +671,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distributions are not using custom SSL/TLS certificates"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -673,10 +698,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distributions are not using SNI to serve HTTPS requests"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -699,10 +725,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distributions do not encrypt traffic to custom origins"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -725,10 +752,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distributions are using deprecated SSL protocols between edge locations and custom origins"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudFront",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudFront",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudFront"
@@ -751,10 +779,11 @@
       "aws_compliance.benchmark.foundational_security_cloudfront"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudfront",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudFront distributions point to non-existent S3 origins"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudTrail",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudTrail",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudTrail"
@@ -777,10 +806,11 @@
       "aws_compliance.benchmark.foundational_security_cloudtrail"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudtrail",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudTrail is not enabled and/or not configured with at least one multi-Region trail"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudTrail",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudTrail",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudTrail"
@@ -803,10 +833,11 @@
       "aws_compliance.benchmark.foundational_security_cloudtrail"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudtrail",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudTrail does not have encryption at rest enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudTrail",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudTrail",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudTrail"
@@ -829,10 +860,11 @@
       "aws_compliance.benchmark.foundational_security_cloudtrail"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudtrail",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudTrail log file validation is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CloudTrail",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CloudTrail",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CloudTrail"
@@ -855,10 +887,11 @@
       "aws_compliance.benchmark.foundational_security_cloudtrail"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_cloudtrail",
-    "executable": true
+    "executable": true,
+    "problem_title": "CloudTrail trails are not integrated with Amazon CloudWatch Logs"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CodeBuild",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CodeBuild",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CodeBuild"
@@ -881,10 +914,11 @@
       "aws_compliance.benchmark.foundational_security_codebuild"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_codebuild",
-    "executable": true
+    "executable": true,
+    "problem_title": "CodeBuild GitHub or Bitbucket source repository URLs do not use OAuth"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CodeBuild",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CodeBuild",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CodeBuild"
@@ -907,10 +941,11 @@
       "aws_compliance.benchmark.foundational_security_codebuild"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_codebuild",
-    "executable": true
+    "executable": true,
+    "problem_title": "CodeBuild project environment variables contain clear text credentials"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CodeBuild",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CodeBuild",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CodeBuild"
@@ -933,10 +968,11 @@
       "aws_compliance.benchmark.foundational_security_codebuild"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_codebuild",
-    "executable": true
+    "executable": true,
+    "problem_title": "CodeBuild S3 logs are not encrypted"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CodeBuild",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CodeBuild",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CodeBuild"
@@ -959,10 +995,11 @@
       "aws_compliance.benchmark.foundational_security_codebuild"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_codebuild",
-    "executable": true
+    "executable": true,
+    "problem_title": "CodeBuild project environments do not have a logging configuration"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e CodeBuild",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > CodeBuild",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "CodeBuild"
@@ -985,10 +1022,11 @@
       "aws_compliance.benchmark.foundational_security_codebuild"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_codebuild",
-    "executable": true
+    "executable": true,
+    "problem_title": "CodeBuild project environments have privileged mode enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Config",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Config",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Config"
@@ -1011,10 +1049,11 @@
       "aws_compliance.benchmark.foundational_security_config"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_config",
-    "executable": true
+    "executable": true,
+    "problem_title": "AWS Config is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e DMS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > DMS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "DMS"
@@ -1037,10 +1076,11 @@
       "aws_compliance.benchmark.foundational_security_dms"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_dms",
-    "executable": true
+    "executable": true,
+    "problem_title": "AWS Database Migration Service replication instances are publicly accessible"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e DocumentDB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > DocumentDB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "DocumentDB"
@@ -1063,10 +1103,11 @@
       "aws_compliance.benchmark.foundational_security_docdb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_docdb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon DocumentDB clusters are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e DocumentDB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > DocumentDB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "DocumentDB"
@@ -1089,10 +1130,11 @@
       "aws_compliance.benchmark.foundational_security_docdb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_docdb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon DocumentDB cluster's backup retention period is inadequate"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e DynamoDB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > DynamoDB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "DynamoDB"
@@ -1115,10 +1157,11 @@
       "aws_compliance.benchmark.foundational_security_dynamodb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_dynamodb",
-    "executable": true
+    "executable": true,
+    "problem_title": "DynamoDB tables do not automatically scale capacity with demand"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e DynamoDB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > DynamoDB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "DynamoDB"
@@ -1141,10 +1184,11 @@
       "aws_compliance.benchmark.foundational_security_dynamodb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_dynamodb",
-    "executable": true
+    "executable": true,
+    "problem_title": "DynamoDB tables do not have point-in-time recovery enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e DynamoDB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > DynamoDB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "DynamoDB"
@@ -1167,10 +1211,11 @@
       "aws_compliance.benchmark.foundational_security_dynamodb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_dynamodb",
-    "executable": true
+    "executable": true,
+    "problem_title": "DynamoDB Accelerator (DAX) clusters are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1193,10 +1238,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon EBS snapshots are publicly accessible and can be restored by anyone"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1219,10 +1265,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "The VPC default security group allows inbound or outbound traffic"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1245,10 +1292,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Attached EBS volumes are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1271,10 +1319,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Stopped EC2 instances are not removed after the specified time period"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1297,10 +1346,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "VPC flow logging is not enabled in some VPCs"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1323,10 +1373,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "EBS default encryption is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1349,10 +1400,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "EC2 instances do not use IMDSv2"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1375,10 +1427,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "EC2 instances have a public IP address"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1401,10 +1454,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon EC2 is not configured to use VPC endpoints"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1427,10 +1481,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "EC2 subnets automatically assigns public IP addresses"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1453,10 +1508,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Unused network access control lists are not removed"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1473,16 +1529,17 @@
       "plugin": "aws",
       "service": "AWS/EC2"
     },
-    "documentation": "## Description\n\nThis control checks whether an EC2 instance uses multiple Elastic Network Interfaces (ENIs) or Elastic Fabric Adapters (EFAs). This control passes if a single network adapter is used. The control includes an optional parameter list to identify the allowed ENIs.\n\nMultiple ENIs can cause dual-homed instances, meaning instances that have multiple subnets. This can add network security complexity and introduce unintended network paths and access.\n\n## Remediation\n\nTo remediate this issue, detach the additional ENIs.\n\n**To detach a network interface**\n\n1. Open the [Amazon EC2 console](https://console.aws.amazon.com/ec2/).\n2. Under `Network \u0026 Security`, choose `Network Interfaces`.\n3. Filter the list by the noncompliant instance IDs to see the associated ENIs.\n4. Select the ENIs that you want to remove.\n5. From the `Actions` menu, choose `Detach`.\n6. If you see the prompt `Are you sure that you want to detach the following network interface?`,      choose `Detach`.",
+    "documentation": "## Description\n\nThis control checks whether an EC2 instance uses multiple Elastic Network Interfaces (ENIs) or Elastic Fabric Adapters (EFAs). This control passes if a single network adapter is used. The control includes an optional parameter list to identify the allowed ENIs.\n\nMultiple ENIs can cause dual-homed instances, meaning instances that have multiple subnets. This can add network security complexity and introduce unintended network paths and access.\n\n## Remediation\n\nTo remediate this issue, detach the additional ENIs.\n\n**To detach a network interface**\n\n1. Open the [Amazon EC2 console](https://console.aws.amazon.com/ec2/).\n2. Under `Network & Security`, choose `Network Interfaces`.\n3. Filter the list by the noncompliant instance IDs to see the associated ENIs.\n4. Select the ENIs that you want to remove.\n5. From the `Actions` menu, choose `Detach`.\n6. If you see the prompt `Are you sure that you want to detach the following network interface?`,      choose `Detach`.",
     "parent_control_hierarchy": [
       "aws_compliance.benchmark.foundational_security",
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "EC2 instances use multiple ENIs"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1505,10 +1562,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Security groups do not restrict incoming traffic on unauthorized ports"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1531,10 +1589,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Security groups allows unrestricted access to ports with high risk"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1557,10 +1616,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "One or more VPN tunnels for the AWS Site-to-Site VPN connection is not up"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1583,10 +1643,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Network ACLs allows unrestricted ingress from 0.0.0.0/0 to port 22 or port 3389"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1609,10 +1670,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Unused EC2 security groups are not removed"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1635,10 +1697,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "EC2 Transit Gateway automatically accepts VPC attachment requests"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1661,10 +1724,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Paravirtual EC2 instance types are being used"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EC2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EC2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EC2"
@@ -1687,10 +1751,11 @@
       "aws_compliance.benchmark.foundational_security_ec2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ec2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon EC2 launch templates assign public IPs to network interfaces"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Registry",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Registry",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Registry"
@@ -1713,10 +1778,11 @@
       "aws_compliance.benchmark.foundational_security_ecr"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecr",
-    "executable": true
+    "executable": true,
+    "problem_title": "ECR private repositories do not have image scanning configured"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Registry",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Registry",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Registry"
@@ -1739,10 +1805,11 @@
       "aws_compliance.benchmark.foundational_security_ecr"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecr",
-    "executable": true
+    "executable": true,
+    "problem_title": "ECR private repositories do not have tag immutability configured"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Registry",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Registry",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Registry"
@@ -1765,10 +1832,11 @@
       "aws_compliance.benchmark.foundational_security_ecr"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecr",
-    "executable": true
+    "executable": true,
+    "problem_title": "ECR repositories do not have at least one lifecycle policy configured"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Service",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Service",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Service"
@@ -1791,10 +1859,11 @@
       "aws_compliance.benchmark.foundational_security_ecs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecs",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon ECS task definitions do not have secure networking modes and user definitions"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Service",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Service",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Service"
@@ -1817,10 +1886,11 @@
       "aws_compliance.benchmark.foundational_security_ecs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecs",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon ECS services are assigned with public IP addresses automatically"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Service",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Service",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Service"
@@ -1843,10 +1913,11 @@
       "aws_compliance.benchmark.foundational_security_ecs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecs",
-    "executable": true
+    "executable": true,
+    "problem_title": "ECS task definitions are sharing the host's process namespace"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Service",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Service",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Service"
@@ -1869,10 +1940,11 @@
       "aws_compliance.benchmark.foundational_security_ecs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecs",
-    "executable": true
+    "executable": true,
+    "problem_title": "ECS containers are running as privileged"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Service",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Service",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Service"
@@ -1895,10 +1967,11 @@
       "aws_compliance.benchmark.foundational_security_ecs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecs",
-    "executable": true
+    "executable": true,
+    "problem_title": "ECS containers are not limited to read-only access to root filesystems"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Service",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Service",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Service"
@@ -1921,10 +1994,11 @@
       "aws_compliance.benchmark.foundational_security_ecs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecs",
-    "executable": true
+    "executable": true,
+    "problem_title": "Secrets are being passed as container environment variables"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Service",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Service",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Service"
@@ -1947,10 +2021,11 @@
       "aws_compliance.benchmark.foundational_security_ecs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecs",
-    "executable": true
+    "executable": true,
+    "problem_title": "Fargate services are running on an outdated Fargate platform version"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Container Service",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Container Service",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Container Service"
@@ -1973,10 +2048,11 @@
       "aws_compliance.benchmark.foundational_security_ecs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ecs",
-    "executable": true
+    "executable": true,
+    "problem_title": "ECS clusters do not have Container Insights enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EFS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EFS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EFS"
@@ -1999,10 +2075,11 @@
       "aws_compliance.benchmark.foundational_security_efs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_efs",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon EFS is not configured to encrypt file data at rest using AWS KMS"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EFS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EFS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EFS"
@@ -2025,10 +2102,11 @@
       "aws_compliance.benchmark.foundational_security_efs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_efs",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon EFS volumes are not in a backup plan"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EFS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EFS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EFS"
@@ -2051,10 +2129,11 @@
       "aws_compliance.benchmark.foundational_security_efs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_efs",
-    "executable": true
+    "executable": true,
+    "problem_title": "EFS access points do not enforce a root directory"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EFS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EFS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EFS"
@@ -2077,10 +2156,11 @@
       "aws_compliance.benchmark.foundational_security_efs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_efs",
-    "executable": true
+    "executable": true,
+    "problem_title": "EFS access points do not enforce a user identity"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EKS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EKS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EKS"
@@ -2103,10 +2183,11 @@
       "aws_compliance.benchmark.foundational_security_eks"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_eks",
-    "executable": true
+    "executable": true,
+    "problem_title": "EKS cluster endpoints are publicly accessible"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EKS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EKS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EKS"
@@ -2123,16 +2204,17 @@
       "plugin": "aws",
       "service": "AWS/EKS"
     },
-    "documentation": "## Description\n\nThis control checks whether an Amazon EKS cluster is running on a supported Kubernetes version. The control fails if the EKS cluster is running on an unsupported version.\n\nIf your application doesn't require a specific version of Kubernetes, we recommend that you use the latest available Kubernetes version that's supported by EKS for your clusters. For more information about supported Kubernetes versions for Amazon EKS, see [Amazon EKS Kubernetes release calendar](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-release-calendar) and [Amazon EKS version support and FAQ](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#version-deprecation)/para\u003e in the Amazon EKS User Guide.\n\n## Remediation\n\nTo update an EKS cluster, [Updating an Amazon EKS cluster Kubernetes version](https://docs.aws.amazon.com/eks/latest/userguide/update-cluster.html)/para\u003e in the Amazon EKS User Guide.",
+    "documentation": "## Description\n\nThis control checks whether an Amazon EKS cluster is running on a supported Kubernetes version. The control fails if the EKS cluster is running on an unsupported version.\n\nIf your application doesn't require a specific version of Kubernetes, we recommend that you use the latest available Kubernetes version that's supported by EKS for your clusters. For more information about supported Kubernetes versions for Amazon EKS, see [Amazon EKS Kubernetes release calendar](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#kubernetes-release-calendar) and [Amazon EKS version support and FAQ](https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html#version-deprecation)/para> in the Amazon EKS User Guide.\n\n## Remediation\n\nTo update an EKS cluster, [Updating an Amazon EKS cluster Kubernetes version](https://docs.aws.amazon.com/eks/latest/userguide/update-cluster.html)/para> in the Amazon EKS User Guide.",
     "parent_control_hierarchy": [
       "aws_compliance.benchmark.foundational_security",
       "aws_compliance.benchmark.foundational_security_eks"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_eks",
-    "executable": true
+    "executable": true,
+    "problem_title": "EKS cluster is running on an unsupported Kubernetes version"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ElastiCache",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ElastiCache",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ElastiCache"
@@ -2155,10 +2237,11 @@
       "aws_compliance.benchmark.foundational_security_elasticache"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elasticache",
-    "executable": true
+    "executable": true,
+    "problem_title": "ElastiCache for Redis cluster automatic backups are not scheduled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ElastiCache",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ElastiCache",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ElastiCache"
@@ -2181,10 +2264,11 @@
       "aws_compliance.benchmark.foundational_security_elasticache"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elasticache",
-    "executable": true
+    "executable": true,
+    "problem_title": "Minor version upgrades are not automatically applied to ElastiCache for Redis cache clusters"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ElastiCache",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ElastiCache",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ElastiCache"
@@ -2207,10 +2291,11 @@
       "aws_compliance.benchmark.foundational_security_elasticache"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elasticache",
-    "executable": true
+    "executable": true,
+    "problem_title": "ElastiCache for Redis replication groups do not have automatic failover enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ElastiCache",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ElastiCache",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ElastiCache"
@@ -2233,10 +2318,11 @@
       "aws_compliance.benchmark.foundational_security_elasticache"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elasticache",
-    "executable": true
+    "executable": true,
+    "problem_title": "ElastiCache for Redis replication groups are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ElastiCache",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ElastiCache",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ElastiCache"
@@ -2259,10 +2345,11 @@
       "aws_compliance.benchmark.foundational_security_elasticache"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elasticache",
-    "executable": true
+    "executable": true,
+    "problem_title": "ElastiCache for Redis replication groups are not encrypted in transit"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ElastiCache",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ElastiCache",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ElastiCache"
@@ -2285,10 +2372,11 @@
       "aws_compliance.benchmark.foundational_security_elasticache"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elasticache",
-    "executable": true
+    "executable": true,
+    "problem_title": "ElastiCache for Redis replication groups are using Redis without AUTH (before version 6.0)"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ElastiCache",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ElastiCache",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ElastiCache"
@@ -2311,10 +2399,11 @@
       "aws_compliance.benchmark.foundational_security_elasticache"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elasticache",
-    "executable": true
+    "executable": true,
+    "problem_title": "ElastiCache clusters are using the default subnet group"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elastic Beanstalk",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elastic Beanstalk",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elastic Beanstalk"
@@ -2337,10 +2426,11 @@
       "aws_compliance.benchmark.foundational_security_elasticbeanstalk"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elasticbeanstalk",
-    "executable": true
+    "executable": true,
+    "problem_title": "Elastic Beanstalk environments do not have enhanced health reporting enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2362,10 +2452,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Application Load Balancer is not configured to redirect all HTTP requests to HTTPS"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2388,10 +2479,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Classic Load Balancers with SSL/HTTPS listeners do not use a certificate provided by AWS Certificate Manager"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2414,10 +2506,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Classic Load Balancer listeners are not configured with HTTPS or TLS termination"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2440,10 +2533,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Application load balancers are not configured to drop HTTP headers"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2466,10 +2560,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Application and Classic Load Balancers logging is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2492,10 +2587,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Application Load Balancer deletion protection is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2518,10 +2614,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Classic Load Balancers do not have connection draining enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2544,10 +2641,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Classic Load Balancers do not have cross-zone load balancing enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2570,10 +2668,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Classic Load Balancers do not span multiple Availability Zones"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2596,10 +2695,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Application Load Balancers are not configured with defensive or strictest desync mitigation mode"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2622,10 +2722,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Application, Network, and Gateway Load Balancers do not span multiple Availability Zones"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELB",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELB",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELB"
@@ -2648,10 +2749,11 @@
       "aws_compliance.benchmark.foundational_security_elb"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elb",
-    "executable": true
+    "executable": true,
+    "problem_title": "Classic Load Balancers are not configured with defensive or strictest desync mitigation mode"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e ELBv2",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > ELBv2",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "ELBv2"
@@ -2674,10 +2776,11 @@
       "aws_compliance.benchmark.foundational_security_elbv2"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_elbv2",
-    "executable": true
+    "executable": true,
+    "problem_title": "Application Load Balancer is not configured to redirect all HTTP requests to HTTPS"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e EMR",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > EMR",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "EMR"
@@ -2700,10 +2803,11 @@
       "aws_compliance.benchmark.foundational_security_emr"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_emr",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon EMR cluster master nodes are having a public IP address"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elasticsearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elasticsearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elasticsearch"
@@ -2726,10 +2830,11 @@
       "aws_compliance.benchmark.foundational_security_es"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_es",
-    "executable": true
+    "executable": true,
+    "problem_title": "Elasticsearch domains do not have encryption at-rest enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elasticsearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elasticsearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elasticsearch"
@@ -2752,10 +2857,11 @@
       "aws_compliance.benchmark.foundational_security_es"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_es",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon Elasticsearch Service domains are not in a VPC"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elasticsearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elasticsearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elasticsearch"
@@ -2778,10 +2884,11 @@
       "aws_compliance.benchmark.foundational_security_es"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_es",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon Elasticsearch Service domains do not encrypt data sent between nodes"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elasticsearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elasticsearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elasticsearch"
@@ -2804,10 +2911,11 @@
       "aws_compliance.benchmark.foundational_security_es"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_es",
-    "executable": true
+    "executable": true,
+    "problem_title": "Elasticsearch domain error logging is not enabled for CloudWatch Logs"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elasticsearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elasticsearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elasticsearch"
@@ -2830,10 +2938,11 @@
       "aws_compliance.benchmark.foundational_security_es"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_es",
-    "executable": true
+    "executable": true,
+    "problem_title": "Elasticsearch domains do not have audit logging enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elasticsearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elasticsearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elasticsearch"
@@ -2856,10 +2965,11 @@
       "aws_compliance.benchmark.foundational_security_es"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_es",
-    "executable": true
+    "executable": true,
+    "problem_title": "Elasticsearch domains do not have at least three data nodes"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elasticsearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elasticsearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elasticsearch"
@@ -2882,10 +2992,11 @@
       "aws_compliance.benchmark.foundational_security_es"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_es",
-    "executable": true
+    "executable": true,
+    "problem_title": "Elasticsearch domains are not configured with at least three dedicated master nodes"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Elasticsearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Elasticsearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Elasticsearch"
@@ -2908,10 +3019,11 @@
       "aws_compliance.benchmark.foundational_security_es"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_es",
-    "executable": true
+    "executable": true,
+    "problem_title": "Connections to Elasticsearch domains are not encrypted using TLS 1.2"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e GuardDuty",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > GuardDuty",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "GuardDuty"
@@ -2934,10 +3046,11 @@
       "aws_compliance.benchmark.foundational_security_guardduty"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_guardduty",
-    "executable": true
+    "executable": true,
+    "problem_title": "GuardDuty is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e IAM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > IAM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "IAM"
@@ -2960,10 +3073,11 @@
       "aws_compliance.benchmark.foundational_security_iam"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_iam",
-    "executable": true
+    "executable": true,
+    "problem_title": "IAM policies allow full '*'' administrative privileges"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e IAM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > IAM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "IAM"
@@ -2986,10 +3100,11 @@
       "aws_compliance.benchmark.foundational_security_iam"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_iam",
-    "executable": true
+    "executable": true,
+    "problem_title": "IAM users have IAM policies attached"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e IAM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > IAM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "IAM"
@@ -3012,10 +3127,11 @@
       "aws_compliance.benchmark.foundational_security_iam"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_iam",
-    "executable": true
+    "executable": true,
+    "problem_title": "IAM users' access keys are not being rotated every 90 days or less"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e IAM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > IAM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "IAM"
@@ -3038,10 +3154,11 @@
       "aws_compliance.benchmark.foundational_security_iam"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_iam",
-    "executable": true
+    "executable": true,
+    "problem_title": "IAM root user access key still exists"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e IAM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > IAM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "IAM"
@@ -3064,10 +3181,11 @@
       "aws_compliance.benchmark.foundational_security_iam"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_iam",
-    "executable": true
+    "executable": true,
+    "problem_title": "MFA is not enabled for all IAM users with a console password"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e IAM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > IAM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "IAM"
@@ -3090,10 +3208,11 @@
       "aws_compliance.benchmark.foundational_security_iam"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_iam",
-    "executable": true
+    "executable": true,
+    "problem_title": "Hardware MFA is not enabled for the root user"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e IAM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > IAM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "IAM"
@@ -3116,10 +3235,11 @@
       "aws_compliance.benchmark.foundational_security_iam"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_iam",
-    "executable": true
+    "executable": true,
+    "problem_title": "Password policies for IAM users do not have strong configurations"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e IAM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > IAM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "IAM"
@@ -3142,10 +3262,11 @@
       "aws_compliance.benchmark.foundational_security_iam"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_iam",
-    "executable": true
+    "executable": true,
+    "problem_title": "Unused IAM user credentials are not removed"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e IAM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > IAM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "IAM"
@@ -3168,10 +3289,11 @@
       "aws_compliance.benchmark.foundational_security_iam"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_iam",
-    "executable": true
+    "executable": true,
+    "problem_title": "IAM customer managed policies allow wildcard actions for services"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Kinesis",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Kinesis",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Kinesis"
@@ -3194,10 +3316,11 @@
       "aws_compliance.benchmark.foundational_security_kinesis"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_kinesis",
-    "executable": true
+    "executable": true,
+    "problem_title": "Kinesis Data Streams are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e KMS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > KMS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "KMS"
@@ -3220,10 +3343,11 @@
       "aws_compliance.benchmark.foundational_security_kms"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_kms",
-    "executable": true
+    "executable": true,
+    "problem_title": "IAM customer managed policies allows decryption actions on all KMS keys"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e KMS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > KMS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "KMS"
@@ -3246,10 +3370,11 @@
       "aws_compliance.benchmark.foundational_security_kms"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_kms",
-    "executable": true
+    "executable": true,
+    "problem_title": "IAM principals have IAM inline policies that allow decryption actions on all KMS keys"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e KMS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > KMS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "KMS"
@@ -3272,10 +3397,11 @@
       "aws_compliance.benchmark.foundational_security_kms"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_kms",
-    "executable": true
+    "executable": true,
+    "problem_title": "AWS KMS keys are unintentionally being deleted"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Lambda",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Lambda",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Lambda"
@@ -3292,16 +3418,17 @@
       "plugin": "aws",
       "service": "AWS/Lambda"
     },
-    "documentation": "## Description\n\nThis control checks whether the Lambda function resource-based policy prohibits public access.\n\nIt does not check for access to the Lambda function by internal principals, such as IAM roles. You should ensure that access to the Lambda function is restricted to authorized principals only by using least privilege Lambda resource-based policies.\n\nFor more information about using resource-based policies for AWS Lambda, see the [AWS Lambda Developer Guide](https://docs.aws.amazon.com/lambda/latest/dg/access-control-resource-based.html).\n\n## Remediation\n\nTo remediate this issue, you update the resource-based policy to change the publicly accessible Lambda function to a private Lambda function.\nYou can only update resource-based policies for Lambda resources within the scope of the AddPermission and AddLayerVersionPermission API actions.\nYou cannot author policies for your Lambda resources in JSON, or use conditions that don't map to parameters for those actions using the CLI or the SDK.\n\n**To use the AWS CLI to revoke function-use permission from an AWS service or another account**\n\n1. To get the ID of the statement from the output of GetPolicy, from the AWS CLI, run the following:\n\n```bash\naws lambda get-policy —function-name yourfunctionname\n```\nThis command returns the Lambda resource-based policy string associated with the publicly accessible Lambda function.\n\n2. From the policy statement returned by the get-policy command, copy the string value of the Sid field.\n\n3. From the AWS CLI, run\n\n```bash\naws lambda remove-permission --function-name yourfunctionname —statement-id youridvalue\n```\n\nTo use the Lambda console to restrict access to the Lambda function\n\n1. Open the [AWS Lambda console](https://console.aws.amazon.com/lambda/).\n2. Navigate to Functions and then select your publicly accessible Lambda function.\n3. Under **Designer**, choose the key icon at the top left. It has the tool-tip View permissions.\n4. Under Function policy, if the policy allows actions for the principal element `“*”` or `{“AWS”: “*”}`, it is publicly accessible.\n   - Consider adding the following IAM condition to scope access to your account only.\n\n    ```json\n        \"Condition\": {\n      \"StringEquals\": {\n        \"AWS:SourceAccount\": \"\u003caccount_id\u003e\"\n        }\n      }\n    }\n    ```",
+    "documentation": "## Description\n\nThis control checks whether the Lambda function resource-based policy prohibits public access.\n\nIt does not check for access to the Lambda function by internal principals, such as IAM roles. You should ensure that access to the Lambda function is restricted to authorized principals only by using least privilege Lambda resource-based policies.\n\nFor more information about using resource-based policies for AWS Lambda, see the [AWS Lambda Developer Guide](https://docs.aws.amazon.com/lambda/latest/dg/access-control-resource-based.html).\n\n## Remediation\n\nTo remediate this issue, you update the resource-based policy to change the publicly accessible Lambda function to a private Lambda function.\nYou can only update resource-based policies for Lambda resources within the scope of the AddPermission and AddLayerVersionPermission API actions.\nYou cannot author policies for your Lambda resources in JSON, or use conditions that don't map to parameters for those actions using the CLI or the SDK.\n\n**To use the AWS CLI to revoke function-use permission from an AWS service or another account**\n\n1. To get the ID of the statement from the output of GetPolicy, from the AWS CLI, run the following:\n\n```bash\naws lambda get-policy —function-name yourfunctionname\n```\nThis command returns the Lambda resource-based policy string associated with the publicly accessible Lambda function.\n\n2. From the policy statement returned by the get-policy command, copy the string value of the Sid field.\n\n3. From the AWS CLI, run\n\n```bash\naws lambda remove-permission --function-name yourfunctionname —statement-id youridvalue\n```\n\nTo use the Lambda console to restrict access to the Lambda function\n\n1. Open the [AWS Lambda console](https://console.aws.amazon.com/lambda/).\n2. Navigate to Functions and then select your publicly accessible Lambda function.\n3. Under **Designer**, choose the key icon at the top left. It has the tool-tip View permissions.\n4. Under Function policy, if the policy allows actions for the principal element `“*”` or `{“AWS”: “*”}`, it is publicly accessible.\n   - Consider adding the following IAM condition to scope access to your account only.\n\n    ```json\n        \"Condition\": {\n      \"StringEquals\": {\n        \"AWS:SourceAccount\": \"<account_id>\"\n        }\n      }\n    }\n    ```",
     "parent_control_hierarchy": [
       "aws_compliance.benchmark.foundational_security",
       "aws_compliance.benchmark.foundational_security_lambda"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_lambda",
-    "executable": true
+    "executable": true,
+    "problem_title": "Lambda function policies allow public access"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Lambda",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Lambda",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Lambda"
@@ -3324,10 +3451,11 @@
       "aws_compliance.benchmark.foundational_security_lambda"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_lambda",
-    "executable": true
+    "executable": true,
+    "problem_title": "Lambda functions are not using the latest runtimes"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Lambda",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Lambda",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Lambda"
@@ -3350,10 +3478,11 @@
       "aws_compliance.benchmark.foundational_security_lambda"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_lambda",
-    "executable": true
+    "executable": true,
+    "problem_title": "VPC Lambda functions do not operate in more than one Availability Zone"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Neptune",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Neptune",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Neptune"
@@ -3376,10 +3505,11 @@
       "aws_compliance.benchmark.foundational_security_neptune"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_neptune",
-    "executable": true
+    "executable": true,
+    "problem_title": "Neptune DB clusters are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Neptune",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Neptune",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Neptune"
@@ -3402,10 +3532,11 @@
       "aws_compliance.benchmark.foundational_security_neptune"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_neptune",
-    "executable": true
+    "executable": true,
+    "problem_title": "Neptune DB clusters do not publish audit logs to CloudWatch Logs"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Neptune",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Neptune",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Neptune"
@@ -3428,10 +3559,11 @@
       "aws_compliance.benchmark.foundational_security_neptune"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_neptune",
-    "executable": true
+    "executable": true,
+    "problem_title": "Neptune DB cluster snapshots are publicly accessible"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Neptune",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Neptune",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Neptune"
@@ -3454,10 +3586,11 @@
       "aws_compliance.benchmark.foundational_security_neptune"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_neptune",
-    "executable": true
+    "executable": true,
+    "problem_title": "Neptune DB clusters do not have deletion protection enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Neptune",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Neptune",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Neptune"
@@ -3480,10 +3613,11 @@
       "aws_compliance.benchmark.foundational_security_neptune"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_neptune",
-    "executable": true
+    "executable": true,
+    "problem_title": "Neptune DB clusters do not have automated backups enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Neptune",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Neptune",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Neptune"
@@ -3506,10 +3640,11 @@
       "aws_compliance.benchmark.foundational_security_neptune"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_neptune",
-    "executable": true
+    "executable": true,
+    "problem_title": "Neptune DB cluster snapshots are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Neptune",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Neptune",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Neptune"
@@ -3532,10 +3667,11 @@
       "aws_compliance.benchmark.foundational_security_neptune"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_neptune",
-    "executable": true
+    "executable": true,
+    "problem_title": "Neptune DB clusters do not have IAM database authentication enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Neptune",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Neptune",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Neptune"
@@ -3558,10 +3694,11 @@
       "aws_compliance.benchmark.foundational_security_neptune"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_neptune",
-    "executable": true
+    "executable": true,
+    "problem_title": "Neptune DB clusters are not configured to copy tags to snapshots"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Network Firewall",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Network Firewall",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Network Firewall"
@@ -3584,10 +3721,11 @@
       "aws_compliance.benchmark.foundational_security_networkfirewall"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_networkfirewall",
-    "executable": true
+    "executable": true,
+    "problem_title": "Network Firewall policies do not have at least one rule group associated"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Network Firewall",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Network Firewall",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Network Firewall"
@@ -3610,10 +3748,11 @@
       "aws_compliance.benchmark.foundational_security_networkfirewall"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_networkfirewall",
-    "executable": true
+    "executable": true,
+    "problem_title": "The default stateless action for Network Firewall policies is not set to drop or forward for full packets"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Network Firewall",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Network Firewall",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Network Firewall"
@@ -3636,10 +3775,11 @@
       "aws_compliance.benchmark.foundational_security_networkfirewall"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_networkfirewall",
-    "executable": true
+    "executable": true,
+    "problem_title": "The default stateless action for Network Firewall policies is not set to drop or forward for fragmented packets"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Network Firewall",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Network Firewall",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Network Firewall"
@@ -3662,10 +3802,11 @@
       "aws_compliance.benchmark.foundational_security_networkfirewall"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_networkfirewall",
-    "executable": true
+    "executable": true,
+    "problem_title": "Stateless network firewall rule group is empty"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Opensearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Opensearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Opensearch"
@@ -3688,10 +3829,11 @@
       "aws_compliance.benchmark.foundational_security_opensearch"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_opensearch",
-    "executable": true
+    "executable": true,
+    "problem_title": "OpenSearch domains do not have encryption at rest enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Opensearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Opensearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Opensearch"
@@ -3714,10 +3856,11 @@
       "aws_compliance.benchmark.foundational_security_opensearch"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_opensearch",
-    "executable": true
+    "executable": true,
+    "problem_title": "OpenSearch domains are not in a VPC"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Opensearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Opensearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Opensearch"
@@ -3740,10 +3883,11 @@
       "aws_compliance.benchmark.foundational_security_opensearch"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_opensearch",
-    "executable": true
+    "executable": true,
+    "problem_title": "OpenSearch domains do not encrypt data sent between nodes"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Opensearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Opensearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Opensearch"
@@ -3766,10 +3910,11 @@
       "aws_compliance.benchmark.foundational_security_opensearch"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_opensearch",
-    "executable": true
+    "executable": true,
+    "problem_title": "OpenSearch domain error logging to CloudWatch Logs is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Opensearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Opensearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Opensearch"
@@ -3792,10 +3937,11 @@
       "aws_compliance.benchmark.foundational_security_opensearch"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_opensearch",
-    "executable": true
+    "executable": true,
+    "problem_title": "OpenSearch domains do not have audit logging enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Opensearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Opensearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Opensearch"
@@ -3818,10 +3964,11 @@
       "aws_compliance.benchmark.foundational_security_opensearch"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_opensearch",
-    "executable": true
+    "executable": true,
+    "problem_title": "OpenSearch domain has fewer than three data nodes"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Opensearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Opensearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Opensearch"
@@ -3844,10 +3991,11 @@
       "aws_compliance.benchmark.foundational_security_opensearch"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_opensearch",
-    "executable": true
+    "executable": true,
+    "problem_title": "OpenSearch domains do not have fine-grained access control enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Opensearch",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Opensearch",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Opensearch"
@@ -3870,10 +4018,11 @@
       "aws_compliance.benchmark.foundational_security_opensearch"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_opensearch",
-    "executable": true
+    "executable": true,
+    "problem_title": "Connections to OpenSearch domains are not encrypted using TLS 1.2"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -3896,10 +4045,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS snapshots are not private"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -3916,16 +4066,17 @@
       "plugin": "aws",
       "service": "AWS/RDS"
     },
-    "documentation": "## Description\n\nThis control checks whether RDS instances are publicly accessible by evaluating the publiclyAccessible field in the instance configuration item. The value of publiclyAccessible indicates whether the DB instance is publicly accessible. When the DB instance is publicly accessible, it is an Internet-facing instance with a publicly resolvable DNS name, which resolves to a public IP address. When the DB instance isn't publicly accessible, it is an internal instance with a DNS name that resolves to a private IP address.\n\nThe control does not check VPC subnet routing settings or the Security Group rules. You should also ensure VPC subnet routing does not allow public access, and that the security group inbound rule associated with the RDS instance does not allow unrestricted access (0.0.0.0/0). You should also ensure that access to your RDS instance configuration is limited to only authorized users by restricting users' IAM permissions to modify RDS instances settings and resources.\n\n## Remediation\n\nTo remove public access for Amazon RDS Databases\n\n1. Open the [Amazon RDS console](https://console.aws.amazon.com/rds/).\n2. Navigate to Databases and then choose your public database.\n3. Choose **Modify**.\n4. Scroll to **Network \u0026 Security**.\n5. For `Public accessibility`, choose **No**.\n6. Scroll to the bottom and then choose **Continue**.\n7. Under Scheduling of modifications, choose **Apply immediately**.\n8. Choose Modify DB Instance.",
+    "documentation": "## Description\n\nThis control checks whether RDS instances are publicly accessible by evaluating the publiclyAccessible field in the instance configuration item. The value of publiclyAccessible indicates whether the DB instance is publicly accessible. When the DB instance is publicly accessible, it is an Internet-facing instance with a publicly resolvable DNS name, which resolves to a public IP address. When the DB instance isn't publicly accessible, it is an internal instance with a DNS name that resolves to a private IP address.\n\nThe control does not check VPC subnet routing settings or the Security Group rules. You should also ensure VPC subnet routing does not allow public access, and that the security group inbound rule associated with the RDS instance does not allow unrestricted access (0.0.0.0/0). You should also ensure that access to your RDS instance configuration is limited to only authorized users by restricting users' IAM permissions to modify RDS instances settings and resources.\n\n## Remediation\n\nTo remove public access for Amazon RDS Databases\n\n1. Open the [Amazon RDS console](https://console.aws.amazon.com/rds/).\n2. Navigate to Databases and then choose your public database.\n3. Choose **Modify**.\n4. Scroll to **Network & Security**.\n5. For `Public accessibility`, choose **No**.\n6. Scroll to the bottom and then choose **Continue**.\n7. Under Scheduling of modifications, choose **Apply immediately**.\n8. Choose Modify DB Instance.",
     "parent_control_hierarchy": [
       "aws_compliance.benchmark.foundational_security",
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS DB instances allow public access"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -3948,10 +4099,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS DB instances do not have encryption at rest enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -3974,10 +4126,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS cluster snapshots and database snapshots are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4000,10 +4153,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS DB instances are not configured with multiple Availability Zones"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4026,10 +4180,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "Enhanced monitoring is not configured for RDS DB instances and clusters"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4052,10 +4207,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS clusters do not have deletion protection enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4078,10 +4234,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS DB instances do not have deletion protection enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4104,10 +4261,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "Database logging is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4130,10 +4288,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS instances are not configured with IAM authentication"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4156,10 +4315,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS instances do not have automatic backups enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4182,10 +4342,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS clusters are not configured with IAM authentication"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4208,10 +4369,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS automatic minor version upgrades are not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4234,10 +4396,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon Aurora clusters do not have backtracking enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4260,10 +4423,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS DB clusters are not configured for multiple Availability Zones"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4286,10 +4450,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS DB clusters do not configure copying of tags to snapshots"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4312,10 +4477,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS DB instances are not configured to copy tags to snapshots"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4338,10 +4504,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS instances are not deployed in a VPC"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4364,10 +4531,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS event notifications subscription is not configured for critical cluster events"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4390,10 +4558,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "An RDS event notifications subscription is not configured for critical database instance events"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4416,10 +4585,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "An RDS event notifications subscription is not configured for critical database parameter group events"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4442,10 +4612,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "An RDS event notifications subscription is not configured for critical database security group events"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4468,10 +4639,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS databases and clusters are using the database engine default port"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4494,10 +4666,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS database clusters are not using a custom administrator username"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4520,10 +4693,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS database instances are not using a custom administrator username"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e RDS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > RDS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "RDS"
@@ -4546,10 +4720,11 @@
       "aws_compliance.benchmark.foundational_security_rds"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_rds",
-    "executable": true
+    "executable": true,
+    "problem_title": "RDS DB clusters are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Redshift",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Redshift",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Redshift"
@@ -4572,10 +4747,11 @@
       "aws_compliance.benchmark.foundational_security_redshift"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_redshift",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon Redshift clusters allow public access"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Redshift",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Redshift",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Redshift"
@@ -4598,10 +4774,11 @@
       "aws_compliance.benchmark.foundational_security_redshift"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_redshift",
-    "executable": true
+    "executable": true,
+    "problem_title": "Connections to Amazon Redshift clusters are not encrypted in transit"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Redshift",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Redshift",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Redshift"
@@ -4624,10 +4801,11 @@
       "aws_compliance.benchmark.foundational_security_redshift"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_redshift",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon Redshift clusters do not have automatic snapshots enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Redshift",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Redshift",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Redshift"
@@ -4650,10 +4828,11 @@
       "aws_compliance.benchmark.foundational_security_redshift"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_redshift",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon Redshift clusters do not have audit logging enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Redshift",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Redshift",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Redshift"
@@ -4676,10 +4855,11 @@
       "aws_compliance.benchmark.foundational_security_redshift"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_redshift",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon Redshift does not have automatic upgrades to major versions enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Redshift",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Redshift",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Redshift"
@@ -4702,10 +4882,11 @@
       "aws_compliance.benchmark.foundational_security_redshift"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_redshift",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon Redshift clusters are not using enhanced VPC routing"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Redshift",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Redshift",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Redshift"
@@ -4728,10 +4909,11 @@
       "aws_compliance.benchmark.foundational_security_redshift"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_redshift",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon Redshift clusters are using the default Admin username"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Redshift",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Redshift",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Redshift"
@@ -4754,10 +4936,11 @@
       "aws_compliance.benchmark.foundational_security_redshift"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_redshift",
-    "executable": true
+    "executable": true,
+    "problem_title": "Redshift clusters are using the default database name"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Redshift",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Redshift",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Redshift"
@@ -4780,10 +4963,11 @@
       "aws_compliance.benchmark.foundational_security_redshift"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_redshift",
-    "executable": true
+    "executable": true,
+    "problem_title": "Redshift clusters are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -4806,10 +4990,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 Block Public Access setting is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -4832,10 +5017,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 buckets allow public read access"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -4858,10 +5044,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 buckets allow public write access"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -4884,10 +5071,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 buckets do not have server-side encryption enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -4910,10 +5098,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 buckets do not require requests to use Secure Socket Layer"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -4936,10 +5125,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon S3 permissions are not restricted for other AWS accounts in bucket policies"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -4962,10 +5152,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 Block Public Access setting is not enabled at the bucket level"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -4988,10 +5179,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 bucket server access logging is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -5014,10 +5206,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 buckets with versioning enabled do not have lifecycle policies configured"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -5040,10 +5233,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 buckets do not have event notifications enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -5066,10 +5260,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 access control lists (ACLs) are used to manage user access to buckets"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e S3",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > S3",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "S3"
@@ -5092,10 +5287,11 @@
       "aws_compliance.benchmark.foundational_security_s3"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_s3",
-    "executable": true
+    "executable": true,
+    "problem_title": "S3 buckets do not have lifecycle policies configured"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e SageMaker",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > SageMaker",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "SageMaker"
@@ -5118,10 +5314,11 @@
       "aws_compliance.benchmark.foundational_security_sagemaker"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_sagemaker",
-    "executable": true
+    "executable": true,
+    "problem_title": "SageMaker notebook instances have direct internet access"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e SageMaker",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > SageMaker",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "SageMaker"
@@ -5144,10 +5341,11 @@
       "aws_compliance.benchmark.foundational_security_sagemaker"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_sagemaker",
-    "executable": true
+    "executable": true,
+    "problem_title": "SageMaker notebook instances are not launched in a custom VPC"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e SageMaker",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > SageMaker",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "SageMaker"
@@ -5170,10 +5368,11 @@
       "aws_compliance.benchmark.foundational_security_sagemaker"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_sagemaker",
-    "executable": true
+    "executable": true,
+    "problem_title": "Users still have root access to SageMaker notebook instances"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Secrets Manager",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Secrets Manager",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Secrets Manager"
@@ -5196,10 +5395,11 @@
       "aws_compliance.benchmark.foundational_security_secretsmanager"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_secretsmanager",
-    "executable": true
+    "executable": true,
+    "problem_title": "Secrets Manager secrets do not have automatic rotation enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Secrets Manager",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Secrets Manager",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Secrets Manager"
@@ -5222,10 +5422,11 @@
       "aws_compliance.benchmark.foundational_security_secretsmanager"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_secretsmanager",
-    "executable": true
+    "executable": true,
+    "problem_title": "Secrets Manager secrets do not rotate automatically"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Secrets Manager",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Secrets Manager",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Secrets Manager"
@@ -5248,10 +5449,11 @@
       "aws_compliance.benchmark.foundational_security_secretsmanager"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_secretsmanager",
-    "executable": true
+    "executable": true,
+    "problem_title": "Secrets Manager still has unused secrets"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e Secrets Manager",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > Secrets Manager",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "Secrets Manager"
@@ -5274,10 +5476,11 @@
       "aws_compliance.benchmark.foundational_security_secretsmanager"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_secretsmanager",
-    "executable": true
+    "executable": true,
+    "problem_title": "Secrets Manager secrets are not rotated within the specified number of days"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e SNS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > SNS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "SNS"
@@ -5300,10 +5503,11 @@
       "aws_compliance.benchmark.foundational_security_sns"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_sns",
-    "executable": true
+    "executable": true,
+    "problem_title": "SNS topics are not encrypted at rest using AWS KMS"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e SNS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > SNS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "SNS"
@@ -5326,10 +5530,11 @@
       "aws_compliance.benchmark.foundational_security_sns"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_sns",
-    "executable": true
+    "executable": true,
+    "problem_title": "Logging of delivery status is not enabled for notification messages sent to a topic"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e SQS",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > SQS",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "SQS"
@@ -5352,10 +5557,11 @@
       "aws_compliance.benchmark.foundational_security_sqs"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_sqs",
-    "executable": true
+    "executable": true,
+    "problem_title": "Amazon SQS queues are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e SSM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > SSM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "SSM"
@@ -5378,10 +5584,11 @@
       "aws_compliance.benchmark.foundational_security_ssm"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ssm",
-    "executable": true
+    "executable": true,
+    "problem_title": "EC2 instances are not being managed by AWS Systems Manager"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e SSM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > SSM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "SSM"
@@ -5398,16 +5605,17 @@
       "plugin": "aws",
       "service": "AWS/SSM"
     },
-    "documentation": "## Description\n\nThis control checks whether the compliance status of the Amazon EC2 Systems Manager patch compliance is `COMPLIANT` or `NON_COMPLIANT` after the patch installation on the instance. It only checks instances that are managed by Systems Manager Patch Manager.\n\nHaving your EC2 instances fully patched as required by your organization reduces the attack surface of your AWS accounts.\n\n## Remediation\n\nTo remediate this issue, install the required patches on your noncompliant instances.\n\n**To remediate noncompliant patches**\n\n1. Open the [AWS Systems Manager console](https://console.aws.amazon.com/systems-manager/).\n2. Under `Instances \u0026 Nodes`, choose `Run Command` and then choose `Run command`.\n3. Choose the button next to `AWS-RunPatchBaseline`.\n4. Change the `Operation` to `Install`.\n5. Choose `Choose instances manually` and then choose the noncompliant instances.\n6. At the bottom of the page, choose `Run`.\n7. After the command is complete, to monitor the new compliance status of your patched instances, in the navigation pane, choose `Compliance`.",
+    "documentation": "## Description\n\nThis control checks whether the compliance status of the Amazon EC2 Systems Manager patch compliance is `COMPLIANT` or `NON_COMPLIANT` after the patch installation on the instance. It only checks instances that are managed by Systems Manager Patch Manager.\n\nHaving your EC2 instances fully patched as required by your organization reduces the attack surface of your AWS accounts.\n\n## Remediation\n\nTo remediate this issue, install the required patches on your noncompliant instances.\n\n**To remediate noncompliant patches**\n\n1. Open the [AWS Systems Manager console](https://console.aws.amazon.com/systems-manager/).\n2. Under `Instances & Nodes`, choose `Run Command` and then choose `Run command`.\n3. Choose the button next to `AWS-RunPatchBaseline`.\n4. Change the `Operation` to `Install`.\n5. Choose `Choose instances manually` and then choose the noncompliant instances.\n6. At the bottom of the page, choose `Run`.\n7. After the command is complete, to monitor the new compliance status of your patched instances, in the navigation pane, choose `Compliance`.",
     "parent_control_hierarchy": [
       "aws_compliance.benchmark.foundational_security",
       "aws_compliance.benchmark.foundational_security_ssm"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ssm",
-    "executable": true
+    "executable": true,
+    "problem_title": "Some EC2 instances managed by Systems Manager are not compliant with patching requirements"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e SSM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > SSM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "SSM"
@@ -5424,16 +5632,17 @@
       "plugin": "aws",
       "service": "AWS/SSM"
     },
-    "documentation": "## Description\n\nThis control checks whether the status of the AWS Systems Manager association compliance is `COMPLIANT` or `NON_COMPLIANT` after the association is run on an instance. The control passes if the association compliance status is `COMPLIANT`.\n\nA State Manager association is a configuration that is assigned to your managed instances. The configuration defines the state that you want to maintain on your instances. For example, an association can specify that antivirus software must be installed and running on your instances or that certain ports must be closed.\n\nAfter you create one or more State Manager associations, compliance status information is immediately available to you. You can view the compliance status in the console or in response to AWS CLI commands or corresponding Systems Manager API actions. For associations, Configuration Compliance shows the compliance status (`Compliant` or `Non-compliant`). It also shows the severity level assigned to the association, such as `Critical` or `Medium`.\n\n## Remediation\n\nA failed association can be related to different things, including targets and SSM document names. To remediate this issue, you must first identify and investigate the association. You can then update the association to correct the specific issue.\n\nYou can edit an association to specify a new name, schedule, severity level, or targets. After you edit an association, AWS Systems Manager creates a new version.\n\n**To investigate and update a failed association**\n\n1. Open the [AWS Systems Manager console](https://console.aws.amazon.com/systems-manager/).\n2. In the navigation pane, under `Instances \u0026 Nodes`, choose `Managed Instances`.\n3. Choose the instance ID that has an `Association status` of `Failed`.\n4. Choose `View details`.\n5. Choose `Associations`.\n6. Note the name of the association that has an `Association status` of `Failed`. This is the association that you need to investigate. You need to use the association name in the next step.\n7. In the navigation pane, under `Instances \u0026 Nodes,` choose `State Manager`. Search for the association name, then select the association.\n8. After you determine the issue, edit the failed association to correct the problem. For information on how to edit an association, see [Edit an association](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-state-assoc-edit.html).",
+    "documentation": "## Description\n\nThis control checks whether the status of the AWS Systems Manager association compliance is `COMPLIANT` or `NON_COMPLIANT` after the association is run on an instance. The control passes if the association compliance status is `COMPLIANT`.\n\nA State Manager association is a configuration that is assigned to your managed instances. The configuration defines the state that you want to maintain on your instances. For example, an association can specify that antivirus software must be installed and running on your instances or that certain ports must be closed.\n\nAfter you create one or more State Manager associations, compliance status information is immediately available to you. You can view the compliance status in the console or in response to AWS CLI commands or corresponding Systems Manager API actions. For associations, Configuration Compliance shows the compliance status (`Compliant` or `Non-compliant`). It also shows the severity level assigned to the association, such as `Critical` or `Medium`.\n\n## Remediation\n\nA failed association can be related to different things, including targets and SSM document names. To remediate this issue, you must first identify and investigate the association. You can then update the association to correct the specific issue.\n\nYou can edit an association to specify a new name, schedule, severity level, or targets. After you edit an association, AWS Systems Manager creates a new version.\n\n**To investigate and update a failed association**\n\n1. Open the [AWS Systems Manager console](https://console.aws.amazon.com/systems-manager/).\n2. In the navigation pane, under `Instances & Nodes`, choose `Managed Instances`.\n3. Choose the instance ID that has an `Association status` of `Failed`.\n4. Choose `View details`.\n5. Choose `Associations`.\n6. Note the name of the association that has an `Association status` of `Failed`. This is the association that you need to investigate. You need to use the association name in the next step.\n7. In the navigation pane, under `Instances & Nodes,` choose `State Manager`. Search for the association name, then select the association.\n8. After you determine the issue, edit the failed association to correct the problem. For information on how to edit an association, see [Edit an association](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-state-assoc-edit.html).",
     "parent_control_hierarchy": [
       "aws_compliance.benchmark.foundational_security",
       "aws_compliance.benchmark.foundational_security_ssm"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ssm",
-    "executable": true
+    "executable": true,
+    "problem_title": "Instances managed by Systems Manager do not have a compliant association"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e SSM",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > SSM",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "SSM"
@@ -5456,10 +5665,11 @@
       "aws_compliance.benchmark.foundational_security_ssm"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_ssm",
-    "executable": true
+    "executable": true,
+    "problem_title": "SSM documents are publicly accessible"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e WAF",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > WAF",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "WAF"
@@ -5476,16 +5686,17 @@
       "plugin": "aws",
       "service": "AWS/WAF"
     },
-    "documentation": "## Description\n\nThis control checks whether logging is enabled for an AWS WAF global web ACL. This control fails if logging is not enabled for the web ACL.\n\nLogging is an important part of maintaining the reliability, availability, and performance of AWS WAF globally. It is a business and compliance requirement in many organizations, and allows you to troubleshoot application behavior. It also provides detailed information about the traffic that is analyzed by the web ACL that is attached to AWS WAF.\n\n## Remediation\n\nYou can enable logging for a web ACL from the Kinesis Data Firehose console.\n\n**To enable logging for a web ACL**\n\n1. Open the [Kinesis Data Firehose console](https://console.aws.amazon.com/firehose/).\n2. Create a Kinesis Data Firehose delivery stream.The name must start with the prefix `aws-waf-logs-`. For example, `aws-waf-logs-us-east-2-analytics`. Create the Kinesis Data Firehose delivery stream with a `PUT` source and in the Region where you operate. If you capture logs for Amazon CloudFront, create the delivery stream in US East (N. Virginia). For more information, see [Creating an Amazon Kinesis Data Firehose delivery stream](https://docs.aws.amazon.com/firehose/latest/dev/basic-create.html) in the Amazon Kinesis Data Firehose Developer Guide.\n3. From `Services`, choose `WAF \u0026 Shield`. Then choose `Switch to AWS WAF Classic`.\n4. From `Filter`, choose `Global (CloudFront)`.\n5. Choose the web ACL to enable logging for.\n6. Under `Logging`, choose `Enable logging`.\n7. Choose the Kinesis Data Firehose delivery stream that you created earlier. You must choose a delivery stream that has a name that begins with `aws-waf-logs-`.\n8. Choose `Enable logging`.",
+    "documentation": "## Description\n\nThis control checks whether logging is enabled for an AWS WAF global web ACL. This control fails if logging is not enabled for the web ACL.\n\nLogging is an important part of maintaining the reliability, availability, and performance of AWS WAF globally. It is a business and compliance requirement in many organizations, and allows you to troubleshoot application behavior. It also provides detailed information about the traffic that is analyzed by the web ACL that is attached to AWS WAF.\n\n## Remediation\n\nYou can enable logging for a web ACL from the Kinesis Data Firehose console.\n\n**To enable logging for a web ACL**\n\n1. Open the [Kinesis Data Firehose console](https://console.aws.amazon.com/firehose/).\n2. Create a Kinesis Data Firehose delivery stream.The name must start with the prefix `aws-waf-logs-`. For example, `aws-waf-logs-us-east-2-analytics`. Create the Kinesis Data Firehose delivery stream with a `PUT` source and in the Region where you operate. If you capture logs for Amazon CloudFront, create the delivery stream in US East (N. Virginia). For more information, see [Creating an Amazon Kinesis Data Firehose delivery stream](https://docs.aws.amazon.com/firehose/latest/dev/basic-create.html) in the Amazon Kinesis Data Firehose Developer Guide.\n3. From `Services`, choose `WAF & Shield`. Then choose `Switch to AWS WAF Classic`.\n4. From `Filter`, choose `Global (CloudFront)`.\n5. Choose the web ACL to enable logging for.\n6. Under `Logging`, choose `Enable logging`.\n7. Choose the Kinesis Data Firehose delivery stream that you created earlier. You must choose a delivery stream that has a name that begins with `aws-waf-logs-`.\n8. Choose `Enable logging`.",
     "parent_control_hierarchy": [
       "aws_compliance.benchmark.foundational_security",
       "aws_compliance.benchmark.foundational_security_waf"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_waf",
-    "executable": true
+    "executable": true,
+    "problem_title": "AWS WAF Classic Global Web ACL logging is not enabled"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e WAF",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > WAF",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "WAF"
@@ -5508,10 +5719,11 @@
       "aws_compliance.benchmark.foundational_security_waf"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_waf",
-    "executable": true
+    "executable": true,
+    "problem_title": "A WAF Regional rule has no conditions"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e WAF",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > WAF",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "WAF"
@@ -5534,10 +5746,11 @@
       "aws_compliance.benchmark.foundational_security_waf"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_waf",
-    "executable": true
+    "executable": true,
+    "problem_title": "A WAF Regional rule group has no rules"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e WAF",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > WAF",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "WAF"
@@ -5560,10 +5773,11 @@
       "aws_compliance.benchmark.foundational_security_waf"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_waf",
-    "executable": true
+    "executable": true,
+    "problem_title": "A WAF Regional web ACL has no rules or rule groups"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e WAF",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > WAF",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "WAF"
@@ -5586,10 +5800,11 @@
       "aws_compliance.benchmark.foundational_security_waf"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_waf",
-    "executable": true
+    "executable": true,
+    "problem_title": "A WAF global rule has no conditions"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e WAF",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > WAF",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "WAF"
@@ -5612,10 +5827,11 @@
       "aws_compliance.benchmark.foundational_security_waf"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_waf",
-    "executable": true
+    "executable": true,
+    "problem_title": "A WAF global rule group does not have at least one rule"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e WAF",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > WAF",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "WAF"
@@ -5638,10 +5854,11 @@
       "aws_compliance.benchmark.foundational_security_waf"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_waf",
-    "executable": true
+    "executable": true,
+    "problem_title": "A WAF global web ACL has no rules or rule groups"
   },
   {
-    "category_breadcrumb": "AWS Foundational Security Best Practices \u003e WAF",
+    "category_breadcrumb": "AWS Foundational Security Best Practices > WAF",
     "category_hierarchy": [
       "AWS Foundational Security Best Practices",
       "WAF"
@@ -5664,6 +5881,7 @@
       "aws_compliance.benchmark.foundational_security_waf"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.foundational_security/aws_compliance.benchmark.foundational_security_waf",
-    "executable": true
+    "executable": true,
+    "problem_title": "A WAFV2 web ACL does not have any rules or rule groups"
   }
 ]
