@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button, Combobox, ComboboxOption } from 'ui-components';
 
-import { ModelBenchmarkType } from '@/api/generated';
+import { ModelBenchmarkType, ModelCloudComplianceStatusEnum } from '@/api/generated';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
@@ -11,7 +11,11 @@ import { useGetCloudFilters } from '@/features/common/data-component/searchCloud
 import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { usePageParams } from '@/features/postures/components/scan-result/cloud/hooks';
 import { SearchableControl } from '@/features/postures/components/scan-result/SearchableControl';
-import { getBenchmarkPrettyName } from '@/utils/enum';
+import {
+  getBenchmarkPrettyName,
+  getMaskedUnmaskedPrettyName,
+  getPostureStatusPrettyName,
+} from '@/utils/enum';
 
 export const FILTER_SEARCHPARAMS: Record<string, string> = {
   visibility: 'Masked/Unmasked',
@@ -30,6 +34,23 @@ export const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
+};
+
+const getPrettyNameForAppliedFilters = ({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) => {
+  switch (key) {
+    case 'visibility':
+      return getMaskedUnmaskedPrettyName(value);
+    case 'status':
+      return getPostureStatusPrettyName(value as ModelCloudComplianceStatusEnum);
+    default:
+      return value;
+  }
 };
 
 export const Filters = () => {
@@ -269,7 +290,7 @@ export const Filters = () => {
               <FilterBadge
                 key={`${key}-${value}`}
                 onRemove={onFilterRemove({ key, value })}
-                text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                text={`${FILTER_SEARCHPARAMS[key]}: ${getPrettyNameForAppliedFilters({ key, value })}`}
               />
             );
           })}
