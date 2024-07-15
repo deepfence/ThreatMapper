@@ -125,8 +125,7 @@ const CloudPostureResultsGroupedCheckTypeList = () => {
 };
 
 const CloudPostureResultsGroupedCheckType = () => {
-  const { nodeType } = usePageParams();
-  const controls = useGetControls({ nodeType });
+  const controls = useGetControls();
   const { mode } = useTheme();
 
   return (

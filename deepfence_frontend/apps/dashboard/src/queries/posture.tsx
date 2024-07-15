@@ -475,7 +475,7 @@ export const postureQueries = createQueryKeys('posture', {
           scan_id: scanId,
           window: {
             offset: 0,
-            size: 0,
+            size: 1,
           },
         };
         if (status.length) {

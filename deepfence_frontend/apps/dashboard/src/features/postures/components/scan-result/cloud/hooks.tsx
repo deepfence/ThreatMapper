@@ -37,7 +37,7 @@ export const useScanResults = (options?: { enabled?: boolean }) => {
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       order: getOrderFromSearchParams(searchParams) || {
         sortBy: 'status',
-        descending: true,
+        descending: false,
       },
       benchmarkTypes: searchParams.getAll('benchmarkType'),
       visibility: searchParams.getAll('visibility'),
@@ -103,10 +103,8 @@ export const useStatusCounts = (options?: { enabled?: boolean }) => {
   });
 };
 
-export const useGetControls = ({ nodeType }: { nodeType: string }) => {
-  const params = useParams() as {
-    scanId: string;
-  };
+export const useGetControls = () => {
+  const params = usePageParams();
   const [searchParams] = useSearchParams();
 
   const results: Array<{

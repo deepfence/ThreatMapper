@@ -302,6 +302,7 @@ const Content = () => {
   } = useGetComplianceDetails();
   const data = cloudPostures.length ? cloudPostures[0] : undefined;
 
+  // TODO: extract this cloud check to something like isAws or isCloudOfType('aws')
   let prefix = '';
   if (data?.cloud_provider?.toLowerCase().includes('aws')) {
     prefix = 'aws_compliance.';
