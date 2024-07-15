@@ -649,7 +649,7 @@ type ComplianceScanResultsGroupResp struct {
 }
 
 type ComplianceScanResultControlGroup struct {
-	Title          string           `json:"title,omitempty"`
+	ProblemTitle   string           `json:"problem_title,omitempty"`
 	Counts         map[string]int64 `json:"counts,omitempty"`
 	BenchmarkTypes []string         `json:"benchmark_types,omitempty"`
 }
