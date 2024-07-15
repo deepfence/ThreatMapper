@@ -524,11 +524,12 @@ export const postureQueries = createQueryKeys('posture', {
         );
 
         const cloudComplianceStatus = {
-          alarm: result.value.status_counts?.['alarm'] ?? 0,
-          info: result.value.status_counts?.['info'] ?? 0,
-          ok: result.value.status_counts?.['ok'] ?? 0,
-          skip: result.value.status_counts?.['skip'] ?? 0,
-          delete: result.value.status_counts?.['delete'] ?? 0,
+          alarm: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Alarm] ?? 0,
+          info: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Info] ?? 0,
+          ok: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Ok] ?? 0,
+          skip: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Skip] ?? 0,
+          delete:
+            result.value.status_counts?.[ModelCloudComplianceStatusEnum.Delete] ?? 0,
         };
 
         return {
