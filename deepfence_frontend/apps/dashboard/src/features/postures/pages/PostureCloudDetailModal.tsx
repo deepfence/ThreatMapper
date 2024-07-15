@@ -1,7 +1,8 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
+  Badge,
   Button,
   CircleSpinner,
   SlidingModal,
@@ -36,20 +37,28 @@ function useGetComplianceDetails() {
     }),
   });
 }
+
+function useGetControlDetails({ controlId }: { controlId?: string }) {
+  return useSuspenseQuery({
+    ...queries.lookup.complianceControl({
+      nodeIds: [controlId ?? ''],
+    }),
+    enabled: !!controlId,
+  });
+}
 const timeFormatKey = {
   updated_at: 'updated_at',
 };
 
 const Header = ({
   setIsRemediationOpen,
+  data,
+  benchmarks,
 }: {
   setIsRemediationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  data?: ModelCloudCompliance;
+  benchmarks: string[];
 }) => {
-  const {
-    data: { data: cloudPostures },
-  } = useGetComplianceDetails();
-  const data = cloudPostures.length ? cloudPostures[0] : undefined;
-
   const { copy, isCopied } = useCopyToClipboardState();
 
   return (
@@ -72,11 +81,23 @@ const Header = ({
           />
         </div>
         <div className="py-[18px] flex justify-between">
-          <div className="ml-[10px]">
-            <PostureStatusBadge
-              className="w-full max-w-none"
-              status={data?.status as PostureSeverityType}
-            />
+          <div className="flex gap-4 items-center">
+            <div className="ml-[10px]">
+              <PostureStatusBadge
+                className="w-full max-w-none"
+                status={data?.status as PostureSeverityType}
+              />
+            </div>
+            <div className="flex gap-2">
+              {benchmarks.map((benchmarkType) => {
+                return (
+                  <Badge
+                    label={benchmarkType.replaceAll('_', ' ').toUpperCase()}
+                    key={benchmarkType}
+                  />
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -105,23 +126,21 @@ function processLabel(labelKey: string) {
 const DetailsComponent = ({
   isRemediationOpen,
   setIsRemediationOpen,
+  cloudPosture,
 }: {
   isRemediationOpen: boolean;
   setIsRemediationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  cloudPosture?: ModelCloudCompliance & {
+    benchmark_control_categories: Array<string>;
+  };
 }) => {
-  const {
-    data: { data: cloudPostures },
-  } = useGetComplianceDetails();
-
-  if (!cloudPostures.length) {
+  if (!cloudPosture) {
     return (
       <div className="flex items-center p-4 justify-center">
         <h3 className="text-p1a">No details found</h3>
       </div>
     );
   }
-
-  const cloudPosture = cloudPostures[0];
 
   if (isRemediationOpen) {
     return (
@@ -191,19 +210,20 @@ const DetailsComponent = ({
         'count',
         'node_id',
         'resources',
+        'compliance_check_type',
         ...getHiddenFields(cloudPosture.cloud_provider),
       ],
       priorityFields: [
         'cloud_provider',
         'region',
         getPriorityField(cloudPosture.cloud_provider),
-        'compliance_check_type',
         'control_id',
-        'group',
         'title',
         'service',
         'reason',
         'resource',
+        'benchmark_control_categories',
+        'group',
         'masked',
         'updated_at',
       ],
@@ -274,10 +294,78 @@ const DetailsComponent = ({
   );
 };
 
+const Content = () => {
+  const [isRemediationOpen, setIsRemediationOpen] = useState(false);
+
+  const {
+    data: { data: cloudPostures },
+  } = useGetComplianceDetails();
+  const data = cloudPostures.length ? cloudPostures[0] : undefined;
+
+  // TODO: extract this cloud check to something like isAws or isCloudOfType('aws')
+  let prefix = '';
+  if (data?.cloud_provider?.toLowerCase().includes('aws')) {
+    prefix = 'aws_compliance.';
+  } else if (data?.cloud_provider?.toLowerCase().includes('gcp')) {
+    prefix = 'gcp_compliance.';
+  } else if (data?.cloud_provider?.toLowerCase().includes('azure')) {
+    prefix = 'azure_compliance.';
+  }
+
+  const { data: controlData } = useGetControlDetails({
+    controlId: data?.control_id ? `${prefix}${data.control_id}` : undefined,
+  });
+
+  const { benchmarks, categoryHierarchies } = useMemo(() => {
+    if (!controlData || !controlData.data.length) {
+      return { benchmarks: [], categoryHierarchies: [] };
+    }
+    const benchmarksSet = new Set<string>();
+    const hierarchiesSet = new Set<string>();
+    controlData.data.forEach((control) => {
+      if (control.compliance_type) {
+        benchmarksSet.add(control.compliance_type);
+      }
+      if (control.category_hierarchy_short) {
+        hierarchiesSet.add(control.category_hierarchy_short);
+      }
+    });
+    return {
+      benchmarks: Array.from(benchmarksSet),
+      categoryHierarchies: Array.from(hierarchiesSet),
+    };
+  }, [controlData]);
+
+  return (
+    <>
+      <Header
+        setIsRemediationOpen={setIsRemediationOpen}
+        data={data}
+        benchmarks={benchmarks}
+      />
+      <SlidingModalContent>
+        <div className="h-full">
+          <DetailsComponent
+            isRemediationOpen={isRemediationOpen}
+            setIsRemediationOpen={setIsRemediationOpen}
+            cloudPosture={
+              data
+                ? {
+                    ...data,
+                    benchmark_control_categories: categoryHierarchies,
+                  }
+                : undefined
+            }
+          />
+        </div>
+      </SlidingModalContent>
+    </>
+  );
+};
+
 const PostureCloudDetailModal = () => {
   const { navigate } = usePageNavigation();
   const [searchParams] = useSearchParams();
-  const [isRemediationOpen, setIsRemediationOpen] = useState(false);
 
   return (
     <SlidingModal
@@ -297,15 +385,7 @@ const PostureCloudDetailModal = () => {
           </SlidingModalContent>
         }
       >
-        <Header setIsRemediationOpen={setIsRemediationOpen} />
-        <SlidingModalContent>
-          <div className="h-full">
-            <DetailsComponent
-              isRemediationOpen={isRemediationOpen}
-              setIsRemediationOpen={setIsRemediationOpen}
-            />
-          </div>
-        </SlidingModalContent>
+        <Content />
       </Suspense>
     </SlidingModal>
   );

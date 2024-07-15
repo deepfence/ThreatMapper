@@ -19,6 +19,7 @@ import type {
   ApiDocsFailureResponse,
   LookupLookupFilter,
   ModelCloudCompliance,
+  ModelCloudComplianceControl,
   ModelCloudResource,
   ModelCompliance,
   ModelContainer,
@@ -41,6 +42,8 @@ import {
     LookupLookupFilterToJSON,
     ModelCloudComplianceFromJSON,
     ModelCloudComplianceToJSON,
+    ModelCloudComplianceControlFromJSON,
+    ModelCloudComplianceControlToJSON,
     ModelCloudResourceFromJSON,
     ModelCloudResourceToJSON,
     ModelComplianceFromJSON,
@@ -72,6 +75,10 @@ export interface GetCloudCompliancesRequest {
 }
 
 export interface GetCloudResourcesRequest {
+    lookupLookupFilter?: LookupLookupFilter;
+}
+
+export interface GetComplianceControlsRequest {
     lookupLookupFilter?: LookupLookupFilter;
 }
 
@@ -157,6 +164,22 @@ export interface LookupApiInterface {
      * Get Cloud Resources
      */
     getCloudResources(requestParameters: GetCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudResource>>;
+
+    /**
+     * Retrieve all the data associated with cloud compliance controls
+     * @summary Retrieve Cloud Compliances Control data
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getComplianceControlsRaw(requestParameters: GetComplianceControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudComplianceControl>>>;
+
+    /**
+     * Retrieve all the data associated with cloud compliance controls
+     * Retrieve Cloud Compliances Control data
+     */
+    getComplianceControls(requestParameters: GetComplianceControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudComplianceControl>>;
 
     /**
      * Retrieve all the data associated with compliances
@@ -416,6 +439,45 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
      */
     async getCloudResources(requestParameters: GetCloudResourcesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudResource>> {
         const response = await this.getCloudResourcesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with cloud compliance controls
+     * Retrieve Cloud Compliances Control data
+     */
+    async getComplianceControlsRaw(requestParameters: GetComplianceControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudComplianceControl>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/compliance-controls`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelCloudComplianceControlFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with cloud compliance controls
+     * Retrieve Cloud Compliances Control data
+     */
+    async getComplianceControls(requestParameters: GetComplianceControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudComplianceControl>> {
+        const response = await this.getComplianceControlsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

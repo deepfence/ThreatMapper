@@ -18,6 +18,7 @@ import {
   ModelScanCompareReq,
   ModelScanInfoStatusEnum,
   ModelScanResultsReq,
+  ReportersFieldsFilters,
   SearchSearchNodeReq,
 } from '@/api/generated';
 import { DF404Error } from '@/components/error/404';
@@ -219,6 +220,7 @@ export const postureQueries = createQueryKeys('posture', {
     visibility: string[];
     benchmarkTypes: string[];
     nodeType: string;
+    controlId?: string;
     order?: {
       sortBy: string;
       descending: boolean;
@@ -234,6 +236,7 @@ export const postureQueries = createQueryKeys('posture', {
           status,
           benchmarkTypes,
           testNumber,
+          controlId,
           order,
           page = 1,
           pageSize,
@@ -303,6 +306,11 @@ export const postureQueries = createQueryKeys('posture', {
         if (testNumber.length) {
           scanResultsReq.fields_filter.contains_filter.filter_in!['test_number'] =
             testNumber;
+        }
+        if (controlId?.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['control_id'] = [
+            controlId,
+          ];
         }
         if (order) {
           scanResultsReq.fields_filter.order_filter.order_fields?.push({
@@ -396,11 +404,137 @@ export const postureQueries = createQueryKeys('posture', {
                 : clusterComplianceStatus,
             timestamp: result.value.updated_at,
             compliances: result.value.compliances ?? [],
+            checkTypes: result.value.benchmark_type,
             pagination: {
               currentPage: page,
               totalRows: page * pageSize + resultCounts.value.count,
             },
           },
+        };
+      },
+    };
+  },
+  postureCloudScanStatus: (filters: { scanId: string }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        const { scanId } = filters;
+        const statusCloudComplianceScanApi = apiWrapper({
+          fn: getCloudComplianceApiClient().statusCloudComplianceScan,
+        });
+        const statusResult = await statusCloudComplianceScanApi({
+          modelScanStatusReq: {
+            scan_ids: [scanId],
+            bulk_scan_id: '',
+          },
+        });
+        if (!statusResult.ok) {
+          if (statusResult.error.response.status === 404) {
+            throw new DF404Error('Scan not found');
+          }
+          throw statusResult.error;
+        }
+        if (!statusResult.value?.statuses?.length) {
+          throw new DF404Error('Scan not found');
+        }
+        return statusResult.value.statuses![0];
+      },
+    };
+  },
+  postureCloudScanResultStatusCounts: (filters: {
+    scanId: string;
+    status: string[];
+    visibility: string[];
+    benchmarkTypes: string[];
+    controls: string[];
+    services: string[];
+    resources: string[];
+    nodeType: string;
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        const {
+          scanId,
+          visibility,
+          status,
+          services,
+          benchmarkTypes,
+          resources,
+          controls,
+        } = filters;
+        const scanResultsReq: ModelScanResultsReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          scan_id: scanId,
+          window: {
+            offset: 0,
+            size: 1,
+          },
+        };
+        if (status.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['status'] = status;
+        }
+        if (visibility.length === 1) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['masked'] = [
+            visibility.includes('masked') ? true : false,
+          ];
+        }
+        if (benchmarkTypes.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in![
+            'compliance_check_type'
+          ] = benchmarkTypes.map((type) => type.toLowerCase());
+        }
+
+        if (controls.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['control_id'] =
+            controls;
+        }
+
+        if (services.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['service'] = services;
+        }
+        if (resources.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['resource'] = resources;
+        }
+
+        const resultCloudComplianceScanApi = apiWrapper({
+          fn: getCloudComplianceApiClient().resultCloudComplianceScan,
+        });
+        const result = await resultCloudComplianceScanApi({
+          modelScanResultsReq: scanResultsReq,
+        });
+
+        if (!result.ok) {
+          throw result.error;
+        }
+
+        const totalStatus = Object.values(result.value.status_counts ?? {}).reduce(
+          (acc, value) => {
+            acc = acc + value;
+            return acc;
+          },
+          0,
+        );
+
+        const cloudComplianceStatus = {
+          alarm: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Alarm] ?? 0,
+          info: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Info] ?? 0,
+          ok: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Ok] ?? 0,
+          skip: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Skip] ?? 0,
+          delete:
+            result.value.status_counts?.[ModelCloudComplianceStatusEnum.Delete] ?? 0,
+        };
+
+        return {
+          totalStatus,
+          statusCounts: cloudComplianceStatus,
         };
       },
     };
@@ -412,7 +546,7 @@ export const postureQueries = createQueryKeys('posture', {
     status: string[];
     visibility: string[];
     benchmarkTypes: string[];
-    control: string[];
+    controls: string[];
     services: string[];
     resources: string[];
     nodeType: string;
@@ -434,46 +568,8 @@ export const postureQueries = createQueryKeys('posture', {
           resources,
           page = 1,
           pageSize,
-          control,
+          controls,
         } = filters;
-        const statusCloudComplianceScanApi = apiWrapper({
-          fn: getCloudComplianceApiClient().statusCloudComplianceScan,
-        });
-        const statusResult = await statusCloudComplianceScanApi({
-          modelScanStatusReq: {
-            scan_ids: [scanId],
-            bulk_scan_id: '',
-          },
-        });
-
-        if (!statusResult.ok) {
-          if (statusResult.error.response.status === 400) {
-            const { message } = await getResponseErrors(statusResult.error);
-            return {
-              message,
-            };
-          } else if (statusResult.error.response.status === 404) {
-            throw new DF404Error('Scan not found');
-          }
-          throw statusResult.error;
-        }
-        if (!statusResult.value?.statuses?.length) {
-          throw new DF404Error('Scan not found');
-        }
-        const statuses = statusResult.value?.statuses?.[0];
-
-        const scanStatus = statuses?.status;
-
-        const isScanRunning =
-          scanStatus !== ModelScanInfoStatusEnum.Complete &&
-          scanStatus !== ModelScanInfoStatusEnum.Error;
-        const isScanError = scanStatus === ModelScanInfoStatusEnum.Error;
-
-        if (isScanRunning || isScanError) {
-          return {
-            scanStatusResult: statuses,
-          };
-        }
         const scanResultsReq: ModelScanResultsReq = {
           fields_filter: {
             contains_filter: {
@@ -503,8 +599,9 @@ export const postureQueries = createQueryKeys('posture', {
           ] = benchmarkTypes.map((type) => type.toLowerCase());
         }
 
-        if (control.length) {
-          scanResultsReq.fields_filter.contains_filter.filter_in!['control_id'] = control;
+        if (controls.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['control_id'] =
+            controls;
         }
 
         if (services.length) {
@@ -571,30 +668,8 @@ export const postureQueries = createQueryKeys('posture', {
           throw resultCounts.error;
         }
 
-        const totalStatus = Object.values(result.value.status_counts ?? {}).reduce(
-          (acc, value) => {
-            acc = acc + value;
-            return acc;
-          },
-          0,
-        );
-
-        const cloudComplianceStatus = {
-          alarm: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Alarm] ?? 0,
-          info: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Info] ?? 0,
-          ok: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Ok] ?? 0,
-          skip: result.value.status_counts?.[ModelCloudComplianceStatusEnum.Skip] ?? 0,
-          delete:
-            result.value.status_counts?.[ModelCloudComplianceStatusEnum.Delete] ?? 0,
-        };
-
         return {
-          scanStatusResult: statuses,
           data: {
-            totalStatus,
-            nodeName: result.value.node_id,
-            statusCounts: cloudComplianceStatus,
-            timestamp: result.value.updated_at,
             compliances: result.value.compliances ?? [],
             pagination: {
               currentPage: page,
@@ -654,6 +729,79 @@ export const postureQueries = createQueryKeys('posture', {
         }
 
         return { controls: result.value.controls ?? [], message: '' };
+      },
+    };
+  },
+  scanResultCloudComplianceCountsByControls: (filters: {
+    scanId: string;
+    status: string[];
+    visibility: string[];
+    benchmarkTypes: string[];
+    controls: string[];
+    resources: string[];
+    services: string[];
+  }) => {
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const {
+          scanId,
+          status,
+          visibility,
+          benchmarkTypes,
+          controls,
+          services,
+          resources,
+        } = filters;
+
+        const fieldsFilter: ReportersFieldsFilters = {
+          contains_filter: {
+            filter_in: {},
+          },
+          match_filter: { filter_in: {} },
+          order_filter: { order_fields: [] },
+          compare_filter: null,
+        };
+        if (status.length) {
+          fieldsFilter.contains_filter.filter_in!['status'] = status;
+        }
+        if (visibility.length === 1) {
+          fieldsFilter.contains_filter.filter_in!['masked'] = [
+            visibility.includes('masked') ? true : false,
+          ];
+        }
+        if (benchmarkTypes.length) {
+          fieldsFilter.contains_filter.filter_in!['compliance_check_type'] =
+            benchmarkTypes.map((type) => type.toLowerCase());
+        }
+
+        if (controls?.length) {
+          fieldsFilter.contains_filter.filter_in!['control_id'] = controls;
+        }
+
+        if (services.length) {
+          fieldsFilter.contains_filter.filter_in!['service'] = services;
+        }
+
+        if (resources.length) {
+          fieldsFilter.contains_filter.filter_in!['resource'] = resources;
+        }
+
+        const scanResultCloudComplianceCountsByControls = apiWrapper({
+          fn: getComplianceApiClient().scanResultCloudComplianceCountsByControls,
+        });
+        const results = await scanResultCloudComplianceCountsByControls({
+          modelComplinaceScanResultsGroupReq: {
+            scan_id: scanId,
+            fields_filter: fieldsFilter,
+          },
+        });
+
+        if (!results.ok) {
+          console.error(results);
+          throw new Error("Couldn't get summary");
+        }
+        return results.value.groups ?? {};
       },
     };
   },

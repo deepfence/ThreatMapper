@@ -4653,6 +4653,61 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/lookup/compliance-controls": {
+      "post": {
+        "tags": ["Lookup"],
+        "summary": "Retrieve Cloud Compliances Control data",
+        "description": "Retrieve all the data associated with cloud compliance controls",
+        "operationId": "getComplianceControls",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelCloudComplianceControl" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/lookup/compliances": {
       "post": {
         "tags": ["Lookup"],
@@ -6941,7 +6996,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ModelComplinaceScanResultsGroupResp"
+                  "$ref": "#/components/schemas/ModelComplianceScanResultsGroupResp"
                 }
               }
             }
@@ -6997,7 +7052,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ModelComplinaceScanResultsGroupResp"
+                  "$ref": "#/components/schemas/ModelComplianceScanResultsGroupResp"
                 }
               }
             }
@@ -13551,6 +13606,34 @@
           "updated_at": { "type": "integer" }
         }
       },
+      "ModelCloudComplianceControl": {
+        "type": "object",
+        "properties": {
+          "active": { "type": "boolean" },
+          "category": { "type": "string" },
+          "category_hierarchy": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "category_hierarchy_short": { "type": "string" },
+          "cloud_provider": { "type": "string" },
+          "compliance_type": { "type": "string" },
+          "control_id": { "type": "string" },
+          "description": { "type": "string" },
+          "disabled": { "type": "boolean" },
+          "documentation": { "type": "string" },
+          "executable": { "type": "boolean" },
+          "node_id": { "type": "string" },
+          "parent_control_hierarchy": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "service": { "type": "string" },
+          "title": { "type": "string" }
+        }
+      },
       "ModelCloudComplianceScanResult": {
         "required": [
           "docker_container_name",
@@ -13701,6 +13784,7 @@
           "description": { "type": "string" },
           "enabled": { "type": "boolean" },
           "node_id": { "type": "string" },
+          "problem_title": { "type": "string" },
           "service": { "type": "string" },
           "title": { "type": "string" }
         }
@@ -13967,6 +14051,26 @@
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },
+      "ModelComplianceScanResultControlGroup": {
+        "type": "object",
+        "properties": {
+          "benchmark_types": { "type": "array", "items": { "type": "string" } },
+          "counts": { "type": "object", "additionalProperties": { "type": "integer" } },
+          "problem_title": { "type": "string" }
+        }
+      },
+      "ModelComplianceScanResultsGroupResp": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ModelComplianceScanResultControlGroup"
+            },
+            "nullable": true
+          }
+        }
+      },
       "ModelComplianceScanStatusResp": {
         "required": ["statuses"],
         "type": "object",
@@ -14003,19 +14107,6 @@
         "properties": {
           "fields_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "scan_id": { "type": "string" }
-        }
-      },
-      "ModelComplinaceScanResultsGroupResp": {
-        "type": "object",
-        "properties": {
-          "groups": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "object",
-              "additionalProperties": { "type": "integer" }
-            },
-            "nullable": true
-          }
         }
       },
       "ModelConnection": {
