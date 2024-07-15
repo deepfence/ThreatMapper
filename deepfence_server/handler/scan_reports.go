@@ -1333,9 +1333,9 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 	CALL {
 		WITH c
 		MATCH (e:CloudComplianceControl{control_id:c.full_control_id})
-		RETURN COLLECT(DISTINCT e.compliance_type) as compliance_type
+		RETURN COLLECT(DISTINCT e.compliance_type) as compliance_type, e.problem_title as problem_title
 	}
-	RETURN c.full_control_id as control_id, collect(c.status) as status, compliance_type, c.title as title
+	RETURN c.full_control_id as control_id, collect(c.status) as status, compliance_type, problem_title
 	`
 
 	log.Debug().Msgf("Count Cloud ComplianceScan Results Group Handler query: %s", query)
@@ -1358,7 +1358,7 @@ func (h *Handler) CountCloudComplianceScanResultsGroupHandler(w http.ResponseWri
 		r := model.ComplianceScanResultControlGroup{
 			Counts:         groupArrayToMap(rec.Values[1].([]interface{})),
 			BenchmarkTypes: cast.ToStringSlice(rec.Values[2].([]interface{})),
-			Title:          rec.Values[3].(string),
+			ProblemTitle:   rec.Values[3].(string),
 		}
 		results[rec.Values[0].(string)] = r
 	}
