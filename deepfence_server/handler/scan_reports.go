@@ -1272,7 +1272,7 @@ func (h *Handler) CountComplianceScanResultsGroupHandler(w http.ResponseWriter, 
 		r := model.ComplianceScanResultControlGroup{
 			Counts:         groupArrayToMap(rec.Values[1].([]interface{})),
 			BenchmarkTypes: cast.ToStringSlice(rec.Values[2].(string)),
-			Title:          rec.Values[3].(string),
+			ProblemTitle:   rec.Values[3].(string),
 		}
 		results[rec.Values[0].(string)] = r
 	}
