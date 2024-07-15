@@ -23,6 +23,7 @@ const (
 	dbUpgradeTimeout                       = time.Minute * 30
 	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
 	dbCloudResourceCleanupTimeout          = time.Hour * 24
+	dbCloudResourceRefreshTimeout          = time.Hour * 12
 	ecsTaskRunningStatus                   = "RUNNING"
 	ecsTaskPublicEnabledConfig             = "ENABLED"
 	dbDeletionTimeThreshold                = time.Hour
@@ -396,6 +397,20 @@ func CleanUpDB(ctx context.Context, task *asynq.Task) error {
 		SET n.active = false`,
 		map[string]interface{}{
 			"time_ms": dbScanTimeoutBase.Milliseconds(),
+		}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(ctx, `
+		MATCH (n:CloudNode)
+		WHERE n.refresh_updated_at < TIMESTAMP()-$time_ms
+		AND n.active = true
+		AND NOT n.refresh_status IN ['`+utils.ScanStatusStarting+`','`+utils.ScanStatusInProgress+`']
+		WITH n LIMIT 10000
+		SET n.refresh_status = '`+utils.ScanStatusStarting+`', n.refresh_updated_at = TIMESTAMP()`,
+		map[string]interface{}{
+			"time_ms": dbCloudResourceRefreshTimeout.Milliseconds(),
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err

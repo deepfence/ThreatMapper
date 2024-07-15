@@ -176,6 +176,10 @@ func (d *OpenAPIDocs) AddLookupOperations() {
 	d.AddOperation("getCloudCompliances", http.MethodPost, "/deepfence/lookup/cloud-compliances",
 		"Retrieve Cloud Compliances data", "Retrieve all the data associated with cloud-compliances",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]CloudCompliance))
+
+	d.AddOperation("getComplianceControls", http.MethodPost, "/deepfence/lookup/compliance-controls",
+		"Retrieve Cloud Compliances Control data", "Retrieve all the data associated with cloud compliance controls",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]CloudComplianceControl))
 }
 
 func (d *OpenAPIDocs) AddSearchOperations() {
@@ -612,10 +616,10 @@ func (d *OpenAPIDocs) AddScansOperations() {
 	// compliance and cloud-compliance results count grouped by control_id
 	d.AddOperation("groupResultsCompliance", http.MethodPost, "/deepfence/scan/results/count/group/compliance",
 		"Count Compliance Results by Control ID", "Count Compliance Results grouped by Control ID",
-		http.StatusOK, []string{tagCompliance}, bearerToken, new(ComplinaceScanResultsGroupReq), new(ComplinaceScanResultsGroupResp))
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(ComplinaceScanResultsGroupReq), new(ComplianceScanResultsGroupResp))
 	d.AddOperation("groupResultsCloudCompliance", http.MethodPost, "/deepfence/scan/results/count/group/cloud-compliance",
 		"Count Cloud Compliance Results by Control ID", "Count Cloud Compliance Results grouped by Control ID",
-		http.StatusOK, []string{tagCompliance}, bearerToken, new(ComplinaceScanResultsGroupReq), new(ComplinaceScanResultsGroupResp))
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(ComplinaceScanResultsGroupReq), new(ComplianceScanResultsGroupResp))
 
 	d.AddOperation("getAllNodesInScanResults", http.MethodPost, "/deepfence/scan/nodes-in-result",
 		"Get all nodes in given scan result ids", "Get all nodes in given scan result ids",

@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
-import { capitalize, startCase } from 'lodash-es';
+import { capitalize, startCase, upperFirst } from 'lodash-es';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -10,6 +10,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
+import { cn } from 'tailwind-preset';
 import {
   Badge,
   Breadcrumb,
@@ -65,7 +66,6 @@ import { getColorForCompliancePercent } from '@/constants/charts';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
-import { RefreshAccountStatusError } from '@/features/postures/components/RefreshAccountStatusError';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import {
   getDeleteConfirmationDisplayName,
@@ -76,7 +76,6 @@ import {
   isKubernetesNodeType,
   isLinuxNodeType,
   isNonCloudNode,
-  isRefreshAccountFailed,
 } from '@/features/postures/utils';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
@@ -326,6 +325,21 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
+};
+const getPrettyNameForAppliedFilters = ({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) => {
+  switch (key) {
+    case 'status':
+      return startCase(value);
+
+    default:
+      return value;
+  }
 };
 const Filters = () => {
   const { nodeType } = useParams() as {
@@ -593,7 +607,10 @@ const Filters = () => {
               <FilterBadge
                 key={`${key}-${value}`}
                 onRemove={onFilterRemove({ key, value })}
-                text={value}
+                text={getPrettyNameForAppliedFilters({
+                  key,
+                  value,
+                })}
                 label={FILTER_SEARCHPARAMS[key]}
               />
             );
@@ -915,6 +932,7 @@ const ActionDropdown = ({
                 if (!scanId || !nodeType) return;
                 onTableAction(row, ActionEnumType.DELETE_SCAN);
               }}
+              color="error"
             >
               Delete latest scan
             </DropdownItem>
@@ -1305,8 +1323,10 @@ const AccountTable = ({
           );
         },
         header: () =>
-          getDisplayNameOfNodeType(
-            nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+          upperFirst(
+            getDisplayNameOfNodeType(
+              nodeType as ModelCloudNodeAccountsListReqCloudProviderEnum,
+            ).toLowerCase(),
           ),
         ...columnWidth.node_name,
       }),
@@ -1317,7 +1337,7 @@ const AccountTable = ({
           const percent = Number(cell.getValue());
           const isScanned = !!cell.row.original.last_scan_status;
 
-          if (isScanned) {
+          if (isScanned || isCloudOrgNode(nodeType)) {
             return (
               <span
                 style={{
@@ -1336,25 +1356,19 @@ const AccountTable = ({
       }),
       columnHelper.accessor('last_scan_status', {
         cell: (info) => {
-          if (nodeType?.endsWith?.('_org')) {
+          if (isCloudOrgNode(nodeType)) {
             const data = info.row.original.scan_status_map ?? {};
-            const keys = Object.keys(data);
-            const statuses = Object.keys(data).map((current, index) => {
+            const statuses = Object.keys(data).map((current) => {
               return (
-                <>
-                  <div className="flex gap-x-1.5 items-center" key={current}>
-                    <span className="text-text-input-value font-medium">
-                      {data[current]}
-                    </span>
-                    <ScanStatusBadge status={current ?? ''} />
-                    {index < keys.length - 1 ? (
-                      <div className="mx-2 w-px h-[20px] bg-bg-grid-border" />
-                    ) : null}
-                  </div>
-                </>
+                <div className="flex gap-x-1.5 items-center" key={current}>
+                  <span className="text-text-input-value font-medium">
+                    {data[current]}
+                  </span>
+                  <ScanStatusBadge status={current ?? ''} />
+                </div>
               );
             });
-            return <div className="flex gap-x-1.5">{statuses}</div>;
+            return <div className="space-y-1.5 py-1">{statuses}</div>;
           } else {
             const value = info.getValue();
             return <ScanStatusBadge status={value ?? ''} />;
@@ -1367,7 +1381,11 @@ const AccountTable = ({
         ...columnWidth.active,
         header: () => 'Active',
         cell: (info) => {
-          return info.getValue() ? 'Yes' : 'No';
+          return (
+            <span className={cn({ 'text-status-success': info.getValue() })}>
+              {info.getValue() ? 'Yes' : 'No'}
+            </span>
+          );
         },
       }),
     ];
@@ -1380,7 +1398,9 @@ const AccountTable = ({
           ...columnWidth.account_name,
           header: () => 'Name',
           cell: (info) => {
-            return <TruncatedText text={info.getValue()} />;
+            return (
+              <TruncatedText text={info.getValue() || info.row.original.node_name} />
+            );
           },
         }),
       );
@@ -1391,14 +1411,30 @@ const AccountTable = ({
           ...columnWidth.refresh_status,
           header: () => 'Refresh status',
           cell: (info) => {
-            if (isRefreshAccountFailed(info.getValue())) {
+            if (isCloudOrgNode(nodeType)) {
+              const data = info.row.original.refresh_status_map ?? {};
+              const statuses = Object.keys(data).map((current) => {
+                return (
+                  <div className="flex gap-x-1.5 items-center" key={current}>
+                    <span className="text-text-input-value font-medium">
+                      {data[current]}
+                    </span>
+                    <ScanStatusBadge
+                      status={current}
+                      errorMessage={info.row.original.refresh_message}
+                    />
+                  </div>
+                );
+              });
+              return <div className="space-y-1.5 py-1">{statuses}</div>;
+            } else {
               return (
-                <RefreshAccountStatusError
-                  errorMessage={info.row.original.refresh_message ?? 'Unknown error'}
+                <ScanStatusBadge
+                  status={info.getValue() ?? ''}
+                  errorMessage={info.row.original.refresh_message}
                 />
               );
             }
-            return <TruncatedText text={startCase(info.getValue()?.toLowerCase())} />;
           },
         }),
       );
@@ -1821,7 +1857,7 @@ const AccountWithTab = () => {
   };
 
   const [currentTab, setTab] = useState(() => {
-    return nodeType.endsWith('_org') ? 'org-accounts' : 'accounts';
+    return isCloudOrgNode(nodeType) ? 'org-accounts' : 'accounts';
   });
   const { navigate } = usePageNavigation();
 

@@ -211,12 +211,12 @@ func secretXLSX(ctx context.Context, params utils.ReportParams) (string, error) 
 				s.FullFilename,
 				s.MatchedContent,
 				s.Name,
-				s.RuleID,
 				s.Level,
 				nodeScanData.ScanInfo.NodeName,
 				nodeScanData.ScanInfo.ContainerName,
 				nodeScanData.ScanInfo.KubernetesClusterName,
-				s.SignatureToMatch,
+				s.StartingIndex,
+				s.MatchedContent,
 			}
 			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
 			if err != nil {

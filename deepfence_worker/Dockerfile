@@ -67,7 +67,7 @@ COPY --from=packagescanner /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=packagescanner /usr/local/bin/grype /usr/local/bin/grype
 COPY --from=packagescanner /root/.grype.yaml /usr/local/bin/grype.yaml
 
-# COPY --from=secretscanner /home/deepfence/usr/config.yaml /config.yaml
+COPY --from=secretscanner /home/deepfence/usr/config.yaml /secret-config/config.yaml
 
 COPY --from=yarahunter /home/deepfence/usr/config.yaml /malware-config/config.yaml
 

@@ -200,5 +200,6 @@ func (c *CloudResourceRefreshStatus) ToMap() map[string]interface{} {
 		"cloud_node_id":   c.CloudNodeID,
 		"refresh_message": c.RefreshMessage,
 		"refresh_status":  c.RefreshStatus,
+		"updated_at":      c.UpdatedAt,
 	}
 }

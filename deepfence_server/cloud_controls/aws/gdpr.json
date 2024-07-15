@@ -1,6 +1,6 @@
 [
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -23,10 +23,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "S3 bucket allowing CloudTrail logs to be publicly accessible"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -62,10 +63,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "At least one multi-region AWS CloudTrail is not present in the account"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -88,10 +90,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "S3 bucket access logging is not enabled on the CloudTrail S3 bucket"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -127,10 +130,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "CloudTrail trails are not integrated with CloudWatch logs"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -166,10 +170,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "CloudTrail trail logs are not encrypted with a KMS CMK"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -203,10 +208,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "CloudTrail trail log file validation is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -234,10 +240,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "AWS Config is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -261,10 +268,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM password policy has a minimum length of less than 14"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -285,10 +293,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM password policy does not require at least one lowercase letter"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -309,10 +318,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM password policy does not require at least one number"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -333,10 +343,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM password policy does not require at least one symbol"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -357,10 +368,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM password policy does not require at least one uppercase letter"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -381,10 +393,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM password policy allows password reuse"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -408,10 +421,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "Password policies for IAM users do not have strong configurations"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -432,10 +446,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM password policy does not expire passwords within 90 days or less"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -471,10 +486,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM policy has statements with admin access"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -509,10 +525,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM root user does not have hardware MFA enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -547,10 +564,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM root user MFA is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -586,10 +604,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM root user has access keys"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -610,10 +629,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No support role has been created to manage incidents with AWS Support"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -645,10 +665,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM user access keys are not rotated at least every 90 days"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -684,10 +705,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM users with console access are not having MFA enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -723,10 +745,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM user has either inline or attached policies"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -761,10 +784,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "IAM user credentials that are more than 89 days old are not disabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -795,10 +819,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "KMS CMK rotation is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -821,10 +846,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for S3 bucket policy changes"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -847,10 +873,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for CloudTrail configuration changes"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -873,10 +900,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for AWS Config configuration changes"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -901,10 +929,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for AWS Management Console authentication failures"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -927,10 +956,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for AWS Management Console sign-in without MFA"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -952,10 +982,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for disabling or scheduled deletion of customer managed keys"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -979,10 +1010,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for IAM policy changes"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -1005,10 +1037,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exist for changes to Network Access Control Lists (NACL)"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -1031,10 +1064,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for changes to network gateways"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -1060,10 +1094,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exist for usage of 'root' account"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -1086,10 +1121,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for route table changes"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -1112,10 +1148,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for security group changes"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -1138,10 +1175,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exist for unauthorized API calls"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -1164,10 +1202,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "No log metric filter and alarm exists for VPC changes"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 25 Data protection by design and by default",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 25 Data protection by design and by default",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 25 Data protection by design and by default"
@@ -1203,10 +1242,11 @@
       "aws_compliance.benchmark.article_25"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_25",
-    "executable": false
+    "executable": false,
+    "problem_title": "VPC flow logs are not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 30 Records of processing activities",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 30 Records of processing activities",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
@@ -1242,10 +1282,11 @@
       "aws_compliance.benchmark.article_30"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_30",
-    "executable": false
+    "executable": false,
+    "problem_title": "At least one multi-region AWS CloudTrail is not present in the account"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 30 Records of processing activities",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 30 Records of processing activities",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
@@ -1282,10 +1323,11 @@
       "aws_compliance.benchmark.article_30"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_30",
-    "executable": false
+    "executable": false,
+    "problem_title": "All S3 buckets do not log S3 data events in CloudTrail"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 30 Records of processing activities",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 30 Records of processing activities",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
@@ -1313,10 +1355,11 @@
       "aws_compliance.benchmark.article_30"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_30",
-    "executable": false
+    "executable": false,
+    "problem_title": "At least one trail is not enabled with security best practices"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 30 Records of processing activities",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 30 Records of processing activities",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
@@ -1352,10 +1395,11 @@
       "aws_compliance.benchmark.article_30"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_30",
-    "executable": false
+    "executable": false,
+    "problem_title": "CloudTrail trails are not integrated with CloudWatch logs"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 30 Records of processing activities",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 30 Records of processing activities",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
@@ -1391,10 +1435,11 @@
       "aws_compliance.benchmark.article_30"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_30",
-    "executable": false
+    "executable": false,
+    "problem_title": "CloudTrail trail logs are not encrypted with a KMS CMK"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 30 Records of processing activities",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 30 Records of processing activities",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
@@ -1422,10 +1467,11 @@
       "aws_compliance.benchmark.article_30"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_30",
-    "executable": false
+    "executable": false,
+    "problem_title": "AWS Config is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 30 Records of processing activities",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 30 Records of processing activities",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
@@ -1461,10 +1507,11 @@
       "aws_compliance.benchmark.article_30"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_30",
-    "executable": false
+    "executable": false,
+    "problem_title": "ELB application and classic load balancer logging is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 30 Records of processing activities",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 30 Records of processing activities",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
@@ -1495,10 +1542,11 @@
       "aws_compliance.benchmark.article_30"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_30",
-    "executable": false
+    "executable": false,
+    "problem_title": "KMS CMK rotation is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 30 Records of processing activities",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 30 Records of processing activities",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
@@ -1535,10 +1583,11 @@
       "aws_compliance.benchmark.article_30"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_30",
-    "executable": false
+    "executable": false,
+    "problem_title": "Redshift cluster audit logging and encryption is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 30 Records of processing activities",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 30 Records of processing activities",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 30 Records of processing activities"
@@ -1574,10 +1623,11 @@
       "aws_compliance.benchmark.article_30"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_30",
-    "executable": false
+    "executable": false,
+    "problem_title": "VPC flow logs are not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1611,10 +1661,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "ACM certificates are not set to expire within 30 days"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1648,10 +1699,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "API Gateway stage cache encryption at rest is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1677,10 +1729,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "CloudFront distributions do not require encryption in transit"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1716,10 +1769,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "CloudTrail trail logs are not encrypted with a KMS CMK"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1753,10 +1807,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "CloudTrail trail log file validation is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1782,10 +1837,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "DynamoDB Accelerator (DAX) clusters are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1817,10 +1873,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "DynamoDB table is not encrypted with AWS KMS"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1846,10 +1903,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "DynamoDB table does not have encryption enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1886,10 +1944,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "Attached EBS volumes do not have encryption enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1913,10 +1972,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "EBS volume encryption at rest is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1950,10 +2010,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "EFS file system encryption at rest is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -1983,10 +2044,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "ELB application load balancers allow HTTP headers to be sent"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2021,10 +2083,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "ELB application load balancers do not redirect HTTP requests to HTTPS"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2059,10 +2122,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "ELB classic load balancers do not use SSL certificates"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2097,10 +2161,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "ELB classic load balancers are not using only SSL or HTTPS listeners"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2135,10 +2200,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "ES domain encryption at rest is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2173,10 +2239,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "Elasticsearch domain node-to-node encryption is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2211,10 +2278,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "Log group encryption at rest is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2251,10 +2319,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "RDS DB instance encryption at rest is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2289,10 +2358,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "RDS DB instances are not in a backup plan"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2328,10 +2398,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "Database logging is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2365,10 +2436,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "RDS DB snapshots are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2404,10 +2476,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "AWS Redshift clusters do not have automatic snapshots enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2442,10 +2515,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "Redshift cluster encryption in transit is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2482,10 +2556,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "Redshift cluster audit logging and encryption is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2520,10 +2595,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "S3 bucket default encryption is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2557,10 +2633,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "S3 bucket default encryption is not enabled with KMS"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2596,10 +2673,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "S3 buckets do not enforce SSL"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2634,10 +2712,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "SageMaker endpoint configuration encryption is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2672,10 +2751,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "SageMaker notebook instance encryption is not enabled"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2709,10 +2789,11 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "SNS topics are not encrypted at rest"
   },
   {
-    "category_breadcrumb": "General Data Protection Regulation (GDPR) \u003e Article 32 Security of processing",
+    "category_breadcrumb": "General Data Protection Regulation (GDPR) > Article 32 Security of processing",
     "category_hierarchy": [
       "General Data Protection Regulation (GDPR)",
       "Article 32 Security of processing"
@@ -2748,6 +2829,7 @@
       "aws_compliance.benchmark.article_32"
     ],
     "parent_control_breadcrumb": "aws_compliance.benchmark.gdpr/aws_compliance.benchmark.article_32",
-    "executable": false
+    "executable": false,
+    "problem_title": "Logging is not enabled on AWS WAFv2 regional and global web access control list (ACLs)"
   }
 ]

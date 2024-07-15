@@ -10,6 +10,10 @@ metadata:
   {{- end }}
 spec:
   ingressClassName: {{ required "ingress class name is required" .Values.ingress.class }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
   rules:
   - http:
       paths:
@@ -24,4 +28,3 @@ spec:
     host: {{ . }}
     {{- end }}
 {{- end }}
-

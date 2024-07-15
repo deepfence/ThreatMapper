@@ -81,7 +81,6 @@ func secretPDF(ctx context.Context, params utils.ReportParams) (core.Document, e
 			text.NewCol(3, "File Name", resultHeaderProps).WithStyle(cellStyle),
 			text.NewCol(1, "Severity", resultHeaderProps).WithStyle(cellStyle),
 			text.NewCol(4, "Matched Content", resultHeaderProps).WithStyle(cellStyle),
-			text.NewCol(1, "Part", resultHeaderProps).WithStyle(cellStyle),
 		))
 
 		resultRows := []core.Row{}
@@ -102,9 +101,6 @@ func secretPDF(ctx context.Context, params utils.ReportParams) (core.Document, e
 						WithStyle(cellStyle),
 					text.NewCol(4, truncateText(v.MatchedContent, 80),
 						props.Text{Size: 10, Left: 1, Top: 1, BreakLineStrategy: breakline.DashStrategy}).
-						WithStyle(cellStyle),
-					text.NewCol(1, v.Part,
-						props.Text{Size: 10, Top: 1, Align: align.Center}).
 						WithStyle(cellStyle),
 				),
 			)

@@ -1,6 +1,8 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { startCase } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { cn } from 'tailwind-preset';
 import {
   Badge,
   Button,
@@ -262,6 +264,22 @@ const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
+};
+
+const getPrettyNameForAppliedFilters = ({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) => {
+  switch (key) {
+    case 'cloudProvider':
+      return CLOUD_PROVIDERS.find((item) => item.value === value)?.label ?? '';
+
+    default:
+      return value;
+  }
 };
 
 function Filters() {
@@ -546,7 +564,7 @@ function Filters() {
           }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['agentRunning']}
         >
-          {['On', 'Off']
+          {['Yes', 'No']
             .filter((item) => {
               if (!agentRunningSearchText.length) return true;
               return item.toLowerCase().includes(agentRunningSearchText.toLowerCase());
@@ -589,7 +607,10 @@ function Filters() {
               <FilterBadge
                 key={`${key}-${value}`}
                 onRemove={onFilterRemove({ key, value })}
-                text={value}
+                text={getPrettyNameForAppliedFilters({
+                  key,
+                  value,
+                })}
                 label={FILTER_SEARCHPARAMS[key]}
               />
             );
@@ -639,7 +660,7 @@ function useSearchHostsWithPagination() {
       order: getOrderFromSearchParams(searchParams),
       agentRunning: searchParams
         .getAll('agentRunning')
-        .map((value) => (value === 'On' ? true : false)),
+        .map((value) => (value === 'Yes' ? true : false)),
       cloudAccounts: searchParams.getAll('cloudAccounts'),
       clusterIds: searchParams.getAll('clusters'),
       hosts: searchParams.getAll('hosts'),
@@ -723,8 +744,8 @@ const DataTable = ({
         },
         header: () => 'Name',
         minSize: 300,
-        size: 400,
-        maxSize: 600,
+        size: 320,
+        maxSize: 360,
       }),
       columnHelper.accessor('vulnerability_scan_status', {
         cell: (info) => {
@@ -767,20 +788,27 @@ const DataTable = ({
           if (!info.getValue()) {
             return <div className="border-b w-[8px] border-text-icon"></div>;
           }
-          return <TruncatedText text={info.getValue() ?? ''} />;
+          return <TruncatedText text={startCase(info.getValue())} />;
         },
-        header: () => <span>OS</span>,
+        header: () => 'OS',
         minSize: 50,
         size: 60,
         maxSize: 120,
       }),
       columnHelper.accessor('agent_running', {
         cell: (info) => {
-          return <TruncatedText text={info.getValue() ? 'Yes' : 'No'} />;
+          return (
+            <TruncatedText
+              text={info.getValue() ? 'Yes' : 'No'}
+              className={cn({
+                'text-status-success': info.getValue(),
+              })}
+            />
+          );
         },
         header: () => <TruncatedText text="Agent running?" />,
-        minSize: 50,
-        size: 60,
+        minSize: 80,
+        size: 100,
         maxSize: 120,
       }),
       columnHelper.accessor('version', {
@@ -826,6 +854,9 @@ const DataTable = ({
                 </div>
               );
             }
+          }
+          if (!info.getValue()) {
+            return <div className="border-b w-[8px] border-text-icon"></div>;
           }
           return <TruncatedText text={info.getValue() ?? ''} />;
         },

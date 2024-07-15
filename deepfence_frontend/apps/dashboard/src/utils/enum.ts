@@ -97,3 +97,17 @@ export function getSeverityPrettyName(severity: SeverityValueType) {
       throw new Error(`Unhandled case: ${_exhaustiveCheck}`);
   }
 }
+
+export function getMaskedUnmaskedPrettyName(maskedUnmasked: string) {
+  switch (maskedUnmasked) {
+    case 'masked':
+      return 'Masked';
+    case 'unmasked':
+      return 'Unmasked';
+
+    default:
+      throw new Error(
+        `Unhandled case: No matching key found for getMaskedUnmaskedPrettyName`,
+      );
+  }
+}

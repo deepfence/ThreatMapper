@@ -86,7 +86,7 @@ const SearchableCVE = ({
             ? `${selectedCVEIds.length} selected`
             : null
         }
-        placeholder="CVEs"
+        placeholder="CVE ID"
         multiple
         value={selectedCVEIds}
         onChange={(values) => {
@@ -129,7 +129,7 @@ export const SearchableCVEList = (props: SearchableCVEListProps) => {
           label={isSelectVariantType ? 'CVE' : undefined}
           triggerVariant={triggerVariant || 'button'}
           startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          placeholder="CVEs"
+          placeholder="CVE ID"
           multiple
           onQueryChange={() => {
             // no operation

@@ -296,21 +296,16 @@ type CloudComplianceScanResult struct {
 
 type Secret struct {
 	// Secret + Rule neo4j node
-	NodeID                string      `json:"node_id" required:"true"`
-	StartingIndex         int32       `json:"starting_index" required:"true"`
-	RelativeStartingIndex int32       `json:"relative_starting_index" required:"true"`
-	RelativeEndingIndex   int32       `json:"relative_ending_index" required:"true"`
-	FullFilename          string      `json:"full_filename" required:"true"`
-	MatchedContent        string      `json:"matched_content" required:"true"`
-	Masked                bool        `json:"masked" required:"true"`
-	UpdatedAt             int64       `json:"updated_at" required:"true"`
-	Level                 string      `json:"level" validate:"required,oneof=critical high medium low unknown" required:"true" enum:"critical,high,medium,low,unknown"`
-	Score                 float64     `json:"score" required:"true"`
-	RuleID                int32       `json:"rule_id" required:"true"`
-	Name                  string      `json:"name" required:"true"`
-	Part                  string      `json:"part" required:"true"`
-	SignatureToMatch      string      `json:"signature_to_match" required:"true"`
-	Resources             []BasicNode `json:"resources" required:"false"`
+	NodeID         string      `json:"node_id" required:"true"`
+	StartingIndex  int32       `json:"starting_index" required:"true"`
+	FullFilename   string      `json:"full_filename" required:"true"`
+	MatchedContent string      `json:"matched_content" required:"true"`
+	Masked         bool        `json:"masked" required:"true"`
+	UpdatedAt      int64       `json:"updated_at" required:"true"`
+	Level          string      `json:"level" validate:"required,oneof=critical high medium low unknown" required:"true" enum:"critical,high,medium,low,unknown"`
+	Score          float64     `json:"score" required:"true"`
+	Name           string      `json:"name" required:"true"`
+	Resources      []BasicNode `json:"resources" required:"false"`
 }
 
 func (Secret) NodeType() string {
@@ -603,6 +598,40 @@ func (CloudCompliance) GetJSONCategory() string {
 	return "severity"
 }
 
+type CloudComplianceControl struct {
+	ControlID              string   `json:"control_id"`
+	Documentation          string   `json:"documentation"`
+	Active                 bool     `json:"active"`
+	Description            string   `json:"description"`
+	CloudProvider          string   `json:"cloud_provider"`
+	Title                  string   `json:"title"`
+	Executable             bool     `json:"executable"`
+	CategoryHierarchyShort string   `json:"category_hierarchy_short"`
+	CategoryHierarchy      []string `json:"category_hierarchy"`
+	Service                string   `json:"service"`
+	ParentControlHierarchy []string `json:"parent_control_hierarchy"`
+	ComplianceType         string   `json:"compliance_type"`
+	Disabled               bool     `json:"disabled"`
+	Category               string   `json:"category"`
+	NodeID                 string   `json:"node_id"`
+}
+
+func (CloudComplianceControl) NodeType() string {
+	return "CloudComplianceControl"
+}
+
+func (CloudComplianceControl) ExtendedField() string {
+	return ""
+}
+
+func (v CloudComplianceControl) GetCategory() string {
+	return v.ComplianceType
+}
+
+func (CloudComplianceControl) GetJSONCategory() string {
+	return "compliance_type"
+}
+
 type ScanReportFieldsResponse struct {
 	Vulnerability []string `json:"vulnerability"`
 	Secret        []string `json:"secret"`
@@ -615,6 +644,12 @@ type ComplinaceScanResultsGroupReq struct {
 	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
 }
 
-type ComplinaceScanResultsGroupResp struct {
-	Groups map[string]map[string]int64 `json:"groups"`
+type ComplianceScanResultsGroupResp struct {
+	Groups map[string]ComplianceScanResultControlGroup `json:"groups"`
+}
+
+type ComplianceScanResultControlGroup struct {
+	Title          string           `json:"title,omitempty"`
+	Counts         map[string]int64 `json:"counts,omitempty"`
+	BenchmarkTypes []string         `json:"benchmark_types,omitempty"`
 }

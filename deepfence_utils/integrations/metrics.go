@@ -6,8 +6,9 @@ import (
 )
 
 type Metrics struct {
-	Ok    int64 `json:"ok,omitempty"`
-	Error int64 `json:"error,omitempty"`
+	Ok        int64 `json:"ok,omitempty"`
+	Error     int64 `json:"error,omitempty"`
+	IsSummary bool  `json:"is_summary,omitempty"`
 }
 
 func (m *Metrics) Update(n Metrics) *Metrics {
@@ -17,6 +18,7 @@ func (m *Metrics) Update(n Metrics) *Metrics {
 	if n.Error > 0 {
 		m.Error += n.Error
 	}
+	m.IsSummary = n.IsSummary
 	return m
 }
 

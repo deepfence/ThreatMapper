@@ -53,6 +53,7 @@ type Control struct {
 	ParentControlHierarchy  []string          `json:"parent_control_hierarchy"`
 	ParentControlBreadcrumb string            `json:"parent_control_breadcrumb"`
 	Executable              bool              `json:"executable"`
+	ProblemTitle            string            `json:"problem_title"`
 }
 
 func AddCloudControls(ctx context.Context, task *asynq.Task) error {
@@ -152,6 +153,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 			n.parent_control_hierarchy = row.parent_control_hierarchy,
 			n.category_hierarchy = row.category_hierarchy,
 			n.category_hierarchy_short = row.category_hierarchy_short,
+			n.problem_title = row.problem_title,
 			n.compliance_type = $benchmark,
 			n.executable = false
 		ON MATCH
@@ -162,7 +164,8 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 			n.service = $cloudCap,
 			n.parent_control_hierarchy = row.parent_control_hierarchy,
 			n.category_hierarchy = row.category_hierarchy,
-			n.category_hierarchy_short = row.category_hierarchy_short`,
+			n.category_hierarchy_short = row.category_hierarchy_short,
+			n.problem_title = row.problem_title`,
 				map[string]interface{}{
 					"batch":     controlMap,
 					"benchmark": benchmark,

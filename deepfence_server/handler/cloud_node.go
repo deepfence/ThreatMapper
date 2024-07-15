@@ -21,7 +21,7 @@ import (
 var (
 	cloudAccountNodeType = ctl.ResourceTypeToString(ctl.CloudAccount)
 	refreshAccountFilter = reporters.FieldsFilters{
-		ContainsFilter: reporters.ContainsFilter{FieldsValues: map[string][]interface{}{"refresh_status": {"COMPLETE", "ERROR"}}},
+		NotContainsFilter: reporters.ContainsFilter{FieldsValues: map[string][]interface{}{"refresh_status": {utils.ScanStatusStarting}}},
 	}
 )
 
@@ -63,19 +63,20 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"version":        req.Version,
 			"node_type":      req.CloudProvider,
 		}
-		err = model.UpsertCloudComplianceNode(ctx, orgAccountNode, "", req.HostNodeID)
+		err = model.UpsertCloudAccount(ctx, orgAccountNode, req.IsOrganizationDeployment, req.HostNodeID)
 		if err != nil {
 			h.complianceError(w, err.Error())
 			return
 		}
-		for _, monitoredAccount := range monitoredAccounts {
+		monitoredNodes := make([]map[string]interface{}, len(monitoredAccounts))
+		for i, monitoredAccount := range monitoredAccounts {
 			err = h.Validator.Struct(monitoredAccount)
 			if err != nil {
 				log.Error().Msg(err.Error())
 				h.respondError(&ValidatorError{err: err}, w)
 				return
 			}
-			monitoredNode := map[string]interface{}{
+			monitoredNodes[i] = map[string]interface{}{
 				"node_id":         monitoredAccount.NodeID,
 				"cloud_provider":  req.CloudProvider,
 				"node_name":       monitoredAccount.AccountID,
@@ -84,12 +85,12 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				"version":         req.Version,
 				"node_type":       req.CloudProvider,
 			}
-			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeID, req.HostNodeID)
-			if err != nil {
-				log.Error().Msgf("Error while upserting node: %+v", err)
-				h.complianceError(w, err.Error())
-				return
-			}
+		}
+		err = model.UpsertChildCloudAccounts(ctx, monitoredNodes, orgNodeID, req.HostNodeID)
+		if err != nil {
+			log.Error().Msgf("Error while upserting node: %+v", err)
+			h.complianceError(w, err.Error())
+			return
 		}
 	} else {
 		log.Debug().Msgf("Single account monitoring for node: %s", nodeID)
@@ -102,7 +103,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"node_type":      req.CloudProvider,
 		}
 		log.Debug().Msgf("Node for upsert: %+v", node)
-		err = model.UpsertCloudComplianceNode(ctx, node, "", req.HostNodeID)
+		err = model.UpsertCloudAccount(ctx, node, req.IsOrganizationDeployment, req.HostNodeID)
 		if err != nil {
 			log.Error().Msgf("Error while upserting node: %+v", err)
 			h.complianceError(w, err.Error())

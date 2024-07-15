@@ -21,6 +21,7 @@ import {
   UtilsReportFiltersSeverityOrCheckTypeEnum,
 } from '@/api/generated';
 import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
+import { getNotificationPrettyName } from '@/features/integrations/components/integration-form/utils';
 import { AdvancedFilter } from '@/features/integrations/components/report-form/AdvanceFilter';
 import { CloudComplianceForm } from '@/features/integrations/components/report-form/CloudComplianceForm';
 import { CommonForm } from '@/features/integrations/components/report-form/CommonForm';
@@ -33,7 +34,7 @@ import { apiWrapper } from '@/utils/api';
 import { getArrayTypeValuesFromFormData } from '@/utils/formData';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-export const RESOURCES = [
+export const RESOURCES: UtilsReportFiltersScanTypeEnum[] = [
   UtilsReportFiltersScanTypeEnum.Vulnerability,
   UtilsReportFiltersScanTypeEnum.Secret,
   UtilsReportFiltersScanTypeEnum.Malware,
@@ -148,9 +149,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         include_dead_nodes: body.deadNodes === 'on',
         node_type: _nodeType,
         scan_type: _resource,
-        severity_or_check_type: (severitiesOrCheckTypes as string[]).map((sev) =>
-          sev.toLowerCase(),
-        ) as UtilsReportFiltersSeverityOrCheckTypeEnum,
+        severity_or_check_type:
+          severitiesOrCheckTypes as UtilsReportFiltersSeverityOrCheckTypeEnum,
       },
 
       report_type: _reportType,
@@ -184,13 +184,6 @@ const Header = () => {
       <SlidingModalHeaderWrapper>Create new report</SlidingModalHeaderWrapper>
     </SlidingModalHeader>
   );
-};
-
-const getResourceDisplayValue = (resource: string) => {
-  if (resource === UtilsReportFiltersScanTypeEnum.CloudCompliance) {
-    return 'Cloud Compliance';
-  }
-  return resource;
 };
 
 const ReportForm = () => {
@@ -229,7 +222,7 @@ const ReportForm = () => {
                 setProvider('');
               }}
               getDisplayValue={(item) => {
-                return item ? upperFirst(getResourceDisplayValue(item)) : '';
+                return item ? upperFirst(getNotificationPrettyName(item)) : '';
               }}
               placeholder="Select resource"
               required
@@ -237,7 +230,7 @@ const ReportForm = () => {
               {RESOURCES.map((resource) => {
                 return (
                   <ListboxOption value={resource} key={resource}>
-                    {upperFirst(getResourceDisplayValue(resource))}
+                    {upperFirst(getNotificationPrettyName(resource))}
                   </ListboxOption>
                 );
               })}

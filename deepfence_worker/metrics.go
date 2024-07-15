@@ -203,7 +203,7 @@ func newIntegrationCollector() *IntegrationCollector {
 		integration: prometheus.NewDesc(
 			"integration_metrics",
 			"integration by type and metrics",
-			[]string{"namespace", "id", "type", "status"}, nil,
+			[]string{"namespace", "id", "type", "status", "summary"}, nil,
 		),
 	}
 }
@@ -237,9 +237,11 @@ func (collector *IntegrationCollector) Collect(ch chan<- prometheus.Metric) {
 
 		for _, intg := range integrations {
 			ch <- prometheus.MustNewConstMetric(collector.integration, prometheus.CounterValue,
-				float64(intg.Metrics.Ok), ns, strconv.Itoa(int(intg.ID)), intg.IntegrationType, "ok")
+				float64(intg.Metrics.Ok), ns, strconv.Itoa(int(intg.ID)),
+				intg.IntegrationType, "ok", strconv.FormatBool(intg.Metrics.IsSummary))
 			ch <- prometheus.MustNewConstMetric(collector.integration, prometheus.CounterValue,
-				float64(intg.Metrics.Error), ns, strconv.Itoa(int(intg.ID)), intg.IntegrationType, "error")
+				float64(intg.Metrics.Error), ns, strconv.Itoa(int(intg.ID)),
+				intg.IntegrationType, "error", strconv.FormatBool(intg.Metrics.IsSummary))
 		}
 
 	}

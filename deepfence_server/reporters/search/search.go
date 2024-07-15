@@ -370,31 +370,52 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		delete(filter.Filters.ContainsFilter.FieldsValues, statusKey)
 	}
 
-	query := `
-		MATCH (n:` + dummy.NodeType() + `)` +
-		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		` WITH n.node_id AS node_id UNWIND node_id AS x
-		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `{node_id:n.` + dummy.LatestScanIDField() + `})-[:DETECTED]->(c:` + dummy.ScanResultType() + `)
-		WITH x ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, COUNT(c) AS total_compliance_count
-		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `{node_id:n.` + dummy.LatestScanIDField() + `})-[:DETECTED]->(c1:` + dummy.ScanResultType() + `)
-		WHERE c1.status IN $pass_status
-		WITH x, COUNT(c1.status) as statusCount, total_compliance_count
-		WITH x` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE statusCount*100.0/total_compliance_count END AS compliance_percentage
-		CALL {
-			WITH x
-			OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s1:` + string(dummy.ScanType()) + `)
-			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
-			ORDER BY s1.updated_at DESC LIMIT 1
-		}
-		CALL {
-			WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x})
-			RETURN n.node_name as node_name, n.account_name as account_name, n.refresh_status as refresh_status, n.refresh_message as refresh_message, n.active as active, n.version as version
-		}
-		WITH x, node_name, account_name, refresh_status, refresh_message, version, compliance_percentage, last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` +
-		reporters.ParseFieldFilters2CypherWhereConditions("", mo.Some(scanFilter), true) +
-		`RETURN x as node_id, node_name, account_name, refresh_status, refresh_message, COALESCE(version, 'unknown') as version, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
-		reporters.OrderFilter2CypherCondition("", orderFilters, nil) + fw.FetchWindow2CypherQuery()
-
+	var query string
+	if cloudProvider == model.PostureProviderAWSOrg || cloudProvider == model.PostureProviderGCPOrg || cloudProvider == model.PostureProviderAzureOrg {
+		query = `
+		    MATCH (n:` + dummy.NodeType() + `)` +
+			reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
+			` WITH n.node_id AS node_id UNWIND node_id AS x
+		    OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x}) - [:IS_CHILD] -> (k:CloudNode) <- [:SCANNED]-(s:` + string(dummy.ScanType()) + `{node_id:k.` + dummy.LatestScanIDField() + `})-[:DETECTED]->(c:` + dummy.ScanResultType() + `)
+		    WITH x ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, COUNT(c) AS total_compliance_count
+		    OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x}) - [:IS_CHILD] -> (k:CloudNode) <- [:SCANNED]-(s:` + string(dummy.ScanType()) + `{node_id:k.` + dummy.LatestScanIDField() + `})-[:DETECTED]->(c1:` + dummy.ScanResultType() + `)
+		    WHERE c1.status IN $pass_status
+		    WITH x, COUNT(c1.status) as statusCount, total_compliance_count
+		    WITH x` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE statusCount*100.0/total_compliance_count END AS compliance_percentage
+			CALL {
+		        WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x})
+			    RETURN n.node_name as node_name, n.account_name as account_name, n.refresh_status as refresh_status, n.refresh_message as refresh_message, n.active as active, n.version as version
+		    }
+		    WITH x, node_name, account_name, refresh_status, refresh_message, version, compliance_percentage, active ` +
+			reporters.ParseFieldFilters2CypherWhereConditions("", mo.Some(scanFilter), true) +
+			`RETURN x as node_id, node_name, account_name, refresh_status, refresh_message, COALESCE(version, 'unknown') as version, compliance_percentage, '' as last_scan_id, '' as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+			reporters.OrderFilter2CypherCondition("", orderFilters, nil) + fw.FetchWindow2CypherQuery()
+	} else {
+		query = `
+		    MATCH (n:` + dummy.NodeType() + `)` +
+			reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
+			` WITH n.node_id AS node_id UNWIND node_id AS x
+		    OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `{node_id:n.` + dummy.LatestScanIDField() + `})-[:DETECTED]->(c:` + dummy.ScanResultType() + `)
+		    WITH x ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, COUNT(c) AS total_compliance_count
+		    OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `{node_id:n.` + dummy.LatestScanIDField() + `})-[:DETECTED]->(c1:` + dummy.ScanResultType() + `)
+		    WHERE c1.status IN $pass_status
+		    WITH x, COUNT(c1.status) as statusCount, total_compliance_count
+		    WITH x` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE statusCount*100.0/total_compliance_count END AS compliance_percentage
+		    CALL {
+			    WITH x
+			    OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s1:` + string(dummy.ScanType()) + `)
+			    RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
+			    ORDER BY s1.updated_at DESC LIMIT 1
+		    }
+		    CALL {
+			    WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x})
+			    RETURN n.node_name as node_name, n.account_name as account_name, n.refresh_status as refresh_status, n.refresh_message as refresh_message, n.active as active, n.version as version
+		    }
+		    WITH x, node_name, account_name, refresh_status, refresh_message, version, compliance_percentage, last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` +
+			reporters.ParseFieldFilters2CypherWhereConditions("", mo.Some(scanFilter), true) +
+			`RETURN x as node_id, node_name, account_name, refresh_status, refresh_message, COALESCE(version, 'unknown') as version, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+			reporters.OrderFilter2CypherCondition("", orderFilters, nil) + fw.FetchWindow2CypherQuery()
+	}
 	log.Debug().Msgf("search cloud node query: %v", query)
 	r, err := tx.Run(ctx, query,
 		map[string]interface{}{
@@ -444,6 +465,11 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 			if err != nil {
 				log.Error().Msgf("Error in populating status of org %v", err)
 			}
+
+			node.RefreshStatusMap, err = getRefreshStatusMap(ctx, node.NodeID)
+			if err != nil {
+				log.Error().Msgf("Error in populating refresh status of org %v", err)
+			}
 		}
 		res = append(res, node)
 	}
@@ -478,6 +504,42 @@ func getScanStatusMap(ctx context.Context, id string, cloudProvider string) (map
 				ORDER BY s1.updated_at DESC LIMIT 1
 			}
 	RETURN last_scan_status, count(last_scan_status) `
+	r, err := tx.Run(ctx, query, map[string]interface{}{})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := r.Collect(ctx)
+	if err != nil {
+		return res, err
+	}
+	for _, rec := range recs {
+		res[rec.Values[0].(string)] = rec.Values[1].(int64)
+	}
+	return res, nil
+}
+
+func getRefreshStatusMap(ctx context.Context, nodeID string) (map[string]int64, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "search", "get-scan-status-map")
+	defer span.End()
+
+	res := map[string]int64{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close(ctx)
+	query := `MATCH (n:CloudNode{node_id:"` + nodeID + `"}) -[:IS_CHILD] -> (m:CloudNode)
+			  RETURN m.refresh_status, count(m.refresh_status) `
 	r, err := tx.Run(ctx, query, map[string]interface{}{})
 	if err != nil {
 		return res, err
