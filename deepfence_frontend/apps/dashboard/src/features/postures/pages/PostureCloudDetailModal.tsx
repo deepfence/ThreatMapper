@@ -306,9 +306,9 @@ const Content = () => {
   if (data?.cloud_provider?.toLowerCase().includes('aws')) {
     prefix = 'aws_compliance.';
   } else if (data?.cloud_provider?.toLowerCase().includes('gcp')) {
-    prefix = 'gcp_compliance.'; // TODO: verify this
+    prefix = 'gcp_compliance.';
   } else if (data?.cloud_provider?.toLowerCase().includes('azure')) {
-    prefix = 'azure_compliance.'; // TODO: verify this
+    prefix = 'azure_compliance.';
   }
 
   const { data: controlData } = useGetControlDetails({

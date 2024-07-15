@@ -10,7 +10,7 @@ import { Widgets } from '@/features/postures/components/scan-result/cloud/Widget
 
 const PostureCloudScanResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const groupedByIssues = searchParams.get('groupByControls') !== 'false';
+  const groupedByIssues = searchParams.get('groupByControls') === 'true';
 
   return (
     <>

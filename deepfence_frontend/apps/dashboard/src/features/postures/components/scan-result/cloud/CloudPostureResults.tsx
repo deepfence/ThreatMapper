@@ -208,8 +208,8 @@ const CloudPostureTable = ({
         },
         header: () => 'ID',
         minSize: 80,
-        size: 80,
-        maxSize: 90,
+        size: 100,
+        maxSize: 120,
       }),
       columnHelper.accessor('compliance_check_type', {
         enableSorting: true,
@@ -231,8 +231,8 @@ const CloudPostureTable = ({
       }),
       columnHelper.accessor('status', {
         enableResizing: false,
-        minSize: 60,
-        size: 60,
+        minSize: 40,
+        size: 50,
         maxSize: 65,
         header: () => <div>Status</div>,
         cell: (info) => {
@@ -250,8 +250,8 @@ const CloudPostureTable = ({
       columnHelper.accessor('reason', {
         enableResizing: false,
         minSize: 60,
-        size: 70,
-        maxSize: 80,
+        size: 100,
+        maxSize: 130,
         header: () => <div>Reason</div>,
         cell: (info) => {
           return <TruncatedText text={info.getValue()} />;

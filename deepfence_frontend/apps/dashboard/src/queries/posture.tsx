@@ -308,7 +308,7 @@ export const postureQueries = createQueryKeys('posture', {
             testNumber;
         }
         if (controlId?.length) {
-          scanResultsReq.fields_filter.contains_filter.filter_in!['full_control_id'] = [
+          scanResultsReq.fields_filter.contains_filter.filter_in!['control_id'] = [
             controlId,
           ];
         }
@@ -493,7 +493,7 @@ export const postureQueries = createQueryKeys('posture', {
         }
 
         if (controls.length) {
-          scanResultsReq.fields_filter.contains_filter.filter_in!['full_control_id'] =
+          scanResultsReq.fields_filter.contains_filter.filter_in!['control_id'] =
             controls;
         }
 
@@ -599,7 +599,7 @@ export const postureQueries = createQueryKeys('posture', {
         }
 
         if (controls.length) {
-          scanResultsReq.fields_filter.contains_filter.filter_in!['full_control_id'] =
+          scanResultsReq.fields_filter.contains_filter.filter_in!['control_id'] =
             controls;
         }
 
@@ -775,7 +775,7 @@ export const postureQueries = createQueryKeys('posture', {
         }
 
         if (controls?.length) {
-          fieldsFilter.contains_filter.filter_in!['full_control_id'] = controls;
+          fieldsFilter.contains_filter.filter_in!['control_id'] = controls;
         }
 
         if (services.length) {

@@ -181,7 +181,7 @@ const CloudPostureResultsGroupedCheckType = () => {
 };
 
 const PostureTableForControlWrapper = ({ controlId }: { controlId: string }) => {
-  console.log(controlId);
+  controlId = controlId.split('.').slice(1).join('.');
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
