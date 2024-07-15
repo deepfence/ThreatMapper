@@ -13784,6 +13784,7 @@
           "description": { "type": "string" },
           "enabled": { "type": "boolean" },
           "node_id": { "type": "string" },
+          "problem_title": { "type": "string" },
           "service": { "type": "string" },
           "title": { "type": "string" }
         }
@@ -14055,7 +14056,7 @@
         "properties": {
           "benchmark_types": { "type": "array", "items": { "type": "string" } },
           "counts": { "type": "object", "additionalProperties": { "type": "integer" } },
-          "title": { "type": "string" }
+          "problem_title": { "type": "string" }
         }
       },
       "ModelComplianceScanResultsGroupResp": {

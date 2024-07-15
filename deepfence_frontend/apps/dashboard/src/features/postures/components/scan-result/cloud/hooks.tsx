@@ -137,7 +137,7 @@ export const useGetControls = ({ nodeType }: { nodeType: string }) => {
       results.push({
         controlId,
         benchmarkTypes: countsByControlsData[controlId].benchmark_types ?? [],
-        title: countsByControlsData[controlId].title ?? controlId,
+        title: countsByControlsData[controlId].problem_title ?? controlId,
         counts: countsByControlsData[controlId].counts ?? {},
         totalCount,
       });

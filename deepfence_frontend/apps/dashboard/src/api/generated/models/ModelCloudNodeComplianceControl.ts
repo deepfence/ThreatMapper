@@ -66,6 +66,12 @@ export interface ModelCloudNodeComplianceControl {
      * @type {string}
      * @memberof ModelCloudNodeComplianceControl
      */
+    problem_title?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeComplianceControl
+     */
     service?: string;
     /**
      * 
@@ -101,6 +107,7 @@ export function ModelCloudNodeComplianceControlFromJSONTyped(json: any, ignoreDi
         'description': !exists(json, 'description') ? undefined : json['description'],
         'enabled': !exists(json, 'enabled') ? undefined : json['enabled'],
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
+        'problem_title': !exists(json, 'problem_title') ? undefined : json['problem_title'],
         'service': !exists(json, 'service') ? undefined : json['service'],
         'title': !exists(json, 'title') ? undefined : json['title'],
     };
@@ -122,6 +129,7 @@ export function ModelCloudNodeComplianceControlToJSON(value?: ModelCloudNodeComp
         'description': value.description,
         'enabled': value.enabled,
         'node_id': value.node_id,
+        'problem_title': value.problem_title,
         'service': value.service,
         'title': value.title,
     };

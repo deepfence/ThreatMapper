@@ -36,7 +36,7 @@ export interface ModelComplianceScanResultControlGroup {
      * @type {string}
      * @memberof ModelComplianceScanResultControlGroup
      */
-    title?: string;
+    problem_title?: string;
 }
 
 /**
@@ -60,7 +60,7 @@ export function ModelComplianceScanResultControlGroupFromJSONTyped(json: any, ig
         
         'benchmark_types': !exists(json, 'benchmark_types') ? undefined : json['benchmark_types'],
         'counts': !exists(json, 'counts') ? undefined : json['counts'],
-        'title': !exists(json, 'title') ? undefined : json['title'],
+        'problem_title': !exists(json, 'problem_title') ? undefined : json['problem_title'],
     };
 }
 
@@ -75,7 +75,7 @@ export function ModelComplianceScanResultControlGroupToJSON(value?: ModelComplia
         
         'benchmark_types': value.benchmark_types,
         'counts': value.counts,
-        'title': value.title,
+        'problem_title': value.problem_title,
     };
 }
 
