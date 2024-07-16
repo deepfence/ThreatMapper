@@ -12,6 +12,10 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
+func generateSecretRuleId(r map[string]interface{}) string {
+	return generateHashFromString(r["name"].(string))
+}
+
 func CommitFuncSecrets(ctx context.Context, ns string, data []ingestersUtil.Secret) error {
 	ctx = directory.ContextWithNameSpace(ctx, directory.NamespaceID(ns))
 
@@ -78,12 +82,14 @@ func secretsToMaps(data []ingestersUtil.Secret) ([]map[string]map[string]interfa
 			secret[k] = v
 		}
 
-		secret["node_id"] = utils.ScanIDReplacer.Replace(fmt.Sprintf("%v:%v",
-			i.Rule.ID, i.Match.FullFilename))
 		rule := utils.ToMap(i.Rule)
 		delete(rule, "id")
-		rule["rule_id"] = i.Rule.ID
+		rule["rule_id"] = generateSecretRuleId(rule)
 		rule["level"] = i.Severity.Level
+
+		secret["node_id"] = utils.ScanIDReplacer.Replace(fmt.Sprintf("%v:%v",
+			i.Rule.ID, i.Match.FullFilename))
+
 		secrets = append(secrets, map[string]map[string]interface{}{
 			"Rule":   rule,
 			"Secret": secret,
