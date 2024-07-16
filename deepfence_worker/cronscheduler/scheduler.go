@@ -266,14 +266,6 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	// Adding CloudComplianceTask only to ensure data is ingested if task fails on startup
-	jobID, err = s.cron.AddFunc("@every 60m",
-		s.enqueueTask(namespace, utils.CloudComplianceControlsTask, true, utils.CritialTaskOpts()...))
-	if err != nil {
-		return err
-	}
-	jobIDs = append(jobIDs, jobID)
-
 	jobID, err = s.cron.AddFunc("@every 60m",
 		s.enqueueTask(namespace, utils.CheckAgentUpgradeTask, true))
 	if err != nil {

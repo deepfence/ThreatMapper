@@ -6,7 +6,6 @@ ENV DEEPFENCE_HTTP_LISTEN_ENDPOINT=8080 \
     DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES=5
 
 ADD deepfence_server/auth /auth
-ADD deepfence_server/cloud_controls /cloud_controls
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
 
 RUN apt update && \

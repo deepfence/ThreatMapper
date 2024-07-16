@@ -26,7 +26,7 @@ const cloudControlsBasePath = "/cloud_controls"
 
 var BenchmarksAvailableMap = map[string][]string{
 	"aws":        {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2", "aws_foundational_security"},
-	"gcp":        {"cis"},
+	"gcp":        {"cis", "nist", "pci", "hipaa"},
 	"azure":      {"cis", "nist", "pci", "hipaa"},
 	"kubernetes": {"nsa-cisa"},
 	"linux":      {"hipaa", "nist", "pci", "gdpr"},
