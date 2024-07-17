@@ -88,7 +88,7 @@ func secretsToMaps(data []ingestersUtil.Secret) ([]map[string]map[string]interfa
 		rule["level"] = i.Severity.Level
 
 		secret["node_id"] = utils.ScanIDReplacer.Replace(fmt.Sprintf("%v:%v",
-			i.Rule.ID, i.Match.FullFilename))
+			rule["rule_id"], i.Match.FullFilename))
 
 		secrets = append(secrets, map[string]map[string]interface{}{
 			"Rule":   rule,
