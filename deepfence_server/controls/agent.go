@@ -84,13 +84,10 @@ func GetAgentActions(ctx context.Context, agentID model.AgentID, consoleURL stri
 		}
 	}
 
-	var threatintelLogErr error
-	if agentType != controls.CLOUD_AGENT {
-		threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID, consoleURL, ttlCache)
-		workNumToExtract -= len(threatintelActions)
-		if threatintelLogErr == nil {
-			actions = append(actions, threatintelActions...)
-		}
+	threatintelActions, threatintelLogErr := ExtractPendingAgentThreatIntelTask(ctx, nodeID, agentType, consoleURL, ttlCache)
+	// workNumToExtract -= len(threatintelActions)
+	if threatintelLogErr == nil {
+		actions = append(actions, threatintelActions...)
 	}
 
 	return actions, []error{scanErr, upgradeErr, diagnosticLogErr, stopActionsErr, threatintelLogErr, refreshActionsErr}
@@ -474,7 +471,7 @@ func ExtractStoppingAgentScans(ctx context.Context, nodeID string, maxWrok int) 
 
 }
 
-func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string, consoleURL string, ttlCache *ttlcache.Cache[string, string]) ([]controls.Action, error) {
+func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string, agentType string, consoleURL string, ttlCache *ttlcache.Cache[string, string]) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeID) == 0 {
 		return res, ErrMissingNodeID
@@ -485,14 +482,21 @@ func ExtractPendingAgentThreatIntelTask(ctx context.Context, nodeID string, cons
 		err error
 	)
 
-	req.MalwareRulesURL, req.MalwareRulesHash, err = threatintel.FetchMalwareRulesURL(ctx, consoleURL, ttlCache)
-	if err != nil {
-		return res, err
-	}
+	if agentType == controls.CLOUD_AGENT {
+		req.CloudPostureControlsURL, req.CloudPostureControlsHash, err = threatintel.FetchCloudPostureControlsURL(ctx, consoleURL, ttlCache)
+		if err != nil {
+			return res, err
+		}
+	} else {
+		req.MalwareRulesURL, req.MalwareRulesHash, err = threatintel.FetchMalwareRulesURL(ctx, consoleURL, ttlCache)
+		if err != nil {
+			return res, err
+		}
 
-	req.SecretsRulesURL, req.SecretsRulesHash, err = threatintel.FetchSecretsRulesURL(ctx, consoleURL, ttlCache)
-	if err != nil {
-		return res, err
+		req.SecretsRulesURL, req.SecretsRulesHash, err = threatintel.FetchSecretsRulesURL(ctx, consoleURL, ttlCache)
+		if err != nil {
+			return res, err
+		}
 	}
 
 	payload, err := json.Marshal(req)

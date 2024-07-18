@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
@@ -94,6 +95,19 @@ func UpdatePostureControlsInfo(ctx context.Context, hash, path string) error {
 	}
 
 	return nil
+}
+
+func FetchCloudPostureControlsURL(ctx context.Context, consoleURL string, ttlCache *ttlcache.Cache[string, string]) (string, string, error) {
+	path, hash, err := FetchPostureControlsInfo(ctx)
+	if err != nil {
+		return "", "", err
+	}
+	exposedURL, err := ExposeFile(ctx, path, consoleURL, ttlCache)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to expose cloud posture controls on fileserver")
+		return "", "", err
+	}
+	return exposedURL, hash, nil
 }
 
 func FetchPostureControlsInfo(ctx context.Context) (path, hash string, err error) {
