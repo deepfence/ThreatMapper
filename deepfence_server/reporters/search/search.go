@@ -8,6 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -356,7 +357,10 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 	}
 	defer tx.Close(ctx)
 	if cloudProvider == model.PostureProviderLinux || cloudProvider == model.PostureProviderKubernetes {
-		filter.Filters.ContainsFilter.FieldsValues["agent_running"] = append(make([]interface{}, 0), true)
+		filter.Filters.ContainsFilter.FieldsValues["agent_running"] = []interface{}{true}
+		if cloudProvider == model.PostureProviderLinux {
+			filter.Filters.NotContainsFilter.FieldsValues["node_type"] = []interface{}{controls.CLOUD_AGENT}
+		}
 		delete(filter.Filters.ContainsFilter.FieldsValues, "cloud_provider")
 	}
 	orderFilters := filter.Filters.OrderFilter
