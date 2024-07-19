@@ -1,18 +1,82 @@
 package router
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
+	"os/exec"
+	"path"
 	"time"
 
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	dfUtils "github.com/deepfence/df-utils"
 )
 
 var (
 	CloudScannerSocketPath = "/tmp/cloud-scanner.sock"
+
+	cloudPostureControlsHash string
+
+	cloudPostureControlsPath = path.Join(dfUtils.GetDfInstallDir(), "steampipe/")
 )
+
+const (
+	postureControlsDirectoryUserGroup = "deepfence:root"
+)
+
+func changePostureControlsDirectoryOwner() {
+	cmd := exec.Command("chown", "-R", postureControlsDirectoryUserGroup, cloudPostureControlsPath)
+	stdOut, stdErr := cmd.CombinedOutput()
+	if stdErr != nil {
+		log.Error().Msgf("Error changing directory permission: %v", stdErr)
+		log.Error().Msgf(string(stdOut))
+	}
+}
+
+// UpdateCloudPostureControls download, update rules
+func UpdateCloudPostureControls(req ctl.ThreatIntelInfo) error {
+	if req.CloudPostureControlsHash == cloudPostureControlsHash {
+		log.Warn().Msgf("skip cloud posture controls update, already new")
+		return nil
+	}
+
+	newRules := "new_cloud_posture_controls.tar.gz"
+
+	if err := downloadFile(newRules, req.CloudPostureControlsURL); err != nil {
+		log.Error().Err(err).Msg("failed to download cloud posture controls")
+		return err
+	}
+	defer os.Remove(newRules)
+
+	log.Info().Msgf("completed downloading from url %s", req.CloudPostureControlsURL)
+
+	// remove old rules
+	os.RemoveAll(cloudPostureControlsPath)
+
+	data, err := os.ReadFile(newRules)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to open new rules")
+		return err
+	}
+
+	if err := utils.ExtractTarGz(bytes.NewReader(data), cloudPostureControlsPath); err != nil {
+		log.Error().Err(err).Msg("failed to extract rules")
+		return err
+	}
+
+	changePostureControlsDirectoryOwner()
+
+	log.Info().Msg("cloud posture controls updated")
+
+	// set to new hash
+	cloudPostureControlsHash = req.CloudPostureControlsHash
+
+	return nil
+}
 
 func StartCloudComplianceScan(req ctl.StartCloudComplianceScanRequest) error {
 	log.Info().Msgf("Start Cloud Compliance scan: %s, scan id: %s, scan types:%v\n", req.ScanDetails.AccountId, req.ScanDetails.ScanId, req.ScanDetails.ScanTypes)

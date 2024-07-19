@@ -290,4 +290,16 @@ func SetCloudScannerControls() {
 	if err != nil {
 		log.Error().Err(err).Msg("set controls")
 	}
+
+	err = router.RegisterControl(ctl.UpdateAgentThreatIntel,
+		func(req ctl.ThreatIntelInfo) error {
+			if err := router.UpdateCloudPostureControls(req); err != nil {
+				log.Error().Err(err).Msg("failed to update cloud posture controls")
+				return err
+			}
+			return nil
+		})
+	if err != nil {
+		log.Error().Err(err).Msgf("set controls: %v", err)
+	}
 }

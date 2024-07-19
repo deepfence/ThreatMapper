@@ -121,7 +121,7 @@ func StopSecretScan(req ctl.StopSecretScanRequest) error {
 // download, update rules and restart scanner
 func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 	if req.SecretsRulesHash == secretsRuleshash {
-		log.Warn().Msgf("skip secrets rules update already new")
+		log.Warn().Msgf("skip secrets rules update, already new")
 		return nil
 	}
 

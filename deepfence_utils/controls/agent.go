@@ -223,8 +223,6 @@ func GetBinArgs(t interface{}) map[string]string {
 		return val.BinArgs
 	case StartMalwareScanRequest:
 		return val.BinArgs
-	case StartCloudComplianceScanRequest:
-		return val.BinArgs
 	case StopSecretScanRequest:
 		return val.BinArgs
 	case StopMalwareScanRequest:
@@ -238,13 +236,13 @@ func GetBinArgs(t interface{}) map[string]string {
 }
 
 type ThreatIntelInfo struct {
-	SecretsRulesURL   string `json:"secret_scanner_rules_url" required:"true"`
-	SecretsRulesHash  string `json:"secret_scanner_rules_hash" required:"true"`
-	MalwareRulesURL   string `json:"malware_scanner_rules_url" required:"true"`
-	MalwareRulesHash  string `json:"malware_scanner_rules_hash" required:"true"`
-	CloudControlsURL  string `json:"cloud_controls_url" required:"true"`
-	CloudControlsHash string `json:"cloud_controls_hash" required:"true"`
-	UpdatedAt         int64  `json:"updated_at" required:"true"`
+	SecretsRulesURL          string `json:"secret_scanner_rules_url" required:"true"`
+	SecretsRulesHash         string `json:"secret_scanner_rules_hash" required:"true"`
+	MalwareRulesURL          string `json:"malware_scanner_rules_url" required:"true"`
+	MalwareRulesHash         string `json:"malware_scanner_rules_hash" required:"true"`
+	CloudPostureControlsURL  string `json:"cloud_posture_controls_url" required:"true"`
+	CloudPostureControlsHash string `json:"cloud_posture_controls_hash" required:"true"`
+	UpdatedAt                int64  `json:"updated_at" required:"true"`
 }
 
 func (ThreatIntelInfo) GetLabel() string {

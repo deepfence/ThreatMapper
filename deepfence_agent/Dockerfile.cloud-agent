@@ -14,18 +14,15 @@ ENV CHECKPOINT_DISABLE=true \
     DEEPFENCE_KEY="" \
     DF_ENABLE_CLOUD_NODE="true" \
     HOME_DIR="/home/deepfence" \
-    COMPLIANCE_MOD_PATH="/opt/steampipe"
+    COMPLIANCE_MOD_PATH="/home/deepfence/steampipe"
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends bash git ca-certificates nano logrotate sudo supervisor \
+    && apt-get install -y --no-install-recommends bash ca-certificates nano logrotate sudo supervisor \
     && useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfence \
-    && mkdir -p /opt/steampipe \
-    && chown deepfence /opt/steampipe
+    && mkdir -p /home/deepfence/steampipe
 
 RUN mkdir -p /var/log/fenced/cloud-scanner /var/log/fenced/cloud-scanner-log/ \
     && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-WORKDIR /opt/steampipe
 
 USER deepfence
 
@@ -42,9 +39,6 @@ RUN steampipe service start \
     && steampipe plugin install steampipe \
     # plugin version should be in sync with Deepfence fork https://github.com/deepfence/steampipe-plugin-aws
     && steampipe plugin install aws@${STEAMPIPE_AWS_PLUGIN_VERSION} gcp@${STEAMPIPE_GCP_PLUGIN_VERSION} azure@${STEAMPIPE_AZURE_PLUGIN_VERSION} azuread@${STEAMPIPE_AZURE_AD_PLUGIN_VERSION} \
-    && git clone https://github.com/turbot/steampipe-mod-aws-compliance.git --branch v0.95 --depth 1 \
-    && git clone https://github.com/turbot/steampipe-mod-gcp-compliance.git --branch v0.32 --depth 1 \
-    && git clone https://github.com/turbot/steampipe-mod-azure-compliance.git --branch v0.46 --depth 1 \
     && steampipe service stop
 
 #Copy shipper
@@ -82,10 +76,11 @@ RUN chmod 600 /etc/logrotate.d/fenced_logrotate.conf \
     && chown -R deepfence: /home/deepfence/bin/ \
     && chown deepfence /usr/bin \
     && chown deepfence /bin \
-    && chown -R deepfence:root /opt/ \
     && chown -R deepfence /home/deepfence /var/log/fenced /var/run/ \
     && ln -s /usr/local/bin/start_agent /usr/local/bin/start_cloud_agent
 
-RUN apt-get -y remove git ca-certificates
+RUN apt-get -y remove ca-certificates
+
+WORKDIR /home/deepfence
 
 ENTRYPOINT ["/usr/local/bin/start_cloud_agent"]
