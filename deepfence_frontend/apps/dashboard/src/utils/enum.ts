@@ -33,7 +33,7 @@ export function getBenchmarkPrettyName(backendBenchmark: ModelBenchmarkType) {
     case ModelBenchmarkType.Pci:
       return 'PCI';
     case ModelBenchmarkType.Hipaa:
-      return 'HIPPA';
+      return 'HIPAA';
     case ModelBenchmarkType.Soc2:
       return 'SOC2';
     case ModelBenchmarkType.Gdpr:
