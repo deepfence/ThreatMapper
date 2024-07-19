@@ -256,27 +256,10 @@ func (s SecretScan) StartSecretScan(ctx context.Context, task *asynq.Task) error
 		return err
 	}
 
-	f, err := os.Open(imgTar)
-	if err != nil {
-		return err
-	}
-	extractTarFromReader(f, filepath.Join(dir, "root"))
-	f.Close()
-
-	err = scanCtx.Checkpoint("After tar extraction")
-	if err != nil {
-		return err
-	}
-
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-
 	var scanResult []output.IOCFound
 
-	err = secretScanner.Scan(scanCtx, secretScan.DirScan,
-		"", filepath.Join(dir, "root"),
+	err = secretScanner.Scan(scanCtx, secretScan.TarScan,
+		"", imgTar,
 		params.ScanID, func(i output.IOCFound, s string) {
 			scanResult = append(scanResult, i)
 		})
