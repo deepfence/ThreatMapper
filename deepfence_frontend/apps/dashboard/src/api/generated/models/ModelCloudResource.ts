@@ -57,6 +57,12 @@ export interface ModelCloudResource {
     cloud_region: string;
     /**
      * 
+     * @type {number}
+     * @memberof ModelCloudResource
+     */
+    cloud_warn_alarm_count: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelCloudResource
      */
@@ -104,6 +110,7 @@ export function instanceOfModelCloudResource(value: object): boolean {
     isInstance = isInstance && "cloud_compliances_count" in value;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "cloud_region" in value;
+    isInstance = isInstance && "cloud_warn_alarm_count" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
@@ -128,6 +135,7 @@ export function ModelCloudResourceFromJSONTyped(json: any, ignoreDiscriminator: 
         'cloud_compliances_count': json['cloud_compliances_count'],
         'cloud_provider': json['cloud_provider'],
         'cloud_region': json['cloud_region'],
+        'cloud_warn_alarm_count': json['cloud_warn_alarm_count'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'node_type': json['node_type'],
@@ -150,6 +158,7 @@ export function ModelCloudResourceToJSON(value?: ModelCloudResource | null): any
         'cloud_compliances_count': value.cloud_compliances_count,
         'cloud_provider': value.cloud_provider,
         'cloud_region': value.cloud_region,
+        'cloud_warn_alarm_count': value.cloud_warn_alarm_count,
         'node_id': value.node_id,
         'node_name': value.node_name,
         'node_type': value.node_type,

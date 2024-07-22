@@ -944,7 +944,7 @@ export interface SearchApiInterface {
     searchRegistryAccounts(requestParameters: SearchRegistryAccountsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryAccount>>;
 
     /**
-     * Search across all the data associated with secret ruless
+     * Search across all the data associated with secret rules
      * @summary Search Secret Rules
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
@@ -954,7 +954,7 @@ export interface SearchApiInterface {
     searchSecretRulesRaw(requestParameters: SearchSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecretRule>>>;
 
     /**
-     * Search across all the data associated with secret ruless
+     * Search across all the data associated with secret rules
      * Search Secret Rules
      */
     searchSecretRules(requestParameters: SearchSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecretRule>>;
@@ -2643,7 +2643,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search across all the data associated with secret ruless
+     * Search across all the data associated with secret rules
      * Search Secret Rules
      */
     async searchSecretRulesRaw(requestParameters: SearchSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecretRule>>> {
@@ -2673,7 +2673,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search across all the data associated with secret ruless
+     * Search across all the data associated with secret rules
      * Search Secret Rules
      */
     async searchSecretRules(requestParameters: SearchSecretRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecretRule>> {
