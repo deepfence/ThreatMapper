@@ -231,7 +231,7 @@ const CustomTable = <TData extends RowData>(
       <div
         className={cn(
           `overflow-x-auto overflow-y-hidden`,
-          `rounded-[5px] border border-bg-grid-border`,
+          `rounded-[5px] border border-bg-grid-border grid`,
         )}
       >
         <table
