@@ -10929,7 +10929,7 @@
       "post": {
         "tags": ["Search"],
         "summary": "Search Secret Rules",
-        "description": "Search across all the data associated with secret ruless",
+        "description": "Search across all the data associated with secret rules",
         "operationId": "searchSecretRules",
         "requestBody": {
           "content": {
@@ -13864,6 +13864,7 @@
           "cloud_provider",
           "cloud_region",
           "cloud_compliances_count",
+          "cloud_warn_alarm_count",
           "cloud_compliance_scan_status",
           "cloud_compliance_latest_scan_id"
         ],
@@ -13875,6 +13876,7 @@
           "cloud_compliances_count": { "type": "integer" },
           "cloud_provider": { "enum": ["aws", "gcp", "azure"], "type": "string" },
           "cloud_region": { "type": "string" },
+          "cloud_warn_alarm_count": { "type": "integer" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
