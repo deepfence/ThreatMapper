@@ -382,6 +382,7 @@ type CloudResource struct {
 	CloudProvider               string `json:"cloud_provider" validate:"required,oneof=aws gcp azure" required:"true" enum:"aws,gcp,azure"`
 	CloudRegion                 string `json:"cloud_region" required:"true"`
 	CloudCompliancesCount       int64  `json:"cloud_compliances_count" required:"true"`
+	CloudWarnAlarmCount         int64  `json:"cloud_warn_alarm_count" required:"true"`
 	CloudComplianceScanStatus   string `json:"cloud_compliance_scan_status" required:"true"`
 	CloudComplianceLatestScanID string `json:"cloud_compliance_latest_scan_id" required:"true"`
 }
