@@ -1308,7 +1308,7 @@ const SecretScans = () => {
             onClick={() => {
               setFiltersExpanded((prev) => !prev);
             }}
-            id="filterTable"
+            data-testid="filterButtonIdForTable"
           >
             Filter
           </Button>

@@ -32,7 +32,12 @@ describe(`Component Modal`, () => {
 
       return (
         <>
-          <Button onClick={() => setOpen(true)} id="trigger-id" ref={ref}>
+          <Button
+            onClick={() => setOpen(true)}
+            id="trigger-id"
+            data-testid="button-trigger-id"
+            ref={ref}
+          >
             Click to open
           </Button>
           <Modal
@@ -79,7 +84,12 @@ describe(`Component Modal`, () => {
 
       return (
         <>
-          <Button onClick={() => setOpen(true)} id="trigger-id" ref={ref}>
+          <Button
+            onClick={() => setOpen(true)}
+            id="trigger-id"
+            data-testid="button-trigger-id"
+            ref={ref}
+          >
             Click to open
           </Button>
           <Modal

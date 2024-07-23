@@ -33,7 +33,12 @@ describe(`Component SlidingModal`, () => {
       return (
         <>
           <div className="some-test">
-            <Button onClick={() => setOpen(true)} id="trigger-id" ref={ref}>
+            <Button
+              onClick={() => setOpen(true)}
+              id="trigger-id"
+              data-testid="button-trigger-id"
+              ref={ref}
+            >
               Click to open
             </Button>
           </div>
@@ -81,7 +86,12 @@ describe(`Component SlidingModal`, () => {
 
       return (
         <>
-          <Button onClick={() => setOpen(true)} id="trigger-id" ref={ref}>
+          <Button
+            onClick={() => setOpen(true)}
+            id="trigger-id"
+            data-testid="button-trigger-id"
+            ref={ref}
+          >
             Click to open
           </Button>
           <SlidingModal

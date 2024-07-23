@@ -432,7 +432,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         id={_id}
-        data-testid={`button-${_id}`}
         disabled={disabled}
         className={cn(
           buttonCva({
