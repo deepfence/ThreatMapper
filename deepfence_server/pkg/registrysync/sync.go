@@ -77,6 +77,12 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 		return err
 	}
 
+	// reset resetDockerImageTagList
+	if err := resetDockerImageTagList(ctx, r, row.ID); err != nil {
+		log.Error().Err(err).Msgf("failed to reset docker_image_tag_list in images for registry %s %s-%d ",
+			r.GetRegistryType(), row.Name, row.ID)
+	}
+
 	log.Info().Msgf("sync registry id=%d type=%s found %d images",
 		row.ID, r.GetRegistryType(), len(list))
 
@@ -113,6 +119,39 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	}
 
 	return errors.Join(errs...)
+}
+
+func resetDockerImageTagList(ctx context.Context, r registry.Registry, pgID int32) error {
+	ctx, span := telemetry.NewSpan(ctx, "registry", "reset-docker-image-tag-list")
+	defer span.End()
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	timeOut := time.Duration(120 * time.Second)
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(timeOut))
+	if err != nil {
+		return err
+	}
+	defer tx.Close(ctx)
+
+	registryID := utils.GetRegistryID(r.GetRegistryType(), r.GetNamespace(), pgID)
+
+	resetQuery := `MATCH (n:RegistryAccount{node_id:$registry_id})-[:HOSTS]-(c:ContainerImage)
+	SET c.docker_image_tag_list = []`
+
+	_, err = tx.Run(ctx, resetQuery, map[string]interface{}{"registry_id": registryID})
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+
 }
 
 func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage,
