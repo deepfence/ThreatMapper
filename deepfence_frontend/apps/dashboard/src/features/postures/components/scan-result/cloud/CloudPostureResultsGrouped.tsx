@@ -21,6 +21,7 @@ import {
 import { ModelCloudCompliance } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { PostureStatusBadgeIcon } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
@@ -35,7 +36,6 @@ import {
 import {
   DEFAULT_PAGE_SIZE,
   useGetControls,
-  usePageParams,
   useScanResultsByControl,
   useScanStatus,
 } from '@/features/postures/components/scan-result/cloud/hooks';
@@ -76,6 +76,7 @@ export const CloudPostureResultsGrouped = () => {
             onClick={() => {
               setFiltersExpanded((prev) => !prev);
             }}
+            id="filterTable"
           >
             Filter
           </Button>
@@ -128,8 +129,23 @@ const CloudPostureResultsGroupedCheckType = () => {
   const controls = useGetControls();
   const { mode } = useTheme();
 
+  if (!controls || controls.length === 0) {
+    return (
+      <div className="flex items-center justify-center gap-x-2 text-text-text-and-icon min-h-[384px]">
+        <div className="h-6 w-6 shrink-0">
+          <ErrorStandardLineIcon />
+        </div>
+        <div className="text-h3">No data available</div>
+      </div>
+    );
+  }
+
   return (
-    <Accordion type="single" collapsible>
+    <Accordion
+      type="single"
+      collapsible
+      data-testid="cloudPostureResultsGroupedCheckTypeId"
+    >
       {controls.map((control) => {
         return (
           <AccordionItem

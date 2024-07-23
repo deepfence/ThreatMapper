@@ -53,7 +53,7 @@ export const GroupedResultsBenchmarkSkeleton = () => {
 
 export const GroupedResultsSkeleton = () => {
   return (
-    <div className="-mt-4">
+    <div className="-mt-4" data-testid="tableSkeletonWrapperId">
       <RectSkeleton height="h-10" width="w-80" padding="p-2" />
       <GroupedResultsBenchmarkSkeleton />
     </div>

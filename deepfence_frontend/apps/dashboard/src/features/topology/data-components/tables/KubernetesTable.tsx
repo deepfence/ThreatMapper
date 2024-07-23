@@ -203,6 +203,7 @@ export const KubernetesTable = () => {
           onClick={() => {
             setFiltersExpanded((prev) => !prev);
           }}
+          id="filterTable"
         >
           Filter
         </Button>
