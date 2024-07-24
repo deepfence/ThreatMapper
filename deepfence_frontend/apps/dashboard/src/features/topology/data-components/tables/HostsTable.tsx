@@ -99,6 +99,7 @@ export const HostsTable = () => {
           onClick={() => {
             setFiltersExpanded((prev) => !prev);
           }}
+          data-testid="filterButtonIdForTable"
         >
           Filter
         </Button>

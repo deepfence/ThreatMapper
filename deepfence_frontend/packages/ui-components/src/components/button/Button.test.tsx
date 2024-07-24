@@ -18,6 +18,7 @@ describe(`Component Button`, () => {
     const { getByTestId } = renderUI(
       <Button
         id="id"
+        data-testid="button-id"
         color="default"
         startIcon={<Plus />}
         endIcon={<Plus />}
@@ -39,6 +40,7 @@ describe(`Component Button`, () => {
     const { getByTestId, getByText } = renderUI(
       <Button
         id="id"
+        data-testid="button-id"
         color="default"
         startIcon={<Plus />}
         endIcon={<Plus />}

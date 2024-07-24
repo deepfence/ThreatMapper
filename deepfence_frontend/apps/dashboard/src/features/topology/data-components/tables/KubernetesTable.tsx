@@ -203,6 +203,7 @@ export const KubernetesTable = () => {
           onClick={() => {
             setFiltersExpanded((prev) => !prev);
           }}
+          data-testid="filterButtonIdForTable"
         >
           Filter
         </Button>

@@ -78,6 +78,7 @@ export const CloudResourcesTable = () => {
           onClick={() => {
             setFiltersExpanded((prev) => !prev);
           }}
+          data-testid="filterButtonIdForTable"
         >
           Filter
         </Button>
