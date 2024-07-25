@@ -143,7 +143,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 			return count(n) as n2
 		}
 		CALL {
-			MATCH (n:ContainerImage)
+			MATCH (:RegistryAccount)-[:HOSTS]->(n:ContainerImage)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n3
 		}
