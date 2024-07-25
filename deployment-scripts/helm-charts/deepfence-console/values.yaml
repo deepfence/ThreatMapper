@@ -394,10 +394,10 @@ worker:
   resources:
     limits:
       cpu: 2000m
-      memory: 8000Mi
+      memory: 8Gi
     requests:
-      cpu: 250m
-      memory: 256Mi
+      cpu: 500m
+      memory: 1Gi
   autoscaling:
     enabled: false
     minReplicas: 1
