@@ -95,6 +95,7 @@ import {
 } from '@/features/postures/utils';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { queryClient } from '@/queries/client';
 import { useTheme } from '@/theme/ThemeContext';
 import {
   ComplianceScanNodeTypeEnum,
@@ -278,6 +279,9 @@ const action = async ({
       }
       throw result.error;
     }
+    await queryClient.invalidateQueries({
+      queryKey: queries.common.scanHistories._def,
+    });
     return {
       action: actionType,
       success: true,
@@ -634,6 +638,9 @@ const HistoryControls = () => {
     }),
   });
 
+  // This is required because scan history query does not depend on url parameters
+  // so the data in the dropdown stays stale if you switch between different scans
+  // using this dropdown.
   useEffect(() => {
     refetch();
   }, [scan_id]);

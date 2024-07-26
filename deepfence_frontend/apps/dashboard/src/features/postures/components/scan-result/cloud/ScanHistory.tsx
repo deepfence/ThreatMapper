@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { generatePath } from 'react-router-dom';
 import { Button } from 'ui-components';
 
@@ -79,7 +79,7 @@ const HistoryControls = () => {
     showScanTimeModal: false,
   });
 
-  const { data: historyData } = useSuspenseQuery({
+  const { data: historyData, refetch } = useSuspenseQuery({
     ...queries.common.scanHistories({
       scanType: ScanTypeEnum.CloudComplianceScan,
       nodeId: node_id ?? '',
@@ -87,6 +87,10 @@ const HistoryControls = () => {
       size: Number.MAX_SAFE_INTEGER,
     }),
   });
+
+  useEffect(() => {
+    refetch();
+  }, [scan_id]);
 
   if (!node_id || !node_type || !scan_id) {
     throw new Error('Scan id, Node type and Node id are required');
