@@ -190,7 +190,7 @@ function MyConnectorsTable() {
             </div>
           );
         },
-        header: () => 'Account Type',
+        header: () => 'Account type',
         minSize: 100,
         size: 110,
         maxSize: 150,
@@ -200,7 +200,7 @@ function MyConnectorsTable() {
         size: 110,
         maxSize: 150,
         cell: (info) => info.getValue(),
-        header: () => 'Connection Method',
+        header: () => 'Connection method',
       }),
       columnHelper.accessor('accountId', {
         minSize: 300,
