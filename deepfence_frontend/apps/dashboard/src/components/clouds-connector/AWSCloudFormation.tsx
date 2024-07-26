@@ -121,6 +121,8 @@ export const AWSCloudFormation = () => {
             <Link
               to="https://community.deepfence.io/threatmapper/docs/v2.2/cloudscanner/aws#cloudformation"
               className="text-text-link"
+              target="_blank"
+              rel="noreferrer"
             >
               reading our documentation
             </Link>

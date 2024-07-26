@@ -3,7 +3,8 @@ import { toast } from 'sonner';
 
 import { getScanResultsApiClient } from '@/api/api';
 import { ModelScanResultsMaskRequestMaskActionEnum } from '@/api/generated';
-import { invalidateAllQueries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
+import { queryClient } from '@/queries/client';
 import { ScanTypeEnum } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
@@ -160,6 +161,9 @@ export const action = async ({
       }
       throw result.error;
     }
+    await queryClient.invalidateQueries({
+      queryKey: queries.common.scanHistories._def,
+    });
     return {
       action: actionType,
       success: true,

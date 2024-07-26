@@ -80,6 +80,7 @@ import { SecretScanResultsPieChart } from '@/features/secrets/components/scan-re
 import { SecretsCompare } from '@/features/secrets/components/scan-results/SecretsCompare';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
+import { queryClient } from '@/queries/client';
 import { THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 import {
   isCriticalSeverity,
@@ -277,6 +278,9 @@ const action = async ({
       }
       throw result.error;
     }
+    await queryClient.invalidateQueries({
+      queryKey: queries.common.scanHistories._def,
+    });
     return {
       action: actionType,
       success: true,

@@ -153,7 +153,7 @@ const Filters = () => {
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   return (
-    <FilterWrapper className="mt-[6px] mx-4 pt-4 px-4 pb-3">
+    <FilterWrapper className="mt-[6px] mx-4 pt-4 px-4 pb-3 overflow-visible">
       <div className="flex gap-2">
         <Combobox
           value={THREAT_TYPES.find((threatType) => {
@@ -277,7 +277,7 @@ const Filters = () => {
         />
       </div>
       {appliedFilterCount > 0 ? (
-        <div className="flex gap-2.5 my-4 flex-wrap items-center">
+        <div className="flex gap-2.5 mt-4 flex-wrap items-center">
           {Array.from(searchParams)
             .filter(([key]) => {
               return Object.keys(FILTER_SEARCHPARAMS).includes(key);
