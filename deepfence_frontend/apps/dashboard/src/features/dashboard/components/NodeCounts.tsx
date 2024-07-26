@@ -142,11 +142,24 @@ const CountCard = ({
   link: string;
 }) => {
   return (
-    <DFLink to={link} unstyled className="group flex flex-col gap-1 cursor-pointer">
-      <div className="text-p12 text-text-text-and-icon truncate">{title}</div>
+    <DFLink
+      to={link}
+      unstyled
+      className="group flex flex-col gap-1 cursor-pointer"
+      data-testid={`link${title}Id`}
+    >
+      <div
+        className="text-p12 text-text-text-and-icon truncate"
+        data-testid={`${title}Id`}
+      >
+        {title}
+      </div>
       <div className="flex gap-3 items-center">
         <div className="h-6 w-6 shrink-0 text-text-icon">{icon}</div>
-        <div className="text-h1 text-accent-accent group-hover:underline">
+        <div
+          className="text-h1 text-accent-accent group-hover:underline"
+          data-testid={`${title}CountId`}
+        >
           {abbreviateNumber(count)}
         </div>
       </div>

@@ -82,6 +82,7 @@ const PostureCardItem = ({ provider }: { provider: ModelPostureProvider }) => {
         'hover:ring-bg-hover-3 hover:ring-1 hover:shadow-[0px_0px_6px_2px_#044AFF]',
         'focus:ring-bg-hover-3 focus:shadow-[0px_0px_6px_1px_#044AFF] focus:ring-1',
       )}
+      data-testid={`${provider.name}Id`}
     >
       <div className="dark:bg-bg-side-panel bg-white flex" key={provider.name}>
         <div className="flex items-center justify-center p-3">
