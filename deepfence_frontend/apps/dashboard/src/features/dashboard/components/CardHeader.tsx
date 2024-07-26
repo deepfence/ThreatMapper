@@ -19,6 +19,7 @@ export const CardHeader = ({
           to={link}
           unstyled
           className="p-3 flex items-center text-text-text-and-icon hover:text-accent-accent border-b dark:border-df-gray-900 border-bg-grid-border"
+          data-testid={`${title}Id`}
         >
           <span className="flex-1 truncate flex items-center gap-2">{children}</span>
           <div className="h-4 w-4 shrink-0 -rotate-90 justify-self-end">
