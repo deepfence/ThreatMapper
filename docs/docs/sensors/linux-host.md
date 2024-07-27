@@ -81,19 +81,17 @@ if [[ $start_agent_script_download_url == "" ]]; then
   exit 1
 fi
 
-uninstall_agent_script_download_url=$(jq -r '.uninstall_agent_script_download_url' <<< "$download_url_response")
-if [[ $uninstall_agent_script_download_url == "" ]]; then
-  echo "Failed to get agent binary download url"
-  echo "$download_url_response"
-  exit 1
-fi
-curl -k -o uninstall_deepfence.sh "$uninstall_agent_script_download_url"
-chmod +x uninstall_deepfence.sh
+cat << EOF > uninstall_deepfence.sh
+#!/bin/bash
 
-echo "Uninstalling existing Deepfence agent installation, if any"
 systemctl stop deepfence-agent.service
 systemctl disable deepfence-agent.service
 rm -f /etc/systemd/system/deepfence-agent.service
+rm -rf /opt/deepfence
+EOF
+
+echo "Uninstalling existing Deepfence agent installation, if any"
+chmod +x uninstall_deepfence.sh
 bash uninstall_deepfence.sh
 
 if [[ ! -d "/opt/deepfence" ]]; then
@@ -186,5 +184,5 @@ To uninstall deepfence agent, run the following commands
 sudo systemctl stop deepfence-agent.service
 sudo systemctl disable deepfence-agent.service
 sudo rm -f /etc/systemd/system/deepfence-agent.service
-sudo bash uninstall_deepfence.sh
+sudo rm -rf /opt/deepfence
 ```
