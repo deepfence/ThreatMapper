@@ -15,7 +15,7 @@ Copy and paste the following (single project or multiple projects) into a new fi
 ```terraform
 module "cloud-scanner_example_single-project" {
   source              = "deepfence/cloud-scanner/gcp//examples/single-project"
-  version             = "0.5.0"
+  version             = "0.6.0"
   name                = "deepfence-cloud-scanner"
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url    = "<Console URL>"
@@ -48,7 +48,7 @@ module "cloud-scanner_example_single-project" {
 ```terraform
 module "cloud-scanner_example_multiple-projects" {
   source              = "deepfence/cloud-scanner/gcp//examples/multi-project"
-  version             = "0.5.0"
+  version             = "0.6.0"
   name                = "deepfence-cloud-scanner"
   # org_domain: root project name
   org_domain          = ""
