@@ -28,21 +28,21 @@ copy_bin_amd64() {
 }
 
 copy_bin_arm64() {
-  cp -R bin-arm64 $folder/
-  cp $folder/busybox $folder/cat
-  cp $folder/busybox $folder/chmod
-  cp $folder/busybox $folder/cp
-  cp $folder/busybox $folder/gzip
-  cp $folder/busybox $folder/hostname
-  cp $folder/busybox $folder/kill
-  cp $folder/busybox $folder/ln
-  cp $folder/busybox $folder/ls
-  cp $folder/busybox $folder/mkdir
-  cp $folder/busybox $folder/nice
-  cp $folder/busybox $folder/rm
-  cp $folder/busybox $folder/sed
-  cp $folder/busybox $folder/sleep
-  cp $folder/busybox $folder/tar
+  cp -R bin-arm64 $folder/bin
+  cp $folder/bin/busybox $folder/bin/cat
+  cp $folder/bin/busybox $folder/bin/chmod
+  cp $folder/bin/busybox $folder/bin/cp
+  cp $folder/bin/busybox $folder/bin/gzip
+  cp $folder/bin/busybox $folder/bin/hostname
+  cp $folder/bin/busybox $folder/bin/kill
+  cp $folder/bin/busybox $folder/bin/ln
+  cp $folder/bin/busybox $folder/bin/ls
+  cp $folder/bin/busybox $folder/bin/mkdir
+  cp $folder/bin/busybox $folder/bin/nice
+  cp $folder/bin/busybox $folder/bin/rm
+  cp $folder/bin/busybox $folder/bin/sed
+  cp $folder/bin/busybox $folder/bin/sleep
+  cp $folder/bin/busybox $folder/bin/tar
 }
 
 copy() {
