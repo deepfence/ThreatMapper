@@ -20,6 +20,10 @@ Then, fill in the below parameters as needed:
 |:------------------------------------------------:|
 |           Cloud Scanner Configuration            |
 
+:::info
+Cloud Scanner Image: quay.io/deepfenceio/cloud_scanner_ce:THREATMAPPER_VERSION
+:::
+
 | ![Cloud Scanner](../img/cloud-scanner-aws-2.png) |
 |:------------------------------------------------:|
 |                     Set Name                     |
@@ -75,7 +79,7 @@ provider "aws" {
 
 module "deepfence-cloud-scanner_example_single-account" {
   source                        = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
-  version                       = "0.5.0"
+  version                       = "0.6.0"
   name                          = "deepfence-cloud-scanner"
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url              = "<Console URL>"

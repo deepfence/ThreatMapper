@@ -42,7 +42,12 @@ const config = {
           lastVersion: 'current',
           versions: {
             "current": {
+              label: 'v2.3',
+              banner: 'none',
+            },
+            "v2.2": {
               label: 'v2.2',
+              path: 'v2.2',
               banner: 'none',
             },
             "v2.1": {
