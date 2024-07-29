@@ -168,7 +168,7 @@ func compliancePDF(ctx context.Context, params utils.ReportParams) (core.Documen
 				resultRows = append(
 					resultRows,
 					row.New(15).Add(
-						text.NewCol(1, strconv.Itoa(k),
+						text.NewCol(1, strconv.Itoa(k+1),
 							props.Text{Size: 10, Top: 1, Align: align.Center}).
 							WithStyle(cellStyle),
 						text.NewCol(1, v.Status,
@@ -191,7 +191,7 @@ func compliancePDF(ctx context.Context, params utils.ReportParams) (core.Documen
 				resultRows = append(
 					resultRows,
 					row.New(15).Add(
-						text.NewCol(1, strconv.Itoa(k),
+						text.NewCol(1, strconv.Itoa(k+1),
 							props.Text{Size: 10, Top: 1, Align: align.Center}).
 							WithStyle(cellStyle),
 						text.NewCol(1, v.Status,
