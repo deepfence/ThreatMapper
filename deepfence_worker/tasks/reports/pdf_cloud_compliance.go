@@ -147,7 +147,7 @@ func cloudcompliancePDF(ctx context.Context, params utils.ReportParams) (core.Do
 			resultRows = append(
 				resultRows,
 				row.New(18).Add(
-					text.NewCol(1, strconv.Itoa(k),
+					text.NewCol(1, strconv.Itoa(k+1),
 						props.Text{Size: 10, Top: 1, Align: align.Center}).
 						WithStyle(cellStyle),
 					text.NewCol(5, v.Resource,
