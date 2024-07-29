@@ -87,15 +87,17 @@ func sbomReport(ctx context.Context, params utils.ReportParams) (string, error) 
 		return "", err
 	}
 
+	// check if conversion in required
+	var newSBOMContent []byte
 	if strings.HasPrefix(sbomFormat, "syft-json") {
 		// SBOM already in syft-json format
-		return saveSbomToFile(sbomContent, params)
-	}
-
-	newSBOMContent, err := convertSBOMFormat(bytes.NewReader(sbomContent), sbomFormat)
-	if err != nil {
-		log.Error().Err(err).Msgf("error converting sbom to %s", sbomFormat)
-		return "", err
+		newSBOMContent = sbomContent
+	} else {
+		newSBOMContent, err = convertSBOMFormat(bytes.NewReader(sbomContent), sbomFormat)
+		if err != nil {
+			log.Error().Err(err).Msgf("error converting sbom to %s", sbomFormat)
+			return "", err
+		}
 	}
 
 	// compress sbom
