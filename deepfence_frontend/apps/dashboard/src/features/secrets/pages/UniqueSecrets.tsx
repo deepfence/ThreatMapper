@@ -58,8 +58,8 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   severity: 'Severity',
   hosts: 'Host',
   containers: 'Container',
-  containerImages: 'Container Images',
-  clusters: 'Clusters',
+  containerImages: 'Container image',
+  clusters: 'Cluster',
 };
 
 const getPrettyNameForAppliedFilters = ({

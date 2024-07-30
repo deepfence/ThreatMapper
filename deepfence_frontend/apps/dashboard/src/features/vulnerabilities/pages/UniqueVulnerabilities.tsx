@@ -59,13 +59,13 @@ const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
 ];
 
 const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
-  liveConnection: 'Live Connection',
-  severity: 'CVE Severity',
+  liveConnection: 'Live connection',
+  severity: 'CVE severity',
   hosts: 'Host',
   containers: 'Container',
-  containerImages: 'Container Images',
-  clusters: 'Clusters',
-  cveId: 'CVE Id',
+  containerImages: 'Container image',
+  clusters: 'Cluster',
+  cveId: 'CVE ID',
 };
 
 const getPrettyNameForAppliedFilters = ({
