@@ -375,7 +375,7 @@ const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
 ];
 
 const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
-  nodeType: 'Node Type',
+  nodeType: 'Node type',
   secretScanStatus: 'Secret scan status',
   containerImages: 'Container image',
   containers: 'Container',
