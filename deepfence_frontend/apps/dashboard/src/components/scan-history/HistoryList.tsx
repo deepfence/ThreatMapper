@@ -80,6 +80,7 @@ export const ScanHistoryDropdown = ({
                         scan.onDownloadClick(scan.id);
                         setOpen(false);
                       }}
+                      data-testid="menuDownloadIconId"
                     />
                     <IconButton
                       variant="flat"
@@ -97,6 +98,7 @@ export const ScanHistoryDropdown = ({
                         scan.onDeleteClick(scan.id);
                         setOpen(false);
                       }}
+                      data-testid="menuDeleteIconId"
                     />
 
                     <IconButton
@@ -116,6 +118,7 @@ export const ScanHistoryDropdown = ({
                         scan?.onScanTimeCompareButtonClick?.(scan.timestamp);
                         setOpen(false);
                       }}
+                      data-testid="menuCompareIconId"
                     />
                   </div>
                 </div>
@@ -125,7 +128,10 @@ export const ScanHistoryDropdown = ({
         </>
       }
     >
-      <span className="text-h5 flex items-center text-text-input-value gap-x-2">
+      <span
+        className="text-h5 flex items-center text-text-input-value gap-x-2"
+        data-testid="scanHistoryDropdownId"
+      >
         {currentTimeStamp}
         <div className="h-4 w-4 text-accent-accent">
           <CaretDown />

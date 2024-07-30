@@ -31,19 +31,19 @@ var (
 )
 
 var colors = map[string]*props.Color{
-	"alarm":    &props.Color{Red: 228, Green: 29, Blue: 75},
-	"info":     &props.Color{Red: 29, Green: 142, Blue: 230},
-	"ok":       &props.Color{Red: 21, Green: 183, Blue: 126},
-	"skip":     &props.Color{Red: 156, Green: 163, Blue: 175},
-	"pass":     &props.Color{Red: 21, Green: 183, Blue: 126},
-	"warn":     &props.Color{Red: 255, Green: 156, Blue: 50},
-	"note":     &props.Color{Red: 156, Green: 163, Blue: 175},
-	"delete":   &props.Color{Red: 224, Green: 81, Blue: 109},
-	"critical": &props.Color{Red: 245, Green: 102, Blue: 130},
-	"high":     &props.Color{Red: 255, Green: 124, Blue: 2},
-	"medium":   &props.Color{Red: 255, Green: 156, Blue: 50},
-	"low":      &props.Color{Red: 229, Green: 195, Blue: 84},
-	"":         &props.Color{Red: 156, Green: 163, Blue: 175},
+	"alarm":    {Red: 228, Green: 29, Blue: 75},
+	"info":     {Red: 29, Green: 142, Blue: 230},
+	"ok":       {Red: 21, Green: 183, Blue: 126},
+	"skip":     {Red: 156, Green: 163, Blue: 175},
+	"pass":     {Red: 21, Green: 183, Blue: 126},
+	"warn":     {Red: 255, Green: 156, Blue: 50},
+	"note":     {Red: 156, Green: 163, Blue: 175},
+	"delete":   {Red: 224, Green: 81, Blue: 109},
+	"critical": {Red: 245, Green: 102, Blue: 130},
+	"high":     {Red: 255, Green: 124, Blue: 2},
+	"medium":   {Red: 255, Green: 156, Blue: 50},
+	"low":      {Red: 229, Green: 195, Blue: 84},
+	"":         {Red: 156, Green: 163, Blue: 175},
 }
 
 func truncateText(s string, max int) string {
