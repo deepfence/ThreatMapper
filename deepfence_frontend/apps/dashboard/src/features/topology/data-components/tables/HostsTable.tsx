@@ -793,7 +793,7 @@ const DataTable = ({
         },
         header: () => 'OS',
         minSize: 50,
-        size: 60,
+        size: 80,
         maxSize: 120,
       }),
       columnHelper.accessor('agent_running', {
