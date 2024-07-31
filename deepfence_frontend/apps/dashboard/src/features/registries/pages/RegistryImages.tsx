@@ -28,9 +28,11 @@ import { TagsIcon } from '@/components/icons/registries/Tags';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { RegistryImagesTable } from '@/features/registries/components/RegistryImagesTable';
+import { getRegistryPrettyName } from '@/features/registries/utils';
 import { queries } from '@/queries';
 import {
   MalwareScanNodeTypeEnum,
+  RegistryKeyType,
   ScanTypeEnum,
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
@@ -190,7 +192,7 @@ const DynamicBreadcrumbs = () => {
             account: encodeURIComponent(account),
           })}
         >
-          {account}
+          {getRegistryPrettyName(account as RegistryKeyType)}
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink isLast>

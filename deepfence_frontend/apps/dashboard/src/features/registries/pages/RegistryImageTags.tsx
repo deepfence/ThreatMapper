@@ -33,9 +33,11 @@ import {
   ActionEnumType,
   RegistryScanType,
 } from '@/features/registries/pages/RegistryImages';
+import { getRegistryPrettyName } from '@/features/registries/utils';
 import { queries } from '@/queries';
 import {
   MalwareScanNodeTypeEnum,
+  RegistryKeyType,
   ScanTypeEnum,
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
@@ -191,7 +193,7 @@ const DynamicBreadcrumbs = () => {
             account: encodeURIComponent(account),
           })}
         >
-          {account}
+          {getRegistryPrettyName(account as RegistryKeyType)}
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink>
