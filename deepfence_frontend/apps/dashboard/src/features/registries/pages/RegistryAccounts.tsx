@@ -36,11 +36,12 @@ import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { AddRegistryModal } from '@/features/registries/components/AddRegistryModal';
 import { RegistryAccountsTable } from '@/features/registries/components/RegistryAccountsTable';
+import { getRegistryPrettyName } from '@/features/registries/utils';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
 import {
   MalwareScanNodeTypeEnum,
-  registryTypeToNameMapping,
+  RegistryKeyType,
   ScanTypeEnum,
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
@@ -304,7 +305,7 @@ const Header = () => {
         </BreadcrumbLink>
         <BreadcrumbLink>
           <span className="inherit cursor-auto">
-            {registryTypeToNameMapping[params.account]}
+            {getRegistryPrettyName(params.account as RegistryKeyType)}
           </span>
         </BreadcrumbLink>
       </Breadcrumb>

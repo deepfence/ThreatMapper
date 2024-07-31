@@ -8,9 +8,10 @@ import { DFLink } from '@/components/DFLink';
 import { RegistryLogos } from '@/components/icons/registries';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
+import { getRegistryPrettyName } from '@/features/registries/utils';
 import { queries } from '@/queries';
 import { THEME_DARK, useTheme } from '@/theme/ThemeContext';
-import { RegistryType, registryTypeToNameMapping } from '@/types/common';
+import { RegistryKeyType, RegistryType } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 
 interface RegistryResponseType extends ModelSummary {
@@ -54,8 +55,6 @@ const RegistrySkeleton = () => {
 };
 
 const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
-  const name = registryTypeToNameMapping[registry.type];
-
   return (
     <div className="flex items-center w-full relative">
       <div
@@ -71,7 +70,7 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
       </div>
 
       <span className="ml-[102px] flex items-center gap-2 text-t4 uppercase text-text-input-value">
-        {name}
+        {getRegistryPrettyName(registry.type as RegistryKeyType)}
       </span>
     </div>
   );

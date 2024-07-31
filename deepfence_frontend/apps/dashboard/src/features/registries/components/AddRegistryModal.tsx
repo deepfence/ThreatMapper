@@ -9,14 +9,15 @@ import {
 
 import { RegistryConnectorForm } from '@/features/common/data-component/RegistryConnectorForm';
 import { SlidingModalHeaderWrapper } from '@/features/common/SlidingModalHeaderWrapper';
+import { getRegistryPrettyName } from '@/features/registries/utils';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { registryTypeToNameMapping } from '@/types/common';
+import { RegistryKeyType } from '@/types/common';
 
 const Header = ({ title }: { title: string }) => {
   return (
     <SlidingModalHeader>
       <SlidingModalHeaderWrapper>
-        Add Registry: &nbsp;{registryTypeToNameMapping[title]}
+        Add Registry: &nbsp;{getRegistryPrettyName(title as RegistryKeyType)}
       </SlidingModalHeaderWrapper>
     </SlidingModalHeader>
   );
