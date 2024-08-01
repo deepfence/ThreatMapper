@@ -53,7 +53,7 @@ const ScanTime = ({
     setSelectedTime(defaultSelectedTime ?? null);
   }, [defaultSelectedTime]);
 
-  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useSuspenseInfiniteQuery({
       ...queries.common.scanHistories({
         size: PAGE_SIZE,
@@ -63,6 +63,9 @@ const ScanTime = ({
       }),
       keepPreviousData: true,
       getNextPageParam: (lastPage, allPages) => {
+        if (!('data' in lastPage) || !lastPage.hasNextPage) {
+          return undefined;
+        }
         return allPages.length * PAGE_SIZE;
       },
       getPreviousPageParam: (firstPage, allPages) => {
@@ -74,6 +77,10 @@ const ScanTime = ({
   const onEndReached = () => {
     if (hasNextPage) fetchNextPage();
   };
+
+  if (data.pages.find((page) => 'error' in page)) {
+    return <div className="text-p7a text-status-error">Error getting scan history.</div>;
+  }
 
   return (
     <>
@@ -106,12 +113,14 @@ const ScanTime = ({
       >
         {data?.pages
           .flatMap((page) => {
+            if ('error' in page) {
+              return [];
+            }
             return page.data;
           })
           .filter(
             (scan) => scan.createdAt !== skipScanTime && isScanComplete(scan.status),
           )
-          .reverse()
           ?.map?.((scan) => {
             return (
               <ListboxOption

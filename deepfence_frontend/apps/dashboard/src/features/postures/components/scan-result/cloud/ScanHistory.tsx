@@ -1,5 +1,4 @@
-import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { generatePath } from 'react-router-dom';
 import { Button } from 'ui-components';
 
@@ -13,7 +12,8 @@ import { ClockLineIcon } from '@/components/icons/common/ClockLine';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { StopScanForm } from '@/components/scan-configure-forms/StopScanForm';
-import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
+import { HistoryControlsSkeleton } from '@/components/scan-history/HistoryControlsSkeleton';
+import { ScanHistoryDropdown } from '@/components/scan-history/ScanHistoryDropdown';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import {
@@ -22,9 +22,7 @@ import {
 } from '@/features/postures/components/scan-result/cloud/hooks';
 import { DeleteScanConfirmationModal } from '@/features/postures/components/scan-result/cloud/Modals';
 import { PosturesCloudCompare } from '@/features/postures/components/scan-result/PosturesCloudCompare';
-import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
-import { formatMilliseconds } from '@/utils/date';
 import { isScanComplete, isScanDeletePending, isScanInProgress } from '@/utils/scan';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -37,11 +35,7 @@ export const ScanHistory = () => {
       <span className="pl-2 pr-3 text-t3 text-text-text-and-icon uppercase">
         scan time
       </span>
-      <Suspense
-        fallback={
-          <div className="text-text-text-and-icon text-p9">Fetching scan history...</div>
-        }
-      >
+      <Suspense fallback={<HistoryControlsSkeleton />}>
         <HistoryControls />
       </Suspense>
     </div>
@@ -65,44 +59,22 @@ const HistoryControls = () => {
 
   const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
 
-  const [compareInput, setCompareInput] = useState<{
-    baseScanId: string;
-    toScanId: string;
-    baseScanTime: number;
-    toScanTime: number;
-    showScanTimeModal: boolean;
-  }>({
-    baseScanId: '',
-    toScanId: '',
-    baseScanTime: created_at ?? 0,
-    toScanTime: 0,
-    showScanTimeModal: false,
-  });
+  const [compareBaseScanInfo, setCompareBaseScanInfo] = useState<{
+    scanId: string;
+    createdAt: number;
+  } | null>(null);
 
-  const { data: historyData, refetch } = useSuspenseQuery({
-    ...queries.common.scanHistories({
-      scanType: ScanTypeEnum.CloudComplianceScan,
-      nodeId: node_id ?? '',
-      nodeType: 'cloud_account',
-      size: Number.MAX_SAFE_INTEGER,
-    }),
-  });
+  const [compareToScanInfo, setCompareToScanInfo] = useState<{
+    scanId: string;
+    createdAt: number;
+  } | null>(null);
 
-  useEffect(() => {
-    refetch();
-  }, [scan_id]);
+  const [showCompareToScanSelectionModal, setShowCompareToScanSelectionModal] =
+    useState(false);
 
   if (!node_id || !node_type || !scan_id) {
     throw new Error('Scan id, Node type and Node id are required');
   }
-
-  const onCompareScanClick = (baseScanTime: number) => {
-    setCompareInput({
-      ...compareInput,
-      baseScanTime,
-      showScanTimeModal: true,
-    });
-  };
 
   return (
     <div className="flex items-center relative flex-grow gap-4">
@@ -114,90 +86,103 @@ const HistoryControls = () => {
           scanType={ScanTypeEnum.CloudComplianceScan}
         />
       )}
-      {compareInput.showScanTimeModal && (
+      {showCompareToScanSelectionModal && (
         <CompareScanInputModal
-          showDialog={true}
-          setShowDialog={() => {
-            setCompareInput((input) => {
-              return {
-                ...input,
-                showScanTimeModal: false,
-              };
-            });
+          showDialog={showCompareToScanSelectionModal}
+          setShowDialog={(open, compareToScanInfo) => {
+            if (!open) {
+              if (compareToScanInfo) {
+                setCompareToScanInfo(compareToScanInfo);
+                setShowScanCompareModal(true);
+              } else {
+                setCompareBaseScanInfo(null);
+                setCompareToScanInfo(null);
+              }
+              setShowCompareToScanSelectionModal(false);
+            }
           }}
-          setShowScanCompareModal={setShowScanCompareModal}
-          scanHistoryData={historyData.data}
-          setCompareInput={setCompareInput}
-          compareInput={compareInput}
           nodeId={node_id}
           nodeType={node_type}
           scanType={ScanTypeEnum.CloudComplianceScan}
+          baseScanInfo={compareBaseScanInfo!}
         />
       )}
       {showScanCompareModal && (
         <PosturesCloudCompare
           open={showScanCompareModal}
           onOpenChange={setShowScanCompareModal}
-          compareInput={compareInput}
+          compareInput={{
+            baseScanId: compareBaseScanInfo?.scanId ?? '',
+            baseScanTime: compareBaseScanInfo?.createdAt ?? 0,
+            toScanId: compareToScanInfo?.scanId ?? '',
+            toScanTime: compareToScanInfo?.createdAt ?? 0,
+          }}
         />
       )}
       <div className="flex items-center gap-x-3">
         <ScanHistoryDropdown
-          scans={[...(historyData?.data ?? [])].reverse().map((item) => ({
-            id: item.scanId,
-            isCurrent: item.scanId === scan_id,
-            status: item.status,
-            timestamp: item.createdAt,
-            showScanCompareButton: true,
-            onScanTimeCompareButtonClick: onCompareScanClick,
-            onDeleteClick: (id) => {
-              setScanIdToDelete(id);
-            },
-            onDownloadClick: () => {
-              downloadScan({
-                scanId: item.scanId,
-                scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
-                nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
-              });
-            },
-            onScanClick: () => {
-              navigate(
-                generatePath(`/posture/cloud/scan-results/:nodeType/:scanId`, {
-                  scanId: encodeURIComponent(item.scanId),
-                  nodeType: nodeType,
-                }),
-                {
-                  replace: true,
-                },
-              );
-            },
-          }))}
-          currentTimeStamp={formatMilliseconds(created_at ?? '')}
+          selectedScan={{
+            id: scan_id,
+            status: status ?? '',
+            timestamp: created_at ?? 0,
+          }}
+          nodeInfo={{
+            nodeId: node_id,
+            nodeType: node_type,
+            scanType: ScanTypeEnum.CloudComplianceScan,
+          }}
+          onScanDownloadClick={(scanId) => {
+            downloadScan({
+              scanId: scanId,
+              scanType: UtilsReportFiltersScanTypeEnum.CloudCompliance,
+              nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+            });
+          }}
+          onScanClick={(scanId) => {
+            navigate(
+              generatePath(`/posture/cloud/scan-results/:nodeType/:scanId`, {
+                scanId: encodeURIComponent(scanId),
+                nodeType: nodeType,
+              }),
+              {
+                replace: true,
+              },
+            );
+          }}
+          onScanDeleteClick={(scanId) => {
+            setScanIdToDelete(scanId);
+          }}
+          onScanCompareClick={({ scanId, createdAt }) => {
+            setCompareBaseScanInfo({
+              scanId,
+              createdAt,
+            });
+            setShowCompareToScanSelectionModal(true);
+          }}
         />
 
         {scanIdToDelete && (
           <DeleteScanConfirmationModal
             scanId={scanIdToDelete}
+            nodeId={node_id}
+            nodeType={node_type}
             open={!!scanIdToDelete}
-            onOpenChange={(open, deleteSuccessful) => {
-              if (!open) {
-                if (deleteSuccessful && scanIdToDelete === scan_id) {
-                  const latestScan = [...historyData.data].reverse().find((scan) => {
-                    return scan.scanId !== scanIdToDelete;
-                  });
-                  if (latestScan) {
-                    navigate(
-                      generatePath('./../:scanId', {
-                        scanId: encodeURIComponent(latestScan.scanId),
-                      }),
-                      { replace: true },
-                    );
-                  } else {
-                    goBack();
-                  }
+            onOpenChange={(open, status) => {
+              if (open) return;
+              if (status.success && scanIdToDelete === scan_id) {
+                // if deleting current scan Id
+                if (status.nextScanId) {
+                  navigate(
+                    generatePath('./../:scanId', {
+                      scanId: encodeURIComponent(status.nextScanId),
+                    }),
+                    { replace: true },
+                  );
+                } else {
+                  goBack();
                 }
-                setScanIdToDelete(null);
               }
+              setScanIdToDelete(null);
             }}
           />
         )}
@@ -250,11 +235,11 @@ const HistoryControls = () => {
                     }
                     disabled={fetchStatus !== 'idle'}
                     onClick={() => {
-                      setCompareInput({
-                        ...compareInput,
-                        baseScanTime: created_at ?? 0,
-                        showScanTimeModal: true,
+                      setCompareBaseScanInfo({
+                        scanId: scan_id,
+                        createdAt: created_at,
                       });
+                      setShowCompareToScanSelectionModal(true);
                     }}
                   >
                     Compare scan

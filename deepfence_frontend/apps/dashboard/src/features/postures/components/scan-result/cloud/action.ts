@@ -18,11 +18,18 @@ export enum ActionEnumType {
   DELETE_SCAN = 'delete_scan',
 }
 
-export interface ActionData {
-  action: ActionEnumType;
-  success: boolean;
-  message?: string;
-}
+export type ActionData =
+  | {
+      action: Exclude<ActionEnumType, ActionEnumType.DELETE_SCAN>;
+      success: boolean;
+      message?: string;
+    }
+  | {
+      action: ActionEnumType.DELETE_SCAN;
+      success: boolean;
+      nextScanId: string | null;
+      message?: string;
+    };
 
 export const action = async ({
   params: { scanId = '' },
@@ -156,17 +163,33 @@ export const action = async ({
         return {
           action: actionType,
           message,
+          nextScanId: null,
           success: false,
         };
       }
       throw result.error;
     }
-    await queryClient.invalidateQueries({
+    await queryClient.resetQueries({
       queryKey: queries.common.scanHistories._def,
     });
+
+    const historyData = await queryClient.ensureQueryData({
+      ...queries.common.scanHistories({
+        nodeId: formData.get('nodeId') as string,
+        nodeType: formData.get('nodeType') as string,
+        scanType: ScanTypeEnum.CloudComplianceScan,
+        size: 1,
+      }),
+    });
+
+    let nextScanId: string | null = null;
+    if ('data' in historyData && historyData.data.length) {
+      nextScanId = historyData.data[0].scanId;
+    }
     return {
       action: actionType,
       success: true,
+      nextScanId,
     };
   } else {
     throw new Error('Unknown action type.');
