@@ -68,17 +68,7 @@ export const RegistryType = {
   jfrog_container_registry: 'jfrog_container_registry',
   quay: 'quay',
 } as const;
-export const registryTypeToNameMapping: { [key: string]: string } = {
-  azure_container_registry: 'Azure Container',
-  docker_hub: 'Docker',
-  docker_private_registry: 'Docker Private',
-  ecr: 'Amazon ECR',
-  gitlab: 'GitLab',
-  google_container_registry: 'Google',
-  harbor: 'Harbor',
-  jfrog_container_registry: 'JFrog',
-  quay: 'Quay',
-} as const;
+export type RegistryKeyType = keyof typeof RegistryType;
 
 export type GenerativeAIIntegrationType = 'openai' | 'amazon-bedrock';
 

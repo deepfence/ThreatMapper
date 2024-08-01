@@ -4,6 +4,7 @@ import {
   ModelComplianceStatusEnum,
   ModelMalwareFileSeverityEnum,
   ModelSecretLevelEnum,
+  ModelUserRoleEnum,
   ModelVulnerabilityCveSeverityEnum,
 } from '@/api/generated';
 
@@ -109,5 +110,19 @@ export function getMaskedUnmaskedPrettyName(maskedUnmasked: string) {
       throw new Error(
         `Unhandled case: No matching key found for getMaskedUnmaskedPrettyName`,
       );
+  }
+}
+
+export function getUserRolePrettyName(maskedUnmasked: ModelUserRoleEnum) {
+  switch (maskedUnmasked) {
+    case ModelUserRoleEnum.Admin:
+      return 'Admin';
+    case ModelUserRoleEnum.StandardUser:
+      return 'Standard User';
+    case ModelUserRoleEnum.ReadOnlyUser:
+      return 'Read Only User';
+
+    default:
+      throw new Error(`Unhandled case: No matching key found for getUserRolePrettyName`);
   }
 }

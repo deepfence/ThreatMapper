@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { startCase } from 'lodash-es';
 import { Suspense, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,12 +12,13 @@ import {
   Tooltip,
 } from 'ui-components';
 
-import { PostgresqlDbGetAuditLogsRow } from '@/api/generated';
+import { ModelUserRoleEnum, PostgresqlDbGetAuditLogsRow } from '@/api/generated';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
+import { getUserRolePrettyName } from '@/utils/enum';
 import { getPageFromSearchParams } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -51,7 +53,7 @@ const AuditTable = () => {
         enableSorting: false,
       }),
       columnHelper.accessor('event', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => <TruncatedText text={startCase(cell.getValue()) ?? ''} />,
         header: () => 'Event',
         minSize: 30,
         size: 30,
@@ -59,7 +61,7 @@ const AuditTable = () => {
         enableSorting: false,
       }),
       columnHelper.accessor('action', {
-        cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
+        cell: (cell) => <TruncatedText text={startCase(cell.getValue()) ?? ''} />,
         header: () => <TruncatedText text={'Action'} />,
         minSize: 20,
         size: 25,
@@ -67,7 +69,7 @@ const AuditTable = () => {
         enableSorting: false,
       }),
       columnHelper.accessor('email', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => 'User email',
         minSize: 30,
         size: 50,
@@ -75,7 +77,7 @@ const AuditTable = () => {
         enableSorting: false,
       }),
       columnHelper.accessor('role', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => getUserRolePrettyName(cell.getValue() as ModelUserRoleEnum),
         header: () => <TruncatedText text={'User role'} />,
         minSize: 30,
         size: 30,
@@ -109,7 +111,7 @@ const AuditTable = () => {
         enableSorting: false,
       }),
       columnHelper.accessor('success', {
-        cell: (cell) => String(cell.getValue()),
+        cell: (cell) => startCase(String(cell.getValue())),
         header: () => 'Success',
         minSize: 30,
         size: 30,

@@ -209,6 +209,7 @@ const HistoryControls = () => {
                     nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
                   });
                 }}
+                data-testid="downloadScanButtonId"
               >
                 Download
               </Button>
@@ -221,6 +222,7 @@ const HistoryControls = () => {
                 }
                 disabled={fetchStatus !== 'idle'}
                 onClick={() => setScanIdToDelete(scan_id ?? '')}
+                data-testid="deleteScanButtonId"
               >
                 Delete
               </Button>
@@ -241,6 +243,7 @@ const HistoryControls = () => {
                       });
                       setShowCompareToScanSelectionModal(true);
                     }}
+                    data-testid="compareScanButtonId"
                   >
                     Compare scan
                   </Button>

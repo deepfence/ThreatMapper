@@ -1527,23 +1527,23 @@ const SecretTable = ({
           </DFLink>
         ),
         header: () => 'Name',
-        minSize: 80,
-        size: 100,
-        maxSize: 130,
+        minSize: 100,
+        size: 120,
+        maxSize: 150,
       }),
       columnHelper.accessor('full_filename', {
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => <TruncatedText text="File name" />,
         minSize: 100,
-        size: 110,
+        size: 120,
         maxSize: 140,
       }),
       columnHelper.accessor('matched_content', {
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => 'Matched content',
         minSize: 130,
-        size: 140,
-        maxSize: 165,
+        size: 150,
+        maxSize: 170,
       }),
       columnHelper.accessor('level', {
         cell: (info) => (
@@ -1556,20 +1556,9 @@ const SecretTable = ({
           </div>
         ),
         header: () => 'Severity',
-        minSize: 30,
-        size: 50,
-        maxSize: 70,
-      }),
-      columnHelper.accessor('resources', {
-        enableSorting: false,
-        enableResizing: true,
-        cell: (info) => {
-          return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
-        },
-        header: () => <TruncatedText text="Affected resources" />,
-        minSize: 100,
-        size: 120,
-        maxSize: 190,
+        minSize: 60,
+        size: 80,
+        maxSize: 100,
       }),
     ];
 
