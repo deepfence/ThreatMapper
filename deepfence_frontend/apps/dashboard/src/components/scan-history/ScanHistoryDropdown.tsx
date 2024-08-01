@@ -121,6 +121,7 @@ const DropdownContent = (
                 props.setOpen(false);
               }}
               className="flex items-center gap-1.5"
+              data-testid={`scanHistoryMenu-Scan-${scan.scanId}`}
             >
               <ScanStatusBadge
                 status={scan.status}
@@ -154,6 +155,7 @@ const DropdownContent = (
                   props.onScanDownloadClick(scan.scanId);
                   props.setOpen(false);
                 }}
+                data-testid="menuDownloadIconId"
               />
               <IconButton
                 variant="flat"
@@ -169,6 +171,7 @@ const DropdownContent = (
 
                   props.onScanDeleteClick(scan.scanId);
                 }}
+                data-testid="menuDeleteIconId"
               />
 
               <IconButton
@@ -188,6 +191,7 @@ const DropdownContent = (
                     createdAt: scan.createdAt,
                   });
                 }}
+                data-testid="menuCompareIconId"
               />
             </div>
           </div>
