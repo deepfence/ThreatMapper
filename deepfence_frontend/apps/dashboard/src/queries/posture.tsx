@@ -981,11 +981,11 @@ export const postureQueries = createQueryKeys('posture', {
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
-          base_scan_id: baseScanId,
-          to_scan_id: toScanId,
+          base_scan_id: toScanId,
+          to_scan_id: baseScanId,
           window: {
             offset: 0,
-            size: 99999,
+            size: Number.MAX_SAFE_INTEGER,
           },
         };
 
@@ -1003,11 +1003,11 @@ export const postureQueries = createQueryKeys('posture', {
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
-          base_scan_id: toScanId,
-          to_scan_id: baseScanId,
+          base_scan_id: baseScanId,
+          to_scan_id: toScanId,
           window: {
             offset: 0,
-            size: 99999,
+            size: Number.MAX_SAFE_INTEGER,
           },
         };
         const deletedScanPromise = compareScansApi({
