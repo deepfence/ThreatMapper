@@ -520,6 +520,12 @@ func GetScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeIDs []m
 	}
 	defer tx.Close(ctx)
 
+	var orderFilter string
+	if len(ff.OrderFilter.OrderFields) > 0 {
+		orderFilter = reporters.OrderFilter2CypherCondition("m", ff.OrderFilter, []string{"n"})
+	} else {
+		orderFilter = "WITH n,m ORDER BY m.updated_at"
+	}
 	var scansInfo []model.ScanInfo
 	var query string
 	var nodeIDsStr []string
@@ -535,14 +541,16 @@ func GetScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeIDs []m
 			WHERE n.node_id IN $node_ids
 			AND (` + strings.Join(nodeTypesStr, " OR ") + `)
 			` + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(ff), false) + `
+			` + orderFilter + `
 			RETURN m.node_id, m.status, m.status_message, m.created_at, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
-			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
+			` + fw.FetchWindow2CypherQuery()
 	} else {
 		query = `
 			MATCH (m:` + string(scanType) + `) -[:SCANNED]-> (n)
 			` + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(ff), true) + `
+			` + orderFilter + `
 			RETURN m.node_id, m.status, m.status_message, m.created_at, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
-			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
+			` + fw.FetchWindow2CypherQuery()
 	}
 	scansInfo, err = processScansListQuery(ctx, query, nodeIDsStr, tx)
 	if err != nil {
