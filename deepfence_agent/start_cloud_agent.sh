@@ -21,8 +21,13 @@ configure_cron() {
 
 launch_deepfenced() {
   # In k8s, if agent pod restarts these files are not cleared
-  rm -rf /var/log/fenced/* 2>/dev/null
+  rm -rf $DF_INSTALL_DIR/var/log/fenced/* 2>/dev/null
   configure_cron
+
+  mkdir -p $DF_INSTALL_DIR/var/log/fenced/api $DF_INSTALL_DIR/var/log/fenced/cloud-resource-refresh-log \
+    $DF_INSTALL_DIR/var/log/fenced/cloud-resources $DF_INSTALL_DIR/var/log/fenced/cloud-scanner \
+    $DF_INSTALL_DIR/var/log/fenced/cloud-scanner-log $DF_INSTALL_DIR/var/log/fenced/status 2>/dev/null
+  chown -R deepfence: $DF_INSTALL_DIR/var/log/fenced
 
   if [[ -z "${SCOPE_HOSTNAME}" ]]; then
     SCOPE_HOSTNAME="$(hostname)"
