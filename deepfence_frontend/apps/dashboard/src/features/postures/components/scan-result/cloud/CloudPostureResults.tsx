@@ -277,7 +277,11 @@ const CloudPostureTable = ({
   return (
     <Table
       size="default"
-      data={scanResultData?.data?.compliances ?? []}
+      data={
+        isScanComplete(statusResultData.status)
+          ? scanResultData?.data?.compliances ?? []
+          : []
+      }
       columns={columns}
       enableRowSelection
       rowSelectionState={rowSelectionState}

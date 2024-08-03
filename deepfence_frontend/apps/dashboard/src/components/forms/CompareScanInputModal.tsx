@@ -2,7 +2,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { Button, Checkbox, CircleSpinner, Modal } from 'ui-components';
 
 import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
-import { ISelected, ScanTimeList } from '@/components/forms/ScanTimeList';
+import { ScanTimeList } from '@/components/forms/ScanTimeList';
 import { ImageTagType, SearchableTagList } from '@/components/forms/SearchableTagList';
 import { useScanResults as malwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
 import { useScanResults as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
@@ -48,60 +48,42 @@ const Tags = ({
     />
   );
 };
-type ToScanDataType = {
-  toScanId: string;
-  toScanTime: number | null;
-};
 
 const InputForm = ({
   nodeId,
   nodeType,
   scanType,
-  compareInput,
   toScanData,
   setToScanData,
+  baseScanInfo,
 }: {
   nodeId: string;
   nodeType: string;
   scanType: string;
-  compareInput: {
-    baseScanId: string;
-    toScanId: string;
-    baseScanTime: number;
-    toScanTime: number;
+  baseScanInfo: {
+    scanId: string;
+    createdAt: number;
   };
-  toScanData: ToScanDataType;
-  setToScanData: React.Dispatch<React.SetStateAction<ToScanDataType>>;
+  toScanData: { scanId: string; createdAt: number } | null;
+  setToScanData: React.Dispatch<
+    React.SetStateAction<{ scanId: string; createdAt: number } | null>
+  >;
 }) => {
-  const [selectedTag, setSelectedTag] = useState<ImageTagType | null>({
-    nodeId,
-    nodeName: '',
-    tagList: [],
-  });
+  const [selectedTag, setSelectedTag] = useState<ImageTagType | null>(null);
   const [withOtherTags, setWithOtherTags] = useState<boolean>(false);
 
   // clear scan time when compare with other tags checkbox is checked
   useEffect(() => {
     if (withOtherTags) {
-      setSelectedTag({
-        nodeId: '',
-        nodeName: '',
-        tagList: [],
-      });
+      setSelectedTag(null);
     }
-    setToScanData({
-      toScanTime: null,
-      toScanId: '',
-    });
+    setToScanData(null);
   }, [withOtherTags]);
 
   // clear to scan time when tag is selected
   useEffect(() => {
     if (selectedTag) {
-      setToScanData({
-        toScanTime: null,
-        toScanId: '',
-      });
+      setToScanData(null);
     }
   }, [selectedTag]);
 
@@ -132,12 +114,12 @@ const InputForm = ({
         {withOtherTags ? (
           <ScanTimeList
             triggerVariant="underline"
-            defaultSelectedTime={toScanData.toScanTime ?? null}
+            defaultSelectedTime={toScanData?.createdAt ?? null}
             valueKey="nodeId"
-            onChange={(data: ISelected) => {
+            onChange={(data) => {
               setToScanData({
-                toScanTime: data.createdAt,
-                toScanId: data.scanId,
+                createdAt: data.createdAt,
+                scanId: data.scanId,
               });
             }}
             // node id should be selected tag nodeid
@@ -149,19 +131,19 @@ const InputForm = ({
         ) : (
           <ScanTimeList
             triggerVariant="underline"
-            defaultSelectedTime={toScanData.toScanTime ?? null}
+            defaultSelectedTime={toScanData?.createdAt ?? null}
             valueKey="nodeId"
-            onChange={(data: ISelected) => {
+            onChange={(data) => {
               setToScanData({
-                toScanTime: data.createdAt,
-                toScanId: data.scanId,
+                createdAt: data.createdAt,
+                scanId: data.scanId,
               });
             }}
             nodeId={nodeId}
             nodeType={nodeType}
             scanType={scanType as ScanTypeEnum}
             // skip scan time when base scan is same as to scan
-            skipScanTime={compareInput.baseScanTime}
+            skipScanTime={baseScanInfo.createdAt}
             noDataText="No scan to compare"
           />
         )}
@@ -172,52 +154,35 @@ const InputForm = ({
 export const CompareScanInputModal = ({
   showDialog,
   setShowDialog,
-  scanHistoryData,
-  setShowScanCompareModal,
-  setCompareInput,
   nodeId,
   nodeType,
   scanType,
-  compareInput,
+  baseScanInfo,
 }: {
   showDialog: boolean;
-  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  scanHistoryData: {
-    createdAt: number;
-    scanId: string;
-    status: string;
-  }[];
-  setShowScanCompareModal: React.Dispatch<React.SetStateAction<boolean>>;
-  setCompareInput: React.Dispatch<
-    React.SetStateAction<{
-      baseScanId: string;
-      toScanId: string;
-      baseScanTime: number;
-      toScanTime: number;
-      showScanTimeModal: boolean;
-    }>
-  >;
+  setShowDialog: (
+    open: boolean,
+    compareToScanInfo: { scanId: string; createdAt: number } | null,
+  ) => void;
   nodeId: string;
   nodeType: string;
   scanType: string;
-  compareInput: {
-    baseScanId: string;
-    toScanId: string;
-    baseScanTime: number;
-    toScanTime: number;
+  baseScanInfo: {
+    scanId: string;
+    createdAt: number;
   };
 }) => {
-  const [toScanData, setToScanData] = useState<ToScanDataType>({
-    toScanId: '',
-    toScanTime: null,
-  });
+  const [toScanData, setToScanData] = useState<{
+    scanId: string;
+    createdAt: number;
+  } | null>(null);
 
   return (
     <Modal
       size="s"
       open={showDialog}
-      onOpenChange={() => {
-        setShowDialog(false);
+      onOpenChange={(open) => {
+        setShowDialog(open, null);
       }}
       title="Select scan to compare"
       footer={
@@ -225,7 +190,7 @@ export const CompareScanInputModal = ({
           <Button
             size="md"
             onClick={() => {
-              setShowDialog(false);
+              setShowDialog(false, null);
             }}
             type="button"
             variant="outline"
@@ -235,20 +200,9 @@ export const CompareScanInputModal = ({
           <Button
             size="md"
             type="button"
-            disabled={!toScanData.toScanTime}
+            disabled={!toScanData}
             onClick={() => {
-              const baseScan = scanHistoryData.find((data) => {
-                return data.createdAt === compareInput.baseScanTime;
-              });
-              setCompareInput({
-                baseScanId: baseScan?.scanId ?? '',
-                toScanId: toScanData?.toScanId ?? '',
-                baseScanTime: baseScan?.createdAt ?? 0,
-                toScanTime: toScanData?.toScanTime ?? 0,
-                showScanTimeModal: false,
-              });
-              setShowDialog(false);
-              setShowScanCompareModal(true);
+              setShowDialog(false, toScanData);
             }}
           >
             Compare
@@ -261,7 +215,7 @@ export const CompareScanInputModal = ({
           nodeId={nodeId}
           nodeType={nodeType}
           scanType={scanType}
-          compareInput={compareInput}
+          baseScanInfo={baseScanInfo}
           setToScanData={setToScanData}
           toScanData={toScanData}
         />

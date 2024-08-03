@@ -11,6 +11,7 @@ import {
 import {
   CompletionCompletionNodeFieldReq,
   ModelNodeIdentifierNodeTypeEnum,
+  ModelScanInfoStatusEnum,
   ModelScanListReq,
 } from '@/api/generated';
 import { CloudNodeType, ScanTypeEnum } from '@/types/common';
@@ -27,10 +28,24 @@ export const commonQueries = createQueryKeys('common', {
     const { nodeId, nodeType, size, scanType } = filters;
     return {
       queryKey: [{ filters }],
-      queryFn: async ({ pageParam = 0 }) => {
+      queryFn: async ({
+        pageParam = 0,
+      }): Promise<
+        | { error: string; message: string }
+        | {
+            data: Array<{
+              createdAt: number;
+              scanId: string;
+              status: ModelScanInfoStatusEnum;
+              nodeName: string;
+            }>;
+            hasNextPage: boolean;
+          }
+      > => {
         if (!nodeId || !nodeType || !scanType) {
           return {
             data: [],
+            hasNextPage: false,
           };
         }
 
@@ -52,7 +67,14 @@ export const commonQueries = createQueryKeys('common', {
               filter_in: {},
             },
             match_filter: { filter_in: {} },
-            order_filter: { order_fields: [] },
+            order_filter: {
+              order_fields: [
+                {
+                  descending: true,
+                  field_name: 'created_at',
+                },
+              ],
+            },
             compare_filter: null,
           },
           node_ids: [
@@ -63,7 +85,7 @@ export const commonQueries = createQueryKeys('common', {
           ],
           window: {
             offset: pageParam,
-            size,
+            size: size + 1,
           },
         };
 
@@ -84,11 +106,12 @@ export const commonQueries = createQueryKeys('common', {
         if (!result.value.scans_info) {
           return {
             data: [],
+            hasNextPage: false,
           };
         }
 
         return {
-          data: (result.value.scans_info ?? []).slice(0, size)?.map((res) => {
+          data: (result.value.scans_info ?? []).slice(0, size).map((res) => {
             return {
               createdAt: res.created_at,
               scanId: res.scan_id,
@@ -96,6 +119,7 @@ export const commonQueries = createQueryKeys('common', {
               nodeName: res.node_name,
             };
           }),
+          hasNextPage: result.value.scans_info.length > size,
         };
       },
     };

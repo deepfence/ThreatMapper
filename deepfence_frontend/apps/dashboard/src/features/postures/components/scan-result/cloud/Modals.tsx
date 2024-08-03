@@ -15,17 +15,35 @@ export const DeleteScanConfirmationModal = ({
   open,
   onOpenChange,
   scanId,
+  nodeId,
+  nodeType,
 }: {
   scanId: string;
+  nodeId: string;
+  nodeType: string;
   open: boolean;
-  onOpenChange: (open: boolean, deleteSuccessful: boolean) => void;
+  onOpenChange: (
+    open: boolean,
+    status: {
+      success: boolean;
+      nextScanId: string | null;
+    },
+  ) => void;
 }) => {
-  const [deleteSuccessful, setDeleteSuccessful] = useState(false);
+  const [deleteStatus, setDeleteStatus] = useState<{
+    success: boolean;
+    nextScanId: string | null;
+  }>({
+    success: false,
+    nextScanId: null,
+  });
   const fetcher = useFetcher<ActionData>();
   const onDeleteScan = () => {
     const formData = new FormData();
     formData.append('actionType', ActionEnumType.DELETE_SCAN);
     formData.append('scanId', scanId);
+    formData.append('nodeId', nodeId);
+    formData.append('nodeType', nodeType);
     fetcher.submit(formData, {
       method: 'post',
     });
@@ -33,14 +51,19 @@ export const DeleteScanConfirmationModal = ({
 
   useEffect(() => {
     if (fetcher.data?.success) {
-      setDeleteSuccessful(true);
+      if (fetcher.data.action === ActionEnumType.DELETE_SCAN) {
+        setDeleteStatus({
+          success: true,
+          nextScanId: fetcher.data.nextScanId,
+        });
+      }
     }
   }, [fetcher]);
   return (
     <Modal
       open={open}
       onOpenChange={(open) => {
-        onOpenChange(open, deleteSuccessful);
+        onOpenChange(open, deleteStatus);
       }}
       size="s"
       title={
@@ -58,7 +81,7 @@ export const DeleteScanConfirmationModal = ({
           <div className={'flex gap-x-4 justify-end'}>
             <Button
               size="md"
-              onClick={() => onOpenChange(false, deleteSuccessful)}
+              onClick={() => onOpenChange(false, deleteStatus)}
               type="button"
               variant="outline"
             >
