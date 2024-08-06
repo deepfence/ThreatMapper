@@ -1,5 +1,9 @@
 package ingesters
 
+import (
+	"fmt"
+)
+
 type VulnerabilityScanStatus struct {
 	ScanID      string `json:"scan_id"`
 	ScanStatus  string `json:"scan_status"`
@@ -26,6 +30,7 @@ type Vulnerability struct {
 	ExploitabilityScore     int      `json:"exploitability_score"`
 	InitExploitabilityScore int      `json:"init_exploitability_score"`
 	HasLiveConnection       bool     `json:"has_live_connection"`
+	Namespace               string   `json:"namespace"`
 }
 
 type VulnerabilityRule struct {
@@ -41,6 +46,35 @@ type VulnerabilityRule struct {
 	URLs               []string `json:"urls"`
 	ExploitPOC         string   `json:"exploit_poc"`
 	ParsedAttackVector string   `json:"parsed_attack_vector"`
+	CISAKEV            bool     `json:"cisa_kev"`
+	EPSSScore          float64  `json:"epss_score"`
+	Namespace          string   `json:"namespace"`
+	NodeID             string   `json:"node_id"`
+}
+
+func (v VulnerabilityRule) ToMap() map[string]interface{} {
+	urls := []string{}
+	if v.URLs != nil {
+		urls = v.URLs
+	}
+	return map[string]interface{}{
+		"cve_id":               v.CveID,
+		"cve_type":             v.CveType,
+		"cve_severity":         v.CveSeverity,
+		"cve_fixed_in":         v.CveFixedIn,
+		"cve_link":             v.CveLink,
+		"cve_description":      v.CveDescription,
+		"cve_cvss_score":       v.CveCvssScore,
+		"cve_overall_score":    v.CveOverallScore,
+		"cve_attack_vector":    v.CveAttackVector,
+		"urls":                 urls,
+		"exploit_poc":          v.ExploitPOC,
+		"parsed_attack_vector": v.ParsedAttackVector,
+		"cisa_kev":             v.CISAKEV,
+		"epss_score":           v.EPSSScore,
+		"namespace":            v.Namespace,
+		"node_id":              v.NodeID,
+	}
 }
 
 type VulnerabilityData struct {
@@ -67,17 +101,8 @@ func (c Vulnerability) Split() (VulnerabilityData, VulnerabilityRule) {
 			InitExploitabilityScore: c.InitExploitabilityScore,
 			HasLiveConnection:       c.HasLiveConnection,
 		}, VulnerabilityRule{
-			CveID:              c.CveID,
-			CveType:            c.CveType,
-			CveSeverity:        c.CveSeverity,
-			CveFixedIn:         c.CveFixedIn,
-			CveLink:            c.CveLink,
-			CveDescription:     c.CveDescription,
-			CveCvssScore:       c.CveCvssScore,
-			CveOverallScore:    c.CveOverallScore,
-			CveAttackVector:    c.CveAttackVector,
-			URLs:               c.URLs,
-			ExploitPOC:         c.ExploitPOC,
-			ParsedAttackVector: c.ParsedAttackVector,
+			CveID:     c.CveID,
+			Namespace: c.Namespace,
+			NodeID:    fmt.Sprintf("%s-%s", c.CveID, c.Namespace),
 		}
 }
