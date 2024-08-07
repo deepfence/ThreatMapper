@@ -19,6 +19,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel/vulnerabilitydatabase"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
 	"github.com/glebarez/sqlite"
 	"github.com/minio/minio-go/v7"
@@ -30,9 +31,11 @@ const (
 	Version3 = "3"
 	Version5 = "5"
 
-	threatIntelDBFileName = "vulnerability.db"
-	sqliteWriteBatchSize  = 1
-	neo4jWriteBatchSize   = 5000
+	vulnerabilityDBFileName       = "vulnerability.db"
+	vulnerabilityMetadataFileName = "metadata.json"
+
+	sqliteWriteBatchSize = 1
+	neo4jWriteBatchSize  = 5000
 )
 
 const (
@@ -309,7 +312,7 @@ func IngestVulnerabilityRules(ctx context.Context, content []byte, builtDate tim
 			return err
 		}
 		defer os.RemoveAll(dbTmpDir)
-		dbFileName := path.Join(dbTmpDir, threatIntelDBFileName)
+		dbFileName := path.Join(dbTmpDir, vulnerabilityDBFileName)
 		tarFileName := fmt.Sprintf("vuln-db-%d.tar.gz", builtDate.Unix())
 		tarFilePath := path.Join(dbTmpDir, tarFileName)
 
@@ -319,13 +322,27 @@ func IngestVulnerabilityRules(ctx context.Context, content []byte, builtDate tim
 			return err
 		}
 
+		dbFileChecksum, err := utils.ComputeChecksumForFile(dbFileName)
+		if err != nil {
+			log.Error().Err(err).Msg("computing db file checksum failed")
+			return err
+		}
+
+		metadataFileName := path.Join(dbTmpDir, vulnerabilityMetadataFileName)
+		err = createVulnerabilityDBMetadataFile(vulnerabilityDBModel.IDModel,
+			fmt.Sprintf("sha256:%s", dbFileChecksum), builtDate, metadataFileName)
+		if err != nil {
+			log.Error().Err(err).Msg("creating vulnerability db metadata.json failed")
+			return err
+		}
+
 		err = ingestVulnerabilityRules(ctx, vulnerabilityDBModel)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return err
 		}
 
-		err = compressVulnerabilityDB(dbFileName, tarFilePath)
+		err = compressVulnerabilityDB([]string{dbFileName, metadataFileName}, tarFilePath)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			return err
@@ -350,6 +367,29 @@ func IngestVulnerabilityRules(ctx context.Context, content []byte, builtDate tim
 	}
 
 	return fileServerPath, checksum, err
+}
+
+func createVulnerabilityDBMetadataFile(metadataModel vulnerabilitydatabase.IDModel, dbFileChecksum string, builtDate time.Time, metadataFileName string) error {
+	f, err := os.OpenFile(metadataFileName, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	metadata := Database{
+		Built:    builtDate,
+		Version:  metadataModel.SchemaVersion,
+		Checksum: dbFileChecksum,
+	}
+
+	metadataJson, err := json.Marshal(metadata)
+	if err != nil {
+		return err
+	}
+	if _, err = f.Write(metadataJson); err != nil {
+		return err
+	}
+	return nil
 }
 
 func deepfenceRuleToSqliteDatabase(vulnerabilityDBModel vulnerabilitydatabase.VulnerabilityDBModel, dbFileName string) error {
@@ -531,7 +571,7 @@ func saveVulnerabilityRulesInNeo4j(ctx context.Context, vulnerabilityRules []map
 	return nil
 }
 
-func compressVulnerabilityDB(dbFileName string, tarFileName string) error {
+func compressVulnerabilityDB(fileNames []string, tarFileName string) error {
 	out, err := os.Create(tarFileName)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -539,7 +579,7 @@ func compressVulnerabilityDB(dbFileName string, tarFileName string) error {
 	}
 	defer out.Close()
 
-	err = createArchive([]string{dbFileName}, out)
+	err = createArchive(fileNames, out)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err

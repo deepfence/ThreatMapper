@@ -766,3 +766,19 @@ func ExtractTarGz(gzipStream io.Reader, targetPath string) error {
 
 	return nil
 }
+
+func ComputeChecksumForFile(filePath string) (string, error) {
+	log.Debug().Msgf("computing checksum for file: %s", filePath)
+	f, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", err
+	}
+	cs := fmt.Sprintf("%x", h.Sum(nil))
+	return cs, nil
+}
