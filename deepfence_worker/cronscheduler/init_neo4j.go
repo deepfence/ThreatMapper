@@ -97,6 +97,7 @@ func initNeo4jDatabase(ctx context.Context) error {
 
 	RunDisplayError(ctx, session, "MATCH (n:CloudNode) WHERE COALESCE(n.refresh_status, '') = '' AND n.cloud_provider in ['"+model.PostureProviderAWS+"','"+model.PostureProviderGCP+"','"+model.PostureProviderAzure+"'] SET n.refresh_status='"+utils.ScanStatusStarting+"', n.refresh_message=''")
 
+	RunDisplayError(ctx, session, "CREATE CONSTRAINT FOR (n:DeepfenceRule) REQUIRE n.node_id IS UNIQUE")
 	return nil
 }
 

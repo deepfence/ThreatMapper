@@ -407,6 +407,9 @@ type VulnerabilityRule struct {
 	UpdatedAt          int64         `json:"updated_at" required:"true"`
 	ParsedAttackVector string        `json:"parsed_attack_vector" required:"true"`
 	Resources          []BasicNode   `json:"resources" required:"false"`
+	CISAKEV            bool          `json:"cisa_kev" required:"false"`
+	EPSSScore          float64       `json:"epss_score" required:"false"`
+	Namespace          string        `json:"namespace" required:"false"`
 }
 
 func (VulnerabilityRule) NodeType() string {
