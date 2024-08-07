@@ -32,6 +32,7 @@ const (
 
 	threatIntelDBFileName = "vulnerability.db"
 	sqliteWriteBatchSize  = 1
+	neo4jWriteBatchSize   = 5000
 )
 
 const (
@@ -473,15 +474,16 @@ func ingestVulnerabilityRules(ctx context.Context, vulnerabilityDBModel vulnerab
 			CveAttackVector:    attackVector,
 			URLs:               urls,
 			ExploitPOC:         metasploitURL,
+			PackageName:        vulnerability.PackageName,
 			ParsedAttackVector: parsedAttackVector,
 			CISAKEV:            vulnerabilityMetadata.CISAKEV,
 			EPSSScore:          vulnerabilityMetadata.EPSSScore,
 			Namespace:          vulnerability.Namespace,
-			NodeID:             fmt.Sprintf("%s-%s", vulnerability.ID, vulnerability.Namespace),
 		}
+		vulnerabilityRule.SetNodeID()
 		vulnerabilityRules = append(vulnerabilityRules, vulnerabilityRule.ToMap())
 
-		if len(vulnerabilityRules) == 1000 {
+		if len(vulnerabilityRules) == neo4jWriteBatchSize {
 			_ = saveVulnerabilityRulesInNeo4j(ctx, vulnerabilityRules)
 			vulnerabilityRules = make([]map[string]interface{}, 0)
 		}

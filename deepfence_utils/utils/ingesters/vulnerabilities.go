@@ -45,6 +45,7 @@ type VulnerabilityRule struct {
 	CveAttackVector    string   `json:"cve_attack_vector"`
 	URLs               []string `json:"urls"`
 	ExploitPOC         string   `json:"exploit_poc"`
+	PackageName        string   `json:"package_name"`
 	ParsedAttackVector string   `json:"parsed_attack_vector"`
 	CISAKEV            bool     `json:"cisa_kev"`
 	EPSSScore          float64  `json:"epss_score"`
@@ -52,7 +53,11 @@ type VulnerabilityRule struct {
 	NodeID             string   `json:"node_id"`
 }
 
-func (v VulnerabilityRule) ToMap() map[string]interface{} {
+func (v *VulnerabilityRule) SetNodeID() {
+	v.NodeID = fmt.Sprintf("%s-%s", v.CveID, v.Namespace)
+}
+
+func (v *VulnerabilityRule) ToMap() map[string]interface{} {
 	urls := []string{}
 	if v.URLs != nil {
 		urls = v.URLs
@@ -69,6 +74,7 @@ func (v VulnerabilityRule) ToMap() map[string]interface{} {
 		"cve_attack_vector":    v.CveAttackVector,
 		"urls":                 urls,
 		"exploit_poc":          v.ExploitPOC,
+		"package_name":         v.PackageName,
 		"parsed_attack_vector": v.ParsedAttackVector,
 		"cisa_kev":             v.CISAKEV,
 		"epss_score":           v.EPSSScore,
@@ -90,19 +96,22 @@ type VulnerabilityData struct {
 }
 
 func (c Vulnerability) Split() (VulnerabilityData, VulnerabilityRule) {
-	return VulnerabilityData{
-			CveID:                   c.CveID,
-			CveSeverity:             c.CveSeverity,
-			CveCausedByPackage:      c.CveCausedByPackage,
-			CveCausedByPackagePath:  c.CveCausedByPackagePath,
-			CveContainerLayer:       c.CveContainerLayer,
-			CveLink:                 c.CveLink,
-			ExploitabilityScore:     c.ExploitabilityScore,
-			InitExploitabilityScore: c.InitExploitabilityScore,
-			HasLiveConnection:       c.HasLiveConnection,
-		}, VulnerabilityRule{
-			CveID:     c.CveID,
-			Namespace: c.Namespace,
-			NodeID:    fmt.Sprintf("%s-%s", c.CveID, c.Namespace),
-		}
+	vuln := VulnerabilityData{
+		CveID:                   c.CveID,
+		CveSeverity:             c.CveSeverity,
+		CveCausedByPackage:      c.CveCausedByPackage,
+		CveCausedByPackagePath:  c.CveCausedByPackagePath,
+		CveContainerLayer:       c.CveContainerLayer,
+		CveLink:                 c.CveLink,
+		ExploitabilityScore:     c.ExploitabilityScore,
+		InitExploitabilityScore: c.InitExploitabilityScore,
+		HasLiveConnection:       c.HasLiveConnection,
+	}
+	vulnRule := VulnerabilityRule{
+		CveID:       c.CveID,
+		Namespace:   c.Namespace,
+		PackageName: c.CveCausedByPackage,
+	}
+	vulnRule.SetNodeID()
+	return vuln, vulnRule
 }

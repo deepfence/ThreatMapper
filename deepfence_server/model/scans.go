@@ -405,6 +405,7 @@ type VulnerabilityRule struct {
 	ExploitPOC         string        `json:"exploit_poc" required:"true"`
 	Masked             bool          `json:"masked" required:"true"`
 	UpdatedAt          int64         `json:"updated_at" required:"true"`
+	PackageName        string        `json:"package_name"`
 	ParsedAttackVector string        `json:"parsed_attack_vector" required:"true"`
 	Resources          []BasicNode   `json:"resources" required:"false"`
 	CISAKEV            bool          `json:"cisa_kev" required:"false"`
