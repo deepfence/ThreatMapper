@@ -41,9 +41,8 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 	log.Debug().Msgf("Committing %d vulnerabilities", len(dataMap))
 
 	if _, err = tx.Run(ctx, `
-		UNWIND $batch as row WITH row.rule as rule, row.data as data, 
-		row.scan_id as scan_id, row.node_id as node_id
-		MATCH (v:VulnerabilityStub{node_id:rule.node_id})
+		UNWIND $batch as row WITH row.data as data, row.scan_id as scan_id, row.node_id as node_id
+		MATCH (v:VulnerabilityStub{node_id:data.cve_id})
 		MERGE (n:Vulnerability{node_id:node_id})
 		MERGE (n) -[:IS]-> (v)
 		SET n += data,
@@ -64,13 +63,12 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 func CVEsToMaps(ms []ingestersUtil.Vulnerability) ([]map[string]interface{}, error) {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
-		data, rule := v.Split()
+		data := v.GetVulnerabilityData()
 
 		res = append(res, map[string]interface{}{
-			"rule":    utils.ToMap(rule),
 			"data":    utils.ToMap(data),
 			"scan_id": v.ScanID,
-			"node_id": strings.Join([]string{data.CveCausedByPackagePath + data.CveCausedByPackage + rule.CveID}, "_"),
+			"node_id": strings.Join([]string{data.CveCausedByPackagePath + data.CveCausedByPackage + data.CveID}, "_"),
 		})
 	}
 	return res, nil
