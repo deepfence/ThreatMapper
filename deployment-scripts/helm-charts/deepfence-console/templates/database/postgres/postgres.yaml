@@ -30,6 +30,9 @@ spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.postgres.podSecurityContext | nindent 8 }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }} 
+      {{- end }}
       containers:
         - name: postgres
           securityContext:

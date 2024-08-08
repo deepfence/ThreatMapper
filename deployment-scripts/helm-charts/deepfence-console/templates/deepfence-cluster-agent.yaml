@@ -26,6 +26,9 @@ spec:
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       automountServiceAccountToken: true
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }} 
+      {{- end }}
       containers:
         - name: deepfence-cluster-agent
           image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.console_agents.cluster_agent.image.repository }}:{{ default .Values.global.imageTag .Values.console_agents.cluster_agent.image.tag }}"

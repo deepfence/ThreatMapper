@@ -5,6 +5,9 @@
 nameOverride: ""
 fullnameOverride: ""
 
+# priorityClassName for pods
+priorityClassName: ""
+
 # Add labels to all the deployed resources
 commonLabels: {}
 

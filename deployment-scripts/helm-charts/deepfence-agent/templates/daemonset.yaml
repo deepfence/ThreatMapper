@@ -21,12 +21,12 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- if .Values.priorityClassName }}
-      priorityClassName: {{ .Values.priorityClassName | quote }}
-      {{- end }}
       hostPID: true
       hostNetwork: true
       serviceAccountName: {{ include "deepfence-agent.serviceAccountName" . }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }} 
+      {{- end }}
       dnsPolicy: ClusterFirstWithHostNet
       volumes:
         {{- if .Values.mountContainerRuntimeSocket.dockerSock }}
