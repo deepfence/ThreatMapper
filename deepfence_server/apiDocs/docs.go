@@ -36,6 +36,7 @@ const (
 	tagSettings          = "Settings"
 	tagDiffAdd           = "Diff Add"
 	tagCompletion        = "Completion"
+	tagNotification      = "Notification"
 
 	securityName = "bearer_token"
 )
