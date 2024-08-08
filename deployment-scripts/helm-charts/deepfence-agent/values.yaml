@@ -96,6 +96,7 @@ instanceIdSuffix: "N"
 # comma separated list of tags (labels) to set for all agents
 userDefinedTags: ""
 
+# priorityClassName for pods
 priorityClassName: ""
 
 enableGraphReport: true

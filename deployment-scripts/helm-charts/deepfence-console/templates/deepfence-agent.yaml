@@ -26,6 +26,9 @@ spec:
       hostNetwork: true
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       automountServiceAccountToken: true
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }} 
+      {{- end }}
       dnsPolicy: ClusterFirstWithHostNet
       volumes:
         {{- if .Values.console_agents.mountContainerRuntimeSocket.dockerSock }}
