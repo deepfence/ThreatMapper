@@ -43,13 +43,10 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row WITH row.rule as rule, row.data as data, 
 		row.scan_id as scan_id, row.node_id as node_id
-		MERGE (v:VulnerabilityStub{node_id:rule.node_id})
+		MATCH (v:VulnerabilityStub{node_id:rule.node_id})
 		MERGE (n:Vulnerability{node_id:node_id})
 		MERGE (n) -[:IS]-> (v)
-		SET v += rule,
-		    v.masked = COALESCE(v.masked, false),
-		    v.updated_at = TIMESTAMP(),
-		    n += data,
+		SET n += data,
 		    n.masked = COALESCE(n.masked, v.masked, false),
 		    n.updated_at = TIMESTAMP()
 		WITH n, scan_id
