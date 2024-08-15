@@ -391,26 +391,26 @@ func (Vulnerability) GetJSONCategory() string {
 }
 
 type VulnerabilityRule struct {
-	NodeID             string        `json:"node_id" required:"true"`
-	CveID              string        `json:"cve_id" required:"true"`
-	CveType            []interface{} `json:"cve_type" required:"true"`
-	CveSeverity        []interface{} `json:"cve_severity" required:"true"`
-	CveFixedIn         []interface{} `json:"cve_fixed_in" required:"true"`
-	CveLink            []interface{} `json:"cve_link" required:"true"`
-	CveDescription     []interface{} `json:"cve_description" required:"true"`
-	CveCvssScore       []interface{} `json:"cve_cvss_score" required:"true"`
-	CveOverallScore    []interface{} `json:"cve_overall_score" required:"true"`
-	CveAttackVector    []interface{} `json:"cve_attack_vector" required:"true"`
-	URLs               []interface{} `json:"urls" required:"true"`
-	ExploitPOC         []interface{} `json:"exploit_poc" required:"true"`
-	Masked             bool          `json:"masked" required:"true"`
-	UpdatedAt          int64         `json:"updated_at" required:"true"`
-	PackageName        []interface{} `json:"package_name" required:"true"`
-	ParsedAttackVector []interface{} `json:"parsed_attack_vector" required:"true"`
-	Resources          []BasicNode   `json:"resources" required:"false"`
-	CISAKEV            bool          `json:"cisa_kev" required:"true"`
-	EPSSScore          float64       `json:"epss_score" required:"true"`
-	Namespace          []interface{} `json:"namespace" required:"true"`
+	NodeID             string      `json:"node_id" required:"true"`
+	CveID              string      `json:"cve_id" required:"true"`
+	CveType            []string    `json:"cve_type" required:"true"`
+	CveSeverity        []string    `json:"cve_severity" required:"true"`
+	CveFixedIn         []string    `json:"cve_fixed_in" required:"true"`
+	CveLink            []string    `json:"cve_link" required:"true"`
+	CveDescription     []string    `json:"cve_description" required:"true"`
+	CveCvssScore       []float64   `json:"cve_cvss_score" required:"true"`
+	CveOverallScore    []float64   `json:"cve_overall_score" required:"true"`
+	CveAttackVector    []string    `json:"cve_attack_vector" required:"true"`
+	URLs               []string    `json:"urls" required:"true"`
+	ExploitPOC         []string    `json:"exploit_poc" required:"true"`
+	Masked             bool        `json:"masked" required:"true"`
+	UpdatedAt          int64       `json:"updated_at" required:"true"`
+	PackageName        []string    `json:"package_name" required:"true"`
+	ParsedAttackVector []string    `json:"parsed_attack_vector" required:"true"`
+	Resources          []BasicNode `json:"resources" required:"false"`
+	CISAKEV            bool        `json:"cisa_kev" required:"true"`
+	EPSSScore          float64     `json:"epss_score" required:"true"`
+	Namespace          []string    `json:"namespace" required:"true"`
 }
 
 func (VulnerabilityRule) NodeType() string {
@@ -423,7 +423,7 @@ func (VulnerabilityRule) ExtendedField() string {
 
 func (v VulnerabilityRule) GetCategory() string {
 	if len(v.CveSeverity) > 0 {
-		return v.CveSeverity[0].(string)
+		return v.CveSeverity[0]
 	}
 	return ""
 }
