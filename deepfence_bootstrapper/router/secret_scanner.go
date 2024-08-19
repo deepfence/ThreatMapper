@@ -15,6 +15,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	dfUtils "github.com/deepfence/df-utils"
 )
@@ -160,7 +161,7 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 	for _, infile := range []string{
 		filepath.Join(rulesPath, "df-secret.json"),
 	} {
-		err = ExtractDFRules2NativeRules(infile, rulesPath)
+		err = threatintel.ExtractDFRules2NativeRules(infile, rulesPath)
 		if err != nil {
 			return err
 		}
