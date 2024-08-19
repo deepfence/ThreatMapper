@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 
 	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	"google.golang.org/grpc"
@@ -126,7 +127,8 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 	}
 
 	newRules := "new_secret_rules.tar.gz"
-	rulesPath := path.Join(dfUtils.GetDfInstallDir(), "/home/deepfence/bin/secret-scanner/rules")
+	rulesPkgPath := path.Join(dfUtils.GetDfInstallDir(), "/home/deepfence/bin/secret-scanner")
+	rulesPath := path.Join(rulesPkgPath, "rules")
 
 	if err := downloadFile(newRules, req.SecretsRulesURL); err != nil {
 		log.Error().Err(err).Msg("failed to download secrets rules")
@@ -150,9 +152,18 @@ func UpdateSecretsRules(req ctl.ThreatIntelInfo) error {
 		return err
 	}
 
-	if err := utils.ExtractTarGz(bytes.NewReader(data), rulesPath); err != nil {
+	if err := utils.ExtractTarGz(bytes.NewReader(data), rulesPkgPath); err != nil {
 		log.Error().Err(err).Msg("failed to extract rules")
 		return err
+	}
+
+	for _, infile := range []string{
+		filepath.Join(rulesPath, "df-secret.json"),
+	} {
+		err = ExtractDFRules2NativeRules(infile, rulesPath)
+		if err != nil {
+			return err
+		}
 	}
 
 	log.Info().Msg("secrets rules updated starting secret scanner")
