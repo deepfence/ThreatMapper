@@ -578,8 +578,9 @@ func saveVulnerabilityRulesInNeo4j(ctx context.Context, vulnerabilityRules []map
 
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as rule
-		MERGE (v:VulnerabilityStub{node_id:rule.cve_id})
+		MERGE (v:VulnerabilityStub:DeepfenceRule{node_id:rule.cve_id})
 		SET v += rule,
+			v.type = "vulnerability",
 		    v.masked = COALESCE(v.masked, false),
 		    v.updated_at = TIMESTAMP()`,
 		map[string]interface{}{"batch": vulnerabilityRules}); err != nil {
