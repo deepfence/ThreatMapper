@@ -67,7 +67,7 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 		data["cve_attack_vector"] = cve_attack_vectors[0]
 		data["cve_fixed_in"] = cve_fixed_ins[0]
 		for j := range package_names {
-			if data["package_name"].(string) == package_names[j].(string) {
+			if data["cve_caused_by_package"].(string) == package_names[j].(string) {
 				if data["namespace"].(string) == namespaces[j].(string) {
 					data["cve_type"] = cve_types[j]
 					data["cve_attack_vector"] = cve_attack_vectors[j]
