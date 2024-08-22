@@ -353,7 +353,7 @@ func (SecretRule) GetJSONCategory() string {
 type Vulnerability struct {
 	NodeID                 string      `json:"node_id" required:"true"`
 	CveID                  string      `json:"cve_id" required:"true"`
-	CveSeverity            []string    `json:"cve_severity" ` // validate:"required,oneof=critical high medium low unknown" required:"true" enum:"critical,high,medium,low,unknown"
+	CveSeverity            string      `json:"cve_severity" validate:"required,oneof=critical high medium low unknown" required:"true" enum:"critical,high,medium,low,unknown"`
 	CveCausedByPackage     string      `json:"cve_caused_by_package" required:"true"`
 	CveCausedByPackagePath string      `json:"cve_caused_by_package_path" required:"true"`
 	CveContainerLayer      string      `json:"cve_container_layer" required:"true"`
@@ -361,17 +361,18 @@ type Vulnerability struct {
 	Masked                 bool        `json:"masked" required:"true"`
 	UpdatedAt              int64       `json:"updated_at" required:"true"`
 	HasLiveConnection      bool        `json:"has_live_connection" required:"true"`
-	CveType                []string    `json:"cve_type" required:"true"`
-	CveFixedIn             []string    `json:"cve_fixed_in" required:"true"`
-	CveDescription         []string    `json:"cve_description" required:"true"`
-	CveCVSSScore           []float64   `json:"cve_cvss_score" required:"true"`
-	CveOverallScore        []float64   `json:"cve_overall_score" required:"true"`
-	CveAttackVector        []string    `json:"cve_attack_vector" required:"true"`
-	URLs                   []string    `json:"urls" required:"true"`
-	ExploitPOC             []string    `json:"exploit_poc" required:"true"`
-	ParsedAttackVector     []string    `json:"parsed_attack_vector" required:"true"`
+	CveType                string      `json:"cve_type" required:"true"`
+	CveFixedIn             string      `json:"cve_fixed_in" required:"true"`
+	CveDescription         string      `json:"cve_description" required:"true"`
+	CveCVSSScore           float64     `json:"cve_cvss_score" required:"true"`
+	CveOverallScore        float64     `json:"cve_overall_score" required:"true"`
+	CveAttackVector        string      `json:"cve_attack_vector" required:"true"`
+	URL                    string      `json:"url" required:"true"`
+	ExploitPOC             string      `json:"exploit_poc" required:"true"`
+	ParsedAttackVector     string      `json:"parsed_attack_vector" required:"true"`
 	Resources              []BasicNode `json:"resources" required:"false"`
 	RuleID                 string      `json:"rule_id" required:"true"`
+	Namespace              string      `json:"namespace" required:"true"`
 }
 
 func (Vulnerability) NodeType() string {
@@ -383,10 +384,7 @@ func (Vulnerability) ExtendedField() string {
 }
 
 func (v Vulnerability) GetCategory() string {
-	if len(v.CveSeverity) != 0 {
-		return v.CveSeverity[0]
-	}
-	return ""
+	return v.CveSeverity
 }
 
 func (Vulnerability) GetJSONCategory() string {
@@ -396,7 +394,7 @@ func (Vulnerability) GetJSONCategory() string {
 type VulnerabilityRule struct {
 	NodeID             string      `json:"node_id" required:"true"`
 	CveID              string      `json:"cve_id" required:"true"`
-	CveType            []string    `json:"cve_type" required:"true"`
+	CveTypes           []string    `json:"cve_type" required:"true"`
 	CveSeverity        []string    `json:"cve_severity" required:"true"`
 	CveFixedIn         []string    `json:"cve_fixed_in" required:"true"`
 	CveLink            []string    `json:"cve_link" required:"true"`

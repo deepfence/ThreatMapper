@@ -513,26 +513,26 @@ func ingestVulnerabilityRules(ctx context.Context, vulnerabilityDBModel vulnerab
 		}
 
 		// Ordered insert
-		vulnerabilityRule.Namespace = append(vulnerabilityRule.Namespace, vulnerability.Namespace)
-		vulnerabilityRule.PackageName = append(vulnerabilityRule.PackageName, vulnerability.PackageName)
-		vulnerabilityRule.CveType = append(vulnerabilityRule.CveType, cveType)
-		vulnerabilityRule.CveSeverity = append(vulnerabilityRule.CveSeverity, strings.ToLower(vulnerabilityMetadata.Severity))
-		vulnerabilityRule.CveFixedIn = append(vulnerabilityRule.CveFixedIn, cveFixedInVersion)
-		vulnerabilityRule.CveDescription = append(vulnerabilityRule.CveDescription, vulnerabilityMetadata.Description)
-		vulnerabilityRule.CveCvssScore = append(vulnerabilityRule.CveCvssScore, cvssScore)
-		vulnerabilityRule.CveOverallScore = append(vulnerabilityRule.CveOverallScore, overallScore)
-		vulnerabilityRule.CveAttackVector = append(vulnerabilityRule.CveAttackVector, attackVector)
-		vulnerabilityRule.ParsedAttackVector = append(vulnerabilityRule.ParsedAttackVector, parsedAttackVector)
+		vulnerabilityRule.Namespaces = append(vulnerabilityRule.Namespaces, vulnerability.Namespace)
+		vulnerabilityRule.PackageNames = append(vulnerabilityRule.PackageNames, vulnerability.PackageName)
+		vulnerabilityRule.CveTypes = append(vulnerabilityRule.CveTypes, cveType)
+		vulnerabilityRule.CveSeverities = append(vulnerabilityRule.CveSeverities, strings.ToLower(vulnerabilityMetadata.Severity))
+		vulnerabilityRule.CveFixedIns = append(vulnerabilityRule.CveFixedIns, cveFixedInVersion)
+		vulnerabilityRule.CveDescriptions = append(vulnerabilityRule.CveDescriptions, vulnerabilityMetadata.Description)
+		vulnerabilityRule.CveCvssScores = append(vulnerabilityRule.CveCvssScores, cvssScore)
+		vulnerabilityRule.CveOverallScores = append(vulnerabilityRule.CveOverallScores, overallScore)
+		vulnerabilityRule.CveAttackVectors = append(vulnerabilityRule.CveAttackVectors, attackVector)
+		vulnerabilityRule.ParsedAttackVectors = append(vulnerabilityRule.ParsedAttackVectors, parsedAttackVector)
 
 		// Common fields
 		if vulnerabilityMetadata.DataSource != "" {
-			if !utils.InSlice(vulnerabilityMetadata.DataSource, vulnerabilityRule.CveLink) {
-				vulnerabilityRule.CveLink = append(vulnerabilityRule.CveLink, vulnerabilityMetadata.DataSource)
+			if !utils.InSlice(vulnerabilityMetadata.DataSource, vulnerabilityRule.CveLinks) {
+				vulnerabilityRule.CveLinks = append(vulnerabilityRule.CveLinks, vulnerabilityMetadata.DataSource)
 			}
 		}
 		if metasploitURL != "" {
-			if !utils.InSlice(metasploitURL, vulnerabilityRule.ExploitPOC) {
-				vulnerabilityRule.ExploitPOC = append(vulnerabilityRule.ExploitPOC, metasploitURL)
+			if !utils.InSlice(metasploitURL, vulnerabilityRule.ExploitPOCs) {
+				vulnerabilityRule.ExploitPOCs = append(vulnerabilityRule.ExploitPOCs, metasploitURL)
 			}
 		}
 		for _, url := range urls {

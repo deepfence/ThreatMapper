@@ -72,6 +72,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/Microsoft/hcsshim v0.12.4 // indirect
 	github.com/PagerDuty/go-pagerduty v1.7.0 // indirect
+	github.com/VirusTotal/gyp v0.9.0 // indirect
 	github.com/XSAM/otelsql v0.31.0 // indirect
 	github.com/acobaugh/osrelease v0.1.0 // indirect
 	github.com/anchore/go-logger v0.0.0-20230725134548-c21dafa1ec5a // indirect
