@@ -39,6 +39,8 @@ import (
 const (
 	MaxSbomRequestSize      = 500 * 1e6
 	DownloadReportURLExpiry = 5 * time.Minute
+	actionMask              = "mask"
+	actionUnMask            = "unmask"
 )
 
 var (
@@ -2483,4 +2485,38 @@ func UpdateRulesMasked(ctx context.Context, req model.RulesActionRequest, value 
 		return err
 	}
 	return tx.Commit(ctx)
+}
+
+func (h *Handler) RulesMaskHandler(w http.ResponseWriter, r *http.Request) {
+	h.rulesActionHandler(w, r, actionMask)
+}
+
+func (h *Handler) RulesUnMaskHandler(w http.ResponseWriter, r *http.Request) {
+	h.rulesActionHandler(w, r, actionUnMask)
+}
+
+func (h *Handler) rulesActionHandler(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.RulesActionRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+	switch action {
+	case actionMask:
+		err = UpdateRulesMasked(r.Context(), req, true)
+	case actionUnMask:
+		err = UpdateRulesMasked(r.Context(), req, false)
+	}
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
