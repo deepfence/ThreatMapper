@@ -331,6 +331,9 @@ type SecretRule struct {
 	SignatureToMatch string `json:"signature_to_match"`
 	Level            string `json:"level" required:"true"`
 	Masked           bool   `json:"masked" required:"true"`
+	Summary          string `json:"summary" required:"true"`
+	Payload          string `json:"payload" required:"true"`
+	Severity         string `json:"severity" required:"true"`
 	UpdatedAt        int64  `json:"updated_at" required:"true"`
 }
 
@@ -484,6 +487,9 @@ type MalwareRule struct {
 	Reference    string `json:"reference"`
 	FileSeverity string `json:"file_severity"`
 	Masked       bool   `json:"masked" required:"true"`
+	Payload      string `json:"payload" required:"true"`
+	Severity     string `json:"severity" required:"true"`
+	Summary      string `json:"summary" required:"true"`
 	UpdatedAt    int64  `json:"updated_at" required:"true"`
 }
 

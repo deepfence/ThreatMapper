@@ -129,3 +129,49 @@ func (h *Handler) GetCloudCompliances(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetCloudComplianceControl(w http.ResponseWriter, r *http.Request) {
 	getGeneric[model.CloudComplianceControl](h, w, r, reporters_lookup.GetCloudComplianceControl)
 }
+
+func (h *Handler) GetMalwareRules(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters_lookup.LookupFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
+	}
+
+	hosts, err := reporters_lookup.GetMalwareRulesReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) GetSecretRules(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters_lookup.LookupFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
+	}
+
+	hosts, err := reporters_lookup.GetSecretRulesReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}

@@ -20,9 +20,11 @@ type Artefact struct {
 }
 
 type DeepfenceRule struct {
-	RuleID  string `json:"rule_id"`
-	Type    string `json:"type"`
-	Payload string `json:"payload"`
+	RuleID      string `json:"rule_id"`
+	Type        string `json:"type"`
+	Payload     string `json:"payload"`
+	Severity    string `json:"severity"`
+	Description string `json:"description"`
 }
 
 type TracerFeeds struct {

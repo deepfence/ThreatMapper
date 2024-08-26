@@ -180,6 +180,14 @@ func (d *OpenAPIDocs) AddLookupOperations() {
 	d.AddOperation("getComplianceControls", http.MethodPost, "/deepfence/lookup/compliance-controls",
 		"Retrieve Cloud Compliances Control data", "Retrieve all the data associated with cloud compliance controls",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]CloudComplianceControl))
+
+	d.AddOperation("getMalwareRules", http.MethodPost, "/deepfence/lookup/malware-rules",
+		"Get Malware Rules", "Retrieve malware rule resources",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]MalwareRule))
+
+	d.AddOperation("getSecretRules", http.MethodPost, "/deepfence/lookup/secret-rules",
+		"Get Secret Rules", "Retrieve secret rule resources",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]SecretRule))
 }
 
 func (d *OpenAPIDocs) AddSearchOperations() {
@@ -638,6 +646,14 @@ func (d *OpenAPIDocs) AddScansOperations() {
 	d.AddOperation("notifyScanResult", http.MethodPost, "/deepfence/scan/results/action/notify",
 		"Notify Scans Results", "Notify scan results in connected integration channels",
 		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsActionRequest), nil)
+
+	//Rules operations
+	d.AddOperation("unmaskRules", http.MethodPost, "/deepfence/rules/action/unmask",
+		"Unmask Rules", "Unmask rules",
+		http.StatusNoContent, []string{tagRules}, bearerToken, new(RulesActionRequest), nil)
+	d.AddOperation("maskRules", http.MethodPost, "/deepfence/rules/action/mask",
+		"mask Rules", "mask rules",
+		http.StatusNoContent, []string{tagRules}, bearerToken, new(RulesActionRequest), nil)
 
 	// Bulk Delete Scans
 	d.AddOperation("bulkDeleteScans", http.MethodPost, "/deepfence/scans/bulk/delete",

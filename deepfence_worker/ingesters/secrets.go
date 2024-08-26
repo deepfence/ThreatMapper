@@ -13,7 +13,7 @@ import (
 )
 
 func generateSecretRuleId(r map[string]interface{}) string {
-	return generateHashFromString(r["name"].(string))
+	return fmt.Sprintf("secret-%s", r["rule_name"].(string))
 }
 
 func CommitFuncSecrets(ctx context.Context, ns string, data []ingestersUtil.Secret) error {
@@ -43,13 +43,10 @@ func CommitFuncSecrets(ctx context.Context, ns string, data []ingestersUtil.Secr
 
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret
-		MERGE (r:SecretRule{rule_id:rule.rule_id})
-		SET r+=rule,
-		    r.masked = COALESCE(r.masked, false),
-		    r.updated_at = TIMESTAMP()
+		MATCH (r:SecretRule{rule_id:rule.rule_id})
 		WITH secret as row, r
 		MERGE (n:Secret{node_id:row.node_id})
-		SET n+= row, 
+		SET n+= row,
 			n.masked = COALESCE(n.masked, r.masked, false),
 			n.updated_at = TIMESTAMP()
 		WITH n, r, row

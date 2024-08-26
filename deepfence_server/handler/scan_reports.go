@@ -2460,3 +2460,27 @@ func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, 
 	}
 	return scanIDs, bulkID, nil
 }
+
+func UpdateRulesMasked(ctx context.Context, req model.RulesActionRequest, value bool) error {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close(ctx)
+
+	_, err = tx.Run(ctx, `
+		MATCH (n:DeepfenceRule)
+		WHERE n.rule_id IN $rule_ids
+		SET n.masked = $value`, map[string]interface{}{"rule_ids": req.RulesIDs, "value": value})
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
