@@ -435,3 +435,7 @@ func (CloudNode) ExtendedField() string {
 func (cr CloudNode) id() string {
 	return cr.ID
 }
+
+type RulesActionRequest struct {
+	RulesIDs []string `json:"rule_ids" validate:"required,gt=0,dive,min=1" required:"true"`
+}

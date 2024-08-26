@@ -81,6 +81,8 @@ github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5/go.mod h1:lmUJ/7eu/Q8
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PagerDuty/go-pagerduty v1.7.0 h1:S1NcMKECxT5hJwV4VT+QzeSsSiv4oWl1s2821dUqG/8=
 github.com/PagerDuty/go-pagerduty v1.7.0/go.mod h1:PuFyJKRz1liIAH4h5KVXVD18Obpp1ZXRdxHvmGXooro=
+github.com/VirusTotal/gyp v0.9.0 h1:jhOBl93jfStmAcKLa/EcTmdPng5bn5kvJJZqQqJ5R4g=
+github.com/VirusTotal/gyp v0.9.0/go.mod h1:nmcW15dQ1657PmMcG9X/EZmp6rTQsyo9g8r6Cz1/AHc=
 github.com/XSAM/otelsql v0.31.0 h1:AcWI+/BW4ANKyAybZmU9g9kjjSIcDEOFw96ybyM4cDo=
 github.com/XSAM/otelsql v0.31.0/go.mod h1:iCkLyB/me+QC4yjymXjLimJiX0oklymiKeGxeGDTW24=
 github.com/acobaugh/osrelease v0.1.0 h1:Yb59HQDGGNhCj4suHaFQQfBps5wyoKLSSX/J/+UifRE=

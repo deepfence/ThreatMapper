@@ -259,6 +259,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/compliances", dfHandler.GetCompliances)
 				r.Post("/cloud-compliances", dfHandler.GetCloudCompliances)
 				r.Post("/compliance-controls", dfHandler.GetCloudComplianceControl)
+				r.Post("/secret-rules", dfHandler.GetSecretRules)
+				r.Post("/malware-rules", dfHandler.GetMalwareRules)
 			})
 
 			r.Route("/complete", func(r chi.Router) {
@@ -455,6 +457,13 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/unmask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.ScanResultUnmaskHandler))
 				r.Patch("/delete", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanResultDeleteHandler))
 				r.Post("/notify", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultNotifyHandler))
+			})
+
+			r.Route("/rules", func(r chi.Router) {
+				r.Route("/action", func(r chi.Router) {
+					r.Post("/mask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.RulesMaskHandler))
+					r.Post("/unmask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.RulesUnMaskHandler))
+				})
 			})
 
 			r.Post("/scans/bulk/delete", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.BulkDeleteScans))

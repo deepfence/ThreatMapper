@@ -39,6 +39,8 @@ import (
 const (
 	MaxSbomRequestSize      = 500 * 1e6
 	DownloadReportURLExpiry = 5 * time.Minute
+	actionMask              = "mask"
+	actionUnMask            = "unmask"
 )
 
 var (
@@ -2459,4 +2461,62 @@ func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, 
 		scanIDs = append(scanIDs, scanID)
 	}
 	return scanIDs, bulkID, nil
+}
+
+func UpdateRulesMasked(ctx context.Context, req model.RulesActionRequest, value bool) error {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close(ctx)
+
+	_, err = tx.Run(ctx, `
+		MATCH (n:DeepfenceRule)
+		WHERE n.rule_id IN $rule_ids
+		SET n.masked = $value`, map[string]interface{}{"rule_ids": req.RulesIDs, "value": value})
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func (h *Handler) RulesMaskHandler(w http.ResponseWriter, r *http.Request) {
+	h.rulesActionHandler(w, r, actionMask)
+}
+
+func (h *Handler) RulesUnMaskHandler(w http.ResponseWriter, r *http.Request) {
+	h.rulesActionHandler(w, r, actionUnMask)
+}
+
+func (h *Handler) rulesActionHandler(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.RulesActionRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		h.respondError(&ValidatorError{err: err}, w)
+		return
+	}
+	switch action {
+	case actionMask:
+		err = UpdateRulesMasked(r.Context(), req, true)
+	case actionUnMask:
+		err = UpdateRulesMasked(r.Context(), req, false)
+	}
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

@@ -1,8 +1,11 @@
 package threatintel
 
 import (
+	"archive/tar"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -43,7 +46,13 @@ func DownloadSecretsRules(ctx context.Context, entry Entry) error {
 	path, sha, err := UploadToMinio(ctx, content.Bytes(),
 		SecretsRulesStore, fmt.Sprintf("secrets-rules-%d.tar.gz", entry.Built.Unix()))
 	if err != nil {
-		log.Error().Err(err).Msg("failed to uplaod secrets rules to fileserver")
+		log.Error().Err(err).Msg("failed to upload secrets rules to fileserver")
+		return err
+	}
+
+	err = IngestSecretRules(ctx, content.Bytes())
+	if err != nil {
+		log.Error().Err(err).Msg("failed to ingest secrets rules")
 		return err
 	}
 
@@ -117,4 +126,49 @@ func FetchSecretsRulesInfo(ctx context.Context) (path, hash string, err error) {
 	}
 
 	return rec.Values[0].(string), rec.Values[1].(string), nil
+}
+
+func IngestSecretRules(ctx context.Context, content []byte) error {
+	nc, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close(ctx)
+
+	err = ProcessTarGz(content, func(header *tar.Header, reader io.Reader) error {
+		var feeds FeedsBundle
+		if header.FileInfo().IsDir() {
+			return nil
+		}
+		if strings.HasSuffix(header.Name, ".data") {
+			return nil
+		}
+		jdec := json.NewDecoder(reader)
+		err = jdec.Decode(&feeds)
+		if err != nil {
+			log.Warn().Msg(err.Error())
+			return nil
+		}
+
+		log.Info().Msgf("Ingesting %d secrets", len(feeds.ScannerFeeds.SecretRules))
+
+		_, err = session.Run(ctx, `
+			UNWIND $rules as row
+			MERGE (n:DeepfenceRule:SecretRule{rule_id: row.rule_id})
+			SET n.type = row.type,
+				n.payload = row.payload,
+				n.summary = row.description,
+				n.severity = row.severity,
+				n.updated_at = TIMESTAMP()`,
+			map[string]interface{}{
+				"rules": DeepfenceRule2json(feeds.ScannerFeeds.SecretRules),
+			})
+		return err
+	})
+	if err != nil {
+		return err
+	}
+
+	return err
 }

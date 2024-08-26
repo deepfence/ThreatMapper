@@ -442,7 +442,7 @@ func ingestVulnerabilityRules(ctx context.Context, vulnerabilityDBModel vulnerab
 		}
 		vulnerabilityMetadataMap[v.ID+":"+v.Namespace] = meta
 	}
-	vulnerabilityRules := make([]map[string]interface{}, 0)
+	vulnerabilityRules := make(map[string]ingesters.VulnerabilityRule)
 	for _, v := range vulnerabilityDBModel.VulnerabilityModel {
 		vulnerabilityMetadata, ok := vulnerabilityMetadataMap[v.ID+":"+v.Namespace]
 		if !ok {
@@ -502,35 +502,59 @@ func ingestVulnerabilityRules(ctx context.Context, vulnerabilityDBModel vulnerab
 			cveType = ScanTypeBase
 		}
 
-		vulnerabilityRule := ingesters.VulnerabilityRule{
-			CveID:              vulnerability.ID,
-			CveType:            cveType,
-			CveSeverity:        strings.ToLower(vulnerabilityMetadata.Severity),
-			CveFixedIn:         cveFixedInVersion,
-			CveLink:            vulnerabilityMetadata.DataSource,
-			CveDescription:     vulnerabilityMetadata.Description,
-			CveCvssScore:       cvssScore,
-			CveOverallScore:    overallScore,
-			CveAttackVector:    attackVector,
-			URLs:               urls,
-			ExploitPOC:         metasploitURL,
-			PackageName:        vulnerability.PackageName,
-			ParsedAttackVector: parsedAttackVector,
-			CISAKEV:            vulnerabilityMetadata.CISAKEV,
-			EPSSScore:          vulnerabilityMetadata.EPSSScore,
-			Namespace:          vulnerability.Namespace,
+		var vulnerabilityRule ingesters.VulnerabilityRule
+		if vulnerabilityRule, ok = vulnerabilityRules[vulnerability.ID]; !ok {
+			vulnerabilityRule = ingesters.VulnerabilityRule{
+				// Common fields
+				CveID:     vulnerability.ID,
+				CISAKEV:   vulnerabilityMetadata.CISAKEV,
+				EPSSScore: vulnerabilityMetadata.EPSSScore,
+			}
 		}
-		vulnerabilityRule.SetNodeID()
-		vulnerabilityRules = append(vulnerabilityRules, vulnerabilityRule.ToMap())
 
-		if len(vulnerabilityRules) == neo4jWriteBatchSize {
-			_ = saveVulnerabilityRulesInNeo4j(ctx, vulnerabilityRules)
-			vulnerabilityRules = make([]map[string]interface{}, 0)
+		// Ordered insert
+		vulnerabilityRule.Namespaces = append(vulnerabilityRule.Namespaces, vulnerability.Namespace)
+		vulnerabilityRule.PackageNames = append(vulnerabilityRule.PackageNames, vulnerability.PackageName)
+		vulnerabilityRule.CveTypes = append(vulnerabilityRule.CveTypes, cveType)
+		vulnerabilityRule.CveSeverities = append(vulnerabilityRule.CveSeverities, strings.ToLower(vulnerabilityMetadata.Severity))
+		vulnerabilityRule.CveFixedIns = append(vulnerabilityRule.CveFixedIns, cveFixedInVersion)
+		vulnerabilityRule.CveDescriptions = append(vulnerabilityRule.CveDescriptions, vulnerabilityMetadata.Description)
+		vulnerabilityRule.CveCvssScores = append(vulnerabilityRule.CveCvssScores, cvssScore)
+		vulnerabilityRule.CveOverallScores = append(vulnerabilityRule.CveOverallScores, overallScore)
+		vulnerabilityRule.CveAttackVectors = append(vulnerabilityRule.CveAttackVectors, attackVector)
+		vulnerabilityRule.ParsedAttackVectors = append(vulnerabilityRule.ParsedAttackVectors, parsedAttackVector)
+
+		// Common fields
+		if vulnerabilityMetadata.DataSource != "" {
+			if !utils.InSlice(vulnerabilityMetadata.DataSource, vulnerabilityRule.CveLinks) {
+				vulnerabilityRule.CveLinks = append(vulnerabilityRule.CveLinks, vulnerabilityMetadata.DataSource)
+			}
 		}
+		if metasploitURL != "" {
+			if !utils.InSlice(metasploitURL, vulnerabilityRule.ExploitPOCs) {
+				vulnerabilityRule.ExploitPOCs = append(vulnerabilityRule.ExploitPOCs, metasploitURL)
+			}
+		}
+		for _, url := range urls {
+			if !utils.InSlice(url, vulnerabilityRule.URLs) {
+				vulnerabilityRule.URLs = append(vulnerabilityRule.URLs, url)
+			}
+		}
+
+		vulnerabilityRules[vulnerability.ID] = vulnerabilityRule
 	}
 
-	if len(vulnerabilityRules) > 0 {
-		_ = saveVulnerabilityRulesInNeo4j(ctx, vulnerabilityRules)
+	vulnerabilityRulesData := make([]map[string]interface{}, 0)
+	for _, vulnerabilityRule := range vulnerabilityRules {
+		vulnerabilityRulesData = append(vulnerabilityRulesData, vulnerabilityRule.ToMap())
+
+		if len(vulnerabilityRulesData) == neo4jWriteBatchSize {
+			_ = saveVulnerabilityRulesInNeo4j(ctx, vulnerabilityRulesData)
+			vulnerabilityRulesData = make([]map[string]interface{}, 0)
+		}
+	}
+	if len(vulnerabilityRulesData) > 0 {
+		_ = saveVulnerabilityRulesInNeo4j(ctx, vulnerabilityRulesData)
 	}
 	return nil
 }
@@ -554,8 +578,9 @@ func saveVulnerabilityRulesInNeo4j(ctx context.Context, vulnerabilityRules []map
 
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as rule
-		MERGE (v:VulnerabilityStub{node_id:rule.node_id})
+		MERGE (v:VulnerabilityStub:DeepfenceRule{node_id:rule.cve_id})
 		SET v += rule,
+			v.type = "vulnerability",
 		    v.masked = COALESCE(v.masked, false),
 		    v.updated_at = TIMESTAMP()`,
 		map[string]interface{}{"batch": vulnerabilityRules}); err != nil {

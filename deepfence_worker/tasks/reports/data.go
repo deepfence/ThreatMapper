@@ -183,7 +183,7 @@ func getVulnerabilityData(ctx context.Context, params sdkUtils.ReportParams) (*I
 			continue
 		}
 		sort.Slice(result, func(i, j int) bool {
-			return result[i].CveSeverity < result[j].CveSeverity
+			return result[i].GetCategory() < result[j].GetCategory()
 		})
 		nodeWiseData.SeverityCount[s.NodeName] = s.SeverityCounts
 		nodeWiseData.ScanData[s.NodeName] = ScanData[model.Vulnerability]{
@@ -237,13 +237,13 @@ func getMostExploitableVulnData(ctx context.Context, params sdkUtils.ReportParam
 	nodeWiseData.RecordCount += uint64(len(entries))
 	sevMap := nodeWiseData.SeverityCount[nodeKey]
 	for _, entry := range entries {
-		count, present := sevMap[entry.CveSeverity]
+		count, present := sevMap[entry.GetCategory()]
 		if !present {
 			count = 1
 		} else {
 			count += 1
 		}
-		sevMap[entry.CveSeverity] = count
+		sevMap[entry.GetCategory()] = count
 	}
 
 	data := Info[model.Vulnerability]{

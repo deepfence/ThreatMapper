@@ -58,6 +58,7 @@ require (
 )
 
 require (
+	github.com/VirusTotal/gyp v0.9.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.2 // indirect
 	github.com/glebarez/sqlite v1.11.0 // indirect
