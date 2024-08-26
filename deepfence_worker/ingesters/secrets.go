@@ -13,7 +13,7 @@ import (
 )
 
 func generateSecretRuleId(r map[string]interface{}) string {
-	return fmt.Sprintf("secret-%s", r["rule_name"].(string))
+	return fmt.Sprintf("secret-%s", r["name"].(string))
 }
 
 func CommitFuncSecrets(ctx context.Context, ns string, data []ingestersUtil.Secret) error {
