@@ -325,7 +325,7 @@ func (Secret) GetJSONCategory() string {
 }
 
 type SecretRule struct {
-	RuleID           int    `json:"rule_id"`
+	RuleID           string `json:"rule_id"`
 	Name             string `json:"name"`
 	Part             string `json:"part"`
 	SignatureToMatch string `json:"signature_to_match"`
