@@ -261,6 +261,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/compliance-controls", dfHandler.GetCloudComplianceControl)
 				r.Post("/secret-rules", dfHandler.GetSecretRules)
 				r.Post("/malware-rules", dfHandler.GetMalwareRules)
+				r.Post("/vulnerability-rules", dfHandler.GetVulnerabilityRules)
 			})
 
 			r.Route("/complete", func(r chi.Router) {

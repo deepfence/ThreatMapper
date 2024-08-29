@@ -188,6 +188,10 @@ func (d *OpenAPIDocs) AddLookupOperations() {
 	d.AddOperation("getSecretRules", http.MethodPost, "/deepfence/lookup/secret-rules",
 		"Get Secret Rules", "Retrieve secret rule resources",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]SecretRule))
+
+	d.AddOperation("getVulnerabilityRules", http.MethodPost, "/deepfence/lookup/vulnerability-rules",
+		"Get Vulnerability Rules", "Retrieve vulnerability rule resources",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]VulnerabilityRule))
 }
 
 func (d *OpenAPIDocs) AddSearchOperations() {
@@ -232,7 +236,7 @@ func (d *OpenAPIDocs) AddSearchOperations() {
 		"Search Compliances", "Search across all the data associated with compliances",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Compliance))
 
-	d.AddOperation("searchVulerabilityRules", http.MethodPost, "/deepfence/search/vulnerability-rules",
+	d.AddOperation("searchVulnerabilityRules", http.MethodPost, "/deepfence/search/vulnerability-rules",
 		"Search Vulnerability Rules", "Search across all the data associated with vulnerability rules",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]VulnerabilityRule))
 
