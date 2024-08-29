@@ -36,7 +36,7 @@ import (
 var (
 	failOnCompileWarning = false
 	secretRulesDir       = "/usr/local/secret"
-	secretRulesPath      = "/usr/local/secret/secret-yara-rules"
+	secretRulesPath      = "/usr/local/secret/rules"
 	secretConfigPath     = "/secret-config/config.yaml"
 	opts                 *secretConfig.Options
 	yaraconfig           config.Config
@@ -81,6 +81,16 @@ func checkSecretRulesUpdate(ctx context.Context) error {
 		if err := workerUtils.UpdateRules(ctx, path, secretRulesDir); err != nil {
 			return err
 		}
+
+		for _, infile := range []string{
+			filepath.Join(secretRulesPath, "df-secret.json"),
+		} {
+			err = threatintel.ExtractDFRules2NativeRules(infile, secretRulesPath)
+			if err != nil {
+				return err
+			}
+		}
+
 		opts, yaraconfig, yr, err = initSecretScanner()
 		if err != nil {
 			return err
