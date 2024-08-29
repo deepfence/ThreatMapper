@@ -727,6 +727,14 @@ func GetSecretRulesReport(ctx context.Context, filter LookupFilter) ([]model.Sec
 	return rules, nil
 }
 
+func GetVulnerabilityRulesReport(ctx context.Context, filter LookupFilter) ([]model.VulnerabilityRule, error) {
+	rules, err := getGenericDirectRuleReport[model.VulnerabilityRule](ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	return rules, nil
+}
+
 func getGenericDirectRuleReport[T reporters.Cypherable](ctx context.Context, filter LookupFilter) ([]T, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "lookup", "get-generic-direct-rule-report")

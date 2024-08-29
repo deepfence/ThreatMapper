@@ -175,3 +175,26 @@ func (h *Handler) GetSecretRules(w http.ResponseWriter, r *http.Request) {
 		log.Error().Msg(err.Error())
 	}
 }
+
+func (h *Handler) GetVulnerabilityRules(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters_lookup.LookupFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
+	}
+
+	hosts, err := reporters_lookup.GetVulnerabilityRulesReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, hosts)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}

@@ -402,8 +402,8 @@ type VulnerabilityRule struct {
 	CveFixedIns         []string    `json:"cve_fixed_ins" required:"true"`
 	CveLinks            []string    `json:"cve_links" required:"true"`
 	CveDescriptions     []string    `json:"cve_descriptions" required:"true"`
-	CveCvssScores       []float64   `json:"cve_cvss_scores" required:"true"`
-	CveOverallScores    []float64   `json:"cve_overall_scores" required:"true"`
+	CveCvssScores       []any       `json:"cve_cvss_scores" required:"true"`
+	CveOverallScores    []any       `json:"cve_overall_scores" required:"true"`
 	CveAttackVectors    []string    `json:"cve_attack_vectors" required:"true"`
 	URLs                []string    `json:"urls" required:"true"`
 	ExploitPOCs         []string    `json:"exploit_pocs" required:"true"`
