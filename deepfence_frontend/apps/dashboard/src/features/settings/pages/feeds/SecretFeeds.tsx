@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { upperFirst } from 'lodash-es';
+import { capitalize } from 'lodash-es';
 import { ReactNode, Suspense, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
@@ -9,12 +10,16 @@ import {
 } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
+  Badge,
   Button,
+  Combobox,
+  ComboboxOption,
   createColumnHelper,
   Dropdown,
   DropdownItem,
   getRowSelectionColumn,
   RowSelectionState,
+  SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
@@ -22,17 +27,23 @@ import {
 import { getRulesApiClient } from '@/api/api';
 import { ModelSecretRule } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { FilterBadge } from '@/components/filters/FilterBadge';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { EyeHideSolid } from '@/components/icons/common/EyeHideSolid';
 import { EyeSolidIcon } from '@/components/icons/common/EyeSolid';
+import { FilterIcon } from '@/components/icons/common/Filter';
+import { TimesIcon } from '@/components/icons/common/Times';
 import { SeverityBadgeIcon } from '@/components/SeverityBadge';
 import { TruncatedText } from '@/components/TruncatedText';
+import { FilterWrapper } from '@/features/common/FilterWrapper';
 import { invalidateAllQueries, queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
+import { SeverityEnumList } from '@/utils/enum';
 import { SeverityValueType } from '@/utils/enum';
-import { getPageFromSearchParams } from '@/utils/table';
+import { getOrderFromSearchParams, getPageFromSearchParams } from '@/utils/table';
+import { useSortingState } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -110,6 +121,9 @@ function useSecretRules() {
     ...queries.search.secretRulesWithPagination({
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       page: getPageFromSearchParams(searchParams),
+      order: getOrderFromSearchParams(searchParams),
+      masked: searchParams.getAll('masked').map((value) => value === 'masked'),
+      severity: searchParams.getAll('severity'),
     }),
     keepPreviousData: true,
   });
@@ -207,6 +221,7 @@ const FeedsTable = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const { data } = useSecretRules();
   const { mode: theme } = useTheme();
+  const [sort, setSort] = useSortingState();
 
   const columns = useMemo(() => {
     const columns = [
@@ -256,6 +271,7 @@ const FeedsTable = ({
         size: 120,
         minSize: 40,
         maxSize: 150,
+        enableSorting: false,
       }),
       columnHelper.accessor('summary', {
         header: () => 'Summary',
@@ -266,6 +282,7 @@ const FeedsTable = ({
         size: 200,
         minSize: 50,
         maxSize: 250,
+        enableSorting: false,
       }),
       columnHelper.accessor('severity', {
         header: () => 'Severity',
@@ -286,6 +303,7 @@ const FeedsTable = ({
         size: 120,
         minSize: 30,
         maxSize: 150,
+        enableSorting: true,
       }),
       columnHelper.accessor('updated_at', {
         header: () => 'Updated at',
@@ -299,6 +317,7 @@ const FeedsTable = ({
         size: 120,
         minSize: 30,
         maxSize: 150,
+        enableSorting: false,
       }),
     ];
 
@@ -352,13 +371,199 @@ const FeedsTable = ({
         }
         return {};
       }}
+      enableSorting
+      manualSorting
+      sortingState={sort}
+      onSortingChange={(updaterOrValue) => {
+        let newSortState: SortingState = [];
+        if (typeof updaterOrValue === 'function') {
+          newSortState = updaterOrValue(sort);
+        } else {
+          newSortState = updaterOrValue;
+        }
+        setSearchParams((prev) => {
+          if (!newSortState.length) {
+            prev.delete('sortby');
+            prev.delete('desc');
+          } else {
+            prev.set('sortby', String(newSortState[0].id));
+            prev.set('desc', String(newSortState[0].desc));
+          }
+          return prev;
+        });
+        setSort(newSortState);
+      }}
     />
+  );
+};
+
+const FILTER_SEARCHPARAMS: Record<string, string> = {
+  masked: 'Masked/Unmasked',
+  severity: 'Severity',
+};
+
+const getPrettyNameForAppliedFilters = ({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) => {
+  switch (key) {
+    case 'severity':
+      return capitalize(value);
+    case 'masked':
+      return capitalize(value);
+    default:
+      return value;
+  }
+};
+
+const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
+  return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
+    return prev + searchParams.getAll(curr).length;
+  }, 0);
+};
+
+const Filters = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [maskedQuery, setMaskedQuery] = useState('');
+  const [severityQuery, setSeverityQuery] = useState('');
+  const appliedFilterCount = getAppliedFiltersCount(searchParams);
+
+  return (
+    <FilterWrapper>
+      <div className="flex gap-2">
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['masked']}
+          multiple
+          value={searchParams.getAll('masked')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('masked');
+              values.forEach((value) => {
+                prev.append('masked', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setMaskedQuery(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('masked');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        >
+          {['masked', 'unmasked']
+            .filter((item) => {
+              if (!maskedQuery.length) return true;
+              return item.includes(maskedQuery.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {capitalize(item)}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['severity']}
+          multiple
+          value={searchParams.getAll('severity')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('severity');
+              values.forEach((value) => {
+                prev.append('severity', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setSeverityQuery(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('severity');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        >
+          {SeverityEnumList.filter((item) => {
+            if (!severityQuery.length) return true;
+            return item.includes(severityQuery.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item} value={item}>
+                {capitalize(item)}
+              </ComboboxOption>
+            );
+          })}
+        </Combobox>
+      </div>
+      {appliedFilterCount > 0 ? (
+        <div className="flex gap-2.5 mt-4 flex-wrap items-center">
+          {Array.from(searchParams)
+            .filter(([key]) => {
+              return Object.keys(FILTER_SEARCHPARAMS).includes(key);
+            })
+            .map(([key, value]) => {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={() => {
+                    setSearchParams((prev) => {
+                      const existingValues = prev.getAll(key);
+                      prev.delete(key);
+                      existingValues.forEach((existingValue) => {
+                        if (existingValue !== value) prev.append(key, existingValue);
+                      });
+                      prev.delete('page');
+                      return prev;
+                    });
+                  }}
+                  text={`${FILTER_SEARCHPARAMS[key]}: ${getPrettyNameForAppliedFilters({ key, value })}`}
+                />
+              );
+            })}
+          <Button
+            variant="flat"
+            color="default"
+            startIcon={<TimesIcon />}
+            onClick={() => {
+              setSearchParams((prev) => {
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            size="sm"
+          >
+            Clear all
+          </Button>
+        </div>
+      ) : null}
+    </FilterWrapper>
   );
 };
 
 const SecretFeeds = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const fetcher = useFetcher<ActionData>();
+  const [searchParams] = useSearchParams();
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   const selectedRows = useMemo<string[]>(() => {
     return Object.keys(rowSelectionState);
@@ -401,7 +606,30 @@ const SecretFeeds = () => {
       </div>
       <div className="h-12 flex items-center">
         <BulkActions selectedRows={selectedRows} onBulkAction={onBulkAction} />
+        <Button
+          variant="flat"
+          className="ml-auto"
+          startIcon={<FilterIcon />}
+          endIcon={
+            getAppliedFiltersCount(searchParams) > 0 ? (
+              <Badge
+                label={String(getAppliedFiltersCount(searchParams))}
+                variant="filled"
+                size="small"
+                color="blue"
+              />
+            ) : null
+          }
+          size="sm"
+          onClick={() => {
+            setFiltersExpanded((prev) => !prev);
+          }}
+          data-testid="filterButtonIdForTable"
+        >
+          Filter
+        </Button>
       </div>
+      {filtersExpanded ? <Filters /> : null}
       <div className="mb-2">
         <Suspense fallback={<TableSkeleton columns={7} rows={25} />}>
           <FeedsTable
