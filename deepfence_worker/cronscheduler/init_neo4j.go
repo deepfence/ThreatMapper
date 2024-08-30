@@ -54,7 +54,7 @@ func initNeo4jDatabase(ctx context.Context) error {
 	RunDisplayError(ctx, session, "CREATE CONSTRAINT FOR (n:Malware) REQUIRE n.malware_id IS UNIQUE")
 	RunDisplayError(ctx, session, "CREATE CONSTRAINT FOR (n:MalwareRule) REQUIRE n.rule_id IS UNIQUE")
 	RunDisplayError(ctx, session, "CREATE CONSTRAINT FOR (n:Vulnerability) REQUIRE n.node_id IS UNIQUE")
-	RunDisplayError(ctx, session, "CREATE CONSTRAINT FOR (n:VulnerabilityStub) REQUIRE n.node_id IS UNIQUE")
+	RunDisplayError(ctx, session, "CREATE CONSTRAINT FOR (n:VulnerabilityStub) REQUIRE n.rule_id IS UNIQUE")
 	RunDisplayError(ctx, session, "CREATE CONSTRAINT FOR (n:SecurityGroup) REQUIRE n.node_id IS UNIQUE")
 	RunDisplayError(ctx, session, "CREATE CONSTRAINT FOR (n:CloudNode) REQUIRE n.node_id IS UNIQUE")
 	RunDisplayError(ctx, session, "CREATE CONSTRAINT FOR (n:CloudResource) REQUIRE n.node_id IS UNIQUE")
