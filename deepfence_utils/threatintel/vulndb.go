@@ -578,7 +578,7 @@ func saveVulnerabilityRulesInNeo4j(ctx context.Context, vulnerabilityRules []map
 
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as rule
-		MERGE (v:VulnerabilityStub:DeepfenceRule{node_id:rule.cve_id})
+		MERGE (v:VulnerabilityStub:DeepfenceRule{rule_id:rule.cve_id})
 		SET v += rule,
 			v.type = "vulnerability",
 		    v.masked = COALESCE(v.masked, false),
