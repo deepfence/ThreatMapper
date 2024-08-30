@@ -1654,11 +1654,13 @@ export const searchQueries = createQueryKeys('search', {
       sortBy: string;
       descending: boolean;
     };
+    masked?: boolean[];
+    cveIds?: string[];
   }) => {
     return {
       queryKey: [filters],
       queryFn: async () => {
-        const { page = 0, pageSize, order } = filters;
+        const { page = 0, pageSize, order, masked, cveIds } = filters;
 
         const searchApi = apiWrapper({
           fn: getSearchApiClient().searchVulnerabilityRules,
@@ -1669,10 +1671,10 @@ export const searchQueries = createQueryKeys('search', {
             filters: {
               compare_filter: null,
               contains_filter: {
-                filter_in: null,
+                filter_in: {},
               },
               match_filter: {
-                filter_in: null,
+                filter_in: {},
               },
               order_filter: {
                 order_fields: null,
@@ -1691,6 +1693,14 @@ export const searchQueries = createQueryKeys('search', {
               descending: order.descending,
             },
           ];
+        }
+
+        if (masked && masked.length > 0) {
+          searchRequest.node_filter.filters.contains_filter.filter_in!['masked'] = masked;
+        }
+
+        if (cveIds && cveIds.length > 0) {
+          searchRequest.node_filter.filters.contains_filter.filter_in!['cve_id'] = cveIds;
         }
 
         const searchRulesPromise = searchApi({
