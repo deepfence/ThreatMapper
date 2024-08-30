@@ -269,11 +269,11 @@ export interface SearchSecretsScansRequest {
     searchSearchScanReq?: SearchSearchScanReq;
 }
 
-export interface SearchVulerabilityRulesRequest {
+export interface SearchVulnerabilitiesRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
-export interface SearchVulnerabilitiesRequest {
+export interface SearchVulnerabilityRulesRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
@@ -992,22 +992,6 @@ export interface SearchApiInterface {
     searchSecretsScans(requestParameters: SearchSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>>;
 
     /**
-     * Search across all the data associated with vulnerability rules
-     * @summary Search Vulnerability Rules
-     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SearchApiInterface
-     */
-    searchVulerabilityRulesRaw(requestParameters: SearchVulerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerabilityRule>>>;
-
-    /**
-     * Search across all the data associated with vulnerability rules
-     * Search Vulnerability Rules
-     */
-    searchVulerabilityRules(requestParameters: SearchVulerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerabilityRule>>;
-
-    /**
      * Search across all the data associated with vulnerabilities
      * @summary Search Vulnerabilities
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
@@ -1022,6 +1006,22 @@ export interface SearchApiInterface {
      * Search Vulnerabilities
      */
     searchVulnerabilities(requestParameters: SearchVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerability>>;
+
+    /**
+     * Search across all the data associated with vulnerability rules
+     * @summary Search Vulnerability Rules
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    searchVulnerabilityRulesRaw(requestParameters: SearchVulnerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerabilityRule>>>;
+
+    /**
+     * Search across all the data associated with vulnerability rules
+     * Search Vulnerability Rules
+     */
+    searchVulnerabilityRules(requestParameters: SearchVulnerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerabilityRule>>;
 
     /**
      * Search across all the data associated with vulnerability scan
@@ -2760,45 +2760,6 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search across all the data associated with vulnerability rules
-     * Search Vulnerability Rules
-     */
-    async searchVulerabilityRulesRaw(requestParameters: SearchVulerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerabilityRule>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/search/vulnerability-rules`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelVulnerabilityRuleFromJSON));
-    }
-
-    /**
-     * Search across all the data associated with vulnerability rules
-     * Search Vulnerability Rules
-     */
-    async searchVulerabilityRules(requestParameters: SearchVulerabilityRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerabilityRule>> {
-        const response = await this.searchVulerabilityRulesRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
      * Search across all the data associated with vulnerabilities
      * Search Vulnerabilities
      */
@@ -2834,6 +2795,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async searchVulnerabilities(requestParameters: SearchVulnerabilitiesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerability>> {
         const response = await this.searchVulnerabilitiesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search across all the data associated with vulnerability rules
+     * Search Vulnerability Rules
+     */
+    async searchVulnerabilityRulesRaw(requestParameters: SearchVulnerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerabilityRule>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/vulnerability-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelVulnerabilityRuleFromJSON));
+    }
+
+    /**
+     * Search across all the data associated with vulnerability rules
+     * Search Vulnerability Rules
+     */
+    async searchVulnerabilityRules(requestParameters: SearchVulnerabilityRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerabilityRule>> {
+        const response = await this.searchVulnerabilityRulesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

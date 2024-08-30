@@ -148,6 +148,7 @@ export * from './ModelRegistryImagesReq';
 export * from './ModelRegistryListResp';
 export * from './ModelRegistryUpdateReq';
 export * from './ModelResponseAccessToken';
+export * from './ModelRulesActionRequest';
 export * from './ModelSbomRequest';
 export * from './ModelSbomResponse';
 export * from './ModelScanCompareReq';

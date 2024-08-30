@@ -18,6 +18,7 @@ import {
   MalwareScanApi,
   RegistryApi,
   ReportsApi,
+  RulesApi,
   ScanResultsApi,
   SearchApi,
   SecretScanApi,
@@ -195,6 +196,8 @@ export function getSearchApiClient() {
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
     searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
+    searchVulnerabilityRules: searchApi.searchVulnerabilityRules.bind(searchApi),
+    searchVulnerabilityRulesCount: searchApi.countVulnerabilityRules.bind(searchApi),
     searchCloudResources: searchApi.searchCloudResources.bind(searchApi),
     searchCloudResourcesCount: searchApi.countCloudResources.bind(searchApi),
     searchRegistryAccounts: searchApi.searchRegistryAccounts.bind(searchApi),
@@ -203,11 +206,15 @@ export function getSearchApiClient() {
     searchSecrets: searchApi.searchSecrets.bind(searchApi),
     searchSecretsCount: searchApi.countSecrets.bind(searchApi),
     searchSecretScanCount: searchApi.countSecretsScans.bind(searchApi),
+    searchSecretRules: searchApi.searchSecretRules.bind(searchApi),
+    searchSecretRulesCount: searchApi.countSecretRules.bind(searchApi),
 
     searchMalwaresScan: searchApi.searchMalwareScans.bind(searchApi),
     searchMalwares: searchApi.searchMalwares.bind(searchApi),
     searchMalwaresCount: searchApi.countMalwares.bind(searchApi),
     searchMalwareScanCount: searchApi.countMalwareScans.bind(searchApi),
+    searchMalwareRules: searchApi.searchMalwareRules.bind(searchApi),
+    searchMalwareRulesCount: searchApi.countMalwareRules.bind(searchApi),
 
     searchCompliances: searchApi.searchCompliances.bind(searchApi),
     searchCloudCompliances: searchApi.searchCloudCompliances.bind(searchApi),
@@ -278,6 +285,9 @@ export function getLookupApiClient() {
     lookupCloudCompliances: lookupApi.getCloudCompliances.bind(lookupApi),
     lookupRegistryAccounts: lookupApi.getRegistryAccount.bind(lookupApi),
     lookupComplianceControls: lookupApi.getComplianceControls.bind(lookupApi),
+    lookupVulnerabilityRules: lookupApi.getVulnerabilityRules.bind(lookupApi),
+    lookupSecretRules: lookupApi.getSecretRules.bind(lookupApi),
+    lookupMalwareRules: lookupApi.getMalwareRules.bind(lookupApi),
   };
 }
 
@@ -427,5 +437,13 @@ export function getScanResultCompletionApiClient() {
       scanCompleteionApi.completeCloudResources.bind(scanCompleteionApi),
     completeCloudAccount:
       scanCompleteionApi.completeCloudAccount.bind(scanCompleteionApi),
+  };
+}
+
+export function getRulesApiClient() {
+  const rulesApi = new RulesApi(configuration);
+  return {
+    maskRules: rulesApi.maskRules.bind(rulesApi),
+    unmaskRules: rulesApi.unmaskRules.bind(rulesApi),
   };
 }

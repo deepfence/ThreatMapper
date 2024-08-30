@@ -1,7 +1,8 @@
-import { isNil } from 'lodash-es';
+import { isNil, trim } from 'lodash-es';
 interface KVPair<T> {
   key: keyof T;
   value: T[keyof T] | string;
+  isCode?: boolean;
 }
 
 export function getFieldsKeyValue<T extends Record<string, any>>(
@@ -10,6 +11,7 @@ export function getFieldsKeyValue<T extends Record<string, any>>(
     hiddenFields: Array<keyof T>;
     priorityFields: Array<keyof T>;
     base64EncodedFields?: Array<keyof T>;
+    codeFields?: Array<keyof T>;
   },
 ): Array<KVPair<T>> {
   const result: Array<KVPair<T>> = [];
@@ -52,16 +54,19 @@ export function getFieldsKeyValue<T extends Record<string, any>>(
     });
   });
 
-  if (fieldsConfig.base64EncodedFields?.length) {
-    return result.map((r) => {
+  return result
+    .map((r) => {
       if (!fieldsConfig.base64EncodedFields?.includes(r.key)) {
         return r;
       }
-      return { key: r.key, value: atob(r.value) };
+      return { key: r.key, value: r.value !== '-' ? trim(atob(r.value)) : r.value };
+    })
+    .map((r) => {
+      if (fieldsConfig.codeFields?.includes(r.key)) {
+        return { ...r, isCode: true };
+      }
+      return r;
     });
-  }
-
-  return result;
 }
 
 function isEmptyValue(value: unknown): boolean {

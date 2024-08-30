@@ -1647,4 +1647,253 @@ export const searchQueries = createQueryKeys('search', {
       },
     };
   },
+  vulnerabilityRulesWithPagination: (filters: {
+    page?: number;
+    pageSize: number;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const { page = 0, pageSize, order } = filters;
+
+        const searchApi = apiWrapper({
+          fn: getSearchApiClient().searchVulnerabilityRules,
+        });
+
+        const searchRequest: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              compare_filter: null,
+              contains_filter: {
+                filter_in: null,
+              },
+              match_filter: {
+                filter_in: null,
+              },
+              order_filter: {
+                order_fields: null,
+              },
+            },
+            in_field_filter: null,
+            window: { offset: 0, size: 0 },
+          },
+          window: { offset: page * pageSize, size: pageSize },
+        };
+
+        if (order) {
+          searchRequest.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        }
+
+        const searchRulesPromise = searchApi({
+          searchSearchNodeReq: searchRequest,
+        });
+
+        const countApi = apiWrapper({
+          fn: getSearchApiClient().searchVulnerabilityRulesCount,
+        });
+
+        const countRulesPromise = countApi({
+          searchSearchNodeReq: {
+            ...searchRequest,
+            window: {
+              ...searchRequest.window,
+              size: 10 * searchRequest.window.size,
+            },
+          },
+        });
+        const [rulesData, rulesDataCount] = await Promise.all([
+          searchRulesPromise,
+          countRulesPromise,
+        ]);
+
+        if (!rulesData.ok) {
+          throw rulesData.error;
+        }
+        if (!rulesDataCount.ok) {
+          throw rulesDataCount.error;
+        }
+
+        return {
+          rules: rulesData.value,
+          currentPage: page,
+          totalRows: page * pageSize + rulesDataCount.value.count,
+        };
+      },
+    };
+  },
+  secretRulesWithPagination: (filters: {
+    page?: number;
+    pageSize: number;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const { page = 0, pageSize, order } = filters;
+
+        const searchApi = apiWrapper({
+          fn: getSearchApiClient().searchSecretRules,
+        });
+
+        const searchRequest: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              compare_filter: null,
+              contains_filter: {
+                filter_in: null,
+              },
+              match_filter: {
+                filter_in: null,
+              },
+              order_filter: {
+                order_fields: null,
+              },
+            },
+            in_field_filter: null,
+            window: { offset: 0, size: 0 },
+          },
+          window: { offset: page * pageSize, size: pageSize },
+        };
+
+        if (order) {
+          searchRequest.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        }
+
+        const searchRulesPromise = searchApi({
+          searchSearchNodeReq: searchRequest,
+        });
+
+        const countApi = apiWrapper({
+          fn: getSearchApiClient().searchSecretRulesCount,
+        });
+
+        const countRulesPromise = countApi({
+          searchSearchNodeReq: {
+            ...searchRequest,
+            window: {
+              ...searchRequest.window,
+              size: 10 * searchRequest.window.size,
+            },
+          },
+        });
+        const [rulesData, rulesDataCount] = await Promise.all([
+          searchRulesPromise,
+          countRulesPromise,
+        ]);
+
+        if (!rulesData.ok) {
+          throw rulesData.error;
+        }
+        if (!rulesDataCount.ok) {
+          throw rulesDataCount.error;
+        }
+
+        return {
+          rules: rulesData.value,
+          currentPage: page,
+          totalRows: page * pageSize + rulesDataCount.value.count,
+        };
+      },
+    };
+  },
+  malwareRulesWithPagination: (filters: {
+    page?: number;
+    pageSize: number;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const { page = 0, pageSize, order } = filters;
+
+        const searchApi = apiWrapper({
+          fn: getSearchApiClient().searchMalwareRules,
+        });
+
+        const searchRequest: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              compare_filter: null,
+              contains_filter: {
+                filter_in: null,
+              },
+              match_filter: {
+                filter_in: null,
+              },
+              order_filter: {
+                order_fields: null,
+              },
+            },
+            in_field_filter: null,
+            window: { offset: 0, size: 0 },
+          },
+          window: { offset: page * pageSize, size: pageSize },
+        };
+
+        if (order) {
+          searchRequest.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        }
+
+        const searchRulesPromise = searchApi({
+          searchSearchNodeReq: searchRequest,
+        });
+
+        const countApi = apiWrapper({
+          fn: getSearchApiClient().searchMalwareRulesCount,
+        });
+
+        const countRulesPromise = countApi({
+          searchSearchNodeReq: {
+            ...searchRequest,
+            window: {
+              ...searchRequest.window,
+              size: 10 * searchRequest.window.size,
+            },
+          },
+        });
+        const [rulesData, rulesDataCount] = await Promise.all([
+          searchRulesPromise,
+          countRulesPromise,
+        ]);
+
+        if (!rulesData.ok) {
+          throw rulesData.error;
+        }
+        if (!rulesDataCount.ok) {
+          throw rulesDataCount.error;
+        }
+
+        return {
+          rules: rulesData.value,
+          currentPage: page,
+          totalRows: page * pageSize + rulesDataCount.value.count,
+        };
+      },
+    };
+  },
 });

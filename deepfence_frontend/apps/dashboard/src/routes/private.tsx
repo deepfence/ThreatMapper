@@ -69,6 +69,12 @@ import { module as uniqueSecrets } from '@/features/secrets/pages/UniqueSecrets'
 import { module as connectorInstructions } from '@/features/settings/pages/ConnectorInstructions';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
+import { module as malwareFeeds } from '@/features/settings/pages/feeds/MalwareFeeds';
+import { module as malwareRuleDetailModal } from '@/features/settings/pages/feeds/MalwareRuleDetailModal';
+import { module as secretFeeds } from '@/features/settings/pages/feeds/SecretFeeds';
+import { module as secretRuleDetailModal } from '@/features/settings/pages/feeds/SecretRuleDetailModal';
+import { module as vulnerabilityFeeds } from '@/features/settings/pages/feeds/VulnerabilityFeeds';
+import { module as vulnerabilityRuleDetailModal } from '@/features/settings/pages/feeds/VulnerabilityRuleDetailModal';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
 import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
 import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs';
@@ -582,6 +588,42 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'tm-license-details',
             ...threatMapperLicenseDetailsSettings,
             meta: { title: 'License Details' },
+          },
+          {
+            path: 'feeds/vulnerability',
+            ...vulnerabilityFeeds,
+            meta: { title: 'Vulnerability rules management' },
+            children: [
+              {
+                path: ':ruleId',
+                ...vulnerabilityRuleDetailModal,
+                meta: { title: 'Vulnerability rule' },
+              },
+            ],
+          },
+          {
+            path: 'feeds/secret',
+            ...secretFeeds,
+            meta: { title: 'Secret rules management' },
+            children: [
+              {
+                path: ':ruleId',
+                ...secretRuleDetailModal,
+                meta: { title: 'Secret rule' },
+              },
+            ],
+          },
+          {
+            path: 'feeds/malware',
+            ...malwareFeeds,
+            meta: { title: 'Malware rules management' },
+            children: [
+              {
+                path: ':ruleId',
+                ...malwareRuleDetailModal,
+                meta: { title: 'Malware rule' },
+              },
+            ],
           },
         ],
       },

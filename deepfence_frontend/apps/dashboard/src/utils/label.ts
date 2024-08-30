@@ -1,6 +1,6 @@
 import { upperCase } from 'lodash-es';
 
-const UPPERCASE_WORDS = ['id', 'cve', 'poc'];
+const UPPERCASE_WORDS = ['id', 'cve', 'poc', 'epss', 'cisa', 'kev'];
 export function replacebyUppercaseCharacters(key: string) {
   return key
     .split('_')
