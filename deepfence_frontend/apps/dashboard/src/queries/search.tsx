@@ -1841,11 +1841,13 @@ export const searchQueries = createQueryKeys('search', {
       sortBy: string;
       descending: boolean;
     };
+    masked?: boolean[];
+    severity?: string[];
   }) => {
     return {
       queryKey: [filters],
       queryFn: async () => {
-        const { page = 0, pageSize, order } = filters;
+        const { page = 0, pageSize, order, masked, severity } = filters;
 
         const searchApi = apiWrapper({
           fn: getSearchApiClient().searchMalwareRules,
@@ -1856,10 +1858,10 @@ export const searchQueries = createQueryKeys('search', {
             filters: {
               compare_filter: null,
               contains_filter: {
-                filter_in: null,
+                filter_in: {},
               },
               match_filter: {
-                filter_in: null,
+                filter_in: {},
               },
               order_filter: {
                 order_fields: null,
@@ -1878,6 +1880,15 @@ export const searchQueries = createQueryKeys('search', {
               descending: order.descending,
             },
           ];
+        }
+
+        if (masked && masked.length > 0) {
+          searchRequest.node_filter.filters.contains_filter.filter_in!['masked'] = masked;
+        }
+
+        if (severity && severity.length > 0) {
+          searchRequest.node_filter.filters.contains_filter.filter_in!['severity'] =
+            severity;
         }
 
         const searchRulesPromise = searchApi({
