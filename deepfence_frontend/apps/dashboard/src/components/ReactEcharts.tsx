@@ -29,7 +29,7 @@ import type { CSSProperties } from 'react';
 import { useEffect, useRef } from 'react';
 import { useMeasure } from 'react-use';
 
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { useTheme } from '@/theme/ThemeContext';
 
 export type ECOption = ComposeOption<
   | BarSeriesOption

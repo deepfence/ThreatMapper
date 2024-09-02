@@ -49,6 +49,24 @@ if (isThreatMapper) {
   });
 }
 
+const FeedMenuItems: Array<{
+  title: string;
+  to: string;
+}> = [
+  {
+    title: 'Vulnerability rules',
+    to: '/settings/feeds/vulnerability',
+  },
+  {
+    title: 'Secret rules',
+    to: '/settings/feeds/secret',
+  },
+  {
+    title: 'Malware rules',
+    to: '/settings/feeds/malware',
+  },
+];
+
 const linkClass = cn(
   'text-p5 text-text-text-and-icon py-3 px-6',
   'hover:bg-bg-breadcrumb-bar',
@@ -80,6 +98,53 @@ export const SettingNavigation = () => {
             </NavigationMenu.Link>
           </NavigationMenu.Item>
           {MenuItems.map((menuItem) => {
+            return (
+              <NavigationMenu.Item key={menuItem.title}>
+                <NavigationMenu.Link asChild>
+                  <div>
+                    <NavLink
+                      to={menuItem.to}
+                      className={({ isActive }) =>
+                        isActive
+                          ? cn(
+                              linkClass,
+                              'dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value',
+                            )
+                          : linkClass
+                      }
+                    >
+                      {({ isActive }) => {
+                        return (
+                          <>
+                            {isActive && (
+                              <div className="absolute w-1 left-0 top-0 bottom-0 bg-accent-accent" />
+                            )}
+                            <div className="overflow-wrap">{menuItem.title}</div>
+                          </>
+                        );
+                      }}
+                    </NavLink>
+                  </div>
+                </NavigationMenu.Link>
+              </NavigationMenu.Item>
+            );
+          })}
+
+          <NavigationMenu.Item>
+            <NavigationMenu.Link asChild>
+              <div
+                className={cn(
+                  `${linkClass} mt-6`,
+                  'text-h6 dark:text-text-input-value',
+                  'dark:border-bg-grid-border dark:hover:bg-transparent hover:bg-transparent bg-transparent',
+                )}
+              >
+                Threat intel rules
+              </div>
+            </NavigationMenu.Link>
+          </NavigationMenu.Item>
+
+          {FeedMenuItems.map((menuItem) => {
             return (
               <NavigationMenu.Item key={menuItem.title}>
                 <NavigationMenu.Link asChild>

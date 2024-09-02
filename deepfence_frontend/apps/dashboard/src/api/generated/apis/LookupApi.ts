@@ -27,11 +27,14 @@ import type {
   ModelHost,
   ModelKubernetesCluster,
   ModelMalware,
+  ModelMalwareRule,
   ModelPod,
   ModelProcess,
   ModelRegistryAccount,
   ModelSecret,
+  ModelSecretRule,
   ModelVulnerability,
+  ModelVulnerabilityRule,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -58,6 +61,8 @@ import {
     ModelKubernetesClusterToJSON,
     ModelMalwareFromJSON,
     ModelMalwareToJSON,
+    ModelMalwareRuleFromJSON,
+    ModelMalwareRuleToJSON,
     ModelPodFromJSON,
     ModelPodToJSON,
     ModelProcessFromJSON,
@@ -66,8 +71,12 @@ import {
     ModelRegistryAccountToJSON,
     ModelSecretFromJSON,
     ModelSecretToJSON,
+    ModelSecretRuleFromJSON,
+    ModelSecretRuleToJSON,
     ModelVulnerabilityFromJSON,
     ModelVulnerabilityToJSON,
+    ModelVulnerabilityRuleFromJSON,
+    ModelVulnerabilityRuleToJSON,
 } from '../models';
 
 export interface GetCloudCompliancesRequest {
@@ -102,6 +111,10 @@ export interface GetKubernetesClustersRequest {
     lookupLookupFilter?: LookupLookupFilter;
 }
 
+export interface GetMalwareRulesRequest {
+    lookupLookupFilter?: LookupLookupFilter;
+}
+
 export interface GetMalwaresRequest {
     lookupLookupFilter?: LookupLookupFilter;
 }
@@ -118,11 +131,19 @@ export interface GetRegistryAccountRequest {
     lookupLookupFilter?: LookupLookupFilter;
 }
 
+export interface GetSecretRulesRequest {
+    lookupLookupFilter?: LookupLookupFilter;
+}
+
 export interface GetSecretsRequest {
     lookupLookupFilter?: LookupLookupFilter;
 }
 
 export interface GetVulnerabilitiesRequest {
+    lookupLookupFilter?: LookupLookupFilter;
+}
+
+export interface GetVulnerabilityRulesRequest {
     lookupLookupFilter?: LookupLookupFilter;
 }
 
@@ -262,6 +283,22 @@ export interface LookupApiInterface {
     getKubernetesClusters(requestParameters: GetKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>>;
 
     /**
+     * Retrieve malware rule resources
+     * @summary Get Malware Rules
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getMalwareRulesRaw(requestParameters: GetMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelMalwareRule>>>;
+
+    /**
+     * Retrieve malware rule resources
+     * Get Malware Rules
+     */
+    getMalwareRules(requestParameters: GetMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelMalwareRule>>;
+
+    /**
      * Retrieve all the data associated with malwares
      * @summary Retrieve Malwares data
      * @param {LookupLookupFilter} [lookupLookupFilter] 
@@ -326,6 +363,22 @@ export interface LookupApiInterface {
     getRegistryAccount(requestParameters: GetRegistryAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryAccount>>;
 
     /**
+     * Retrieve secret rule resources
+     * @summary Get Secret Rules
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getSecretRulesRaw(requestParameters: GetSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecretRule>>>;
+
+    /**
+     * Retrieve secret rule resources
+     * Get Secret Rules
+     */
+    getSecretRules(requestParameters: GetSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecretRule>>;
+
+    /**
      * Retrieve all the data associated with secrets
      * @summary Retrieve Secrets data
      * @param {LookupLookupFilter} [lookupLookupFilter] 
@@ -356,6 +409,22 @@ export interface LookupApiInterface {
      * Retrieve Vulnerabilities data
      */
     getVulnerabilities(requestParameters: GetVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerability>>;
+
+    /**
+     * Retrieve vulnerability rule resources
+     * @summary Get Vulnerability Rules
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getVulnerabilityRulesRaw(requestParameters: GetVulnerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerabilityRule>>>;
+
+    /**
+     * Retrieve vulnerability rule resources
+     * Get Vulnerability Rules
+     */
+    getVulnerabilityRules(requestParameters: GetVulnerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerabilityRule>>;
 
 }
 
@@ -677,6 +746,45 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
     }
 
     /**
+     * Retrieve malware rule resources
+     * Get Malware Rules
+     */
+    async getMalwareRulesRaw(requestParameters: GetMalwareRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelMalwareRule>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/malware-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelMalwareRuleFromJSON));
+    }
+
+    /**
+     * Retrieve malware rule resources
+     * Get Malware Rules
+     */
+    async getMalwareRules(requestParameters: GetMalwareRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelMalwareRule>> {
+        const response = await this.getMalwareRulesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Retrieve all the data associated with malwares
      * Retrieve Malwares data
      */
@@ -833,6 +941,45 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
     }
 
     /**
+     * Retrieve secret rule resources
+     * Get Secret Rules
+     */
+    async getSecretRulesRaw(requestParameters: GetSecretRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecretRule>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/secret-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelSecretRuleFromJSON));
+    }
+
+    /**
+     * Retrieve secret rule resources
+     * Get Secret Rules
+     */
+    async getSecretRules(requestParameters: GetSecretRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecretRule>> {
+        const response = await this.getSecretRulesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Retrieve all the data associated with secrets
      * Retrieve Secrets data
      */
@@ -907,6 +1054,45 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
      */
     async getVulnerabilities(requestParameters: GetVulnerabilitiesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerability>> {
         const response = await this.getVulnerabilitiesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve vulnerability rule resources
+     * Get Vulnerability Rules
+     */
+    async getVulnerabilityRulesRaw(requestParameters: GetVulnerabilityRulesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerabilityRule>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/vulnerability-rules`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelVulnerabilityRuleFromJSON));
+    }
+
+    /**
+     * Retrieve vulnerability rule resources
+     * Get Vulnerability Rules
+     */
+    async getVulnerabilityRules(requestParameters: GetVulnerabilityRulesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerabilityRule>> {
+        const response = await this.getVulnerabilityRulesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -4983,6 +4983,61 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/lookup/malware-rules": {
+      "post": {
+        "tags": ["Lookup"],
+        "summary": "Get Malware Rules",
+        "description": "Retrieve malware rule resources",
+        "operationId": "getMalwareRules",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelMalwareRule" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/lookup/malwares": {
       "post": {
         "tags": ["Lookup"],
@@ -5203,6 +5258,61 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/lookup/secret-rules": {
+      "post": {
+        "tags": ["Lookup"],
+        "summary": "Get Secret Rules",
+        "description": "Retrieve secret rule resources",
+        "operationId": "getSecretRules",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelSecretRule" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/lookup/secrets": {
       "post": {
         "tags": ["Lookup"],
@@ -5279,6 +5389,61 @@
                 "schema": {
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/ModelVulnerability" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/lookup/vulnerability-rules": {
+      "post": {
+        "tags": ["Lookup"],
+        "summary": "Get Vulnerability Rules",
+        "description": "Retrieve vulnerability rule resources",
+        "operationId": "getVulnerabilityRules",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelVulnerabilityRule" }
                 }
               }
             }
@@ -6240,6 +6405,96 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/rules/action/mask": {
+      "post": {
+        "tags": ["Rules"],
+        "summary": "mask Rules",
+        "description": "mask rules",
+        "operationId": "maskRules",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelRulesActionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/rules/action/unmask": {
+      "post": {
+        "tags": ["Rules"],
+        "summary": "Unmask Rules",
+        "description": "Unmask rules",
+        "operationId": "unmaskRules",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelRulesActionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -11150,7 +11405,7 @@
         "tags": ["Search"],
         "summary": "Search Vulnerability Rules",
         "description": "Search across all the data associated with vulnerability rules",
-        "operationId": "searchVulerabilityRules",
+        "operationId": "searchVulnerabilityRules",
         "requestBody": {
           "content": {
             "application/json": {
@@ -13293,6 +13548,7 @@
           "exploitability_score": { "type": "integer" },
           "has_live_connection": { "type": "boolean" },
           "init_exploitability_score": { "type": "integer" },
+          "namespace": { "type": "string" },
           "parsed_attack_vector": { "type": "string" },
           "scan_id": { "type": "string" },
           "urls": { "type": "array", "items": { "type": "string" }, "nullable": true }
@@ -14863,7 +15119,7 @@
         }
       },
       "ModelMalwareRule": {
-        "required": ["masked", "updated_at"],
+        "required": ["masked", "payload", "severity", "summary", "updated_at"],
         "type": "object",
         "properties": {
           "author": { "type": "string" },
@@ -14873,9 +15129,12 @@
           "filetype": { "type": "string" },
           "info": { "type": "string" },
           "masked": { "type": "boolean" },
+          "payload": { "type": "string" },
           "reference": { "type": "string" },
           "rule_id": { "type": "string" },
           "rule_name": { "type": "string" },
+          "severity": { "type": "string" },
+          "summary": { "type": "string" },
           "updated_at": { "type": "integer" },
           "version": { "type": "string" }
         }
@@ -15236,6 +15495,13 @@
           "refresh_token": { "type": "string" }
         }
       },
+      "ModelRulesActionRequest": {
+        "required": ["rule_ids"],
+        "type": "object",
+        "properties": {
+          "rule_ids": { "type": "array", "items": { "type": "string" }, "nullable": true }
+        }
+      },
       "ModelSbomRequest": {
         "required": ["scan_id"],
         "type": "object",
@@ -15593,15 +15859,18 @@
         }
       },
       "ModelSecretRule": {
-        "required": ["level", "masked", "updated_at"],
+        "required": ["level", "masked", "summary", "payload", "severity", "updated_at"],
         "type": "object",
         "properties": {
-          "id": { "type": "integer" },
           "level": { "type": "string" },
           "masked": { "type": "boolean" },
           "name": { "type": "string" },
           "part": { "type": "string" },
+          "payload": { "type": "string" },
+          "rule_id": { "type": "string" },
+          "severity": { "type": "string" },
           "signature_to_match": { "type": "string" },
+          "summary": { "type": "string" },
           "updated_at": { "type": "integer" }
         }
       },
@@ -15837,10 +16106,11 @@
           "cve_cvss_score",
           "cve_overall_score",
           "cve_attack_vector",
-          "urls",
+          "url",
           "exploit_poc",
           "parsed_attack_vector",
-          "rule_id"
+          "rule_id",
+          "namespace"
         ],
         "type": "object",
         "properties": {
@@ -15862,6 +16132,7 @@
           "exploit_poc": { "type": "string" },
           "has_live_connection": { "type": "boolean" },
           "masked": { "type": "boolean" },
+          "namespace": { "type": "string" },
           "node_id": { "type": "string" },
           "parsed_attack_vector": { "type": "string" },
           "resources": {
@@ -15871,49 +16142,97 @@
           },
           "rule_id": { "type": "string" },
           "updated_at": { "type": "integer" },
-          "urls": { "type": "array", "items": {}, "nullable": true }
+          "url": { "type": "string" }
         }
       },
       "ModelVulnerabilityRule": {
         "required": [
           "node_id",
           "cve_id",
-          "cve_type",
-          "cve_severity",
-          "cve_fixed_in",
-          "cve_link",
-          "cve_description",
-          "cve_cvss_score",
-          "cve_overall_score",
-          "cve_attack_vector",
+          "cve_types",
+          "cve_severities",
+          "cve_fixed_ins",
+          "cve_links",
+          "cve_descriptions",
+          "cve_cvss_scores",
+          "cve_overall_scores",
+          "cve_attack_vectors",
           "urls",
-          "exploit_poc",
+          "exploit_pocs",
           "masked",
           "updated_at",
-          "parsed_attack_vector"
+          "package_names",
+          "parsed_attack_vectors",
+          "cisa_kev",
+          "epss_score",
+          "namespaces"
         ],
         "type": "object",
         "properties": {
-          "cve_attack_vector": { "type": "string" },
-          "cve_cvss_score": { "type": "number" },
-          "cve_description": { "type": "string" },
-          "cve_fixed_in": { "type": "string" },
+          "cisa_kev": { "type": "boolean" },
+          "cve_attack_vectors": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "cve_cvss_scores": { "type": "array", "items": {}, "nullable": true },
+          "cve_descriptions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "cve_fixed_ins": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "cve_id": { "type": "string" },
-          "cve_link": { "type": "string" },
-          "cve_overall_score": { "type": "number" },
-          "cve_severity": { "type": "string" },
-          "cve_type": { "type": "string" },
-          "exploit_poc": { "type": "string" },
+          "cve_links": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "cve_overall_scores": { "type": "array", "items": {}, "nullable": true },
+          "cve_severities": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "cve_types": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "epss_score": { "type": "number" },
+          "exploit_pocs": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "masked": { "type": "boolean" },
+          "namespaces": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "node_id": { "type": "string" },
-          "parsed_attack_vector": { "type": "string" },
+          "package_names": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "parsed_attack_vectors": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "resources": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
           "updated_at": { "type": "integer" },
-          "urls": { "type": "array", "items": {}, "nullable": true }
+          "urls": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
       "ModelVulnerabilityScanConfigLanguage": {

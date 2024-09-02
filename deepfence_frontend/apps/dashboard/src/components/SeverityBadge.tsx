@@ -187,6 +187,7 @@ export const SeverityBadgeIcon = ({
       {severity === SeverityEnum.High && <SeverityHigh theme={theme} />}
       {severity === SeverityEnum.Medium && <SeverityMedium theme={theme} />}
       {severity === SeverityEnum.Low && <SeverityLow theme={theme} />}
+      {severity === ('info' as string) && <SeverityUnknown />}
       {(!severity || severity === SeverityEnum.Unknown) && <SeverityUnknown />}
     </div>
   );

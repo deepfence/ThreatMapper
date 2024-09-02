@@ -21,12 +21,6 @@ import { exists, mapValues } from '../runtime';
 export interface ModelSecretRule {
     /**
      * 
-     * @type {number}
-     * @memberof ModelSecretRule
-     */
-    id?: number;
-    /**
-     * 
      * @type {string}
      * @memberof ModelSecretRule
      */
@@ -54,7 +48,31 @@ export interface ModelSecretRule {
      * @type {string}
      * @memberof ModelSecretRule
      */
+    payload: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecretRule
+     */
+    rule_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecretRule
+     */
+    severity: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecretRule
+     */
     signature_to_match?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecretRule
+     */
+    summary: string;
     /**
      * 
      * @type {number}
@@ -70,6 +88,9 @@ export function instanceOfModelSecretRule(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "level" in value;
     isInstance = isInstance && "masked" in value;
+    isInstance = isInstance && "payload" in value;
+    isInstance = isInstance && "severity" in value;
+    isInstance = isInstance && "summary" in value;
     isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
@@ -85,12 +106,15 @@ export function ModelSecretRuleFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'id': !exists(json, 'id') ? undefined : json['id'],
         'level': json['level'],
         'masked': json['masked'],
         'name': !exists(json, 'name') ? undefined : json['name'],
         'part': !exists(json, 'part') ? undefined : json['part'],
+        'payload': json['payload'],
+        'rule_id': !exists(json, 'rule_id') ? undefined : json['rule_id'],
+        'severity': json['severity'],
         'signature_to_match': !exists(json, 'signature_to_match') ? undefined : json['signature_to_match'],
+        'summary': json['summary'],
         'updated_at': json['updated_at'],
     };
 }
@@ -104,12 +128,15 @@ export function ModelSecretRuleToJSON(value?: ModelSecretRule | null): any {
     }
     return {
         
-        'id': value.id,
         'level': value.level,
         'masked': value.masked,
         'name': value.name,
         'part': value.part,
+        'payload': value.payload,
+        'rule_id': value.rule_id,
+        'severity': value.severity,
         'signature_to_match': value.signature_to_match,
+        'summary': value.summary,
         'updated_at': value.updated_at,
     };
 }

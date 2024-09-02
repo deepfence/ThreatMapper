@@ -373,4 +373,91 @@ export const lookupQueries = createQueryKeys('lookup', {
       },
     };
   },
+  lookupVulnerabilityRule: (params: { nodeId: string }) => {
+    return {
+      queryKey: [params],
+      queryFn: async () => {
+        const { nodeId } = params;
+        const lookupApi = apiWrapper({
+          fn: getLookupApiClient().lookupVulnerabilityRules,
+        });
+        const lookupResult = await lookupApi({
+          lookupLookupFilter: {
+            node_ids: [nodeId],
+            in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 1,
+            },
+          },
+        });
+
+        if (!lookupResult.ok || !lookupResult.value.length) {
+          throw new Error(`Failed to lookupVulnerabilityRules: ${nodeId}`);
+        }
+
+        return {
+          rule: lookupResult.value[0],
+        };
+      },
+    };
+  },
+  lookupSecretRule: (params: { nodeId: string }) => {
+    return {
+      queryKey: [params],
+      queryFn: async () => {
+        const { nodeId } = params;
+        const lookupApi = apiWrapper({
+          fn: getLookupApiClient().lookupSecretRules,
+        });
+        const lookupResult = await lookupApi({
+          lookupLookupFilter: {
+            node_ids: [nodeId],
+            in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 1,
+            },
+          },
+        });
+
+        if (!lookupResult.ok || !lookupResult.value.length) {
+          throw new Error(`Failed to lookupSecretIncidentRule: ${nodeId}`);
+        }
+
+        return {
+          rule: lookupResult.value[0],
+        };
+      },
+    };
+  },
+  lookupMalwareRule: (params: { nodeId: string }) => {
+    return {
+      queryKey: [params],
+      queryFn: async () => {
+        const { nodeId } = params;
+        const lookupApi = apiWrapper({
+          fn: getLookupApiClient().lookupMalwareRules,
+        });
+        const lookupResult = await lookupApi({
+          lookupLookupFilter: {
+            node_ids: [nodeId],
+            in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 1,
+            },
+          },
+        });
+
+        if (!lookupResult.ok || !lookupResult.value.length) {
+          throw new Error(`Failed to lookupMalwareIncidentRule: ${nodeId}`);
+        }
+
+        return {
+          rule: lookupResult.value[0],
+        };
+      },
+    };
+  },
 });

@@ -16,6 +16,7 @@ apis/LookupApi.ts
 apis/MalwareScanApi.ts
 apis/RegistryApi.ts
 apis/ReportsApi.ts
+apis/RulesApi.ts
 apis/ScanResultsApi.ts
 apis/SearchApi.ts
 apis/SecretScanApi.ts
@@ -174,6 +175,7 @@ models/ModelRegistryImagesReq.ts
 models/ModelRegistryListResp.ts
 models/ModelRegistryUpdateReq.ts
 models/ModelResponseAccessToken.ts
+models/ModelRulesActionRequest.ts
 models/ModelSbomRequest.ts
 models/ModelSbomResponse.ts
 models/ModelScanCompareReq.ts
