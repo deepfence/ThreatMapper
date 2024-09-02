@@ -376,6 +376,8 @@ type Vulnerability struct {
 	Resources              []BasicNode `json:"resources" required:"false"`
 	RuleID                 string      `json:"rule_id" required:"true"`
 	Namespace              string      `json:"namespace" required:"true"`
+	CISAKEV                bool        `json:"cisa_kev" required:"true"`
+	EPSSScore              float64     `json:"epss_score" required:"true"`
 }
 
 func (Vulnerability) NodeType() string {

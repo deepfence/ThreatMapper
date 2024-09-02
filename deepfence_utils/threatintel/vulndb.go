@@ -569,7 +569,7 @@ func saveVulnerabilityRulesInNeo4j(ctx context.Context, vulnerabilityRules []map
 	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
-	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(600*time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
