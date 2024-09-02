@@ -13,7 +13,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "v2.3.0"
+    "version": "v3.0.0"
   },
   "externalDocs": {
     "description": "Deepfence Community",
@@ -16110,10 +16110,13 @@
           "exploit_poc",
           "parsed_attack_vector",
           "rule_id",
-          "namespace"
+          "namespace",
+          "cisa_kev",
+          "epss_score"
         ],
         "type": "object",
         "properties": {
+          "cisa_kev": { "type": "boolean" },
           "cve_attack_vector": { "type": "string" },
           "cve_caused_by_package": { "type": "string" },
           "cve_caused_by_package_path": { "type": "string" },
@@ -16129,6 +16132,7 @@
             "type": "string"
           },
           "cve_type": { "type": "string" },
+          "epss_score": { "type": "number" },
           "exploit_poc": { "type": "string" },
           "has_live_connection": { "type": "boolean" },
           "masked": { "type": "boolean" },
