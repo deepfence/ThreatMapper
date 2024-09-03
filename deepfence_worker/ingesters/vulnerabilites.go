@@ -78,23 +78,29 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 		data["parsed_attack_vector"] = parsed_attack_vectors[0]
 		data["cisa_kev"] = cisa_kev
 		data["epss_score"] = epss_score
-		data["url"] = urls
+		data["urls"] = urls
 		if len(exploit_pocs) > 0 {
 			data["exploit_poc"] = exploit_pocs[0] // First one is enough
 		}
+		found := -1
 		for j := range package_names {
 			if data["cve_caused_by_package"].(string) == package_names[j].(string) {
 				if data["namespace"].(string) == namespaces[j].(string) {
-					data["cve_type"] = cve_types[j]
-					data["cve_attack_vector"] = cve_attack_vectors[j]
-					data["cve_fixed_in"] = cve_fixed_ins[j]
-					data["cve_cvss_score"] = cve_cvss_scores[j]
-					data["parsed_attack_vector"] = parsed_attack_vectors[j]
-					data["cve_description"] = cve_descriptions[j]
+					found = j
 					break
 				}
 			}
 		}
+		if found == -1 {
+			log.Warn().Msgf("Ill-formed vuln rule: %v", data["cve_id"])
+			found = 0
+		}
+		data["cve_type"] = cve_types[found]
+		data["cve_attack_vector"] = cve_attack_vectors[found]
+		data["cve_fixed_in"] = cve_fixed_ins[found]
+		data["cve_cvss_score"] = cve_cvss_scores[found]
+		data["parsed_attack_vector"] = parsed_attack_vectors[found]
+		data["cve_description"] = cve_descriptions[found]
 	}
 
 	if _, err = tx.Run(ctx, `
