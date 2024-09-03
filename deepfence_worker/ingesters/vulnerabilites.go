@@ -84,7 +84,9 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 		}
 		found := -1
 		for j := range package_names {
-			if data["cve_caused_by_package"].(string) == package_names[j].(string) {
+			// cve_caused_by_package: vim-common:2:9.0.1378-2
+			// package_names: vim-common
+			if strings.HasPrefix(data["cve_caused_by_package"].(string), package_names[j].(string)+":") {
 				if data["namespace"].(string) == namespaces[j].(string) {
 					found = j
 					break
