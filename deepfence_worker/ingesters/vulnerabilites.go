@@ -42,7 +42,7 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 
 	res, err := tx.Run(ctx, `
 		UNWIND $batch as row WITH row.data as data
-		MATCH (v:VulnerabilityStub{node_id:data.cve_id})
+		MATCH (v:VulnerabilityStub{rule_id:data.cve_id})
 		RETURN v.package_names, v.namespaces, v.cve_types, v.cve_attack_vectors, v.cve_fixed_ins, v.cve_cvss_scores, v.parsed_attack_vectors, v.cisa_kev, v.epss_score, v.cve_descriptions, v.urls, v.exploit_pocs`,
 		map[string]interface{}{"batch": dataMap})
 	if err != nil {
@@ -105,7 +105,7 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 
 	if _, err = tx.Run(ctx, `
 		UNWIND $batch as row WITH row.data as data, row.scan_id as scan_id, row.node_id as node_id
-		MATCH (v:VulnerabilityStub{node_id:data.cve_id})
+		MATCH (v:VulnerabilityStub{rule_id:data.cve_id})
 		MERGE (n:Vulnerability{node_id:node_id})
 		MERGE (n) -[:IS]-> (v)
 		SET n += data,
