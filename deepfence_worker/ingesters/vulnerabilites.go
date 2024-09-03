@@ -43,7 +43,7 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 	res, err := tx.Run(ctx, `
 		UNWIND $batch as row WITH row.data as data
 		MATCH (v:VulnerabilityStub{node_id:data.cve_id})
-		RETURN v.package_names, v.namespaces, v.cve_types, v.cve_attack_vectors, v.cve_fixed_ins, v.cve_cvss_scores, v.parsed_attack_vectors, v.cisa_kev, v.epss_score`,
+		RETURN v.package_names, v.namespaces, v.cve_types, v.cve_attack_vectors, v.cve_fixed_ins, v.cve_cvss_scores, v.parsed_attack_vectors, v.cisa_kev, v.epss_score, v.cve_descriptions, v.urls, v.exploit_pocs`,
 		map[string]interface{}{"batch": dataMap})
 	if err != nil {
 		log.Error().Msgf(err.Error())
@@ -66,6 +66,9 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 		parsed_attack_vectors := rec.Values[6].([]any)
 		cisa_kev := rec.Values[7].(bool)
 		epss_score := rec.Values[8].(any)
+		cve_descriptions := rec.Values[9].([]any)
+		urls := rec.Values[10].([]any)
+		exploit_pocs := rec.Values[11].([]any)
 
 		data := dataMap[i]["data"].(map[string]any)
 		data["cve_type"] = cve_types[0]
@@ -75,6 +78,10 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 		data["parsed_attack_vector"] = parsed_attack_vectors[0]
 		data["cisa_kev"] = cisa_kev
 		data["epss_score"] = epss_score
+		data["url"] = urls
+		if len(exploit_pocs) > 0 {
+			data["exploit_poc"] = exploit_pocs[0] // First one is enough
+		}
 		for j := range package_names {
 			if data["cve_caused_by_package"].(string) == package_names[j].(string) {
 				if data["namespace"].(string) == namespaces[j].(string) {
@@ -83,6 +90,7 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 					data["cve_fixed_in"] = cve_fixed_ins[j]
 					data["cve_cvss_score"] = cve_cvss_scores[j]
 					data["parsed_attack_vector"] = parsed_attack_vectors[j]
+					data["cve_description"] = cve_descriptions[j]
 					break
 				}
 			}
