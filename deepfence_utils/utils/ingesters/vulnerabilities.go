@@ -83,6 +83,7 @@ type VulnerabilityData struct {
 	ExploitabilityScore     int    `json:"exploitability_score"`
 	InitExploitabilityScore int    `json:"init_exploitability_score"`
 	HasLiveConnection       bool   `json:"has_live_connection"`
+	Namespace               string `json:"namespace"`
 }
 
 func (c Vulnerability) GetVulnerabilityData() VulnerabilityData {
@@ -96,5 +97,6 @@ func (c Vulnerability) GetVulnerabilityData() VulnerabilityData {
 		ExploitabilityScore:     c.ExploitabilityScore,
 		InitExploitabilityScore: c.InitExploitabilityScore,
 		HasLiveConnection:       c.HasLiveConnection,
+		Namespace:               c.Namespace,
 	}
 }
