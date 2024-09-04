@@ -94,7 +94,7 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 			}
 		}
 		if found == -1 {
-			log.Warn().Msgf("Ill-formed vuln rule: %v", data["cve_id"])
+			log.Debug().Msgf("Ill-formed vuln rule: %v", data["cve_id"])
 			found = 0
 		}
 		data["cve_type"] = cve_types[found]
