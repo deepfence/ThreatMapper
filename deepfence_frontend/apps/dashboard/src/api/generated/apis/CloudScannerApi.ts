@@ -249,7 +249,7 @@ export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiI
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersCloudComplianceScanStatus.map(IngestersCloudComplianceScanStatusToJSON),
+            body: requestParameters.ingestersCloudComplianceScanStatus?.map(IngestersCloudComplianceScanStatusToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -287,7 +287,7 @@ export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiI
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersCloudCompliance.map(IngestersCloudComplianceToJSON),
+            body: requestParameters.ingestersCloudCompliance?.map(IngestersCloudComplianceToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);

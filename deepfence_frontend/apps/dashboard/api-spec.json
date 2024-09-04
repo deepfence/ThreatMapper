@@ -16106,7 +16106,7 @@
           "cve_cvss_score",
           "cve_overall_score",
           "cve_attack_vector",
-          "url",
+          "urls",
           "exploit_poc",
           "parsed_attack_vector",
           "rule_id",
@@ -16146,7 +16146,7 @@
           },
           "rule_id": { "type": "string" },
           "updated_at": { "type": "integer" },
-          "url": { "type": "string" }
+          "urls": { "type": "array", "items": {}, "nullable": true }
         }
       },
       "ModelVulnerabilityRule": {
