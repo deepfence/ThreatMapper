@@ -31,10 +31,10 @@ require (
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
-	github.com/deepfence/YaraHunter v0.0.0-20240709125720-8dbb98828c59
+	github.com/deepfence/YaraHunter v0.0.0-20240910165656-160ddf431c1f
 	github.com/deepfence/agent-plugins-grpc v1.1.0
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20240807105002-4943c14781c5
-	github.com/deepfence/match-scanner v0.0.0-20240717123812-c91c924786f7
+	github.com/deepfence/match-scanner v0.0.0-20240910141915-bc37e8a490c2
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/hibiken/asynq v0.24.1
@@ -121,7 +121,7 @@ require (
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
 	github.com/github/go-spdx/v2 v2.2.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.2 // indirect
 	github.com/glebarez/sqlite v1.11.0 // indirect
@@ -155,7 +155,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hhrutter/lzw v1.0.0 // indirect
 	github.com/hhrutter/tiff v1.0.1 // indirect
-	github.com/hillu/go-yara/v4 v4.3.2 // indirect
+	github.com/hillu/go-yara/v4 v4.3.3 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
@@ -258,7 +258,7 @@ require (
 	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678 // indirect
 	golang.org/x/image v0.15.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/oauth2 v0.20.0 // indirect
+	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/term v0.22.0 // indirect
@@ -266,7 +266,7 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/genproto v0.0.0-20240708141625-4ad9e859172b // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240708141625-4ad9e859172b // indirect
-	google.golang.org/grpc v1.65.0 // indirect
+	google.golang.org/grpc v1.66.1 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
