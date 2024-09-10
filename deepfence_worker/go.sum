@@ -216,8 +216,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 h1:rpfIENRNNilwHwZeG5+P150SMrnNEcHYvcCuK6dPZSg=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0/go.mod h1:v57UDF4pDQJcEfFUCRop3lJL149eHGSe9Jvczhzjo/0=
-github.com/deepfence/match-scanner v0.0.0-20240717123812-c91c924786f7 h1:FcvhM21VmNemuPxV250RZu0X+y/bA1usJSj64xu6ZeU=
-github.com/deepfence/match-scanner v0.0.0-20240717123812-c91c924786f7/go.mod h1:eSZaZ9yVo4FoA3hJzTVWJL8HKvm3YPQzw3Nx/NKuq9A=
+github.com/deepfence/match-scanner v0.0.0-20240910141915-bc37e8a490c2 h1:i0+rqpylnHg/QKj/KU4rI5BFwLLSESF1Mu30qq6i/4E=
+github.com/deepfence/match-scanner v0.0.0-20240910141915-bc37e8a490c2/go.mod h1:eSZaZ9yVo4FoA3hJzTVWJL8HKvm3YPQzw3Nx/NKuq9A=
 github.com/deepfence/vessel v0.12.3 h1:C34t+sV+JoFdfYhg+uyS+YOEDAFIYjBKHShD3emDISA=
 github.com/deepfence/vessel v0.12.3/go.mod h1:bY97YUKMm0Oxasz/9o7Te60FjWCQWUYpgiWNC1E00xo=
 github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1/go.mod h1:+hnT3ywWDTAFrW5aE+u2Sa/wT555ZqwoCS+pk3p6ry4=
