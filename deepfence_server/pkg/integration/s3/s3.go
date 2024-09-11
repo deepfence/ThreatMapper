@@ -109,17 +109,17 @@ func (s S3) IsValidCredential(ctx context.Context) (bool, error) {
 			Region: aws.String(s.Config.AWSRegion),
 		}
 
+		sess, err = session.NewSession(&awsConfig)
+		if err != nil {
+			log.Error().Err(err).Msg("error creating aws session")
+			return false, err
+		}
+
 		// if targetRoleARN is empty, that means
 		// it is not a cross account ecr, no need to use stscreds
 		if s.Config.TargetAccountRoleARN != "" {
 			creds := stscreds.NewCredentials(sess, s.Config.TargetAccountRoleARN)
 			awsConfig.Credentials = creds
-		}
-
-		sess, err = session.NewSession(&awsConfig)
-		if err != nil {
-			log.Error().Err(err).Msg("error creating aws session")
-			return false, err
 		}
 	} else {
 		sess, err = session.NewSession(&aws.Config{
