@@ -13,7 +13,7 @@ global:
   # imageRepoPrefix: "docker.io"
   # this image tag is used everywhere for console services
   # to override set tag at service level
-  imageTag: 2.3.0
+  imageTag: 2.3.1
   storageClass: "standard"
   # used in service name generation
   # <service>.<namespace>.svc.<cluster_domain>
@@ -60,7 +60,7 @@ kafka:
     repository: deepfenceio/deepfence_kafka_broker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.3.0
+    # tag: 2.3.1
   config:
     # required, recommended to generate new UUID using kafka-storage tool
     STORAGE_UUID: hNQ55qppT5GGybF52ZGlOQ
@@ -98,7 +98,7 @@ postgres:
     repository: deepfenceio/deepfence_postgres_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.3.0
+    # tag: 2.3.1
   storageClass: ""
   volumeSize: 50G
   resources:
@@ -127,7 +127,7 @@ redis:
     repository: deepfenceio/deepfence_redis_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.3.0
+    # tag: 2.3.1
   storageClass: ""
   volumeSize: 30G
   resources:
@@ -166,7 +166,7 @@ fileserver:
     repository: deepfenceio/deepfence_file_server_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.3.0
+    # tag: 2.3.1
   storageClass: ""
   volumeSize: 100G
   resources:
@@ -227,7 +227,7 @@ neo4j:
   image:
     repository: deepfenceio/deepfence_neo4j_ce
     pullPolicy: Always
-    # tag: 2.3.0
+    # tag: 2.3.1
   storageClass: ""
   volumeSize: 100G
   resources:
@@ -289,7 +289,7 @@ router:
     repository: deepfenceio/deepfence_router_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.3.0
+    # tag: 2.3.1
   forceHttpsRedirect: true
   podAnnotations: {}
   podSecurityContext: {}
@@ -352,7 +352,7 @@ server:
     repository: deepfenceio/deepfence_server_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.3.0
+    # tag: 2.3.1
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}
@@ -384,7 +384,7 @@ worker:
     repository: deepfenceio/deepfence_worker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.3.0
+    # tag: 2.3.1
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}
@@ -415,7 +415,7 @@ ingester:
     repository: deepfenceio/deepfence_worker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.3.0
+    # tag: 2.3.1
   podAnnotations: {}
   podSecurityContext: {}
   securityContext: {}
@@ -445,7 +445,7 @@ scheduler:
     repository: deepfenceio/deepfence_worker_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.3.0
+    # tag: 2.3.1
   service:
     type: ClusterIP
     port: 8080
@@ -470,7 +470,7 @@ ui:
     repository: deepfenceio/deepfence_ui_ce
     pullPolicy: Always
     # Overrides the image tag whose default is .global.imageTag
-    # tag: 2.3.0
+    # tag: 2.3.1
   service:
     type: ClusterIP
     port: 8081
@@ -519,7 +519,7 @@ console_agents:
       repository: deepfenceio/deepfence_agent_ce
       pullPolicy: Always
       # Overrides the image tag whose default is .global.imageTag
-      # tag: 2.3.0
+      # tag: 2.3.1
     resources:
       requests:
         cpu: 150m
@@ -543,7 +543,7 @@ console_agents:
       repository: deepfenceio/deepfence_cluster_agent_ce
       pullPolicy: Always
       # Overrides the image tag whose default is .global.imageTag
-      # tag: 2.3.0
+      # tag: 2.3.1
     resources:
       requests:
         cpu: 25m

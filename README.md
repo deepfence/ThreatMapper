@@ -94,10 +94,10 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
-    quay.io/deepfenceio/deepfence_agent_ce:2.3.0
+    quay.io/deepfenceio/deepfence_agent_ce:2.3.1
 ```
 
-Note: Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.3.0-multiarch` is supported in amd64 and arm64/v8 architectures.
+Note: Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.3.1-multiarch` is supported in amd64 and arm64/v8 architectures.
 
 On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/threatmapper/docs/v2.3/sensors/kubernetes/)
 
