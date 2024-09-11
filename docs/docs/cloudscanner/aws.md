@@ -143,3 +143,79 @@ For full information, refer to [Operations: Compliance Scanning](/docs/operation
 :::tip Maximizing Coverage
 For maximum coverage, you can use both Cloud Scanner and local Sensor Agent compliance scans together. You could scan your AWS infrastructure using Cloud Scanner, and [scan selected VMs deployed within AWS](other) using the Sensor Agent.
 :::
+
+## Cloud Scanner on EKS Cluster using IRSA
+
+:::info
+
+**Pre-requisite:**
+1. Associate OIDC provider with the EKS cluster where cloud scanner is going to be deployed.
+
+    ([refer here for aws documentation on enable-iam-roles-for-service-accounts](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html))
+
+2. kubectl and helm command line tools are installed and configured to access the cluster where cloud scanner is going to be deployed
+
+:::
+
+### Single Account Cloud Scanner on EKS cluster using IRSA
+
+1. Create the EKS IRSA role using the terrafrom script [single-account-eks-iam-role](https://github.com/deepfence/cloud-scanner/tree/main/cloudformation/self-hosted/eks-iam-roles/single-account-eks-iam-role)
+2. If cloudformation is preferred create the EKS IRSA role using the cloudformation template [deepfence-cloud-scanner-single-account-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/eks-iam-roles/single-account-eks-iam-role/deepfence-cloud-scanner-single-account-iam-role.template)
+3. Note **namespace**, **service account name** and **iam role arn** from the output of terrafrom or cloudformation deployment
+4. Add deepfence cloud scanner helm repo
+    ```
+    helm repo add cloud-scanner https://deepfence-helm-charts.s3.amazonaws.com/cloud-scanner
+    ```
+5. Download the helm chart values for depfence-cloud-scanner chart to file **cloud-scanner.yaml**
+    ```
+    helm show values cloud-scanner/deepfence-cloud-scanner > cloud-scanner.yaml
+    ```
+4. Update the deepfence-cloud-scanner helm chart values with deepfence key and console url, add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
+    ```yaml
+    serviceAccount:
+      # Specifies whether a service account should be created
+      create: true
+      # Automatically mount a ServiceAccount's API credentials?
+      automount: true
+      # Annotations to add to the service account
+      annotations:
+        "eks.amazonaws.com/role-arn": "arn:aws:iam::123456789:role/test-cloud-scanner"
+      # The name of the service account to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: "deepfence-cloud-scanner"
+    ```
+6. Install the helm chart in the same *namespace* from Step 3.
+    ```
+    helm install cloud-scanner cloud-scanner/deepfence-cloud-scanner -f cloud-scanner.yaml -n deepfence
+    ```
+
+### Organization Account Cloud Scanner on EKS cluster using IRSA
+
+1. Create the EKS IRSA role using the cloudformation template [deepfence-cloud-scanner-organization-stackset-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/eks-iam-roles/organization-eks-iam-role/deepfence-cloud-scanner-organization-stackset-iam-role.template)
+2. Note **namespace**, **service account name** and **iam role arn** from the output of cloudformation deployment
+3. Add deepfence cloud scanner helm repo
+    ```
+    helm repo add cloud-scanner https://deepfence-helm-charts.s3.amazonaws.com/cloud-scanner
+    ```
+4. Download the helm chart values for depfence-cloud-scanner chart to file **cloud-scanner.yaml**
+    ```
+    helm show values cloud-scanner/deepfence-cloud-scanner > cloud-scanner.yaml
+    ```
+5. Update the deepfence-cloud-scanner helm chart values with deepfence key and console url, add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
+    ```yaml
+    serviceAccount:
+      # Specifies whether a service account should be created
+      create: true
+      # Automatically mount a ServiceAccount's API credentials?
+      automount: true
+      # Annotations to add to the service account
+      annotations:
+        "eks.amazonaws.com/role-arn": "arn:aws:iam::123456789:role/test-cloud-scanner"
+      # The name of the service account to use.
+      # If not set and create is true, a name is generated using the fullname template
+      name: "deepfence-cloud-scanner"
+    ```
+6. Install the helm chart in the same *namespace* from Step 2.
+    ```
+    helm install cloud-scanner cloud-scanner/deepfence-cloud-scanner -f cloud-scanner.yaml -n deepfence
+    ```
