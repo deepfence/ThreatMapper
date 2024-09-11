@@ -159,18 +159,18 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
 
 ### Single Account Cloud Scanner on EKS cluster using IRSA
 
-1. Create the EKS IRSA role using the terrafrom script [single-account-eks-iam-role](https://github.com/deepfence/cloud-scanner/tree/main/cloudformation/self-hosted/eks-iam-roles/single-account-eks-iam-role)
+1. Create the EKS IRSA role using the terraform script [single-account-eks-iam-role](https://github.com/deepfence/cloud-scanner/tree/main/cloudformation/self-hosted/eks-iam-roles/single-account-eks-iam-role)
 2. If cloudformation is preferred create the EKS IRSA role using the cloudformation template [deepfence-cloud-scanner-single-account-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/eks-iam-roles/single-account-eks-iam-role/deepfence-cloud-scanner-single-account-iam-role.template)
-3. Note **namespace**, **service account name** and **iam role arn** from the output of terrafrom or cloudformation deployment
-4. Add deepfence cloud scanner helm repo
+3. Note **namespace**, **service account name** and **iam role arn** from the output of terraform or cloudformation deployment
+4. Add Deepfence cloud scanner helm repo
     ```
     helm repo add cloud-scanner https://deepfence-helm-charts.s3.amazonaws.com/cloud-scanner
     ```
 5. Download the helm chart values for depfence-cloud-scanner chart to file **cloud-scanner.yaml**
     ```
-    helm show values cloud-scanner/deepfence-cloud-scanner > cloud-scanner.yaml
+    helm show values cloud-scanner/deepfence-cloud-scanner --version THREATMAPPER_VERSION > cloud-scanner.yaml
     ```
-4. Update the deepfence-cloud-scanner helm chart values with deepfence key and console url, add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
+6. Update the deepfence-cloud-scanner helm chart values with deepfence key and console url, add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
     ```yaml
     serviceAccount:
       # Specifies whether a service account should be created
@@ -184,22 +184,25 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
       # If not set and create is true, a name is generated using the fullname template
       name: "deepfence-cloud-scanner"
     ```
-6. Install the helm chart in the same *namespace* from Step 3.
+7. Install the helm chart in the same *namespace* from Step 3.
     ```
-    helm install cloud-scanner cloud-scanner/deepfence-cloud-scanner -f cloud-scanner.yaml -n deepfence
+    helm install -f cloud-scanner.yaml cloud-scanner cloud-scanner/deepfence-cloud-scanner \
+        --namespace deepfence \
+        --create-namespace \
+        --version THREATMAPPER_VERSION
     ```
 
 ### Organization Account Cloud Scanner on EKS cluster using IRSA
 
 1. Create the EKS IRSA role using the cloudformation template [deepfence-cloud-scanner-organization-stackset-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/eks-iam-roles/organization-eks-iam-role/deepfence-cloud-scanner-organization-stackset-iam-role.template)
 2. Note **namespace**, **service account name** and **iam role arn** from the output of cloudformation deployment
-3. Add deepfence cloud scanner helm repo
+3. Add Deepfence cloud scanner helm repo
     ```
     helm repo add cloud-scanner https://deepfence-helm-charts.s3.amazonaws.com/cloud-scanner
     ```
 4. Download the helm chart values for depfence-cloud-scanner chart to file **cloud-scanner.yaml**
     ```
-    helm show values cloud-scanner/deepfence-cloud-scanner > cloud-scanner.yaml
+    helm show values cloud-scanner/deepfence-cloud-scanner --version THREATMAPPER_VERSION > cloud-scanner.yaml
     ```
 5. Update the deepfence-cloud-scanner helm chart values with deepfence key and console url, add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
     ```yaml
@@ -217,5 +220,8 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
     ```
 6. Install the helm chart in the same *namespace* from Step 2.
     ```
-    helm install cloud-scanner cloud-scanner/deepfence-cloud-scanner -f cloud-scanner.yaml -n deepfence
+    helm install -f cloud-scanner.yaml cloud-scanner cloud-scanner/deepfence-cloud-scanner \
+        --namespace deepfence \
+        --create-namespace \
+        --version THREATMAPPER_VERSION
     ```
