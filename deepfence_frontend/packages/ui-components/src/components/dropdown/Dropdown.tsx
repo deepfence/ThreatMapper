@@ -10,7 +10,7 @@ export interface DropdownProps extends DropdownPrimitive.DropdownMenuProps {
   content: React.ReactNode;
   // pass true if you want to merge passed children with default trigger button
   triggerAsChild?: boolean;
-  align?: DropdownPrimitive.MenuContentProps['align'];
+  align?: DropdownPrimitive.DropdownMenuContentProps['align'];
   disabled?: boolean;
 }
 

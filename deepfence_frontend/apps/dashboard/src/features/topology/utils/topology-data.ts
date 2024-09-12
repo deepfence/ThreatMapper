@@ -1,3 +1,8 @@
+/* eslint-disable react/no-is-mounted */
+/* TODO: somehow eslint is not happy with method calls inside class
+ * and started identifying it as react isMounted() calls.
+ */
+
 import { remove } from 'lodash-es';
 
 import {
