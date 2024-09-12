@@ -846,6 +846,39 @@ func LinkNodes(ctx context.Context, task *asynq.Task) error {
 		return err
 	}
 
+	for _, scanType := range []utils.Neo4jScanType{
+		utils.NEO4JVulnerabilityScan,
+		utils.NEO4JSecretScan,
+		utils.NEO4JMalwareScan } {
+		scanNode := string(scanType)
+		statusField := ingestersUtil.ScanStatusField[scanType]
+		latestField := ingestersUtil.LatestScanIDField[scanType]
+		countField := ingestersUtil.ScanCountField[scanType]
+		if _, err = session.Run(ctx, `
+		MATCH (n:Container)
+		WHERE NOT EXISTS((n)<-[:SCANNED]-(:`+scanNode+`))
+		MATCH (i:ContainerImage{node_id:n.docker_image_id})
+		MATCH (i) -[:SCANNED]- (s:`+scanNode+`)
+		WITH max(s.updated_at) as latest, s, n
+		MATCH (s) -[r:DETECTED]- (v)
+		MERGE (news:`+scanNode+`{node_id:n.node_id+"-"+toString(TIMESTAMP())})
+		MERGE (news)-[:DETECTED{masked:r.masked}]-> (v)
+		MERGE (n) <-[:SCANNED]- (news)
+		WITH n, news, s, count(v) as cnt
+		SET news.status = s.status,
+		    news.updated_at = TIMESTAMP(),
+		    news.created_at = s.created_at,
+		    news.is_priority = s.is_priority,
+		    news.retries = s.retries,
+		    news.status_message = s.status_message,
+			n.`+statusField+` = s.status,
+			n.`+latestField+` = news.node_id,
+			n.`+countField+` = cnt`,
+			map[string]interface{}{}, txConfig); err != nil {
+			return err
+		}
+	}
+
 	log.Debug().Msgf("Link Nodes task took: %v", time.Since(start))
 
 	return nil
