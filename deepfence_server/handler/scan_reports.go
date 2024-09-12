@@ -260,6 +260,32 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	scanTrigger := model.ScanTriggerCommon{}
+	for _, v := range reqs.ScanTriggerCommon.NodeIDs {
+		if v.NodeType == "container" {
+			imageID, err := GetImageFromContainerID(r.Context(), v.NodeID)
+			if err != nil {
+				log.Error().Err(err).Msg("Cannot start image scan for container")
+				continue
+			}
+			scanTrigger.NodeIDs = append(scanTrigger.NodeIDs, model.NodeIdentifier{
+				NodeID:   imageID,
+				NodeType: "image",
+			})
+		}
+	}
+
+	_, _, err = StartMultiScan(r.Context(), true, utils.NEO4JVulnerabilityScan, scanTrigger, actionBuilder)
+	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			h.respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+		return
+	}
+
 	h.AuditUserActivity(r, EventVulnerabilityScan, ActionStart, reqs, true)
 
 	err = httpext.JSON(w, http.StatusAccepted, model.ScanTriggerResp{ScanIds: scanIDs, BulkScanID: bulkID})
@@ -400,6 +426,32 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	scanTrigger := model.ScanTriggerCommon{}
+	for _, v := range reqs.ScanTriggerCommon.NodeIDs {
+		if v.NodeType == "container" {
+			imageID, err := GetImageFromContainerID(r.Context(), v.NodeID)
+			if err != nil {
+				log.Error().Err(err).Msg("Cannot start image scan for container")
+				continue
+			}
+			scanTrigger.NodeIDs = append(scanTrigger.NodeIDs, model.NodeIdentifier{
+				NodeID:   imageID,
+				NodeType: "image",
+			})
+		}
+	}
+
+	_, _, err = StartMultiScan(r.Context(), true, utils.NEO4JSecretScan, scanTrigger, actionBuilder)
+	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			h.respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+		return
+	}
+
 	h.AuditUserActivity(r, EventSecretScan, ActionStart, reqs, true)
 
 	err = httpext.JSON(w, http.StatusAccepted, model.ScanTriggerResp{ScanIds: scanIDs, BulkScanID: bulkID})
@@ -510,6 +562,32 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 	actionBuilder := StartScanActionBuilder(r.Context(), controls.StartMalwareScan, nil)
 
 	scanIDs, bulkID, err := StartMultiScan(r.Context(), true, utils.NEO4JMalwareScan, reqs.ScanTriggerCommon, actionBuilder)
+	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			h.respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
+		log.Error().Msgf("%v", err)
+		h.respondError(err, w)
+		return
+	}
+
+	scanTrigger := model.ScanTriggerCommon{}
+	for _, v := range reqs.ScanTriggerCommon.NodeIDs {
+		if v.NodeType == "container" {
+			imageID, err := GetImageFromContainerID(r.Context(), v.NodeID)
+			if err != nil {
+				log.Error().Err(err).Msg("Cannot start image scan for container")
+				continue
+			}
+			scanTrigger.NodeIDs = append(scanTrigger.NodeIDs, model.NodeIdentifier{
+				NodeID:   imageID,
+				NodeType: "image",
+			})
+		}
+	}
+
+	_, _, err = StartMultiScan(r.Context(), true, utils.NEO4JMalwareScan, scanTrigger, actionBuilder)
 	if err != nil {
 		if err.Error() == "Result contains no more records" {
 			h.respondError(&noNodesMatchedInNeo4jError, w)
@@ -2519,4 +2597,45 @@ func (h *Handler) rulesActionHandler(w http.ResponseWriter, r *http.Request, act
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func GetImageFromContainerID(ctx context.Context, nodeID string) (string, error) {
+
+	ctx, span := telemetry.NewSpan(ctx, "scan-reports", "get-image-from-container-id")
+	defer span.End()
+
+	var name string
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return name, err
+	}
+
+	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(30*time.Second))
+	if err != nil {
+		return name, err
+	}
+	defer tx.Close(ctx)
+
+	res, err := tx.Run(ctx, `
+		MATCH (n:Container{node_id:$node_id})
+		RETURN  n.docker_image_id`,
+		map[string]interface{}{"node_id": nodeID})
+	if err != nil {
+		return name, err
+	}
+
+	rec, err := res.Single(ctx)
+	if err != nil {
+		return name, err
+	}
+
+	if vi, ok := rec.Get("n.docker_image_id"); ok && vi != nil {
+		name = vi.(string)
+	}
+
+	return name, nil
 }
