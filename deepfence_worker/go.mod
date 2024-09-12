@@ -26,7 +26,7 @@ replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/ag
 require github.com/anchore/syft v1.3.0
 
 require (
-	github.com/aws/aws-sdk-go v1.49.16
+	github.com/aws/aws-sdk-go v1.55.5
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
