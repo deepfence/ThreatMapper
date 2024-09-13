@@ -168,10 +168,38 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
     ```
 5. Download the helm chart values for depfence-cloud-scanner chart to file **cloud-scanner.yaml**
     ```
-    helm show values cloud-scanner/deepfence-cloud-scanner --version THREATMAPPER_VERSION > cloud-scanner.yaml
+    helm show values cloud-scanner/deepfence-cloud-scanner --version CLOUD_SCANNER_HELM_CHART_VERSION > cloud-scanner.yaml
     ```
-6. Update the deepfence-cloud-scanner helm chart values with deepfence key and console url, add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
+6. Update the following values in the values.yaml. Add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
     ```yaml
+    image:
+      # ThreatMapper
+      repository: quay.io/deepfenceio/cloud_scanner_ce
+
+    # Format: deepfence.customer.com or 123.123.123.123
+    managementConsoleUrl: ""
+   
+    # Auth: Get Deepfence api key from UI -> Settings -> User Management
+    deepfenceKey:
+      key: ""
+
+    cloudAccount:
+      # AWS account ID to monitor
+      accountID: ""
+      # Account name (Optional, for easy identification. Not required in organization deployment.)
+      accountName: ""
+
+      cloudProvider: "aws"
+      # AWS region
+      region: "us-east-1"
+
+      # Policy set for Cloud Scanner in CloudFormation / terraform
+      # arn:aws:iam::aws:policy/ReadOnlyAccess / arn:aws:iam::aws:policy/SecurityAudit
+      cloudScannerPolicy: "arn:aws:iam::aws:policy/SecurityAudit"
+
+      # Optional: AWS account ID where the helm chart is deployed, in case it is different from cloudAccount.accountID
+      deployedAccountID: ""
+
     serviceAccount:
       # Specifies whether a service account should be created
       create: true
@@ -179,7 +207,7 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
       automount: true
       # Annotations to add to the service account
       annotations:
-        "eks.amazonaws.com/role-arn": "arn:aws:iam::123456789:role/test-cloud-scanner"
+        "eks.amazonaws.com/role-arn": "arn:aws:iam::123456789012:role/deepfence-cloud-scanner"
       # The name of the service account to use.
       # If not set and create is true, a name is generated using the fullname template
       name: "deepfence-cloud-scanner"
@@ -189,7 +217,7 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
     helm install -f cloud-scanner.yaml cloud-scanner cloud-scanner/deepfence-cloud-scanner \
         --namespace deepfence \
         --create-namespace \
-        --version THREATMAPPER_VERSION
+        --version CLOUD_SCANNER_HELM_CHART_VERSION
     ```
 
 ### Organization Account Cloud Scanner on EKS cluster using IRSA
@@ -202,10 +230,52 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
     ```
 4. Download the helm chart values for depfence-cloud-scanner chart to file **cloud-scanner.yaml**
     ```
-    helm show values cloud-scanner/deepfence-cloud-scanner --version THREATMAPPER_VERSION > cloud-scanner.yaml
+    helm show values cloud-scanner/deepfence-cloud-scanner --version CLOUD_SCANNER_HELM_CHART_VERSION > cloud-scanner.yaml
     ```
-5. Update the deepfence-cloud-scanner helm chart values with deepfence key and console url, add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
+5. Update the following values in the values.yaml. Add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
     ```yaml
+    image:
+      # ThreatMapper
+      repository: quay.io/deepfenceio/cloud_scanner_ce
+
+    # Format: deepfence.customer.com or 123.123.123.123
+    managementConsoleUrl: ""
+   
+    # Auth: Get Deepfence api key from UI -> Settings -> User Management
+    deepfenceKey:
+      key: ""
+
+    cloudAccount:
+      # Organization root account ID
+      accountID: ""
+      # Account name (Optional, for easy identification. Not required in organization deployment.)
+      accountName: ""
+
+      cloudProvider: "aws"
+      # AWS region
+      region: "us-east-1"
+
+      # Policy set for Cloud Scanner in CloudFormation / terraform
+      # arn:aws:iam::aws:policy/ReadOnlyAccess / arn:aws:iam::aws:policy/SecurityAudit
+      cloudScannerPolicy: "arn:aws:iam::aws:policy/SecurityAudit"
+
+      # Optional: AWS account ID where the helm chart is deployed, in case it is different from cloudAccount.accountID
+      deployedAccountID: ""
+      
+      # For Organization deployment:
+    
+      # Is this organization deployment or single account deployment?
+      isOrganizationDeployment: true
+    
+      # Organization root account ID
+      # Should be same as cloudAccount.accountID
+      organizationAccountID: ""
+
+      # Role name. The name should be same across all accounts in the Organization deployment.
+      # Role ARN example: arn:aws:iam::123456789012:role/deepfence-cloud-scanner-role
+      # Role name in this case is deepfence-cloud-scanner-role
+      roleName: ""
+
     serviceAccount:
       # Specifies whether a service account should be created
       create: true
@@ -213,7 +283,7 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
       automount: true
       # Annotations to add to the service account
       annotations:
-        "eks.amazonaws.com/role-arn": "arn:aws:iam::123456789:role/test-cloud-scanner"
+        "eks.amazonaws.com/role-arn": "arn:aws:iam::123456789012:role/deepfence-cloud-scanner"
       # The name of the service account to use.
       # If not set and create is true, a name is generated using the fullname template
       name: "deepfence-cloud-scanner"
@@ -223,5 +293,5 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
     helm install -f cloud-scanner.yaml cloud-scanner cloud-scanner/deepfence-cloud-scanner \
         --namespace deepfence \
         --create-namespace \
-        --version THREATMAPPER_VERSION
+        --version CLOUD_SCANNER_HELM_CHART_VERSION
     ```
