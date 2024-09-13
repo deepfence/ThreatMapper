@@ -31,6 +31,7 @@ export const RemediationNoIntegration = ({
           permission to Amazon Bedrock, please{' '}
           <button
             type="button"
+            data-testid="addAutoIntegrationButton"
             className="text-text-link hover:underline focus:underline"
             onClick={(e) => {
               e.preventDefault();
@@ -61,6 +62,7 @@ export const RemediationNoIntegration = ({
           <Button
             variant="outline"
             size="sm"
+            data-testid="goBackButton"
             startIcon={
               <div className="-rotate-90">
                 <ArrowLine />

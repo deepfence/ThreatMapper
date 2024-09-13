@@ -127,6 +127,7 @@ export const StopScanForm = ({
               onClick={() => closeModal(false)}
               type="button"
               variant="outline"
+              data-testid="cancelButton"
             >
               Cancel
             </Button>
@@ -134,6 +135,7 @@ export const StopScanForm = ({
               size="md"
               loading={fetcher.state === 'submitting'}
               disabled={fetcher.state === 'submitting'}
+              data-testid="cancelScanButton"
               onClick={(e) => {
                 e.preventDefault();
                 const formData = new FormData();
@@ -160,7 +162,9 @@ export const StopScanForm = ({
           <br />
           <span>Are you sure you want to cancel?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 text-status-error">{fetcher.data?.message}</p>
+            <p className="mt-2 text-p7 text-status-error" data-testid="errorMessage">
+              {fetcher.data?.message}
+            </p>
           )}
         </div>
       ) : (

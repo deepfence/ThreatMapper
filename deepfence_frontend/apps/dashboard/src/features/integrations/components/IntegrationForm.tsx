@@ -515,12 +515,20 @@ export const IntegrationForm = ({
               hidden
               value={isNil(formData) ? ActionEnumType.ADD : ActionEnumType.EDIT}
             />
-            {data?.message && <p className="text-status-error text-p7">{data.message}</p>}
+            {data?.message && (
+              <p
+                className="text-status-error text-p7 col-span-2"
+                data-testid="formErrorMessage"
+              >
+                {data.message}
+              </p>
+            )}
           </div>
           <div className="mt-14 flex gap-x-2 p-1">
             <Button
               size="md"
               color="default"
+              data-testid="addORUpdate_btn"
               type="submit"
               loading={fetcher.state === 'submitting'}
               disabled={fetcher.state === 'submitting'}
@@ -529,6 +537,7 @@ export const IntegrationForm = ({
             </Button>
             <Button
               type="button"
+              data-testid="cancel_btn"
               size="md"
               color="default"
               variant="outline"

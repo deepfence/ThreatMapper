@@ -410,7 +410,7 @@ const InviteUserModal = ({
             </Listbox>
 
             {!data?.success && data?.message && (
-              <div className={`text-status-error text-p7`}>
+              <div className={`text-status-error text-p7`} data-testid="formErrorMessage">
                 <span>{data?.message}</span>
               </div>
             )}
@@ -422,6 +422,7 @@ const InviteUserModal = ({
                 value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
                 loading={fetcher.state === 'submitting'}
                 disabled={fetcher.state === 'submitting'}
+                data-testid="sendInviteViaEmailButton"
               >
                 Send invite via email
               </Button>
@@ -442,6 +443,7 @@ const InviteUserModal = ({
                 value={ModelInviteUserRequestActionEnum['GetInviteLink']}
                 loading={fetcher.state === 'submitting'}
                 disabled={fetcher.state === 'submitting'}
+                data-testid="copyInviteLinkButton"
               >
                 Copy invite link
               </Button>
@@ -574,7 +576,9 @@ const EditUserModal = ({
               <ListboxOption value="Inactive">Inactive</ListboxOption>
             </Listbox>
             {!data?.success && data?.message && (
-              <p className="text-status-error text-p7">{data.message}</p>
+              <p className="text-status-error text-p7" data-testid="formErrorMessage">
+                {data.message}
+              </p>
             )}
 
             <div className="flex gap-x-2 mt-6">
@@ -583,6 +587,7 @@ const EditUserModal = ({
                 type="submit"
                 loading={fetcher.state !== 'idle'}
                 disabled={fetcher.state !== 'idle'}
+                data-testid="updateUserButton"
               >
                 Update
               </Button>
@@ -591,6 +596,7 @@ const EditUserModal = ({
                 variant="outline"
                 type="button"
                 onClick={() => setShowDialog(false)}
+                data-testid="cancelUserUpdateButton"
               >
                 Cancel
               </Button>
@@ -1079,6 +1085,7 @@ const ResetAPIKeyConfirmationModal = ({
               onClick={() => setShowDialog(false)}
               type="button"
               variant="outline"
+              data-testid="cancelResetAPIKeyButton"
             >
               Cancel
             </Button>
@@ -1088,6 +1095,7 @@ const ResetAPIKeyConfirmationModal = ({
               type="submit"
               loading={fetcher.state !== 'idle'}
               disabled={fetcher.state !== 'idle'}
+              data-testid="resetAPIKeyButton"
               onClick={(e) => {
                 e.preventDefault();
                 onResetAction();
@@ -1106,7 +1114,9 @@ const ResetAPIKeyConfirmationModal = ({
           <span>Are you sure you want to reset?</span>
           <br />
           {fetcher.data?.message && (
-            <p className="text-p7 text-status-error">{fetcher.data?.message}</p>
+            <p className="text-p7 text-status-error" data-testid="formErrorMessage">
+              {fetcher.data?.message}
+            </p>
           )}
           <div className="flex items-center justify-right gap-4"></div>
         </div>

@@ -376,15 +376,27 @@ export const SecretScanConfigureForm = ({
       {wantDeepfenceSystem(data) ? <ScanDeepfenceSystem /> : null}
 
       {fetcherData?.message && (
-        <p className="text-status-error text-p7 mt-4">{fetcherData.message}</p>
+        <p className="text-status-error text-p7 mt-4" data-testid="errorMessage">
+          {fetcherData.message}
+        </p>
       )}
 
       <div className="flex gap-3 mt-14">
-        <Button disabled={state !== 'idle'} loading={state !== 'idle'} type="submit">
+        <Button
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
+          type="submit"
+          data-testid="startScanButton"
+        >
           Start Scan
         </Button>
         {onCancel ? (
-          <Button type="button" variant="outline" onClick={() => onCancel?.()}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onCancel?.()}
+            data-testid="cancelButton"
+          >
             Cancel
           </Button>
         ) : null}

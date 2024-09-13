@@ -504,7 +504,12 @@ const AgentDiagnosticsLogsModal = ({
               {nodeType === 'cloud account' && <SelectCloudAccount fetcher={fetcher} />}
 
               {fetcher?.data?.message ? (
-                <p className="text-p7 text-status-error pt-2">{fetcher.data.message}</p>
+                <p
+                  className="text-p7 text-status-error pt-2"
+                  data-testid="formErrorMessage"
+                >
+                  {fetcher.data.message}
+                </p>
               ) : null}
 
               <div className="flex gap-x-2 mt-8">
@@ -512,6 +517,7 @@ const AgentDiagnosticsLogsModal = ({
                   type="submit"
                   disabled={fetcher.state !== 'idle'}
                   loading={fetcher.state !== 'idle'}
+                  data-testid="generateAgentDiagnosticLogsButton"
                 >
                   Generate
                 </Button>
@@ -519,6 +525,7 @@ const AgentDiagnosticsLogsModal = ({
                   variant="outline"
                   type="button"
                   onClick={() => setShowDialog(false)}
+                  data-testid="cancelAgentDiagnosticLogsButton"
                 >
                   Cancel
                 </Button>

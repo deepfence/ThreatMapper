@@ -15,7 +15,9 @@ export const RemediationError = ({
       <div className="h-10 w-10 mx-auto">
         <ErrorStandardLineIcon />
       </div>
-      <div className="text-center text-xl mt-4">{errorMessage}</div>
+      <div className="text-center text-xl mt-4" data-testid="errorMessage">
+        {errorMessage}
+      </div>
       {onBackButtonClick && (
         <div className="flex justify-center mt-4">
           <Button

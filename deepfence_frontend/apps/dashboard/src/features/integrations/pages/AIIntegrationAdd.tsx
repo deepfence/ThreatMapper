@@ -240,7 +240,9 @@ const AIIntegrationAdd = () => {
             )}
 
             {fetcher.data?.message && (
-              <p className="text-status-error text-p7">{fetcher.data?.message}</p>
+              <p className="text-status-error text-p7" data-testid="formErrorMessage">
+                {fetcher.data?.message}
+              </p>
             )}
 
             <div className="flex gap-x-2 p-1">
@@ -250,6 +252,7 @@ const AIIntegrationAdd = () => {
                 type="submit"
                 loading={fetcher.state === 'submitting'}
                 disabled={fetcher.state === 'submitting'}
+                data-testid="addIntegrationButton"
               >
                 Add
               </Button>
@@ -259,6 +262,7 @@ const AIIntegrationAdd = () => {
                 color="default"
                 variant="outline"
                 onClick={() => navigate('..')}
+                data-testid="cancelIntegrationButton"
               >
                 Cancel
               </Button>

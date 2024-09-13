@@ -97,7 +97,9 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
           )}
 
           {errorMessage && (
-            <p className="mt-2 text-status-error text-p7">{errorMessage}</p>
+            <p className="mt-2 text-status-error text-p7" data-testid="errorMessage">
+              {errorMessage}
+            </p>
           )}
         </div>
       </Card>

@@ -610,17 +610,25 @@ export const ComplianceScanConfigureForm = ({
             loading={state !== 'idle'}
             size="sm"
             type="submit"
+            data-testid="startScanButton"
           >
             Start Scan
           </Button>
           {onCancel ? (
-            <Button type="button" variant="outline" onClick={() => onCancel?.()}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onCancel?.()}
+              data-testid="cancelButton"
+            >
               Cancel
             </Button>
           ) : null}
         </div>
         {fetcherData?.message && (
-          <p className="text-status-error text-p7a py-3">{fetcherData.message}</p>
+          <p className="text-status-error text-p7a py-3" data-testid="errorMessage">
+            {fetcherData.message}
+          </p>
         )}
       </fetcher.Form>
     </>

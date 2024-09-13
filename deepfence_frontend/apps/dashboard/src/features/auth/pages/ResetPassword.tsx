@@ -96,7 +96,12 @@ const ResetPassword = () => {
         helperText={data?.fieldErrors?.confirmPassword}
       />
       {data?.error && (
-        <div className={`my-1.5 text-p7 text-center text-status-error`}>{data.error}</div>
+        <div
+          className={`my-1.5 text-p7 text-center text-status-error`}
+          data-testid="errorMessage"
+        >
+          {data.error}
+        </div>
       )}
       <div className="flex flex-col w-full mt-8">
         <Button
@@ -105,6 +110,7 @@ const ResetPassword = () => {
           type="submit"
           loading={state === 'submitting'}
           disabled={state === 'submitting'}
+          data-testid="resetPasswordButton"
         >
           Reset
         </Button>
@@ -119,6 +125,7 @@ const ResetPassword = () => {
         to="/auth/login"
         className="mt-4 text-p4 underline dark:text-accent-accent text-center"
         unstyled
+        data-testid="loginNowButton"
       >
         Login Now
       </DFLink>

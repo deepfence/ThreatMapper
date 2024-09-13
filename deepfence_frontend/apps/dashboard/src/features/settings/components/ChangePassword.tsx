@@ -51,7 +51,7 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
       />
 
       {!data?.success && data?.message && (
-        <div className={`text-red-600 text-status-error text-p7`}>
+        <div className={`text-status-error text-p7`} data-testid="formErrorMessage">
           <span>{data.message}</span>{' '}
         </div>
       )}
@@ -63,10 +63,17 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
           className=" w-fit"
           disabled={state !== 'idle'}
           loading={state !== 'idle'}
+          data-testid="submitChangePasswordButton"
         >
           Submit
         </Button>
-        <Button size="md" onClick={() => onCancel()} type="button" variant="outline">
+        <Button
+          size="md"
+          onClick={() => onCancel()}
+          type="button"
+          variant="outline"
+          data-testid="cancelChangePasswordButton"
+        >
           Cancel
         </Button>
       </div>
