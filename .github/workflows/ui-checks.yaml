@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ['self-hosted']
+    runs-on: ["self-hosted"]
     defaults:
       run:
         working-directory: ./deepfence_frontend
@@ -26,7 +26,7 @@ jobs:
         name: Install pnpm
         id: pnpm-install
         with:
-          version: 7
+          version: 9
           run_install: false
       - name: Get pnpm store directory
         id: pnpm-cache
