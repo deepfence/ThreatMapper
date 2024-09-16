@@ -119,7 +119,7 @@ export const AWSCloudFormation = () => {
             Connect to your AWS Cloud Account via Cloud Formation. Find out more
             information by{' '}
             <Link
-              to="https://community.deepfence.io/threatmapper/docs/v2.3/cloudscanner/aws#cloudformation"
+              to="https://community.deepfence.io/threatmapper/docs/v3.0/cloudscanner/aws#cloudformation"
               className="text-text-link"
               target="_blank"
               rel="noreferrer"

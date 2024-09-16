@@ -111,7 +111,7 @@ start_agent() {
     -e DEEPFENCE_KEY="$DEEPFENCE_KEY" \
     -e DF_USE_DUMMY_SCOPE="$DF_USE_DUMMY_SCOPE" \
     -e DF_USE_FAT_DUMMY_SCOPE="$DF_USE_FAT_DUMMY_SCOPE" \
-    "$IMAGE_REPOSITORY"/deepfence_agent_ce:"${DF_IMG_TAG:-2.3.0}"
+    "$IMAGE_REPOSITORY"/deepfence_agent_ce:"${DF_IMG_TAG:-3.0.0}"
 }
 
 main() {

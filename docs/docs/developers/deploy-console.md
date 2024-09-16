@@ -17,7 +17,7 @@ Refer to the [Docker Installation Instructions](/docs/console/docker) along with
 1. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/release-2.3/deployment-scripts/docker-compose.yml) to the system that will host the Console
 
     ```bash
-    wget https://github.com/deepfence/ThreatMapper/raw/release-2.3/deployment-scripts/docker-compose.yml
+    wget https://github.com/deepfence/ThreatMapper/raw/release-3.0/deployment-scripts/docker-compose.yml
     ```
 
 2. Execute the following command to install and start the Console.  Note the override to specify your repository `myorg`, rather than the `deepfenceio` default:
