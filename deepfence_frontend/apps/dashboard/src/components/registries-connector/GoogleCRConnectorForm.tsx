@@ -23,7 +23,7 @@ export const GoogleCRConnectorForm = ({
       <div className="text-p4a text-text-input-value mt-1.5 mb-4">
         Connect to your Google Cloud Registry. Find out more information by{' '}
         <DFLink
-          href={`https://community.deepfence.io/threatmapper/docs/v2.3/registries/`}
+          href={`https://community.deepfence.io/threatmapper/docs/v3.0/registries/`}
           target="_blank"
           rel="noreferrer"
         >

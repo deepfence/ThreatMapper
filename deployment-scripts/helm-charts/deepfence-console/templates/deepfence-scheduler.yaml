@@ -25,6 +25,7 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
+      automountServiceAccountToken: false
       securityContext:
         {{- toYaml .Values.scheduler.podSecurityContext | nindent 8 }}
       {{- if .Values.priorityClassName }}
