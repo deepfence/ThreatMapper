@@ -295,3 +295,48 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
         --create-namespace \
         --version CLOUD_SCANNER_HELM_CHART_VERSION
     ```
+
+## Cloud Scanner on EC2 instance using IAM Roles
+
+:::info
+
+**Pre-requisite:**
+- Install docker and docker compose on the EC2 instance([refer docker documentation for installation instructions](https://docs.docker.com/engine/install/))
+- If a existing EC2 instance is used, check if docker and docker compose plugins are installed on the EC2 instance
+:::
+
+### Single Account Cloud Scanner on EC2 instance using IAM Roles
+1. Create the IAM role and instance profile for deepfence cloud scanner using the cloudformation script [deepfence-cloud-scanner-single-account-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/ec2/single-account-ec2-iam-role/deepfence-cloud-scanner-single-account-iam-role.template)
+2. Note the instance profile from the cloudformation stack output
+3. Modify the EC2 instance, add the instance profile created by cloudformation script
+4. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
+    ```
+    https://raw.githubusercontent.com/deepfence/cloud-scanner/main/docker-compose.yaml 
+    ```
+    ```bash
+    mkdir deepfence-cloud-scanner && cd deepfence-cloud-scanner
+    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/main/docker-compose.yaml 
+    ```
+5. Update the account details and console details in the docker-compose.yaml
+6. Start the cloud scanner using docker compose 
+    ```
+    docker compose up -d
+    ```
+
+### Organization Account Cloud Scanner on EC2 instance using IAM Roles
+1. Create the IAM role and instance profile for deepfence cloud scanner using the cloudformation script [deepfence-cloud-scanner-organization-stackset-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/ec2/organization-ec2-iam-role/deepfence-cloud-scanner-organization-stackset-iam-role.template)
+2. Note the instance profile from the cloudformation stack output
+3. Modify the EC2 instance, add the instance profile created by cloudformation script
+4. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
+    ```
+    https://raw.githubusercontent.com/deepfence/cloud-scanner/main/docker-compose.yaml 
+    ```
+    ```bash
+    mkdir deepfence-cloud-scanner && cd deepfence-cloud-scanner
+    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/main/docker-compose.yaml 
+    ```
+5. Update the organization account details and console details in the docker-compose.yaml
+6. Start the cloud scanner using docker compose 
+    ```
+    docker compose up -d
+    ```
