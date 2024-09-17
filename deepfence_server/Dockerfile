@@ -11,6 +11,7 @@ COPY deepfence_server/entrypoint.sh /entrypoint.sh
 RUN apt update && \
     apt install -y \
     bash \
+    ca-certificates \
     curl \
     wget \
     netcat-traditional \
