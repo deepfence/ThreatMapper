@@ -65,3 +65,34 @@ If a user has an ECR registry in one AWS account and Deepfence Console is deploy
 8. Fill the account id of the target account where registry is located in the `AWS Account ID` field. In the `Target Account Role ARN` field, paste the value of the `RoleARN` from the above steps.
 
     ![ECR Add Cross Account Registry Using IAM Role Form](../img/registry-ecr-4.png)
+
+## Adding ECR repository - Kubernetes
+
+If Deepfence console is deployed in EKS, please follow these steps to configure IAM role which will be assigned to Kubernetes service account.
+
+:::info
+
+**Pre-requisite:**
+1. Associate OIDC provider with the EKS cluster where Deepfence management console is going to be deployed.
+
+   ([refer here for aws documentation on enable-iam-roles-for-service-accounts](https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html))
+
+2. kubectl and helm command line tools are installed and configured to access the cluster where Deepfence management console is going to be deployed
+
+:::
+
+1. Create the EKS IRSA role using the cloudformation template [deepfence-ecr-registry-role-for-eks](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/ecr/deepfence-ecr-role-eks.template)
+2. Note **namespace**, **service account name** and **iam role arn** from the output of terraform or cloudformation deployment
+3. Follow the instructions [here](/docs/console/kubernetes#console-helm-chart) to download the `values.yaml` from Console helm chart for customization.
+4. Edit the `values.yaml` and set the ServiceAccount
+    ```yaml
+    serviceAccount:
+      # Specifies whether a service account should be created
+      create: true
+      # Annotations to add to the service account
+      annotations:
+        "eks.amazonaws.com/role-arn": "arn:aws:iam::123456789012:role/deepfence-ecr-role"
+      # Service account name
+      name: "deepfence-console"
+    ```
+5. For ECR configuration, please refer the instructions [above](#adding-ecr-repository)
