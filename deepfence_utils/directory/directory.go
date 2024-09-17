@@ -180,12 +180,10 @@ func initRedis() RedisConfig {
 			redisDBNumber = 0
 		}
 	}
-	redisTLSConfig := os.Getenv("DEEPFENCE_REDIS_TLS")
 	return RedisConfig{
 		Endpoint: redisEndpoint,
 		Password: redisPassword,
 		Database: redisDBNumber,
-		TLSConfig: redisTLSConfig,
 	}
 }
 
