@@ -21,9 +21,10 @@ const (
 type NamespaceID string
 
 type RedisConfig struct {
-	Endpoint string
-	Password string
-	Database int
+	Endpoint  string
+	Password  string
+	Database  int
+	TLSConfig string
 }
 
 type Neo4jConfig struct {
@@ -182,9 +183,9 @@ func initRedis() RedisConfig {
 	}
 	redisTLSConfig := os.Getenv("DEEPFENCE_REDIS_TLS")
 	return RedisConfig{
-		Endpoint: redisEndpoint,
-		Password: redisPassword,
-		Database: redisDBNumber,
+		Endpoint:  redisEndpoint,
+		Password:  redisPassword,
+		Database:  redisDBNumber,
 		TLSConfig: redisTLSConfig,
 	}
 }

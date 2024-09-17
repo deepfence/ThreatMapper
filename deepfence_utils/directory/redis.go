@@ -2,6 +2,7 @@ package directory
 
 import (
 	"context"
+	"crypto/tls"
 	"sync"
 
 	"github.com/redis/go-redis/v9"
