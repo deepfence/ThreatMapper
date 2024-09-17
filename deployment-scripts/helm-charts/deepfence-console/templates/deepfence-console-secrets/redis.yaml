@@ -10,6 +10,7 @@ metadata:
     component: redis
 stringData:
   DEEPFENCE_REDIS_DB_NUMBER: "0"
+  DEEPFENCE_REDIS_TLS: ""
   DEEPFENCE_REDIS_PORT: "6379"
   DEEPFENCE_REDIS_HOST: {{ include "deepfence-console.fullname" . }}-redis.{{ .Release.Namespace }}.svc.{{ .Values.global.cluster_domain }}
 {{- end }}

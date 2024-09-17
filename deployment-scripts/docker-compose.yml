@@ -33,6 +33,7 @@ x-service-variables: &common-creds
     # set aws s3 bucket region if using s3 buckets
     DEEPFENCE_FILE_SERVER_REGION: ""
     DEEPFENCE_REDIS_DB_NUMBER: 0
+    DEEPFENCE_REDIS_TLS: "" # Disable: "", Enable: "1"
     DEEPFENCE_REDIS_HOST: deepfence-redis
     DEEPFENCE_REDIS_PORT: 6379
     DEEPFENCE_SAAS_DEPLOYMENT: "false"
