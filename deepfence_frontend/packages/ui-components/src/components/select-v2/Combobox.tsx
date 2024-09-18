@@ -17,6 +17,7 @@ import {
   useContext,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -163,10 +164,11 @@ const ComboboxTriggerButton = forwardRef<
         'py-[7px] px-3',
         {
           'border-bg-hover-3 dark:bg-bg-active-selection bg-bg-breadcrumb-bar text-text-input-value':
-            Array.isArray(selectedValue) ? !!selectedValue.length : !!selectedValue,
+            !!selectedValue.length,
         },
         props.className,
       )}
+      data-testid="comboboxTriggerButtonId"
     >
       {startIcon ?? <ButtonStartIcon />}
       {getDisplayValue?.(selectedValue) ?? radixPopoverProps.children}
@@ -250,6 +252,7 @@ const ComboboxTriggerInput = forwardRef<
             }),
             props.className,
           )}
+          data-testid="comboboxTriggerInputButtonId"
         >
           {startIcon ? <div className="w-4 h-4 shrink-0">{startIcon}</div> : null}
           <div
@@ -257,10 +260,7 @@ const ComboboxTriggerInput = forwardRef<
               'text-severity-unknown/60 dark:text-df-gray-600': !selectedValue.length,
             })}
           >
-            {selectedValue.length
-              ? // eslint-disable-next-line prettier/prettier
-                getDisplayValue?.(selectedValue) ?? placeholder
-              : placeholder}
+            {getDisplayValue?.(selectedValue) ?? placeholder}
           </div>
           <div className="h-2.5 w-2.5 shrink-0 dark:text-text-text-and-icon text-text-icon ml-auto mr-1.5">
             <CaretDownIcon />
@@ -315,7 +315,11 @@ const ComboboxContent = (
           props.className,
         )}
       >
-        <Combobox autoSelect placeholder={searchPlaceholder} />
+        <Combobox
+          autoSelect
+          placeholder={searchPlaceholder}
+          data-testid="comboboxSearchInputId"
+        />
         <AriaKitComboboxList
           className={cn(
             'max-h-60 w-full select-none',
@@ -324,11 +328,6 @@ const ComboboxContent = (
             'text-text-text-and-icon',
             props.className,
           )}
-          onScroll={() => {
-            // fixing weird bug where scroll position is reset when
-            // new items are loaded when scroll end is reached
-            store.move(null);
-          }}
         >
           {props.children}
           {!items.length ? (
@@ -374,11 +373,13 @@ const ComboboxItem = forwardRef<HTMLDivElement, AriaKitComboboxItemProps>(
       throw new Error('useComboboxContext must be used within a ComboboxProvider');
     }
 
+    const isMultiple = useMemo(
+      () => Array.isArray(store.getState().selectedValue),
+      [store],
+    );
     const selectedValue = useStoreState(store, 'selectedValue');
     const selected =
-      value && Array.isArray(selectedValue)
-        ? selectedValue.includes(value)
-        : selectedValue === value;
+      value && isMultiple ? selectedValue.includes(value) : selectedValue === value;
     return (
       <AriaKitComboboxItem
         {...props}
@@ -398,9 +399,7 @@ const ComboboxItem = forwardRef<HTMLDivElement, AriaKitComboboxItemProps>(
         )}
         resetValueOnSelect={props.resetValueOnSelect ?? false}
       >
-        {Array.isArray(selectedValue) ? (
-          <Checkbox tabIndex={-1} checked={selected} />
-        ) : null}
+        {isMultiple ? <Checkbox tabIndex={-1} checked={selected} /> : null}
         {props.children}
       </AriaKitComboboxItem>
     );

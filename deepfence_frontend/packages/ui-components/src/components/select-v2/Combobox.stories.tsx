@@ -47,7 +47,6 @@ const SingleSelectTemplate: StoryFn<typeof ComboboxV2> = () => {
 
     return (
       <ComboboxV2Provider
-        resetValueOnHide
         selectedValue={selectedValue}
         setSelectedValue={setSelectedValue}
         setValue={(value) => {
@@ -56,16 +55,14 @@ const SingleSelectTemplate: StoryFn<typeof ComboboxV2> = () => {
           });
         }}
       >
-        <ComboboxV2TriggerButton>PropertyName</ComboboxV2TriggerButton>
+        <ComboboxV2TriggerButton
+          getDisplayValue={() => {
+            return 'PropertyName';
+          }}
+        />
         <ComboboxV2Content width="fixed" searchPlaceholder="Search...">
           {matches.map((item) => (
-            <ComboboxV2Item
-              key={item.value}
-              value={item.value}
-              focusOnHover
-              setValueOnClick={false}
-              className="menu-item"
-            >
+            <ComboboxV2Item key={item.value} value={item.value}>
               {item.label}
             </ComboboxV2Item>
           ))}
@@ -100,7 +97,6 @@ const SingleSelectInputTriggerTemplate: StoryFn<typeof ComboboxV2> = () => {
 
     return (
       <ComboboxV2Provider
-        resetValueOnHide
         selectedValue={selectedValue}
         setSelectedValue={setSelectedValue}
         setValue={(value) => {
@@ -142,7 +138,6 @@ const SingleSelectInputTriggerTemplate: StoryFn<typeof ComboboxV2> = () => {
             <ComboboxV2Item
               key={item.value}
               value={item.value}
-              focusOnHover
               setValueOnClick={false}
               className="menu-item"
             >
@@ -181,7 +176,6 @@ const MutliSelectTemplate: StoryFn<typeof ComboboxV2> = () => {
 
     return (
       <ComboboxV2Provider
-        resetValueOnHide
         selectedValue={selectedValue}
         setSelectedValue={setSelectedValue}
         setValue={(value) => {
@@ -217,7 +211,6 @@ const MutliSelectTemplate: StoryFn<typeof ComboboxV2> = () => {
             <ComboboxV2Item
               key={item.value}
               value={item.value}
-              focusOnHover
               setValueOnClick={false}
               className="menu-item"
             >
@@ -248,7 +241,6 @@ const MutliSelectInputTriggerTemplate: StoryFn<typeof ComboboxV2> = () => {
 
     return (
       <ComboboxV2Provider
-        resetValueOnHide
         selectedValue={selectedValue}
         setSelectedValue={setSelectedValue}
         setValue={(value) => {
@@ -306,7 +298,6 @@ const MultiSelectTemplateInsideDialog: StoryFn<typeof ComboboxV2> = () => {
         <SlidingModalContent>
           <div className="p-2 mt-12">
             <ComboboxV2Provider
-              resetValueOnHide
               selectedValue={selectedValue}
               setSelectedValue={setSelectedValue}
               setValue={(value) => {
@@ -333,7 +324,6 @@ const MultiSelectTemplateInsideDialog: StoryFn<typeof ComboboxV2> = () => {
                   <ComboboxV2Item
                     key={item.value}
                     value={item.value}
-                    focusOnHover
                     setValueOnClick={false}
                     className="menu-item"
                   >
