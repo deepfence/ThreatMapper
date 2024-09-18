@@ -21,7 +21,7 @@ import { ModelSecret } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
-import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
+import { SearchableContainerListV2 } from '@/components/forms/SearchableContainerListV2';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -164,16 +164,9 @@ const Filters = () => {
             });
           }}
         />
-        <SearchableContainerList
+        <SearchableContainerListV2
           scanType={ScanTypeEnum.SecretScan}
           defaultSelectedContainers={searchParams.getAll('containers')}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('containers');
-              prev.delete('page');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('containers');

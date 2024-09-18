@@ -8,7 +8,7 @@ import {
 } from '@/api/generated';
 import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
-import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
+import { SearchableContainerListV2 } from '@/components/forms/SearchableContainerListV2';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import {
@@ -142,15 +142,12 @@ export const AdvancedFilter = ({
             {provider === UtilsReportFiltersNodeTypeEnum.Container ? (
               <>
                 <div>
-                  <SearchableContainerList
+                  <SearchableContainerListV2
                     scanType={API_SCAN_TYPE_MAP[resourceType]}
                     triggerVariant="select"
                     defaultSelectedContainers={containers}
                     onChange={(value) => {
                       setContainers(value);
-                    }}
-                    onClearAll={() => {
-                      setContainers([]);
                     }}
                     active={!deadNodes}
                   />
