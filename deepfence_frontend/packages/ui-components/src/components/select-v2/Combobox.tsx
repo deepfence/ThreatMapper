@@ -3,20 +3,24 @@ import {
   ComboboxItem as AriaKitComboboxItem,
   ComboboxItemProps as AriaKitComboboxItemProps,
   ComboboxList as AriaKitComboboxList,
-  ComboboxListProps as AriaKitComboboxListProps,
   ComboboxProps as AriaKitComboboxProps,
   ComboboxProvider as AriaKitComboboxProvider,
   ComboboxProviderProps as AriaKitComboboxProviderProps,
   ComboboxStoreState as AriaKitComboboxStoreState,
-  Menu as AriaKitMenu,
-  MenuButton as AriaKitMenuButton,
-  MenuButtonProps as AriaKitMenuButtonProps,
-  MenuProps as AriaKitMenuProps,
-  MenuProvider,
   useComboboxContext as useAriaKitComboboxContext,
   useStoreState,
 } from '@ariakit/react';
-import { forwardRef, useId } from 'react';
+import * as RadixPopover from '@radix-ui/react-popover';
+import {
+  createContext,
+  forwardRef,
+  useContext,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
+import { useIntersection } from 'react-use';
 import { cn } from 'tailwind-preset';
 
 import Badge from '@/components/badge/Badge';
@@ -25,6 +29,13 @@ import HelperText from '@/components/input/HelperText';
 import { ErrorIcon } from '@/components/input/TextInput';
 import { comboboxInputCva } from '@/components/select-v2/styles';
 import Separator from '@/components/separator/Separator';
+import { CircleSpinner } from '@/components/spinner/CircleSpinner';
+
+const LocalComboboxContext = createContext<{
+  loading?: boolean;
+}>({
+  loading: false,
+});
 
 type ComboboxProviderProps<T extends Value = Value> = AriaKitComboboxProviderProps<T>;
 
@@ -36,14 +47,55 @@ type PickRequired<T, P extends keyof T> = T &
 
 type Value = string | string[];
 const ComboboxProvider = <T extends Value = Value>(
-  props: PickRequired<ComboboxProviderProps<T>, 'selectedValue' | 'defaultSelectedValue'>,
+  props: PickRequired<
+    ComboboxProviderProps<T>,
+    'selectedValue' | 'defaultSelectedValue'
+  > & {
+    loading?: boolean;
+    name?: string;
+  },
 ) => {
+  const [open, setOpen] = useState(false);
+
   return (
-    <AriaKitComboboxProvider<T>
-      {...props}
-      resetValueOnHide={props.resetValueOnHide ?? true}
-    />
+    <LocalComboboxContext.Provider
+      value={{
+        loading: !!props.loading,
+      }}
+    >
+      <RadixPopover.Root open={open} onOpenChange={setOpen}>
+        <AriaKitComboboxProvider<T>
+          {...props}
+          resetValueOnHide={props.resetValueOnHide ?? true}
+          open={open}
+          setOpen={setOpen}
+          focusWrap={props.focusWrap ?? false}
+          focusLoop={props.focusLoop ?? false}
+        >
+          {props.children}
+          {props.name?.length ? <HiddenInput name={props.name} /> : null}
+        </AriaKitComboboxProvider>
+      </RadixPopover.Root>
+    </LocalComboboxContext.Provider>
   );
+};
+
+const HiddenInput = ({ name }: { name: string }) => {
+  const store = useAriaKitComboboxContext();
+
+  if (!store) {
+    throw new Error('useComboboxContext must be used within a ComboboxProvider');
+  }
+
+  const selectedValue = useStoreState(store, 'selectedValue');
+  const multiple = Array.isArray(selectedValue);
+
+  if (multiple) {
+    return selectedValue.map((value, index) => (
+      <input key={value} type="hidden" name={`${name}[${index}]`} value={value} />
+    ));
+  }
+  return <input type="hidden" hidden readOnly name={name} value={selectedValue} />;
 };
 
 const Combobox = forwardRef<HTMLInputElement, AriaKitComboboxProps>((props, ref) => {
@@ -77,7 +129,7 @@ const Combobox = forwardRef<HTMLInputElement, AriaKitComboboxProps>((props, ref)
 
 const ComboboxTriggerButton = forwardRef<
   HTMLButtonElement,
-  AriaKitMenuButtonProps & {
+  RadixPopover.PopoverTriggerProps & {
     startIcon?: React.ReactNode;
     endIcon?: React.ReactNode;
     getDisplayValue?: (
@@ -85,7 +137,7 @@ const ComboboxTriggerButton = forwardRef<
     ) => React.ReactNode;
   }
 >((props, ref) => {
-  const { startIcon, getDisplayValue, endIcon, ...ariakitProps } = props;
+  const { startIcon, getDisplayValue, endIcon, ...radixPopoverProps } = props;
 
   const store = useAriaKitComboboxContext();
 
@@ -97,8 +149,8 @@ const ComboboxTriggerButton = forwardRef<
   const multiple = Array.isArray(selectedValue);
 
   return (
-    <AriaKitMenuButton
-      {...ariakitProps}
+    <RadixPopover.Trigger
+      {...radixPopoverProps}
       ref={ref}
       className={cn(
         // display
@@ -117,7 +169,7 @@ const ComboboxTriggerButton = forwardRef<
       )}
     >
       {startIcon ?? <ButtonStartIcon />}
-      {getDisplayValue?.(selectedValue) ?? ariakitProps.children}
+      {getDisplayValue?.(selectedValue) ?? radixPopoverProps.children}
       {endIcon}
       {multiple && selectedValue.length ? (
         <div className="relative flex items-center">
@@ -129,13 +181,13 @@ const ComboboxTriggerButton = forwardRef<
           />
         </div>
       ) : null}
-    </AriaKitMenuButton>
+    </RadixPopover.Trigger>
   );
 });
 
 const ComboboxTriggerInput = forwardRef<
   HTMLButtonElement,
-  AriaKitMenuButtonProps & {
+  RadixPopover.PopoverTriggerProps & {
     startIcon?: React.ReactNode;
     getDisplayValue?: (
       value: AriaKitComboboxStoreState['selectedValue'],
@@ -155,7 +207,7 @@ const ComboboxTriggerInput = forwardRef<
     placeholder,
     label,
     disabled,
-    ...ariakitProps
+    ...radixPopoverProps
   } = props;
 
   const store = useAriaKitComboboxContext();
@@ -185,8 +237,8 @@ const ComboboxTriggerInput = forwardRef<
         </label>
       ) : null}
       <div className="flex items-center">
-        <AriaKitMenuButton
-          {...ariakitProps}
+        <RadixPopover.Trigger
+          {...radixPopoverProps}
           ref={ref}
           id={id}
           className={cn(
@@ -207,13 +259,13 @@ const ComboboxTriggerInput = forwardRef<
           >
             {selectedValue.length
               ? // eslint-disable-next-line prettier/prettier
-                (getDisplayValue?.(selectedValue) ?? placeholder)
+                getDisplayValue?.(selectedValue) ?? placeholder
               : placeholder}
           </div>
           <div className="h-2.5 w-2.5 shrink-0 dark:text-text-text-and-icon text-text-icon ml-auto mr-1.5">
             <CaretDownIcon />
           </div>
-        </AriaKitMenuButton>
+        </RadixPopover.Trigger>
         {color === 'error' && (
           <div className={cn('text-chart-red')}>
             <ErrorIcon />
@@ -229,37 +281,18 @@ const ComboboxTriggerInput = forwardRef<
   );
 });
 
-const Menu = forwardRef<HTMLDivElement, AriaKitMenuProps & { width: 'anchor' | 'fixed' }>(
-  (props, ref) => {
-    const { width, ...ariakitProps } = props;
-
-    return (
-      <AriaKitMenu
-        {...ariakitProps}
-        portal={props.portal ?? true}
-        ref={ref}
-        gutter={props.gutter ?? 2}
-        className={cn(
-          `bg-bg-card border border-bg-grid-border rounded-[5px] overflow-hidden data-[open]:animate-slide-down shadow-md dark:shadow-none`,
-          {
-            'w-[var(--popover-anchor-width)]': width === 'anchor',
-            'max-w-[250px]': width === 'fixed',
-          },
-          props.className,
-        )}
-      />
-    );
-  },
-);
-
-const ComboboxList = forwardRef<
-  HTMLDivElement,
-  AriaKitComboboxListProps & {
+const ComboboxContent = (
+  props: RadixPopover.PopoverContentProps & {
+    width: 'anchor' | 'fixed';
     clearButtonContent?: React.ReactNode;
-  }
->((props, ref) => {
-  const { clearButtonContent, ...ariakitProps } = props;
+    searchPlaceholder?: string;
+    onEndReached?: () => void;
+  },
+) => {
+  const { width, clearButtonContent, searchPlaceholder, onEndReached, ...popoverProps } =
+    props;
   const store = useAriaKitComboboxContext();
+  const { loading } = useContext(LocalComboboxContext);
 
   if (!store) {
     throw new Error('useComboboxContext must be used within a ComboboxProvider');
@@ -267,42 +300,70 @@ const ComboboxList = forwardRef<
 
   const isMultiple = Array.isArray(store.getState().selectedValue);
   const items = useStoreState(store, 'items');
-
   return (
-    <>
-      <AriaKitComboboxList
-        {...ariakitProps}
-        ref={ref}
+    <RadixPopover.Portal>
+      <RadixPopover.Content
+        {...popoverProps}
+        align="start"
+        sideOffset={2}
         className={cn(
-          'max-h-60 w-full select-none',
-          'text-p4a',
-          'overflow-auto',
-          'text-text-text-and-icon',
+          `bg-bg-card border border-bg-grid-border rounded-[5px] overflow-hidden data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down shadow-md dark:shadow-none`,
+          {
+            'w-[var(--radix-popper-anchor-width)]': width === 'anchor',
+            'max-w-[250px]': width === 'fixed',
+          },
           props.className,
         )}
       >
-        {props.children}
-        {!items.length ? (
-          <div className="py-3 px-2 w-full flex items-center justify-center text-p6 text-text-text-and-icon">
-            No results found
+        <Combobox autoSelect placeholder={searchPlaceholder} />
+        <AriaKitComboboxList
+          className={cn(
+            'max-h-60 w-full select-none',
+            'text-p4a',
+            'overflow-auto',
+            'text-text-text-and-icon',
+            props.className,
+          )}
+          onScroll={() => {
+            // fixing weird bug where scroll position is reset when
+            // new items are loaded when scroll end is reached
+            store.move(null);
+          }}
+        >
+          {props.children}
+          {!items.length ? (
+            <div className="py-3 px-2 w-full flex items-center justify-center text-p6 text-text-text-and-icon">
+              No results found
+            </div>
+          ) : null}
+          {loading ? (
+            <div className="pt-2 pb-1 px-3 flex items-center justify-center">
+              <CircleSpinner size="sm" />
+            </div>
+          ) : (
+            <InfiniteLoadingObserverElement
+              onVisible={() => {
+                onEndReached?.();
+              }}
+            />
+          )}
+        </AriaKitComboboxList>
+        {clearButtonContent ? (
+          <div className="flex items-center justify-center py-[6px]">
+            <button
+              className="dark:text-accent-accent text-text-link items-center text-p6"
+              onClick={() => {
+                store.setSelectedValue(isMultiple ? [] : '');
+              }}
+            >
+              {clearButtonContent}
+            </button>
           </div>
         ) : null}
-      </AriaKitComboboxList>
-      {clearButtonContent ? (
-        <div className="flex items-center justify-center py-[6px]">
-          <button
-            className="dark:text-accent-accent text-text-link items-center text-p6"
-            onClick={() => {
-              store.setSelectedValue(isMultiple ? [] : '');
-            }}
-          >
-            {clearButtonContent}
-          </button>
-        </div>
-      ) : null}
-    </>
+      </RadixPopover.Content>
+    </RadixPopover.Portal>
   );
-});
+};
 
 const ComboboxItem = forwardRef<HTMLDivElement, AriaKitComboboxItemProps>(
   (props, ref) => {
@@ -335,6 +396,7 @@ const ComboboxItem = forwardRef<HTMLDivElement, AriaKitComboboxItemProps>(
           },
           props.className,
         )}
+        resetValueOnSelect={props.resetValueOnSelect ?? false}
       >
         {Array.isArray(selectedValue) ? (
           <Checkbox tabIndex={-1} checked={selected} />
@@ -399,12 +461,27 @@ const CaretDownIcon = () => {
   );
 };
 
+const InfiniteLoadingObserverElement = ({ onVisible }: { onVisible: () => void }) => {
+  const intersectionRef = useRef<HTMLDivElement>(null);
+  const intersection = useIntersection(intersectionRef, {
+    root: null,
+    rootMargin: '0px',
+    threshold: 1,
+  });
+
+  useEffect(() => {
+    if (intersection?.isIntersecting && intersection?.intersectionRatio > 0) {
+      onVisible();
+    }
+  }, [intersection]);
+
+  return <div ref={intersectionRef}></div>;
+};
+
 export {
   Combobox as ComboboxV2,
+  ComboboxContent as ComboboxV2Content,
   ComboboxItem as ComboboxV2Item,
-  ComboboxList as ComboboxV2List,
-  Menu as ComboboxV2Menu,
-  MenuProvider as ComboboxV2MenuProvider,
   ComboboxProvider as ComboboxV2Provider,
   type ComboboxProviderProps as ComboboxV2ProviderProps,
   ComboboxTriggerButton as ComboboxV2TriggerButton,
