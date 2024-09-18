@@ -1,13 +1,11 @@
 import '@testing-library/jest-dom';
 
-import { act, fireEvent, screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useEffect, useState } from 'react';
 import { describe, expect } from 'vitest';
 
 import {
-  Combobox,
-  ComboboxOption,
   ComboboxV2Content,
   ComboboxV2Item,
   ComboboxV2Provider,
@@ -93,15 +91,28 @@ describe('ComboboxV2', () => {
     await act(async () => {
       return userEvent.click(triggerBtn);
     });
+    expect(screen.queryByRole('listbox')).toBeInTheDocument();
 
     const op1 = screen.getByRole('option', {
       name: 'Jon',
     });
     expect(op1).toBeInTheDocument();
+
+    await act(async () => {
+      return userEvent.keyboard('{ArrowDown}');
+    });
+    expect(op1).toHaveAttribute('data-active-item', 'true');
+
     await act(async () => {
       return userEvent.click(op1);
     });
     expect(triggerBtn).toHaveTextContent('Jon');
+
+    await act(async () => {
+      return userEvent.keyboard('{Escape}');
+    });
+    expect(op1).not.toBeInTheDocument();
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
   it('Should display selected item with select variant', async () => {
     const UI = () => {
