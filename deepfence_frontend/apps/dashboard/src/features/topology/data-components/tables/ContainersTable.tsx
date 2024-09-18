@@ -25,7 +25,7 @@ import {
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
-import { SearchableContainerListV2 } from '@/components/forms/SearchableContainerListV2';
+import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableNamespaceList } from '@/components/forms/SearchableNamespaceList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
@@ -256,7 +256,7 @@ function Filters() {
   return (
     <FilterWrapper>
       <div className="flex gap-2">
-        <SearchableContainerListV2
+        <SearchableContainerList
           scanType={'none'}
           defaultSelectedContainers={searchParams.getAll('containers')}
           onChange={(value) => {

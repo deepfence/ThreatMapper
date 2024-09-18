@@ -9,7 +9,7 @@ import {
 } from '@/api/generated';
 import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
-import { SearchableContainerListV2 } from '@/components/forms/SearchableContainerListV2';
+import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { ScanTypeEnum } from '@/types/common';
@@ -115,7 +115,7 @@ export const AdvancedFilters = ({
         )}
         {!isComplianceNotification(notificationType) &&
           !isCloudComplianceNotification(notificationType) && (
-            <SearchableContainerListV2
+            <SearchableContainerList
               scanType={API_SCAN_TYPE_MAP[notificationType]}
               triggerVariant="select"
               defaultSelectedContainers={containers}

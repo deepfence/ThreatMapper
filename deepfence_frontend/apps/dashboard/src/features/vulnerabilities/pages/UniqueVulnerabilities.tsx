@@ -21,7 +21,7 @@ import { ModelVulnerability } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
-import { SearchableContainerListV2 } from '@/components/forms/SearchableContainerListV2';
+import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -233,7 +233,7 @@ const Filters = () => {
             });
           }}
         />
-        <SearchableContainerListV2
+        <SearchableContainerList
           scanType={ScanTypeEnum.VulnerabilityScan}
           defaultSelectedContainers={searchParams.getAll('containers')}
           onChange={(value) => {
