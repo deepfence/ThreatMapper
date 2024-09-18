@@ -328,7 +328,9 @@ const ReportForm = () => {
           />
 
           {data?.message ? (
-            <p className="mt-4 text-p7 text-status-error">{data?.message}</p>
+            <p className="mt-4 text-p7 text-status-error" data-testid="formErrorMessage">
+              {data?.message}
+            </p>
           ) : null}
 
           <div className="mt-14 flex gap-x-2">
@@ -338,6 +340,7 @@ const ReportForm = () => {
               type="submit"
               loading={fetcher.state === 'submitting'}
               disabled={fetcher.state === 'submitting'}
+              data-testid="createReportButton"
             >
               Create
             </Button>
@@ -347,6 +350,7 @@ const ReportForm = () => {
               color="default"
               variant="outline"
               onClick={() => navigate('../')}
+              data-testid="cancelReportButton"
             >
               Cancel
             </Button>

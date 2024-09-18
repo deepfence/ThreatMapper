@@ -46,7 +46,10 @@ export const Login = () => {
           </DFLink>
         </div>
         {data?.error && (
-          <div className={`text-center m-1.5 text-p7 text-status-error`}>
+          <div
+            className={`text-center m-1.5 text-p7 text-status-error`}
+            data-testid="errorMessage"
+          >
             {data.error}
           </div>
         )}
@@ -56,13 +59,19 @@ export const Login = () => {
           type="submit"
           disabled={state !== 'idle'}
           loading={state !== 'idle'}
+          data-testid="signInButton"
         >
           Sign In
         </Button>
 
         <p className="mt-4 text-p4 text-text-text-and-icon">
           Don&apos;t have account yet?{' '}
-          <DFLink to="/auth/register" className="text-accent-accent underline" unstyled>
+          <DFLink
+            to="/auth/register"
+            className="text-accent-accent underline"
+            unstyled
+            data-testid="registerButton"
+          >
             Register now
           </DFLink>
         </p>

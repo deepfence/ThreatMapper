@@ -328,6 +328,7 @@ const UserInfoModalContent = ({
             className="p-0 tracking-normal"
             type="submit"
             variant="flat"
+            data-testid="resendButton"
             disabled={
               fetcher.state !== 'idle' &&
               fetcher.formData?.get('resendIntent') === SEND_EMAIL
@@ -350,6 +351,7 @@ const UserInfoModalContent = ({
           size="md"
           variant="outline"
           type="button"
+          data-testid="cancelButton"
           onClick={() => {
             closeModal(false);
           }}
@@ -362,6 +364,7 @@ const UserInfoModalContent = ({
             <Button
               size="md"
               type="submit"
+              data-testid="registerButton"
               disabled={
                 fetcher.state !== 'idle' &&
                 fetcher.formData?.get('intent') === SAVE_LICENSE &&
@@ -387,6 +390,7 @@ const UserInfoModalContent = ({
               type="submit"
               disabled={fetcher.state !== 'idle'}
               loading={fetcher.state !== 'idle'}
+              data-testid="getLicenseKeyButton"
             >
               Get license key
             </Button>

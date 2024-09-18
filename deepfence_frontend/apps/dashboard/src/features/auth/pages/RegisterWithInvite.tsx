@@ -151,7 +151,12 @@ const RegisterWithInvite = () => {
         />
       </div>
       {data?.error && (
-        <div className={`text-center mt-1.5 text-p7 text-status-error`}>{data.error}</div>
+        <div
+          className={`text-center mt-1.5 text-p7 text-status-error`}
+          data-testid="errorMessage"
+        >
+          {data.error}
+        </div>
       )}
       <div
         className={cn('flex flex-col w-full mt-6', {
@@ -164,6 +169,7 @@ const RegisterWithInvite = () => {
           type="submit"
           disabled={state !== 'idle' || !eulaAccepted}
           loading={state !== 'idle'}
+          data-testid="registerButton"
         >
           Register
         </Button>
@@ -173,7 +179,12 @@ const RegisterWithInvite = () => {
         className={`flex flex-row justify-center text-p7 mt-4 text-text-text-and-icon`}
       >
         Already have an account?&nbsp;
-        <DFLink to="/auth/login" className="underline text-accent-accent" unstyled>
+        <DFLink
+          to="/auth/login"
+          className="underline text-accent-accent"
+          unstyled
+          data-testid="signInButton"
+        >
           Login
         </DFLink>
       </div>

@@ -2,10 +2,6 @@
   "name": "deepfence_frontend",
   "version": "0.0.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "test": "turbo run test -- --run",
     "build": "turbo run build",
@@ -16,12 +12,12 @@
     "format:fix": "prettier  --loglevel warn --write \"./**/*.{js,jsx,ts,tsx,css,md,json}\""
   },
   "devDependencies": {
-    "prettier": "^3.2.5",
-    "turbo": "^1.13.2",
-    "typescript": "^5.4.4"
+    "prettier": "^3.3.3",
+    "turbo": "^1.13.4",
+    "typescript": "^5.6.2"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "packageManager": "pnpm@7.17.1"
+  "packageManager": "pnpm@9.10.0"
 }

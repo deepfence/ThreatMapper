@@ -141,6 +141,7 @@ const DeleteConfirmationModal = ({
                 size="md"
                 disabled={fetcher.state !== 'idle'}
                 loading={fetcher.state !== 'idle'}
+                data-testid="deleteThreatMapperLicenseButton"
               >
                 Delete
               </Button>
@@ -159,7 +160,12 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && (
-            <p className="mt-2 text-p7 dark:text-status-error">{fetcher.data?.message}</p>
+            <p
+              className="mt-2 text-p7 dark:text-status-error"
+              data-testid="formErrorMessage"
+            >
+              {fetcher.data?.message}
+            </p>
           )}
         </div>
       ) : undefined}
@@ -272,6 +278,7 @@ const LicenseCard = ({ licenseData }: { licenseData: ModelLicense }) => {
                 type="submit"
                 loading={fetcher.state !== 'idle'}
                 disabled={fetcher.state !== 'idle'}
+                data-testid="registerThreatMapperLicenseButton"
               >
                 Register license key
               </Button>

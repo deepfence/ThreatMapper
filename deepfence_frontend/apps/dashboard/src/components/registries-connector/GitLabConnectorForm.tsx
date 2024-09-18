@@ -99,7 +99,11 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
             Supported Versions: 11.8 and above
           </div>
         </div>
-        {errorMessage && <p className="mt-2 text-status-error text-p7">{errorMessage}</p>}
+        {errorMessage && (
+          <p className="mt-2 text-status-error text-p7" data-testid="errorMessage">
+            {errorMessage}
+          </p>
+        )}
       </Card>
     </>
   );

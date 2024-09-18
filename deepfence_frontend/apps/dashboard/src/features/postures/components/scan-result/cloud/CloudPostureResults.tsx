@@ -279,7 +279,7 @@ const CloudPostureTable = ({
       size="default"
       data={
         isScanComplete(statusResultData.status)
-          ? scanResultData?.data?.compliances ?? []
+          ? (scanResultData?.data?.compliances ?? [])
           : []
       }
       columns={columns}

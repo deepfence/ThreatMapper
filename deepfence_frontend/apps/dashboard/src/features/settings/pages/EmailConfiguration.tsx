@@ -335,7 +335,7 @@ const EmailConfigurationModal = ({
             {emailProvider === 'Amazon SES' ? <AmazonSesForm data={data} /> : null}
             {emailProvider === 'SendGrid' ? <SendGridForm data={data} /> : null}
             {!data?.success && data?.message && isEmpty(data?.fieldErrors) ? (
-              <div className={`text-status-error text-p7`}>
+              <div className={`text-status-error text-p7`} data-testid="formErrorMessage">
                 <span>{data?.message}</span>
               </div>
             ) : null}
@@ -346,6 +346,7 @@ const EmailConfigurationModal = ({
                 type="submit"
                 disabled={state !== 'idle' && fetcher.formData?.get('testEmail') === null}
                 loading={state !== 'idle' && fetcher.formData?.get('testEmail') === null}
+                data-testid="submitEmailConfigurationButton"
               >
                 Submit
               </Button>
@@ -359,6 +360,7 @@ const EmailConfigurationModal = ({
                     setShowDialog(false);
                   }
                 }}
+                data-testid="cancelEmailConfigurationButton"
               >
                 Cancel
               </Button>
@@ -377,6 +379,7 @@ const EmailConfigurationModal = ({
                   fetcher.formData?.get('testEmail') === 'true'
                 }
                 className="ml-auto"
+                data-testid="sendTestEmailButton"
               >
                 Send test email
               </Button>

@@ -77,7 +77,10 @@ export const ForgotPassword = () => {
           helperText={data?.fieldErrors?.email}
         />
         {data?.message && (
-          <p className={`my-1.5 text-p7 text-center text-status-success`}>
+          <p
+            className={`my-1.5 text-p7 text-center text-status-success`}
+            data-testid="message"
+          >
             {data.message}
           </p>
         )}
@@ -88,6 +91,7 @@ export const ForgotPassword = () => {
             loading={state === 'submitting'}
             disabled={state === 'submitting'}
             type="submit"
+            data-testid="sendLinkButton"
           >
             Send Link
           </Button>
@@ -95,6 +99,7 @@ export const ForgotPassword = () => {
             to="/auth/login"
             className="mt-4 text-p4 underline text-accent-accent text-center"
             unstyled
+            data-testid="backToLoginButton"
           >
             Back to login
           </DFLink>

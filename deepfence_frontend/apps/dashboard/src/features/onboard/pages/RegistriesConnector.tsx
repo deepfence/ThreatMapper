@@ -33,10 +33,17 @@ export const RegistriesConnector = () => {
           disabled={state !== 'idle'}
           loading={state !== 'idle'}
           form="registryConnectorForm"
+          data-testid="saveAndGoToConnectorsButton"
         >
           Save and go to connectors
         </Button>
-        <Button onClick={goBack} type="button" variant="outline" size="md">
+        <Button
+          onClick={goBack}
+          type="button"
+          variant="outline"
+          size="md"
+          data-testid="cancelRegistriesConnectorButton"
+        >
           Cancel
         </Button>
       </div>

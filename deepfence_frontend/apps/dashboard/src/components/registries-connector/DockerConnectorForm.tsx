@@ -99,7 +99,11 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
             Supported Versions: API version v2
           </div>
         </div>
-        {errorMessage && <p className="text-status-error text-p7a">{errorMessage}</p>}
+        {errorMessage && (
+          <p className="text-status-error text-p7a" data-testid="errorMessage">
+            {errorMessage}
+          </p>
+        )}
       </Card>
     </>
   );
