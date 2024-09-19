@@ -233,8 +233,8 @@ module "cloud-scanner_example_multiple_project" {
         project_id = "<PROJECT_ID>"
       }
 
-      output service_account_email {
-        value = cloud_scanner_example_single_project.service_account_email
+      output "service_account_email" {
+        value = module.cloud_scanner_example_single_project.service_account_email
       }
       ```
 
@@ -254,8 +254,8 @@ module "cloud-scanner_example_multiple_project" {
         isOrganizationDeployment = true
       }
 
-      output service_account_email {
-        value = cloud_scanner_example_multiple_project.service_account_email
+      output "service_account_email" {
+        value = module.cloud_scanner_example_multiple_project.service_account_email
       }
       ```
 2. Apply the terraform script and note the service account from the output
