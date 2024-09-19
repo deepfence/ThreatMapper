@@ -136,7 +136,7 @@ data "google_container_cluster" "target_cluster" {
   project  = "<PROJECT_ID>"
 }
 
-module "cloud-scanner_example_single_project" {
+module "cloud_scanner_example_single_project" {
   source                     = "deepfence/cloud-scanner/gcp//examples/gke"
   version                    = "0.7.2"
   gke_host                   = "https://${data.google_container_cluster.target_cluster.endpoint}"
@@ -173,7 +173,7 @@ data "google_container_cluster" "target_cluster" {
   project  = "<PROJECT_ID>"
 }
 
-module "cloud-scanner_example_multiple_project" {
+module "cloud_scanner_example_multiple_project" {
   source                     = "deepfence/cloud-scanner/gcp//examples/gke"
   version                    = "0.7.2"
   name                       = "deepfence-cloud-scanner"
