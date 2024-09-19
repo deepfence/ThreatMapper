@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import {
   capitalize,
   intersection,
@@ -40,7 +41,7 @@ import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
 import { RESOURCES } from '@/features/integrations/pages/CreateReport';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
-import { invalidateAllQueries } from '@/queries';
+import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
 
 enum ActionEnumType {
@@ -202,9 +203,10 @@ export const ReportTable = ({
       desc: true,
     },
   ]);
+  const queryClient = useQueryClient();
 
   useInterval(() => {
-    invalidateAllQueries();
+    queryClient.invalidateQueries({ queryKey: queries.integration.getReports._def });
   }, 15000);
 
   const columnHelper = createColumnHelper<ModelExportReport>();
@@ -591,12 +593,6 @@ export const ReportFilters = () => {
               values.forEach((value) => {
                 prev.append('container', value);
               });
-              return prev;
-            });
-          }}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('container');
               return prev;
             });
           }}

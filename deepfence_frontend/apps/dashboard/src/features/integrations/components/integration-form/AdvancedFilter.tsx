@@ -122,9 +122,6 @@ export const AdvancedFilters = ({
               onChange={(value) => {
                 setContainers(value);
               }}
-              onClearAll={() => {
-                setContainers([]);
-              }}
               active={false}
               valueKey="nodeName"
             />

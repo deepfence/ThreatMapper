@@ -250,13 +250,6 @@ const Filters = () => {
         <SearchableContainerList
           scanType={ScanTypeEnum.VulnerabilityScan}
           defaultSelectedContainers={searchParams.getAll('containers')}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('containers');
-              prev.delete('page');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('containers');

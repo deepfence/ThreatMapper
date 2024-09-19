@@ -529,13 +529,6 @@ const Filters = () => {
           scanType={ScanTypeEnum.SecretScan}
           defaultSelectedContainers={searchParams.getAll('containers')}
           isScannedForSecrets
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('containers');
-              prev.delete('page');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('containers');

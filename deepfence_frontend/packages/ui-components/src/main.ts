@@ -37,6 +37,15 @@ export * as Popover from '@/components/popover/Popover';
 export { default as Radio } from '@/components/radio/Radio';
 export { Combobox, ComboboxOption } from '@/components/select/Combobox';
 export { Listbox, ListboxOption } from '@/components/select/Listbox';
+export type { ComboboxV2ProviderProps } from '@/components/select-v2/Combobox';
+export {
+  ComboboxV2,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
+  ComboboxV2TriggerInput,
+} from '@/components/select-v2/Combobox';
 export { default as Separator } from '@/components/separator/Separator';
 export { CircleSpinner } from '@/components/spinner/CircleSpinner';
 export { Step, StepIndicator, StepLine, Stepper } from '@/components/stepper/Stepper';

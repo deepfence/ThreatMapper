@@ -149,9 +149,6 @@ export const AdvancedFilter = ({
                     onChange={(value) => {
                       setContainers(value);
                     }}
-                    onClearAll={() => {
-                      setContainers([]);
-                    }}
                     active={!deadNodes}
                   />
                 </div>
