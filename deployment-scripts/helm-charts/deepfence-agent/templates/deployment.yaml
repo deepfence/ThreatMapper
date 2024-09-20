@@ -31,6 +31,9 @@ spec:
         - name: deepfence-cluster-agent
           image: "{{ .Values.cluster_agent.image.name }}:{{ default .Values.global.imageTag .Values.cluster_agent.image.tag }}"
           imagePullPolicy: {{ .Values.cluster_agent.image.pullPolicy }}
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
           env:
             - name: MGMT_CONSOLE_URL
               value: "{{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}"
