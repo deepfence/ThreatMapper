@@ -43,29 +43,48 @@ const MultiSelectTemplate: StoryFn<typeof Listbox> = () => {
   const [selected, setSelected] = useState<typeof people>([]);
 
   return (
-    <Listbox
-      variant="underline"
-      value={selected}
-      label="Select your value"
-      name="multiple-select"
-      multiple
-      getDisplayValue={() => {
-        return 'PropertyName';
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target as HTMLFormElement);
+        for (const [k, v] of formData.entries()) {
+          if (
+            k.includes('[') &&
+            k.endsWith(']') &&
+            k.split('[')[0] === 'multiple-select'
+          ) {
+            console.log(k, v);
+          }
+        }
       }}
-      onChange={(item) => {
-        setSelected(item);
-      }}
-      clearAll={'Clear filters'}
-      onClearAll={() => setSelected([])}
     >
-      {people.map((person) => {
-        return (
-          <ListboxOption key={person.value} value={person}>
-            {person.label}
-          </ListboxOption>
-        );
-      })}
-    </Listbox>
+      <Listbox
+        variant="underline"
+        value={selected}
+        label="Select your value"
+        name="multiple-select"
+        multiple
+        getDisplayValue={() => {
+          return 'PropertyName';
+        }}
+        onChange={(item) => {
+          setSelected(item);
+        }}
+        clearAll={'Clear filters'}
+        onClearAll={() => setSelected([])}
+      >
+        {people.map((person) => {
+          return (
+            <ListboxOption key={person.value} value={person}>
+              {person.label}
+            </ListboxOption>
+          );
+        })}
+      </Listbox>
+      <div className="mt-2">
+        <Button type="submit">Submit</Button>
+      </div>
+    </form>
   );
 };
 
@@ -126,6 +145,9 @@ const SingleSelectTemplate: StoryFn<typeof Listbox> = () => {
       <Listbox
         value={selected}
         name="single-select"
+        color="error"
+        variant="underline"
+        helperText="This is a helper text"
         onChange={(item) => {
           setSelected(item);
         }}
@@ -213,6 +235,7 @@ export const SingleSelectInfiniteScrollTemplate: StoryFn<typeof Listbox> = () =>
     <Listbox
       value={selected}
       label="Select your value"
+      helperText="This is a helper text"
       onChange={(value) => {
         setSelected(value);
       }}

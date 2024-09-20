@@ -46,6 +46,7 @@ export {
   ComboboxV2TriggerButton,
   ComboboxV2TriggerInput,
 } from '@/components/select-v2/Combobox';
+export { ListboxOptionV2, ListboxV2 } from '@/components/select-v2/Listbox';
 export { default as Separator } from '@/components/separator/Separator';
 export { CircleSpinner } from '@/components/spinner/CircleSpinner';
 export { Step, StepIndicator, StepLine, Stepper } from '@/components/stepper/Stepper';
