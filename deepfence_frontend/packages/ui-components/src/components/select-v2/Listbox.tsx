@@ -66,27 +66,30 @@ export const ListboxV2 = <T extends Value = Value>(
     <RadixPopover.Root open={open} onOpenChange={setOpen}>
       <SelectProvider {...rest} open={open} setOpen={setOpen}>
         <div className="flex flex-col">
-          <SelectLabel
-            render={(props) => {
-              return (
-                <Label
-                  {...props}
-                  className={cn(
-                    'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
-                    {
-                      'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
-                    },
-                  )}
-                  onClick={() => {
-                    setOpen((prev) => !prev);
-                  }}
-                >
-                  {required && <span>*</span>}
-                  {label}
-                </Label>
-              );
-            }}
-          />
+          {label ? (
+            <SelectLabel
+              render={(props) => {
+                return (
+                  <Label
+                    {...props}
+                    className={cn(
+                      'text-p11 dark:text-text-input-value text-text-text-and-icon" pb-[10px]',
+                      {
+                        'text-severity-unknown/60 dark:text-df-gray-600/60': disabled,
+                      },
+                    )}
+                    onClick={() => {
+                      setOpen((prev) => !prev);
+                    }}
+                  >
+                    {required && <span>*</span>}
+                    {label}
+                  </Label>
+                );
+              }}
+            />
+          ) : null}
+
           <ListboxButton
             color={color ?? 'default'}
             variant={variant ?? 'default'}
@@ -265,7 +268,7 @@ export const ListboxOptionV2 = forwardRef<HTMLDivElement, SelectItemProps>(
           'cursor-pointer',
           'dark:hover:bg-bg-hover-2 hover:bg-bg-breadcrumb-bar',
           'data-[active-item]:dark:bg-bg-grid-header data-[active-item]:bg-bg-breadcrumb-bar',
-          'aria-[selected=true]:dark:bg-bg-active-selection aria-[selected=true]:bg-bg-breadcrumb-bar aria-[selected=true]:text-text-input-value',
+          'aria-[selected=true]:dark:!bg-bg-active-selection aria-[selected=true]:!bg-bg-breadcrumb-bar aria-[selected=true]:!text-text-input-value',
           'outline-none focus:outline-none',
         )}
       >

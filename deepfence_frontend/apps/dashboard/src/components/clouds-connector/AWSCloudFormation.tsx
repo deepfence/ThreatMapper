@@ -3,8 +3,8 @@ import { Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CircleSpinner,
-  Listbox,
-  ListboxOption,
+  ListboxOptionV2,
+  ListboxV2,
   Step,
   StepIndicator,
   StepLine,
@@ -139,10 +139,10 @@ export const AWSCloudFormation = () => {
           title="Region Selection"
         >
           <div className="w-1/2">
-            <Listbox
+            <ListboxV2
               value={region}
               name="region"
-              onChange={(value) => {
+              setValue={(value) => {
                 setRegion(value);
               }}
               placeholder="Select a region"
@@ -151,11 +151,11 @@ export const AWSCloudFormation = () => {
               }}
             >
               {AWS_REGIONS.map((region) => (
-                <ListboxOption value={region} key={region}>
+                <ListboxOptionV2 value={region} key={region}>
                   {region}
-                </ListboxOption>
+                </ListboxOptionV2>
               ))}
-            </Listbox>
+            </ListboxV2>
           </div>
         </Step>
         <Step

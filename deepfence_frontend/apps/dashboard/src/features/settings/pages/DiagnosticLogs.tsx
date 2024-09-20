@@ -6,8 +6,8 @@ import { toast } from 'sonner';
 import {
   Button,
   createColumnHelper,
-  Listbox,
-  ListboxOption,
+  ListboxOptionV2,
+  ListboxV2,
   SlidingModal,
   SlidingModalCloseButton,
   SlidingModalContent,
@@ -391,11 +391,11 @@ const SelectCloudAccount = ({
 
   return (
     <div className="flex flex-col gap-y-8">
-      <Listbox
+      <ListboxV2
         variant="underline"
         value={cloud}
         name="cloud"
-        onChange={(value) => {
+        setValue={(value) => {
           setCloud(value);
         }}
         placeholder="Select cloud type"
@@ -406,12 +406,12 @@ const SelectCloudAccount = ({
       >
         {['AWS', 'GCP', 'Azure']?.map((provider) => {
           return (
-            <ListboxOption value={provider} key={provider}>
+            <ListboxOptionV2 value={provider} key={provider}>
               {provider}
-            </ListboxOption>
+            </ListboxOptionV2>
           );
         })}
-      </Listbox>
+      </ListboxV2>
       <SearchableCloudAccountsList
         active
         label={`${cloud} Account`}
