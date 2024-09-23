@@ -3,8 +3,8 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import {
   Card,
   IconButton,
-  Listbox,
-  ListboxOption,
+  ListboxOptionV2,
+  ListboxV2,
   Step,
   StepIndicator,
   StepLine,
@@ -175,10 +175,11 @@ const InformationForm = ({
       </div>
       <div className="grid grid-cols-2 mb-4">
         <div className="max-w-sm">
-          <Listbox
+          <ListboxV2
             value={containerRuntime}
             name="runtime"
-            onChange={(value) => {
+            variant="underline"
+            setValue={(value) => {
               setContainerRuntime(value);
               setSocketPath(socketMap[value].path || '');
             }}
@@ -188,11 +189,11 @@ const InformationForm = ({
             }}
           >
             {containerRuntimeDropdown.map((runtime) => (
-              <ListboxOption value={runtime.name} key={runtime.name}>
+              <ListboxOptionV2 value={runtime.name} key={runtime.name}>
                 {runtime.name}
-              </ListboxOption>
+              </ListboxOptionV2>
             ))}
-          </Listbox>
+          </ListboxV2>
         </div>
         <div className="max-w-sm">
           <TextInput
