@@ -106,9 +106,6 @@ export const AdvancedFilters = ({
             onChange={(value) => {
               setHosts(value);
             }}
-            onClearAll={() => {
-              setHosts([]);
-            }}
             agentRunning={false}
             active={false}
           />
@@ -134,9 +131,6 @@ export const AdvancedFilters = ({
               defaultSelectedImages={images}
               onChange={(value) => {
                 setImages(value);
-              }}
-              onClearAll={() => {
-                setImages([]);
               }}
             />
           )}

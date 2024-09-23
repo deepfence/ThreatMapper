@@ -565,13 +565,6 @@ export const ReportFilters = () => {
           scanType={'none'}
           defaultSelectedHosts={searchParams.getAll('host')}
           agentRunning={false}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('host');
-              prev.delete('page');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('host');
@@ -600,13 +593,6 @@ export const ReportFilters = () => {
         <SearchableImageList
           scanType={'none'}
           defaultSelectedImages={searchParams.getAll('containerImage')}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('containerImage');
-              prev.delete('page');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('containerImage');

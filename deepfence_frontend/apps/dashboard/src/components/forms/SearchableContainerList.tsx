@@ -87,12 +87,12 @@ const SearchableContainer = ({
       <ComboboxV2Provider
         selectedValue={selectedContainers}
         setSelectedValue={(values) => {
-          setSelectedContainers(values as string[]);
-          onChange?.(values as string[]);
+          setSelectedContainers(values);
+          onChange?.(values);
         }}
         value={searchText}
         setValue={setSearchText}
-        defaultSelectedValue={defaultSelectedContainers}
+        defaultSelectedValue={defaultSelectedContainers ?? []}
         name={fieldName}
         loading={isFetchingNextPage}
       >

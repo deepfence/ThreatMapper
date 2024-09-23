@@ -39,7 +39,6 @@ export { Combobox, ComboboxOption } from '@/components/select/Combobox';
 export { Listbox, ListboxOption } from '@/components/select/Listbox';
 export type { ComboboxV2ProviderProps } from '@/components/select-v2/Combobox';
 export {
-  ComboboxV2,
   ComboboxV2Content,
   ComboboxV2Item,
   ComboboxV2Provider,

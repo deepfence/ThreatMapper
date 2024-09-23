@@ -478,9 +478,6 @@ const AgentDiagnosticsLogsModal = ({
                   onChange={(value) => {
                     setHosts(value);
                   }}
-                  onClearAll={() => {
-                    setHosts([]);
-                  }}
                   helperText={fetcher?.data?.fieldErrors?.node_ids}
                   color={fetcher?.data?.fieldErrors?.node_ids ? 'error' : 'default'}
                 />
@@ -492,9 +489,6 @@ const AgentDiagnosticsLogsModal = ({
                   defaultSelectedClusters={clusters}
                   onChange={(value) => {
                     setClusters(value);
-                  }}
-                  onClearAll={() => {
-                    setClusters([]);
                   }}
                   helperText={fetcher?.data?.fieldErrors?.node_ids}
                   color={fetcher?.data?.fieldErrors?.node_ids ? 'error' : 'default'}

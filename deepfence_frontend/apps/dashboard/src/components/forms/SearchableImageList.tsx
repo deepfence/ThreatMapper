@@ -1,15 +1,21 @@
 import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
-import { debounce } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
-import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
+import {
+  CircleSpinner,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
+  ComboboxV2TriggerInput,
+} from 'ui-components';
 
 import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
+import { useDebouncedValue } from '@/utils/useDebouncedValue';
 
-export type Props = {
+export interface Props {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
-  onClearAll?: () => void;
   defaultSelectedImages?: string[];
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
@@ -17,13 +23,12 @@ export type Props = {
   isScannedForVulnerabilities?: boolean;
   isScannedForSecrets?: boolean;
   isScannedForMalware?: boolean;
-};
+}
 const fieldName = 'imageFilter';
 const PAGE_SIZE = 15;
 const SearchableImage = ({
   scanType,
   onChange,
-  onClearAll,
   defaultSelectedImages,
   valueKey = 'nodeId',
   active,
@@ -33,6 +38,7 @@ const SearchableImage = ({
   isScannedForMalware,
 }: Props) => {
   const [searchText, setSearchText] = useState('');
+  const debouncedSearchText = useDebouncedValue(searchText, 500);
 
   const [selectedImages, setSelectedImages] = useState<string[]>(
     defaultSelectedImages ?? [],
@@ -51,7 +57,7 @@ const SearchableImage = ({
       ...queries.search.containerImages({
         scanType,
         size: PAGE_SIZE,
-        searchText,
+        searchText: debouncedSearchText,
         active,
         isScannedForVulnerabilities,
         isScannedForSecrets,
@@ -63,6 +69,7 @@ const SearchableImage = ({
       }),
       keepPreviousData: true,
       getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.containerImages.length < PAGE_SIZE) return null;
         return allPages.length * PAGE_SIZE;
       },
       getPreviousPageParam: (firstPage, allPages) => {
@@ -71,39 +78,39 @@ const SearchableImage = ({
       },
     });
 
-  const searchContainerImage = debounce((query) => {
-    setSearchText(query);
-  }, 1000);
-
   const onEndReached = () => {
     if (hasNextPage) fetchNextPage();
   };
 
   return (
-    <>
-      <Combobox
-        startIcon={
-          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
-        }
-        name={fieldName}
-        triggerVariant={triggerVariant || 'button'}
-        label={isSelectVariantType ? 'Container image' : undefined}
-        getDisplayValue={() =>
-          isSelectVariantType && selectedImages.length > 0
-            ? `${selectedImages.length} selected`
-            : null
-        }
-        placeholder="Select container image"
-        multiple
-        value={selectedImages}
-        onChange={(values) => {
-          setSelectedImages(values);
-          onChange?.(values);
-        }}
-        onQueryChange={searchContainerImage}
-        clearAllElement="Clear"
-        onClearAll={onClearAll}
+    <ComboboxV2Provider
+      selectedValue={selectedImages}
+      setSelectedValue={(values) => {
+        setSelectedImages(values as string[]);
+        onChange?.(values as string[]);
+      }}
+      value={searchText}
+      setValue={setSearchText}
+      defaultSelectedValue={defaultSelectedImages}
+      name={fieldName}
+      loading={isFetchingNextPage}
+    >
+      {isSelectVariantType ? (
+        <ComboboxV2TriggerInput
+          getDisplayValue={() =>
+            selectedImages.length > 0 ? `${selectedImages.length} selected` : null
+          }
+          placeholder="Select container image"
+          label="Container image"
+        />
+      ) : (
+        <ComboboxV2TriggerButton>Select container image</ComboboxV2TriggerButton>
+      )}
+      <ComboboxV2Content
+        width={isSelectVariantType ? 'anchor' : 'fixed'}
+        clearButtonContent="Clear"
         onEndReached={onEndReached}
+        searchPlaceholder="Search"
       >
         {data?.pages
           .flatMap((page) => {
@@ -111,7 +118,7 @@ const SearchableImage = ({
           })
           .map((image, index) => {
             return (
-              <ComboboxOption key={`${image.nodeId}-${index}`} value={image[valueKey]}>
+              <ComboboxV2Item key={`${image.nodeId}-${index}`} value={image[valueKey]}>
                 <div>
                   {image.nodeName}
                   {image.tagList.length > 1 ? (
@@ -127,11 +134,11 @@ const SearchableImage = ({
                     </div>
                   ) : null}
                 </div>
-              </ComboboxOption>
+              </ComboboxV2Item>
             );
           })}
-      </Combobox>
-    </>
+      </ComboboxV2Content>
+    </ComboboxV2Provider>
   );
 };
 
@@ -145,18 +152,24 @@ export const SearchableImageList = (props: Props) => {
     <Suspense
       fallback={
         <>
-          <Combobox
+          <ComboboxV2Provider
+            defaultSelectedValue={defaultSelectedImages}
             name={fieldName}
-            value={defaultSelectedImages}
-            label={isSelectVariantType ? 'Container image' : undefined}
-            triggerVariant={triggerVariant || 'button'}
-            startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-            placeholder="Select container image"
-            multiple
-            onQueryChange={() => {
-              // no operation
-            }}
-          />
+          >
+            {isSelectVariantType ? (
+              <ComboboxV2TriggerInput
+                placeholder="Select container image"
+                label="Container image"
+                startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+              />
+            ) : (
+              <ComboboxV2TriggerButton
+                startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+              >
+                Select container image
+              </ComboboxV2TriggerButton>
+            )}
+          </ComboboxV2Provider>
         </>
       }
     >
