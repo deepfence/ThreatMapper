@@ -1,15 +1,21 @@
 import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
-import { debounce } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
-import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
+import {
+  CircleSpinner,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
+  ComboboxV2TriggerInput,
+} from 'ui-components';
 
 import { queries } from '@/queries';
 import { CloudNodeType } from '@/types/common';
+import { useDebouncedValue } from '@/utils/useDebouncedValue';
 
-type SearchableCloudAccountsListProps = {
+interface SearchableCloudAccountsListProps {
   cloudProvider: CloudNodeType;
   onChange?: (value: string[]) => void;
-  onClearAll?: () => void;
   defaultSelectedAccounts?: string[];
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
@@ -18,14 +24,13 @@ type SearchableCloudAccountsListProps = {
   helperText?: string;
   displayValue?: string;
   color?: 'error' | 'default';
-};
+}
 
 const fieldName = 'account_name';
 const PAGE_SIZE = 15;
 const SearchableCloudAccounts = ({
   cloudProvider,
   onChange,
-  onClearAll,
   defaultSelectedAccounts,
   triggerVariant,
   label,
@@ -33,6 +38,7 @@ const SearchableCloudAccounts = ({
   color,
 }: SearchableCloudAccountsListProps) => {
   const [searchText, setSearchText] = useState('');
+  const debouncedSearchText = useDebouncedValue(searchText, 500);
 
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>(
     defaultSelectedAccounts ?? [],
@@ -52,10 +58,11 @@ const SearchableCloudAccounts = ({
         cloudProvider: cloudProvider,
         fieldName: fieldName,
         size: PAGE_SIZE,
-        searchText,
+        searchText: debouncedSearchText,
       }),
       keepPreviousData: true,
       getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.data.length < PAGE_SIZE) return null;
         return allPages.length * PAGE_SIZE;
       },
       getPreviousPageParam: (firstPage, allPages) => {
@@ -64,53 +71,61 @@ const SearchableCloudAccounts = ({
       },
     });
 
-  const searchAccount = debounce((query: string) => {
-    setSearchText(query);
-  }, 1000);
-
   const onEndReached = () => {
     if (hasNextPage) fetchNextPage();
   };
 
   return (
     <>
-      <Combobox
-        label={label}
-        triggerVariant={triggerVariant}
-        startIcon={
-          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
-        }
+      <ComboboxV2Provider
+        loading={isFetchingNextPage}
         name={fieldName}
-        getDisplayValue={() =>
-          isSelectVariantType && selectedAccounts.length > 0
-            ? `${selectedAccounts.length} selected`
-            : 'Name'
-        }
-        multiple
-        value={selectedAccounts}
-        onChange={(values) => {
+        defaultSelectedValue={defaultSelectedAccounts ?? []}
+        selectedValue={selectedAccounts}
+        setSelectedValue={(values) => {
           setSelectedAccounts(values);
           onChange?.(values);
         }}
-        onQueryChange={searchAccount}
-        clearAllElement="Clear"
-        onClearAll={onClearAll}
-        onEndReached={onEndReached}
-        helperText={helperText}
-        color={color}
+        value={searchText}
+        setValue={setSearchText}
       >
-        {data?.pages
-          .flatMap((page) => {
-            return page.data;
-          })
-          .map((item, index) => {
-            return (
-              <ComboboxOption key={`${item}-${index}`} value={item}>
-                {item}
-              </ComboboxOption>
-            );
-          })}
-      </Combobox>
+        {triggerVariant === 'select' ? (
+          <ComboboxV2TriggerInput
+            label={label}
+            startIcon={
+              isFetchingNextPage ? (
+                <CircleSpinner size="sm" className="w-3 h-3" />
+              ) : undefined
+            }
+            getDisplayValue={() =>
+              selectedAccounts.length > 0 ? `${selectedAccounts.length} selected` : 'Name'
+            }
+            placeholder="Name"
+            helperText={helperText}
+            color={color}
+          />
+        ) : (
+          <ComboboxV2TriggerButton>Name</ComboboxV2TriggerButton>
+        )}
+        <ComboboxV2Content
+          width={isSelectVariantType ? 'anchor' : 'fixed'}
+          clearButtonContent="Clear"
+          onEndReached={onEndReached}
+          searchPlaceholder="Search"
+        >
+          {data?.pages
+            .flatMap((page) => {
+              return page.data;
+            })
+            .map((item, index) => {
+              return (
+                <ComboboxV2Item key={`${item}-${index}`} value={item}>
+                  {item}
+                </ComboboxV2Item>
+              );
+            })}
+        </ComboboxV2Content>
+      </ComboboxV2Provider>
     </>
   );
 };
@@ -121,20 +136,24 @@ export const SearchableCloudAccountName = (props: SearchableCloudAccountsListPro
     <Suspense
       fallback={
         <>
-          <Combobox
+          <ComboboxV2Provider
             name={fieldName}
-            value={defaultSelectedAccounts}
-            label={label}
-            triggerVariant={triggerVariant}
-            startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-            getDisplayValue={() => {
-              return displayValue ? displayValue : `Name`;
-            }}
-            multiple
-            onQueryChange={() => {
-              // no operation
-            }}
-          />
+            defaultSelectedValue={defaultSelectedAccounts}
+            loading
+          >
+            {triggerVariant === 'select' ? (
+              <ComboboxV2TriggerInput
+                label={label}
+                startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+              ></ComboboxV2TriggerInput>
+            ) : (
+              <ComboboxV2TriggerButton
+                startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+              >
+                {displayValue ? displayValue : 'Name'}
+              </ComboboxV2TriggerButton>
+            )}
+          </ComboboxV2Provider>
         </>
       }
     >

@@ -506,13 +506,6 @@ const Filters = () => {
                   return prev;
                 });
               }}
-              onClearAll={() => {
-                setSearchParams((prev) => {
-                  prev.delete('accountNames');
-                  prev.delete('page');
-                  return prev;
-                });
-              }}
             />
           </>
         ) : null}
