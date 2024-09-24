@@ -219,12 +219,6 @@ const Filters = () => {
           cloudProvider="aws"
           displayValue={FILTER_SEARCHPARAMS.aws_account_ids.label}
           defaultSelectedAccounts={searchParams.getAll('aws_account_ids')}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('aws_account_ids');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('aws_account_ids');
@@ -239,12 +233,6 @@ const Filters = () => {
           cloudProvider="gcp"
           displayValue={FILTER_SEARCHPARAMS.gcp_account_ids.label}
           defaultSelectedAccounts={searchParams.getAll('gcp_account_ids')}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('gcp_account_ids');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('gcp_account_ids');
@@ -259,12 +247,6 @@ const Filters = () => {
           cloudProvider="azure"
           displayValue={FILTER_SEARCHPARAMS.azure_account_ids.label}
           defaultSelectedAccounts={searchParams.getAll('azure_account_ids')}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('azure_account_ids');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('azure_account_ids');

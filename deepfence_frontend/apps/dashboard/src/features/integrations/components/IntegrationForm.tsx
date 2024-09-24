@@ -325,9 +325,6 @@ export const IntegrationForm = ({
                   defaultSelectedAccounts={awsAccounts}
                   cloudProvider="aws"
                   valueKey="nodeName"
-                  onClearAll={() => {
-                    setAccounts([]);
-                  }}
                   onChange={(value) => {
                     setAccounts(value);
                   }}

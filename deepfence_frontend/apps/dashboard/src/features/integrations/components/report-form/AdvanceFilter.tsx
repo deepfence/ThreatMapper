@@ -92,9 +92,6 @@ export const AdvancedFilter = ({
                 triggerVariant="select"
                 defaultSelectedAccounts={selectedCloudAccounts}
                 cloudProvider={provider.toLowerCase() as 'aws' | 'gcp' | 'azure'}
-                onClearAll={() => {
-                  setSelectedCloudAccounts([]);
-                }}
                 onChange={(value) => {
                   setSelectedCloudAccounts(value);
                 }}

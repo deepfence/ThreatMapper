@@ -451,13 +451,6 @@ const Filters = () => {
               valueKey="nodeId"
               cloudProvider={`${nodeType}_org` as CloudNodeType}
               defaultSelectedAccounts={searchParams.getAll('org_accounts')}
-              onClearAll={() => {
-                setSearchParams((prev) => {
-                  prev.delete('org_accounts');
-                  prev.delete('page');
-                  return prev;
-                });
-              }}
               onChange={(value) => {
                 setSearchParams((prev) => {
                   prev.delete('org_accounts');
@@ -475,13 +468,6 @@ const Filters = () => {
                 FILTER_SEARCHPARAMS[`${nodeType as CloudNodeNonOrgType}_accounts`]
               }
               defaultSelectedAccounts={searchParams.getAll(`${nodeType}_accounts`)}
-              onClearAll={() => {
-                setSearchParams((prev) => {
-                  prev.delete(`${nodeType}_accounts`);
-                  prev.delete('page');
-                  return prev;
-                });
-              }}
               onChange={(value) => {
                 setSearchParams((prev) => {
                   prev.delete(`${nodeType}_accounts`);

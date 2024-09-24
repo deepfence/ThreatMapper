@@ -418,9 +418,6 @@ const SelectCloudAccount = ({
         triggerVariant="select"
         defaultSelectedAccounts={selectedCloudAccounts}
         cloudProvider={cloud.toLowerCase() as 'aws' | 'gcp' | 'azure'}
-        onClearAll={() => {
-          setSelectedCloudAccounts([]);
-        }}
         onChange={(value) => {
           setSelectedCloudAccounts(value);
         }}
