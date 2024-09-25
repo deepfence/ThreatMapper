@@ -12,8 +12,10 @@ import { useSearchParams } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import {
   Button,
-  Combobox,
-  ComboboxOption,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -395,11 +397,9 @@ export const ReportFilters = () => {
   return (
     <div className="mt-2 px-4 py-2.5 mb-2 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['reportType']}
-          multiple
-          value={searchParams.getAll('reportType')}
-          onChange={(values) => {
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('reportType')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('reportType');
               values.forEach((value) => {
@@ -408,38 +408,34 @@ export const ReportFilters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setReportTypeSearch(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('reportType');
-              return prev;
-            });
-          }}
         >
-          {['xlsx', 'pdf', 'sbom']
-            .filter((item) => {
-              if (!reportTypeSearch.length) return true;
-              if (item.includes(reportTypeSearch.toLowerCase())) {
-                return true;
-              }
-              return false;
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {upperCase(item.replace('_', ' '))}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['status']}
-          multiple
-          value={searchParams.getAll('status')}
-          onChange={(values) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['reportType']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {['xlsx', 'pdf', 'sbom']
+              .filter((item) => {
+                if (!reportTypeSearch.length) return true;
+                if (item.includes(reportTypeSearch.toLowerCase())) {
+                  return true;
+                }
+                return false;
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {upperCase(item.replace('_', ' '))}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('status')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('status');
               values.forEach((value) => {
@@ -448,38 +444,34 @@ export const ReportFilters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setStatusSearch(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('status');
-              return prev;
-            });
-          }}
         >
-          {['complete', 'starting', 'in_progress', 'error']
-            .filter((item) => {
-              if (!statusSearch.length) return true;
-              if (item.includes(statusSearch.toLowerCase())) {
-                return true;
-              }
-              return false;
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {capitalize(item.replace('_', ' '))}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['scanType']}
-          multiple
-          value={searchParams.getAll('scanType')}
-          onChange={(values) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['status']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {['complete', 'starting', 'in_progress', 'error']
+              .filter((item) => {
+                if (!statusSearch.length) return true;
+                if (item.includes(statusSearch.toLowerCase())) {
+                  return true;
+                }
+                return false;
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {capitalize(item.replace('_', ' '))}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('scanType')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('scanType');
               values.forEach((value) => {
@@ -488,36 +480,32 @@ export const ReportFilters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setScanTypeSearch(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('scanType');
-              return prev;
-            });
-          }}
         >
-          {RESOURCES.filter((resource) => {
-            if (!scanTypeSearch.length) return true;
-            if (resource.includes(scanTypeSearch.toLowerCase())) {
-              return true;
-            }
-            return false;
-          }).map((resource, item) => {
-            return (
-              <ComboboxOption key={item} value={resource}>
-                {upperFirst(getResourceDisplayValue(resource))}
-              </ComboboxOption>
-            );
-          })}
-        </Combobox>
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['nodeType']}
-          multiple
-          value={searchParams.getAll('nodeType')}
-          onChange={(values) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['scanType']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {RESOURCES.filter((resource) => {
+              if (!scanTypeSearch.length) return true;
+              if (resource.includes(scanTypeSearch.toLowerCase())) {
+                return true;
+              }
+              return false;
+            }).map((resource, item) => {
+              return (
+                <ComboboxV2Item key={item} value={resource}>
+                  {upperFirst(getResourceDisplayValue(resource))}
+                </ComboboxV2Item>
+              );
+            })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('nodeType')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('nodeType');
               values.forEach((value) => {
@@ -526,41 +514,39 @@ export const ReportFilters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setNodeTypeSearch(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('nodeType');
-              return prev;
-            });
-          }}
         >
-          {[
-            UtilsReportFiltersNodeTypeEnum.Host,
-            UtilsReportFiltersNodeTypeEnum.Container,
-            UtilsReportFiltersNodeTypeEnum.ContainerImage,
-            UtilsReportFiltersNodeTypeEnum.Cluster,
-            UtilsReportFiltersNodeTypeEnum.Aws,
-            UtilsReportFiltersNodeTypeEnum.Azure,
-            UtilsReportFiltersNodeTypeEnum.Gcp,
-          ]
-            .filter((resource) => {
-              if (!nodeTypeSearch.length) return true;
-              if (resource.includes(nodeTypeSearch.toLowerCase())) {
-                return true;
-              }
-              return false;
-            })
-            .map((resource, item) => {
-              return (
-                <ComboboxOption key={item} value={resource}>
-                  {upperFirst(getResourceDisplayValue(resource))}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['nodeType']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {[
+              UtilsReportFiltersNodeTypeEnum.Host,
+              UtilsReportFiltersNodeTypeEnum.Container,
+              UtilsReportFiltersNodeTypeEnum.ContainerImage,
+              UtilsReportFiltersNodeTypeEnum.Cluster,
+              UtilsReportFiltersNodeTypeEnum.Aws,
+              UtilsReportFiltersNodeTypeEnum.Azure,
+              UtilsReportFiltersNodeTypeEnum.Gcp,
+            ]
+              .filter((resource) => {
+                if (!nodeTypeSearch.length) return true;
+                if (resource.includes(nodeTypeSearch.toLowerCase())) {
+                  return true;
+                }
+                return false;
+              })
+              .map((resource, item) => {
+                return (
+                  <ComboboxV2Item key={item} value={resource}>
+                    {upperFirst(getResourceDisplayValue(resource))}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
         <SearchableHostList
           scanType={'none'}
           defaultSelectedHosts={searchParams.getAll('host')}
