@@ -1,7 +1,13 @@
 import { capitalize } from 'lodash-es';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Button, Combobox, ComboboxOption } from 'ui-components';
+import {
+  Button,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
+} from 'ui-components';
 
 import { ModelBenchmarkType, ModelCloudComplianceStatusEnum } from '@/api/generated';
 import { FilterBadge } from '@/components/filters/FilterBadge';
@@ -89,11 +95,9 @@ export const Filters = () => {
   return (
     <FilterWrapper>
       <div className="flex gap-2">
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['visibility']}
-          multiple
-          value={searchParams.getAll('visibility')}
-          onChange={(values) => {
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('visibility')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('visibility');
               values.forEach((value) => {
@@ -103,36 +107,31 @@ export const Filters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setMaskedQuery(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('visibility');
-              prev.delete('page');
-              return prev;
-            });
-          }}
         >
-          {['masked', 'unmasked']
-            .filter((item) => {
-              if (!maskedQuery.length) return true;
-              return item.toLowerCase().includes(maskedQuery.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['status']}
-          multiple
-          value={searchParams.getAll('status')}
-          onChange={(values) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['visibility']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {['masked', 'unmasked']
+              .filter((item) => {
+                if (!maskedQuery.length) return true;
+                return item.toLowerCase().includes(maskedQuery.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {capitalize(item)}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('status')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('status');
               values.forEach((value) => {
@@ -142,36 +141,31 @@ export const Filters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setStatusQuery(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('status');
-              prev.delete('page');
-              return prev;
-            });
-          }}
         >
-          {statuses
-            .filter((item) => {
-              if (!statusQuery.length) return true;
-              return item.toLowerCase().includes(statusQuery.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['benchmarkType']}
-          multiple
-          value={searchParams.getAll('benchmarkType')}
-          onChange={(values) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['status']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {statuses
+              .filter((item) => {
+                if (!statusQuery.length) return true;
+                return item.toLowerCase().includes(statusQuery.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {capitalize(item)}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('benchmarkType')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('benchmarkType');
               values.forEach((value) => {
@@ -181,37 +175,32 @@ export const Filters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setBenchmarkQuery(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('benchmarkType');
-              prev.delete('page');
-              return prev;
-            });
-          }}
         >
-          {benchmarks
-            .filter((item) => {
-              if (!benchmarkQuery.length) return true;
-              return item.toLowerCase().includes(benchmarkQuery.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {getBenchmarkPrettyName(item)}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['services']}
-          multiple
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['benchmarkType']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {benchmarks
+              .filter((item) => {
+                if (!benchmarkQuery.length) return true;
+                return item.toLowerCase().includes(benchmarkQuery.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {getBenchmarkPrettyName(item)}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
           loading={status === 'loading'}
-          value={searchParams.getAll('services')}
-          onChange={(values) => {
+          selectedValue={searchParams.getAll('services')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('services');
               values.forEach((value) => {
@@ -221,31 +210,28 @@ export const Filters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setServiceQuery(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('services');
-              prev.delete('page');
-              return prev;
-            });
-          }}
         >
-          {services
-            .filter((item) => {
-              if (!serviceQuery.length) return true;
-              return item.toLowerCase().includes(serviceQuery.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['services']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {services
+              .filter((item) => {
+                if (!serviceQuery.length) return true;
+                return item.toLowerCase().includes(serviceQuery.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
         <SearchableControl
           scanId={params.scanId}
           defaultSelectedControl={searchParams.getAll('controlId')}
