@@ -1,6 +1,14 @@
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Badge, Button, CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
+import {
+  Badge,
+  Button,
+  CircleSpinner,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
+} from 'ui-components';
 
 import { GraphNodeInfo, GraphThreatFiltersTypeEnum } from '@/api/generated';
 import { FilterBadge } from '@/components/filters/FilterBadge';
@@ -19,7 +27,7 @@ const ThreatGraph = () => {
   const [modalData, setModalData] = useState<{
     label: string;
     nodeType: string;
-    nodes?: { [key: string]: GraphNodeInfo } | null;
+    nodes?: Record<string, GraphNodeInfo> | null;
     cloudId: string;
   }>();
   const { mode } = useTheme();
@@ -155,66 +163,80 @@ const Filters = () => {
   return (
     <FilterWrapper className="mt-[6px] mx-4 pt-4 px-4 pb-3 overflow-visible">
       <div className="flex gap-2">
-        <Combobox
-          value={THREAT_TYPES.find((threatType) => {
-            return threatType.value === searchParams.get('type');
-          })}
-          onQueryChange={(query) => {
+        <ComboboxV2Provider
+          selectedValue={
+            THREAT_TYPES.find((threatType) => {
+              return threatType.value === searchParams.get('type');
+            })?.value ?? ''
+          }
+          setValue={(query) => {
             setThreatTypeSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
-                prev.set('type', value.value);
+                prev.set('type', value);
               } else {
                 prev.delete('type');
               }
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['type'].label}
         >
-          {THREAT_TYPES.filter((item) => {
-            if (!threatTypeSearchText.length) return true;
-            return item.label.toLowerCase().includes(threatTypeSearchText.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item.value} value={item}>
-                {item.label}
-              </ComboboxOption>
-            );
-          })}
-        </Combobox>
-        <Combobox
-          value={THREAT_GRAPH_SCOPE.find((scope) => {
-            return scope.value === searchParams.get('cloud_resource_only');
-          })}
-          onQueryChange={(query) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['type'].label}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed">
+            {THREAT_TYPES.filter((item) => {
+              if (!threatTypeSearchText.length) return true;
+              return item.label
+                .toLowerCase()
+                .includes(threatTypeSearchText.toLowerCase());
+            }).map((item) => {
+              return (
+                <ComboboxV2Item key={item.value} value={item.value}>
+                  {item.label}
+                </ComboboxV2Item>
+              );
+            })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={
+            THREAT_GRAPH_SCOPE.find((scope) => {
+              return scope.value === searchParams.get('cloud_resource_only');
+            })?.value ?? ''
+          }
+          setValue={(query) => {
             setScopeSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
-                prev.set('cloud_resource_only', value.value);
+                prev.set('cloud_resource_only', value);
               } else {
                 prev.delete('cloud_resource_only');
               }
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['cloud_resource_only'].label}
         >
-          {THREAT_GRAPH_SCOPE.filter((item) => {
-            if (!scopeSearchText.length) return true;
-            return item.label.toLowerCase().includes(scopeSearchText.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item.value} value={item}>
-                {item.label}
-              </ComboboxOption>
-            );
-          })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['cloud_resource_only'].label}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed">
+            {THREAT_GRAPH_SCOPE.filter((item) => {
+              if (!scopeSearchText.length) return true;
+              return item.label.toLowerCase().includes(scopeSearchText.toLowerCase());
+            }).map((item) => {
+              return (
+                <ComboboxV2Item key={item.value} value={item.value}>
+                  {item.label}
+                </ComboboxV2Item>
+              );
+            })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
         <SearchableCloudAccountsList
           cloudProvider="aws"
           displayValue={FILTER_SEARCHPARAMS.aws_account_ids.label}
