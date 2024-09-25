@@ -4,8 +4,10 @@ import { useSearchParams } from 'react-router-dom';
 import {
   Badge,
   Button,
-  Combobox,
-  ComboboxOption,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -182,17 +184,19 @@ function Filters() {
             });
           }}
         />
-        <Combobox
-          value={KUBERNETES_STATUSES.find((status) => {
-            return status.value === searchParams.get('kubernetesStatus');
-          })}
-          onQueryChange={(query) => {
+        <ComboboxV2Provider
+          selectedValue={
+            KUBERNETES_STATUSES.find((status) => {
+              return status.value === searchParams.get('kubernetesStatus');
+            })?.value ?? ''
+          }
+          setValue={(query) => {
             setKubernetesStatusSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
-                prev.set('kubernetesStatus', value.value);
+                prev.set('kubernetesStatus', value);
               } else {
                 prev.delete('kubernetesStatus');
               }
@@ -200,21 +204,25 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['kubernetesStatus']}
         >
-          {KUBERNETES_STATUSES.filter((item) => {
-            if (!kubernetesStatusSearchText.length) return true;
-            return item.label
-              .toLowerCase()
-              .includes(kubernetesStatusSearchText.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item.value} value={item}>
-                {item.label}
-              </ComboboxOption>
-            );
-          })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['kubernetesStatus']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {KUBERNETES_STATUSES.filter((item) => {
+              if (!kubernetesStatusSearchText.length) return true;
+              return item.label
+                .toLowerCase()
+                .includes(kubernetesStatusSearchText.toLowerCase());
+            }).map((item) => {
+              return (
+                <ComboboxV2Item key={item.value} value={item.value}>
+                  {item.label}
+                </ComboboxV2Item>
+              );
+            })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
         <SearchableHostList
           valueKey="hostName"
           showOnlyKubernetesHosts
