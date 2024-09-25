@@ -4,8 +4,10 @@ import { useSearchParams } from 'react-router-dom';
 import {
   Badge,
   Button,
-  Combobox,
-  ComboboxOption,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -270,12 +272,12 @@ function Filters() {
             });
           }}
         />
-        <Combobox
-          value={searchParams.get('vulnerabilityScanStatus')}
-          onQueryChange={(query) => {
+        <ComboboxV2Provider
+          selectedValue={searchParams.get('vulnerabilityScanStatus') ?? ''}
+          setValue={(query) => {
             setVulnerabilityScanStatusSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
                 prev.set('vulnerabilityScanStatus', value);
@@ -286,32 +288,36 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['vulnerabilityScanStatus']}
         >
-          {Object.keys(SCAN_STATUS_FILTER)
-            .filter((item) => {
-              if (item === SCAN_STATUS_FILTER.Deleting) {
-                return false;
-              }
-              if (!vulnerabilityScanStatusSearchText.length) return true;
-              return item
-                .toLowerCase()
-                .includes(vulnerabilityScanStatusSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          value={searchParams.get('secretScanStatus')}
-          onQueryChange={(query) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['vulnerabilityScanStatus']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed">
+            {Object.keys(SCAN_STATUS_FILTER)
+              .filter((item) => {
+                if (item === SCAN_STATUS_FILTER.Deleting) {
+                  return false;
+                }
+                if (!vulnerabilityScanStatusSearchText.length) return true;
+                return item
+                  .toLowerCase()
+                  .includes(vulnerabilityScanStatusSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.get('secretScanStatus') ?? ''}
+          setValue={(query) => {
             setSecretScanStatusSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
                 prev.set('secretScanStatus', value);
@@ -322,32 +328,36 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['secretScanStatus']}
         >
-          {Object.keys(SCAN_STATUS_FILTER)
-            .filter((item) => {
-              if (item === SCAN_STATUS_FILTER.Deleting) {
-                return false;
-              }
-              if (!secretScanStatusSearchText.length) return true;
-              return item
-                .toLowerCase()
-                .includes(secretScanStatusSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          value={searchParams.get('malwareScanStatus')}
-          onQueryChange={(query) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['secretScanStatus']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed">
+            {Object.keys(SCAN_STATUS_FILTER)
+              .filter((item) => {
+                if (item === SCAN_STATUS_FILTER.Deleting) {
+                  return false;
+                }
+                if (!secretScanStatusSearchText.length) return true;
+                return item
+                  .toLowerCase()
+                  .includes(secretScanStatusSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.get('malwareScanStatus') ?? ''}
+          setValue={(query) => {
             setMalwareScanStatusSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
                 prev.set('malwareScanStatus', value);
@@ -358,26 +368,30 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['malwareScanStatus']}
         >
-          {Object.keys(SCAN_STATUS_FILTER)
-            .filter((item) => {
-              if (item === SCAN_STATUS_FILTER.Deleting) {
-                return false;
-              }
-              if (!malwareScanStatusSearchText.length) return true;
-              return item
-                .toLowerCase()
-                .includes(malwareScanStatusSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['malwareScanStatus']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed">
+            {Object.keys(SCAN_STATUS_FILTER)
+              .filter((item) => {
+                if (item === SCAN_STATUS_FILTER.Deleting) {
+                  return false;
+                }
+                if (!malwareScanStatusSearchText.length) return true;
+                return item
+                  .toLowerCase()
+                  .includes(malwareScanStatusSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
         <SearchableHostList
           valueKey="hostName"
           scanType={ScanTypeEnum.VulnerabilityScan}
