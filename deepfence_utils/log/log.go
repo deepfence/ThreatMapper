@@ -43,10 +43,41 @@ func init() {
 					filepath.Base(fmt.Sprintf("%s", i)),
 				)
 			},
+			FormatMessage:       formatRedact,
+			FormatFieldValue:    formatRedact,
+			FormatErrFieldValue: formatRedact,
 		},
 	).With().Caller().Logger().Hook(NamespaceHook{})
 }
 
+// redact sensitive contents from all log fields and message
+var (
+	sensitiveContents = []string{
+		os.Getenv("DEEPFENCE_REDIS_PASSWORD"),
+		os.Getenv("DEEPFENCE_FILE_SERVER_PASSWORD"),
+		os.Getenv("DEEPFENCE_POSTGRES_USER_DB_PASSWORD"),
+		os.Getenv("DEEPFENCE_NEO4J_PASSWORD"),
+	}
+	REDACTED = "[REDACTED]"
+)
+
+func formatRedact(i interface{}) string {
+
+	redacted, ok := i.(string)
+	if !ok {
+		redacted = fmt.Sprintf("%s", i)
+	}
+
+	for _, s := range sensitiveContents {
+		if len(s) > 0 {
+			redacted = strings.ReplaceAll(redacted, s, REDACTED)
+		}
+	}
+
+	return redacted
+}
+
+// namesapce hook adds tenant namespace in saas mode
 type NamespaceHook struct{}
 
 func (h NamespaceHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
