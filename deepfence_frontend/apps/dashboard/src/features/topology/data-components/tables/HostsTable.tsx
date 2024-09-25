@@ -6,8 +6,10 @@ import { cn } from 'tailwind-preset';
 import {
   Badge,
   Button,
-  Combobox,
-  ComboboxOption,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -325,12 +327,12 @@ function Filters() {
             });
           }}
         />
-        <Combobox
-          value={searchParams.get('vulnerabilityScanStatus')}
-          onQueryChange={(query) => {
+        <ComboboxV2Provider
+          selectedValue={searchParams.get('vulnerabilityScanStatus') ?? ''}
+          setValue={(query) => {
             setVulnerabilityScanStatusSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
                 prev.set('vulnerabilityScanStatus', value);
@@ -341,32 +343,36 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['vulnerabilityScanStatus']}
         >
-          {Object.keys(SCAN_STATUS_FILTER)
-            .filter((item) => {
-              if (item === SCAN_STATUS_FILTER.Deleting) {
-                return false;
-              }
-              if (!vulnerabilityScanStatusSearchText.length) return true;
-              return item
-                .toLowerCase()
-                .includes(vulnerabilityScanStatusSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          value={searchParams.get('secretScanStatus')}
-          onQueryChange={(query) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['vulnerabilityScanStatus']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed">
+            {Object.keys(SCAN_STATUS_FILTER)
+              .filter((item) => {
+                if (item === SCAN_STATUS_FILTER.Deleting) {
+                  return false;
+                }
+                if (!vulnerabilityScanStatusSearchText.length) return true;
+                return item
+                  .toLowerCase()
+                  .includes(vulnerabilityScanStatusSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.get('secretScanStatus') ?? ''}
+          setValue={(query) => {
             setSecretScanStatusSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
                 prev.set('secretScanStatus', value);
@@ -377,32 +383,36 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['secretScanStatus']}
         >
-          {Object.keys(SCAN_STATUS_FILTER)
-            .filter((item) => {
-              if (item === SCAN_STATUS_FILTER.Deleting) {
-                return false;
-              }
-              if (!secretScanStatusSearchText.length) return true;
-              return item
-                .toLowerCase()
-                .includes(secretScanStatusSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          value={searchParams.get('malwareScanStatus')}
-          onQueryChange={(query) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['secretScanStatus']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed">
+            {Object.keys(SCAN_STATUS_FILTER)
+              .filter((item) => {
+                if (item === SCAN_STATUS_FILTER.Deleting) {
+                  return false;
+                }
+                if (!secretScanStatusSearchText.length) return true;
+                return item
+                  .toLowerCase()
+                  .includes(secretScanStatusSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.get('malwareScanStatus') ?? ''}
+          setValue={(query) => {
             setMalwareScanStatusSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
                 prev.set('malwareScanStatus', value);
@@ -413,32 +423,36 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['malwareScanStatus']}
         >
-          {Object.keys(SCAN_STATUS_FILTER)
-            .filter((item) => {
-              if (item === SCAN_STATUS_FILTER.Deleting) {
-                return false;
-              }
-              if (!malwareScanStatusSearchText.length) return true;
-              return item
-                .toLowerCase()
-                .includes(malwareScanStatusSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          value={searchParams.get('complianceScanStatus')}
-          onQueryChange={(query) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['malwareScanStatus']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed">
+            {Object.keys(SCAN_STATUS_FILTER)
+              .filter((item) => {
+                if (item === SCAN_STATUS_FILTER.Deleting) {
+                  return false;
+                }
+                if (!malwareScanStatusSearchText.length) return true;
+                return item
+                  .toLowerCase()
+                  .includes(malwareScanStatusSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.get('complianceScanStatus') ?? ''}
+          setValue={(query) => {
             setComplianceScanStatusSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
                 prev.set('complianceScanStatus', value);
@@ -449,33 +463,36 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['complianceScanStatus']}
         >
-          {Object.keys(SCAN_STATUS_FILTER)
-            .filter((item) => {
-              if (item === SCAN_STATUS_FILTER.Deleting) {
-                return false;
-              }
-              if (!complianceScanStatusSearchText.length) return true;
-              return item
-                .toLowerCase()
-                .includes(complianceScanStatusSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          value={searchParams.getAll('cloudProvider')}
-          multiple
-          onQueryChange={(query) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['complianceScanStatus']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed">
+            {Object.keys(SCAN_STATUS_FILTER)
+              .filter((item) => {
+                if (item === SCAN_STATUS_FILTER.Deleting) {
+                  return false;
+                }
+                if (!complianceScanStatusSearchText.length) return true;
+                return item
+                  .toLowerCase()
+                  .includes(complianceScanStatusSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('cloudProvider')}
+          setValue={(query) => {
             setCloudProvidersSearchText(query);
           }}
-          onChange={(values) => {
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('cloudProvider');
               values.forEach((value) => {
@@ -485,21 +502,25 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['cloudProvider']}
         >
-          {CLOUD_PROVIDERS.filter((item) => {
-            if (!cloudProvidersSearchText.length) return true;
-            return item.label
-              .toLowerCase()
-              .includes(cloudProvidersSearchText.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item.value} value={item.value}>
-                {item.label}
-              </ComboboxOption>
-            );
-          })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['cloudProvider']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="clear">
+            {CLOUD_PROVIDERS.filter((item) => {
+              if (!cloudProvidersSearchText.length) return true;
+              return item.label
+                .toLowerCase()
+                .includes(cloudProvidersSearchText.toLowerCase());
+            }).map((item) => {
+              return (
+                <ComboboxV2Item key={item.value} value={item.value}>
+                  {item.label}
+                </ComboboxV2Item>
+              );
+            })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
         <SearchableClusterList
           defaultSelectedClusters={searchParams.getAll('clusters')}
           onClearAll={() => {
@@ -540,13 +561,12 @@ function Filters() {
             });
           }}
         />
-        <Combobox
-          value={searchParams.getAll('agentRunning')}
-          multiple
-          onQueryChange={(query) => {
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('agentRunning')}
+          setValue={(query) => {
             setAgentRunningSearchText(query);
           }}
-          onChange={(values) => {
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('agentRunning');
               values.forEach((value) => {
@@ -556,21 +576,25 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['agentRunning']}
         >
-          {['Yes', 'No']
-            .filter((item) => {
-              if (!agentRunningSearchText.length) return true;
-              return item.toLowerCase().includes(agentRunningSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['agentRunning']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {['Yes', 'No']
+              .filter((item) => {
+                if (!agentRunningSearchText.length) return true;
+                return item.toLowerCase().includes(agentRunningSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
