@@ -1,13 +1,14 @@
 import { useSuspenseInfiniteQuery, useSuspenseQuery } from '@suspensive/react-query';
-import { debounce } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { generatePath, useSearchParams } from 'react-router-dom';
 import {
   Badge,
   Button,
   CircleSpinner,
-  Combobox,
-  ComboboxOption,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
   createColumnHelper,
   SortingState,
   Table,
@@ -33,6 +34,7 @@ import {
   getPageFromSearchParams,
   useSortingState,
 } from '@/utils/table';
+import { useDebouncedValue } from '@/utils/useDebouncedValue';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -142,16 +144,18 @@ const getPrettyNameForAppliedFilters = ({
 function SearchableServiceType() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchText, setSearchText] = useState('');
+  const debouncedSearchText = useDebouncedValue(searchText, 500);
 
   const selected = searchParams.getAll('serviceType');
   const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useSuspenseInfiniteQuery({
       ...queries.common.searchCloudService({
         size: 100,
-        searchText,
+        searchText: debouncedSearchText,
       }),
       keepPreviousData: true,
       getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.data.length < 100) return null;
         return allPages.length * 100;
       },
       getPreviousPageParam: (firstPage, allPages) => {
@@ -160,35 +164,16 @@ function SearchableServiceType() {
       },
     });
 
-  const searchQuery = debounce((query: string) => {
-    setSearchText(query);
-  }, 1000);
-
   const onEndReached = () => {
     if (hasNextPage) fetchNextPage();
   };
 
   return (
-    <Combobox
-      value={selected}
-      multiple
-      onEndReached={onEndReached}
-      startIcon={
-        isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
-      }
-      getDisplayValue={() => {
-        return FILTER_SEARCHPARAMS['serviceType'];
-      }}
-      onClearAll={() => {
-        setSearchParams((prev) => {
-          prev.delete('serviceType');
-          prev.delete('page');
-          return prev;
-        });
-      }}
-      clearAllElement="Clear"
-      onQueryChange={searchQuery}
-      onChange={(values) => {
+    <ComboboxV2Provider
+      loading={isFetchingNextPage}
+      selectedValue={selected}
+      setValue={setSearchText}
+      setSelectedValue={(values) => {
         setSearchParams((prev) => {
           prev.delete('serviceType');
           values.forEach((value) => {
@@ -199,18 +184,27 @@ function SearchableServiceType() {
         });
       }}
     >
-      {data?.pages
-        .flatMap((page) => {
-          return page.data;
-        })
-        .map((item) => {
-          return (
-            <ComboboxOption key={item} value={item}>
-              {item}
-            </ComboboxOption>
-          );
-        })}
-    </Combobox>
+      <ComboboxV2TriggerButton>
+        {FILTER_SEARCHPARAMS['serviceType']}
+      </ComboboxV2TriggerButton>
+      <ComboboxV2Content
+        width="fixed"
+        clearButtonContent="Clear"
+        onEndReached={onEndReached}
+      >
+        {data?.pages
+          .flatMap((page) => {
+            return page.data;
+          })
+          .map((item) => {
+            return (
+              <ComboboxV2Item key={item} value={item}>
+                {item}
+              </ComboboxV2Item>
+            );
+          })}
+      </ComboboxV2Content>
+    </ComboboxV2Provider>
   );
 }
 
@@ -220,17 +214,13 @@ function ServiceType() {
     <Suspense
       fallback={
         <>
-          <Combobox
-            startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-            getDisplayValue={() => {
-              return FILTER_SEARCHPARAMS['serviceType'];
-            }}
-            value={searchParams.getAll('serviceType')}
-            multiple
-            onQueryChange={() => {
-              // no operation
-            }}
-          />
+          <ComboboxV2Provider loading selectedValue={searchParams.getAll('serviceType')}>
+            <ComboboxV2TriggerButton
+              startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+            >
+              {FILTER_SEARCHPARAMS['serviceType']}
+            </ComboboxV2TriggerButton>
+          </ComboboxV2Provider>
         </>
       }
     >
@@ -262,13 +252,12 @@ function Filters() {
   return (
     <FilterWrapper>
       <div className="flex gap-2">
-        <Combobox
-          value={searchParams.getAll('cloudProvider')}
-          multiple
-          onQueryChange={(query) => {
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('cloudProvider')}
+          setValue={(query) => {
             setCloudProvidersSearchText(query);
           }}
-          onChange={(values) => {
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('cloudProvider');
               values.forEach((value) => {
@@ -278,23 +267,27 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['cloudProvider']}
         >
-          {Object.values(ModelCloudResourceCloudProviderEnum)
-            .filter((item) => {
-              if (!cloudProvidersSearchText.length) return true;
-              return item.includes(cloudProvidersSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {getCloudProviderPrettyName(
-                    item as ModelCloudResourceCloudProviderEnum,
-                  )}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['cloudProvider']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {Object.values(ModelCloudResourceCloudProviderEnum)
+              .filter((item) => {
+                if (!cloudProvidersSearchText.length) return true;
+                return item.includes(cloudProvidersSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {getCloudProviderPrettyName(
+                      item as ModelCloudResourceCloudProviderEnum,
+                    )}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
 
         <ServiceType />
         <SearchableCloudAccountsList
