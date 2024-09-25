@@ -9,8 +9,10 @@ import {
   BreadcrumbLink,
   Button,
   CircleSpinner,
-  Combobox,
-  ComboboxOption,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
   createColumnHelper,
   SortingState,
   Table,
@@ -106,11 +108,9 @@ const Filters = () => {
   return (
     <FilterWrapper>
       <div className="flex gap-2">
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['severity']}
-          multiple
-          value={searchParams.getAll('severity')}
-          onChange={(values) => {
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('severity')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('severity');
               values.forEach((value) => {
@@ -120,29 +120,26 @@ const Filters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setSeverity(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('severity');
-              prev.delete('page');
-              return prev;
-            });
-          }}
         >
-          {SeverityEnumList.filter((item) => {
-            if (!severity.length) return true;
-            return item.includes(severity.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item} value={item}>
-                {capitalize(item)}
-              </ComboboxOption>
-            );
-          })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['severity']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {SeverityEnumList.filter((item) => {
+              if (!severity.length) return true;
+              return item.includes(severity.toLowerCase());
+            }).map((item) => {
+              return (
+                <ComboboxV2Item key={item} value={item}>
+                  {capitalize(item)}
+                </ComboboxV2Item>
+              );
+            })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
         <SearchableHostList
           scanType={ScanTypeEnum.SecretScan}
           defaultSelectedHosts={searchParams.getAll('hosts')}
