@@ -84,6 +84,12 @@ export interface ModelCloudNodeAccountInfo {
      * @type {string}
      * @memberof ModelCloudNodeAccountInfo
      */
+    refresh_metadata?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeAccountInfo
+     */
     refresh_status?: string;
     /**
      * 
@@ -149,6 +155,7 @@ export function ModelCloudNodeAccountInfoFromJSONTyped(json: any, ignoreDiscrimi
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
         'refresh_message': !exists(json, 'refresh_message') ? undefined : json['refresh_message'],
+        'refresh_metadata': !exists(json, 'refresh_metadata') ? undefined : json['refresh_metadata'],
         'refresh_status': !exists(json, 'refresh_status') ? undefined : json['refresh_status'],
         'refresh_status_map': !exists(json, 'refresh_status_map') ? undefined : json['refresh_status_map'],
         'scan_status_map': !exists(json, 'scan_status_map') ? undefined : json['scan_status_map'],
@@ -175,6 +182,7 @@ export function ModelCloudNodeAccountInfoToJSON(value?: ModelCloudNodeAccountInf
         'node_id': value.node_id,
         'node_name': value.node_name,
         'refresh_message': value.refresh_message,
+        'refresh_metadata': value.refresh_metadata,
         'refresh_status': value.refresh_status,
         'refresh_status_map': value.refresh_status_map,
         'scan_status_map': value.scan_status_map,
