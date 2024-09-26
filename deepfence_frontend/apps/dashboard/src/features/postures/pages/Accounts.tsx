@@ -53,6 +53,7 @@ import { ArrowUpCircleLine } from '@/components/icons/common/ArrowUpCircleLine';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { FilterIcon } from '@/components/icons/common/Filter';
+import { InfoStandardIcon } from '@/components/icons/common/InfoStandard';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { RefreshIcon } from '@/components/icons/common/Refresh';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -1428,11 +1429,21 @@ const AccountTable = ({
               });
               return <div className="space-y-1.5 py-1">{statuses}</div>;
             } else {
+              const refreshMessage = info.row.original.refresh_message;
               return (
-                <ScanStatusBadge
-                  status={info.getValue() ?? ''}
-                  errorMessage={info.row.original.refresh_message}
-                />
+                <div className="flex gap-2 items-center">
+                  <ScanStatusBadge
+                    status={info.getValue() ?? ''}
+                    errorMessage={info.row.original.refresh_message}
+                  />
+                  {refreshMessage?.length ? (
+                    <Tooltip content={refreshMessage} triggerAsChild>
+                      <span className="h-4 w-4 shrink-0 cursor-pointer">
+                        <InfoStandardIcon />
+                      </span>
+                    </Tooltip>
+                  ) : null}
+                </div>
               );
             }
           },
