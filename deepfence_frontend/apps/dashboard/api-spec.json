@@ -13699,6 +13699,7 @@
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "refresh_message": { "type": "string" },
+          "refresh_metadata": { "type": "string" },
           "refresh_status": { "type": "string" },
           "refresh_status_map": {
             "type": "object",
@@ -13719,7 +13720,8 @@
           "host_node_id",
           "account_id",
           "cloud_provider",
-          "version"
+          "version",
+          "installation_id"
         ],
         "type": "object",
         "properties": {
@@ -13727,6 +13729,8 @@
           "account_name": { "type": "string" },
           "cloud_provider": { "enum": ["aws", "gcp", "azure"], "type": "string" },
           "host_node_id": { "type": "string" },
+          "initial_request": { "type": "boolean" },
+          "installation_id": { "type": "string" },
           "is_organization_deployment": { "type": "boolean" },
           "monitored_accounts": {
             "type": "array",
@@ -13735,6 +13739,7 @@
           },
           "node_id": { "type": "string" },
           "organization_account_id": { "type": "string" },
+          "persistent_volume_supported": { "type": "boolean" },
           "version": { "type": "string" }
         }
       },

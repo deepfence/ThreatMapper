@@ -55,6 +55,18 @@ export interface ModelCloudNodeAccountRegisterReq {
      * @type {boolean}
      * @memberof ModelCloudNodeAccountRegisterReq
      */
+    initial_request?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeAccountRegisterReq
+     */
+    installation_id: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelCloudNodeAccountRegisterReq
+     */
     is_organization_deployment?: boolean;
     /**
      * 
@@ -74,6 +86,12 @@ export interface ModelCloudNodeAccountRegisterReq {
      * @memberof ModelCloudNodeAccountRegisterReq
      */
     organization_account_id?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelCloudNodeAccountRegisterReq
+     */
+    persistent_volume_supported?: boolean;
     /**
      * 
      * @type {string}
@@ -102,6 +120,7 @@ export function instanceOfModelCloudNodeAccountRegisterReq(value: object): boole
     isInstance = isInstance && "account_id" in value;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "host_node_id" in value;
+    isInstance = isInstance && "installation_id" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "version" in value;
 
@@ -122,10 +141,13 @@ export function ModelCloudNodeAccountRegisterReqFromJSONTyped(json: any, ignoreD
         'account_name': !exists(json, 'account_name') ? undefined : json['account_name'],
         'cloud_provider': json['cloud_provider'],
         'host_node_id': json['host_node_id'],
+        'initial_request': !exists(json, 'initial_request') ? undefined : json['initial_request'],
+        'installation_id': json['installation_id'],
         'is_organization_deployment': !exists(json, 'is_organization_deployment') ? undefined : json['is_organization_deployment'],
         'monitored_accounts': !exists(json, 'monitored_accounts') ? undefined : (json['monitored_accounts'] === null ? null : (json['monitored_accounts'] as Array<any>).map(ModelCloudNodeMonitoredAccountFromJSON)),
         'node_id': json['node_id'],
         'organization_account_id': !exists(json, 'organization_account_id') ? undefined : json['organization_account_id'],
+        'persistent_volume_supported': !exists(json, 'persistent_volume_supported') ? undefined : json['persistent_volume_supported'],
         'version': json['version'],
     };
 }
@@ -143,10 +165,13 @@ export function ModelCloudNodeAccountRegisterReqToJSON(value?: ModelCloudNodeAcc
         'account_name': value.account_name,
         'cloud_provider': value.cloud_provider,
         'host_node_id': value.host_node_id,
+        'initial_request': value.initial_request,
+        'installation_id': value.installation_id,
         'is_organization_deployment': value.is_organization_deployment,
         'monitored_accounts': value.monitored_accounts === undefined ? undefined : (value.monitored_accounts === null ? null : (value.monitored_accounts as Array<any>).map(ModelCloudNodeMonitoredAccountToJSON)),
         'node_id': value.node_id,
         'organization_account_id': value.organization_account_id,
+        'persistent_volume_supported': value.persistent_volume_supported,
         'version': value.version,
     };
 }
