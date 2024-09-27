@@ -330,7 +330,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 }
 
 var (
-	searchCloudNodeFields = []string{"node_id", "node_name", "account_name", "refresh_status", "refresh_message", "version", "compliance_percentage", "last_scan_id", "last_scan_status", "active"}
+	searchCloudNodeFields = []string{"node_id", "node_name", "account_name", "refresh_status", "refresh_metadata", "refresh_message", "version", "compliance_percentage", "last_scan_id", "last_scan_status", "active"}
 )
 
 func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
@@ -392,7 +392,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		    }
 		    WITH x, node_name, account_name, refresh_status, refresh_message, version, compliance_percentage, active ` +
 			reporters.ParseFieldFilters2CypherWhereConditions("", mo.Some(scanFilter), true) +
-			`RETURN x as node_id, node_name, account_name, refresh_status, refresh_message, COALESCE(version, 'unknown') as version, compliance_percentage, '' as last_scan_id, '' as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+			`RETURN x as node_id, node_name, account_name, refresh_status, '' as refresh_metadata, refresh_message, COALESCE(version, 'unknown') as version, compliance_percentage, '' as last_scan_id, '' as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
 			reporters.OrderFilter2CypherCondition("", orderFilters, nil) + fw.FetchWindow2CypherQuery()
 	} else {
 		query = `
@@ -413,11 +413,11 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		    }
 		    CALL {
 			    WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x})
-			    RETURN n.node_name as node_name, n.account_name as account_name, n.refresh_status as refresh_status, n.refresh_message as refresh_message, n.active as active, n.version as version
+			    RETURN n.node_name as node_name, n.account_name as account_name, n.refresh_status as refresh_status, n.refresh_metadata as refresh_metadata, n.refresh_message as refresh_message, n.active as active, n.version as version
 		    }
-		    WITH x, node_name, account_name, refresh_status, refresh_message, version, compliance_percentage, last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` +
+		    WITH x, node_name, account_name, refresh_status, refresh_metadata, refresh_message, version, compliance_percentage, last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` +
 			reporters.ParseFieldFilters2CypherWhereConditions("", mo.Some(scanFilter), true) +
-			`RETURN x as node_id, node_name, account_name, refresh_status, refresh_message, COALESCE(version, 'unknown') as version, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+			`RETURN x as node_id, node_name, account_name, refresh_status, refresh_metadata, refresh_message, COALESCE(version, 'unknown') as version, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
 			reporters.OrderFilter2CypherCondition("", orderFilters, nil) + fw.FetchWindow2CypherQuery()
 	}
 	log.Debug().Msgf("search cloud node query: %v", query)

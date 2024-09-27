@@ -1,32 +1,32 @@
 [submodule "deepfence_agent/plugins/agent-plugins-grpc"]
 	path = deepfence_agent/plugins/agent-plugins-grpc
 	url = https://github.com/deepfence/agent-plugins-grpc
-	branch = release-2.3
+	branch = release-2.4
 [submodule "deepfence_agent/plugins/package-scanner"]
 	path = deepfence_agent/plugins/package-scanner
 	url = https://github.com/deepfence/package-scanner
-	branch = release-2.3
+	branch = release-2.4
 [submodule "deepfence_agent/plugins/SecretScanner"]
 	path = deepfence_agent/plugins/SecretScanner
 	url = https://github.com/deepfence/SecretScanner
-	branch = release-2.3
+	branch = release-2.4
 [submodule "deepfence_agent/plugins/compliance"]
 	path = deepfence_agent/plugins/compliance
 	url = https://github.com/deepfence/compliance
-	branch = release-2.3
+	branch = release-2.4
 [submodule "golang_deepfence_sdk"]
 	path = golang_deepfence_sdk
 	url = https://github.com/deepfence/golang_deepfence_sdk.git
-	branch = release-2.3
+	branch = release-2.4
 [submodule "deepfence_agent/plugins/YaraHunter"]
 	path = deepfence_agent/plugins/YaraHunter
 	url = https://github.com/deepfence/YaraHunter.git
-	branch = release-2.3
+	branch = release-2.4
 [submodule "deepfence_agent/plugins/yara-rules"]
 	path = deepfence_agent/plugins/yara-rules
 	url = https://github.com/deepfence/yara-rules
-	branch = release-2.3
+	branch = release-2.4
 [submodule "deepfence_agent/plugins/cloud-scanner"]
 	path = deepfence_agent/plugins/cloud-scanner
 	url = https://github.com/deepfence/cloud-scanner
-	branch = release-2.3
+	branch = release-2.4
