@@ -95,7 +95,7 @@ func initNeo4jDatabase(ctx context.Context) error {
 	//Set the base updated_at field on the ALIAS relationship
 	RunDisplayError(ctx, session, "WITH TIMESTAMP() as T MATCH(:ContainerImage) -[a:ALIAS]-> (:ImageTag) WHERE a.updated_at IS NULL SET a.updated_at=T")
 
-	RunDisplayError(ctx, session, "MATCH (n:CloudNode) WHERE COALESCE(n.refresh_status, '') = '' AND n.cloud_provider in ['"+model.PostureProviderAWS+"','"+model.PostureProviderGCP+"','"+model.PostureProviderAzure+"'] SET n.refresh_status='"+utils.ScanStatusStarting+"', n.refresh_message=''")
+	RunDisplayError(ctx, session, "MATCH (n:CloudNode) WHERE COALESCE(n.refresh_status, '') = '' AND n.cloud_provider in ['"+model.PostureProviderAWS+"','"+model.PostureProviderGCP+"','"+model.PostureProviderAzure+"'] SET n.refresh_status='"+utils.ScanStatusStarting+"', n.refresh_message='', n.refresh_metadata=''")
 
 	RunDisplayError(ctx, session, "CREATE CONSTRAINT FOR (n:DeepfenceRule) REQUIRE n.node_id IS UNIQUE")
 	return nil

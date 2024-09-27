@@ -14,7 +14,9 @@ ENV CHECKPOINT_DISABLE=true \
     DEEPFENCE_KEY="" \
     DF_ENABLE_CLOUD_NODE="true" \
     HOME_DIR="/home/deepfence" \
-    COMPLIANCE_MOD_PATH="/home/deepfence/steampipe"
+    STEAMPIPE_INSTALL_DIR="/home/deepfence/.steampipe" \
+    COMPLIANCE_MOD_PATH="/home/deepfence/steampipe" \
+    VERSION=$VERSION
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends bash ca-certificates nano logrotate sudo supervisor \
