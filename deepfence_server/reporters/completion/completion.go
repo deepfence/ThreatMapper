@@ -56,7 +56,7 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 	}
 
 	if req.ScanID != "" {
-		if dummy.NodeType() == "CloudCompliance" {
+		if dummy.NodeType() == "CloudCompliance" || dummy.NodeType() == "Vulnerability" {
 			query = `
 			MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (r:` + dummy.NodeType() + `)
 			WHERE r.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
