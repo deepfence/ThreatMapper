@@ -92,9 +92,6 @@ export const AdvancedFilter = ({
                 triggerVariant="select"
                 defaultSelectedAccounts={selectedCloudAccounts}
                 cloudProvider={provider.toLowerCase() as 'aws' | 'gcp' | 'azure'}
-                onClearAll={() => {
-                  setSelectedCloudAccounts([]);
-                }}
                 onChange={(value) => {
                   setSelectedCloudAccounts(value);
                 }}
@@ -109,9 +106,6 @@ export const AdvancedFilter = ({
                     defaultSelectedHosts={hosts}
                     onChange={(value) => {
                       setHosts(value);
-                    }}
-                    onClearAll={() => {
-                      setHosts([]);
                     }}
                     agentRunning={false}
                     active={!deadNodes}
@@ -129,9 +123,6 @@ export const AdvancedFilter = ({
                     defaultSelectedImages={images}
                     onChange={(value) => {
                       setImages(value);
-                    }}
-                    onClearAll={() => {
-                      setImages([]);
                     }}
                     active={!deadNodes}
                   />

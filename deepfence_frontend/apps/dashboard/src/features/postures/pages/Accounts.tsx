@@ -18,8 +18,10 @@ import {
   Button,
   CircleSpinner,
   ColumnDef,
-  Combobox,
-  ComboboxOption,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -371,11 +373,9 @@ const Filters = () => {
   return (
     <FilterWrapper>
       <div className="flex gap-2">
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['status']}
-          multiple
-          value={searchParams.getAll('status')}
-          onChange={(values) => {
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('status')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('status');
               values.forEach((value) => {
@@ -385,37 +385,34 @@ const Filters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setStatus(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('status');
-              prev.delete('page');
-              return prev;
-            });
-          }}
         >
-          {['active', 'inactive']
-            .filter((item) => {
-              if (!status.length) return true;
-              return item.includes(status.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          value={searchParams.get('complianceScanStatus')}
-          onQueryChange={(query) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['status']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {['active', 'inactive']
+              .filter((item) => {
+                if (!status.length) return true;
+                return item.includes(status.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {capitalize(item)}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.get('complianceScanStatus') ?? ''}
+          setValue={(query) => {
             setComplianceScanStatusSearchText(query);
           }}
-          onChange={(value) => {
+          setSelectedValue={(value) => {
             setSearchParams((prev) => {
               if (value) {
                 prev.set('complianceScanStatus', value);
@@ -426,23 +423,27 @@ const Filters = () => {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['complianceScanStatus']}
         >
-          {Object.keys(SCAN_STATUS_FILTER)
-            .filter((item) => {
-              if (!complianceScanStatusSearchText.length) return true;
-              return item
-                .toLowerCase()
-                .includes(complianceScanStatusSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['complianceScanStatus']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed">
+            {Object.keys(SCAN_STATUS_FILTER)
+              .filter((item) => {
+                if (!complianceScanStatusSearchText.length) return true;
+                return item
+                  .toLowerCase()
+                  .includes(complianceScanStatusSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
         {isCloudNonOrgNode(nodeType) ? (
           <>
             <SearchableCloudAccountsList
@@ -452,13 +453,6 @@ const Filters = () => {
               valueKey="nodeId"
               cloudProvider={`${nodeType}_org` as CloudNodeType}
               defaultSelectedAccounts={searchParams.getAll('org_accounts')}
-              onClearAll={() => {
-                setSearchParams((prev) => {
-                  prev.delete('org_accounts');
-                  prev.delete('page');
-                  return prev;
-                });
-              }}
               onChange={(value) => {
                 setSearchParams((prev) => {
                   prev.delete('org_accounts');
@@ -476,13 +470,6 @@ const Filters = () => {
                 FILTER_SEARCHPARAMS[`${nodeType as CloudNodeNonOrgType}_accounts`]
               }
               defaultSelectedAccounts={searchParams.getAll(`${nodeType}_accounts`)}
-              onClearAll={() => {
-                setSearchParams((prev) => {
-                  prev.delete(`${nodeType}_accounts`);
-                  prev.delete('page');
-                  return prev;
-                });
-              }}
               onChange={(value) => {
                 setSearchParams((prev) => {
                   prev.delete(`${nodeType}_accounts`);
@@ -507,13 +494,6 @@ const Filters = () => {
                   return prev;
                 });
               }}
-              onClearAll={() => {
-                setSearchParams((prev) => {
-                  prev.delete('accountNames');
-                  prev.delete('page');
-                  return prev;
-                });
-              }}
             />
           </>
         ) : null}
@@ -523,13 +503,6 @@ const Filters = () => {
             scanType={'none'}
             displayValue={FILTER_SEARCHPARAMS['hosts']}
             defaultSelectedHosts={searchParams.getAll('hosts')}
-            onClearAll={() => {
-              setSearchParams((prev) => {
-                prev.delete('hosts');
-                prev.delete('page');
-                return prev;
-              });
-            }}
             onChange={(value) => {
               setSearchParams((prev) => {
                 prev.delete('hosts');

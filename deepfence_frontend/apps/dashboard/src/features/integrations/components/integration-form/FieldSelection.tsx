@@ -1,6 +1,12 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useState } from 'react';
-import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
+import {
+  CircleSpinner,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerInput,
+} from 'ui-components';
 
 import { queries } from '@/queries';
 
@@ -19,15 +25,13 @@ export const FieldSelection = ({
       <div className="grid grid-cols-2 gap-x-8 gap-y-6 pt-4">
         <Suspense
           fallback={
-            <Combobox
-              triggerVariant="select"
-              placeholder="Select fields"
-              label={'Select Fields to be sent in report (Default: All)'}
-              onQueryChange={() => {
-                /**noop */
-              }}
-              startIcon={<CircleSpinner size="sm" />}
-            />
+            <ComboboxV2Provider name="reportingFields" selectedValue={[]}>
+              <ComboboxV2TriggerInput
+                label={'Select Fields to be sent in report (Default: All)'}
+                placeholder="Select fields"
+                startIcon={<CircleSpinner size="sm" />}
+              />
+            </ComboboxV2Provider>
           }
         >
           <FieldSelectionDropdown
@@ -58,33 +62,35 @@ const FieldSelectionDropdown = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <Combobox
-      name="reportingFields"
-      triggerVariant="select"
-      placeholder="Select fields"
-      label={'Select Fields to be sent in report (Default: All)'}
-      multiple
-      value={selectedFields}
-      onChange={(value) => setSelectedFields(value)}
-      onQueryChange={(query) => {
+    <ComboboxV2Provider
+      selectedValue={selectedFields}
+      setSelectedValue={(value) => setSelectedFields(value)}
+      setValue={(query) => {
         setSearchQuery(query);
       }}
-      getDisplayValue={(items) => {
-        if (!items.length) return null;
-        return `${items.length} fields selected`;
-      }}
+      name="reportingFields"
     >
-      {data[notificationType as 'vulnerability']
-        ?.filter((field) => {
-          return field.toLowerCase().includes(searchQuery);
-        })
-        .map((field) => {
-          return (
-            <ComboboxOption key={field} value={field}>
-              {field}
-            </ComboboxOption>
-          );
-        })}
-    </Combobox>
+      <ComboboxV2TriggerInput
+        placeholder="Select fields"
+        label={'Select Fields to be sent in report (Default: All)'}
+        getDisplayValue={(items) => {
+          if (!items.length) return null;
+          return `${items.length} fields selected`;
+        }}
+      />
+      <ComboboxV2Content width="anchor">
+        {data[notificationType as 'vulnerability']
+          ?.filter((field) => {
+            return field.toLowerCase().includes(searchQuery);
+          })
+          .map((field) => {
+            return (
+              <ComboboxV2Item key={field} value={field}>
+                {field}
+              </ComboboxV2Item>
+            );
+          })}
+      </ComboboxV2Content>
+    </ComboboxV2Provider>
   );
 };

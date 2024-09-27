@@ -397,7 +397,7 @@ const ComboboxItem = forwardRef<HTMLDivElement, AriaKitComboboxItemProps>(
           },
           props.className,
         )}
-        resetValueOnSelect={props.resetValueOnSelect ?? false}
+        resetValueOnSelect={isMultiple ? false : props.resetValueOnSelect ?? true}
       >
         {isMultiple ? <Checkbox tabIndex={-1} checked={selected} /> : null}
         {props.children}

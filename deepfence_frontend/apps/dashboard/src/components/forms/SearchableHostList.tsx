@@ -1,15 +1,21 @@
 import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
-import { debounce } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
-import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
+import {
+  CircleSpinner,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
+  ComboboxV2TriggerInput,
+} from 'ui-components';
 
 import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
+import { useDebouncedValue } from '@/utils/useDebouncedValue';
 
-export type SearchableHostListProps = {
+export interface SearchableHostListProps {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
-  onClearAll?: () => void;
   defaultSelectedHosts?: string[];
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
   active?: boolean;
@@ -22,13 +28,12 @@ export type SearchableHostListProps = {
   isScannedForSecrets?: boolean;
   isScannedForMalware?: boolean;
   displayValue?: string;
-};
+}
 const fieldName = 'hostFilter';
 const PAGE_SIZE = 15;
 const SearchableHost = ({
   scanType,
   onChange,
-  onClearAll,
   defaultSelectedHosts,
   valueKey = 'nodeId',
   active,
@@ -43,6 +48,7 @@ const SearchableHost = ({
   displayValue,
 }: SearchableHostListProps) => {
   const [searchText, setSearchText] = useState('');
+  const debouncedSearchText = useDebouncedValue(searchText, 500);
 
   const [selectedHosts, setSelectedHosts] = useState<string[]>(
     defaultSelectedHosts ?? [],
@@ -61,7 +67,7 @@ const SearchableHost = ({
       ...queries.search.hosts({
         scanType,
         size: PAGE_SIZE,
-        searchText,
+        searchText: debouncedSearchText,
         active,
         agentRunning,
         showOnlyKubernetesHosts,
@@ -75,6 +81,7 @@ const SearchableHost = ({
       }),
       keepPreviousData: true,
       getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.hosts.length < PAGE_SIZE) return null;
         return allPages.length * PAGE_SIZE;
       },
       getPreviousPageParam: (firstPage, allPages) => {
@@ -83,56 +90,58 @@ const SearchableHost = ({
       },
     });
 
-  const searchHost = debounce((query: string) => {
-    setSearchText(query);
-  }, 1000);
-
   const onEndReached = () => {
     if (hasNextPage) fetchNextPage();
   };
 
   return (
     <>
-      <Combobox
-        startIcon={
-          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
-        }
-        name={fieldName}
-        triggerVariant={triggerVariant || 'button'}
-        label={isSelectVariantType ? 'Host' : undefined}
-        getDisplayValue={() =>
-          isSelectVariantType && selectedHosts.length > 0
-            ? `${selectedHosts.length} selected`
-            : displayValue
-              ? displayValue
-              : null
-        }
-        placeholder="Select host"
-        multiple
-        value={selectedHosts}
-        onChange={(values) => {
+      <ComboboxV2Provider
+        selectedValue={selectedHosts}
+        setSelectedValue={(values) => {
           setSelectedHosts(values);
           onChange?.(values);
         }}
-        onQueryChange={searchHost}
-        clearAllElement="Clear"
-        onClearAll={onClearAll}
-        onEndReached={onEndReached}
-        helperText={helperText}
-        color={color}
+        value={searchText}
+        setValue={setSearchText}
+        defaultSelectedValue={defaultSelectedHosts ?? []}
+        name={fieldName}
+        loading={isFetchingNextPage}
       >
-        {data?.pages
-          .flatMap((page) => {
-            return page.hosts;
-          })
-          .map((host, index) => {
-            return (
-              <ComboboxOption key={`${host.nodeId}-${index}`} value={host[valueKey]}>
-                {host.nodeName}
-              </ComboboxOption>
-            );
-          })}
-      </Combobox>
+        {isSelectVariantType ? (
+          <ComboboxV2TriggerInput
+            getDisplayValue={() => {
+              return selectedHosts.length > 0 ? `${selectedHosts.length} selected` : null;
+            }}
+            label="Host"
+            placeholder="Select host"
+            helperText={helperText}
+            color={color}
+          ></ComboboxV2TriggerInput>
+        ) : (
+          <ComboboxV2TriggerButton>
+            {displayValue ? displayValue : 'Select host'}
+          </ComboboxV2TriggerButton>
+        )}
+        <ComboboxV2Content
+          width={isSelectVariantType ? 'anchor' : 'fixed'}
+          clearButtonContent="Clear"
+          onEndReached={onEndReached}
+          searchPlaceholder="Search"
+        >
+          {data?.pages
+            .flatMap((page) => {
+              return page.hosts;
+            })
+            .map((host, index) => {
+              return (
+                <ComboboxV2Item key={`${host.nodeId}-${index}`} value={host[valueKey]}>
+                  {host.nodeName}
+                </ComboboxV2Item>
+              );
+            })}
+        </ComboboxV2Content>
+      </ComboboxV2Provider>
     </>
   );
 };
@@ -147,21 +156,27 @@ export const SearchableHostList = (props: SearchableHostListProps) => {
     <Suspense
       fallback={
         <>
-          <Combobox
+          <ComboboxV2Provider
+            defaultSelectedValue={defaultSelectedHosts}
             name={fieldName}
-            value={defaultSelectedHosts}
-            label={isSelectVariantType ? 'Host' : undefined}
-            triggerVariant={triggerVariant || 'button'}
-            startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-            placeholder="Select host"
-            multiple
-            onQueryChange={() => {
-              // no operation
-            }}
-            getDisplayValue={() => {
-              return props.displayValue ? props.displayValue : 'Select host';
-            }}
-          />
+          >
+            {isSelectVariantType ? (
+              <ComboboxV2TriggerInput
+                placeholder="Select host"
+                label="Host"
+                startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+                getDisplayValue={() => {
+                  return props.displayValue;
+                }}
+              />
+            ) : (
+              <ComboboxV2TriggerButton
+                startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
+              >
+                {props.displayValue ? props.displayValue : 'Select host'}
+              </ComboboxV2TriggerButton>
+            )}
+          </ComboboxV2Provider>
         </>
       }
     >

@@ -19,8 +19,10 @@ import {
   Card,
   Checkbox,
   CircleSpinner,
-  Combobox,
-  ComboboxOption,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -94,7 +96,6 @@ import {
 } from '@/types/common';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
-import { formatMilliseconds } from '@/utils/date';
 import {
   getMaskedUnmaskedPrettyName,
   getSeverityPrettyName,
@@ -1286,11 +1287,9 @@ const Filters = () => {
   return (
     <FilterWrapper>
       <div className="flex gap-2">
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['visibility']}
-          multiple
-          value={searchParams.getAll('visibility')}
-          onChange={(values) => {
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('visibility')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('visibility');
               values.forEach((value) => {
@@ -1300,36 +1299,31 @@ const Filters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setMaskedQuery(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('visibility');
-              prev.delete('page');
-              return prev;
-            });
-          }}
         >
-          {['masked', 'unmasked']
-            .filter((item) => {
-              if (!maskedQuery.length) return true;
-              return item.includes(maskedQuery.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
-        <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['severity']}
-          multiple
-          value={searchParams.getAll('severity')}
-          onChange={(values) => {
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['visibility']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {['masked', 'unmasked']
+              .filter((item) => {
+                if (!maskedQuery.length) return true;
+                return item.includes(maskedQuery.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {capitalize(item)}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('severity')}
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('severity');
               values.forEach((value) => {
@@ -1339,29 +1333,26 @@ const Filters = () => {
               return prev;
             });
           }}
-          onQueryChange={(query) => {
+          setValue={(query) => {
             setSeverityQuery(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('severity');
-              prev.delete('page');
-              return prev;
-            });
-          }}
         >
-          {SeverityEnumList.filter((item) => {
-            if (!severityQuery.length) return true;
-            return item.includes(severityQuery.toLowerCase());
-          }).map((item) => {
-            return (
-              <ComboboxOption key={item} value={item}>
-                {capitalize(item)}
-              </ComboboxOption>
-            );
-          })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['severity']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {SeverityEnumList.filter((item) => {
+              if (!severityQuery.length) return true;
+              return item.includes(severityQuery.toLowerCase());
+            }).map((item) => {
+              return (
+                <ComboboxV2Item key={item} value={item}>
+                  {capitalize(item)}
+                </ComboboxV2Item>
+              );
+            })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -1811,9 +1802,7 @@ const ScanResults = () => {
 const SeverityCounts = ({
   severityCounts,
 }: {
-  severityCounts: {
-    [k: string]: number;
-  };
+  severityCounts: Record<string, number>;
 }) => {
   const { mode } = useTheme();
   const [, setSearchParams] = useSearchParams();
@@ -1917,9 +1906,7 @@ const SeverityCountWidget = () => {
     data: { data, scanStatusResult },
   } = useScanResults();
 
-  const severityCounts: {
-    [k: string]: number;
-  } = data?.severityCounts ?? {};
+  const severityCounts: Record<string, number> = data?.severityCounts ?? {};
 
   const [, setSearchParams] = useSearchParams();
 

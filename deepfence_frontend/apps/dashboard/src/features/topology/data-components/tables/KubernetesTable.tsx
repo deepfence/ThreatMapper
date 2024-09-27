@@ -5,8 +5,10 @@ import { cn } from 'tailwind-preset';
 import {
   Badge,
   Button,
-  Combobox,
-  ComboboxOption,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -91,13 +93,12 @@ function Filters() {
             });
           }}
         />
-        <Combobox
-          value={searchParams.getAll('agentRunning')}
-          multiple
-          onQueryChange={(query) => {
+        <ComboboxV2Provider
+          selectedValue={searchParams.getAll('agentRunning')}
+          setValue={(query) => {
             setAgentRunningSearchText(query);
           }}
-          onChange={(values) => {
+          setSelectedValue={(values) => {
             setSearchParams((prev) => {
               prev.delete('agentRunning');
               values.forEach((value) => {
@@ -107,21 +108,25 @@ function Filters() {
               return prev;
             });
           }}
-          getDisplayValue={() => FILTER_SEARCHPARAMS['agentRunning']}
         >
-          {['Yes', 'No']
-            .filter((item) => {
-              if (!agentRunningSearchText.length) return true;
-              return item.toLowerCase().includes(agentRunningSearchText.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {item}
-                </ComboboxOption>
-              );
-            })}
-        </Combobox>
+          <ComboboxV2TriggerButton>
+            {FILTER_SEARCHPARAMS['agentRunning']}
+          </ComboboxV2TriggerButton>
+          <ComboboxV2Content width="fixed" clearButtonContent="Clear">
+            {['Yes', 'No']
+              .filter((item) => {
+                if (!agentRunningSearchText.length) return true;
+                return item.toLowerCase().includes(agentRunningSearchText.toLowerCase());
+              })
+              .map((item) => {
+                return (
+                  <ComboboxV2Item key={item} value={item}>
+                    {item}
+                  </ComboboxV2Item>
+                );
+              })}
+          </ComboboxV2Content>
+        </ComboboxV2Provider>
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
