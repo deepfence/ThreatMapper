@@ -139,12 +139,12 @@ Description=Deepfence Agent Service
 After=network.target
 
 [Service]
-Environment=MGMT_CONSOLE_URL="$MGMT_CONSOLE_URL"
-Environment=DEEPFENCE_KEY="$DEEPFENCE_KEY"
-Environment=MGMT_CONSOLE_PORT="$MGMT_CONSOLE_PORT"
-Environment=MGMT_CONSOLE_URL_SCHEMA="$MGMT_CONSOLE_URL_SCHEMA"
-Environment=DF_HOSTNAME="$(hostname)"
-Environment=DF_LOG_LEVEL="$DF_LOG_LEVEL"
+Environment="MGMT_CONSOLE_URL=$MGMT_CONSOLE_URL"
+Environment="DEEPFENCE_KEY=$DEEPFENCE_KEY"
+Environment="MGMT_CONSOLE_PORT=$MGMT_CONSOLE_PORT"
+Environment="MGMT_CONSOLE_URL_SCHEMA=$MGMT_CONSOLE_URL_SCHEMA"
+Environment="DF_HOSTNAME=$(hostname)"
+Environment="DF_LOG_LEVEL=$DF_LOG_LEVEL"
 
 User=root
 Group=root
