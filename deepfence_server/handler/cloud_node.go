@@ -65,6 +65,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		}
 		err = model.UpsertCloudAccount(ctx, orgAccountNode, req.IsOrganizationDeployment, req.HostNodeID)
 		if err != nil {
+			log.Error().Msg(err.Error())
 			h.complianceError(w, err.Error())
 			return
 		}
