@@ -89,7 +89,6 @@ import { module as cloudResourceTable } from '@/features/topology/pages/CloudRes
 import { module as inventory } from '@/features/topology/pages/Inventory';
 import { module as llm } from '@/features/topology/pages/LLM';
 import { module as visual } from '@/features/topology/pages/ViewType';
-import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
 import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
 import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
@@ -356,18 +355,6 @@ export const privateRoutes: CustomRouteObject[] = [
             path: ':cveId',
             ...vulnerabilityDetails,
             meta: { title: 'Vulnerability Details' },
-          },
-        ],
-      },
-      {
-        path: 'vulnerability/most-exploitable',
-        ...mostExploitableVulnerabilities,
-        meta: { title: 'Most Exploitable Vulnerabilities' },
-        children: [
-          {
-            path: ':cveId',
-            ...vulnerabilityDetails,
-            meta: { title: 'Most Exploitable Vulnerability Details' },
           },
         ],
       },
