@@ -4,13 +4,18 @@ title: Microsoft Azure
 
 # Configuring Cloud Scanner for Microsoft Azure
 
-Cloud Scanner is deployed as a task within your Azure infrastructure.
+Cloud Scanner can be deployed using one of the following:
+- [Azure Container Instance](#cloud-scanner-on-azure-container-instance)
+- [Azure Kubernetes Cluster](#cloud-scanner-on-aks-cluster)
+- [Azure Virtual Machine](#cloud-scanner-on-azure-virtual-machine)
+
+## Cloud Scanner on Azure Container Instance
 
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
 
 Copy and paste the following into a new file cloud-scanner.tf. Edit the fields: region, mgmt-console-url and deepfence-key.
 
-## Single Subscription
+### Single Subscription
 
 Monitor a single Azure subscription
 
@@ -41,7 +46,7 @@ module "cloud-scanner_example_single-subscription" {
 }
 ```
 
-## Tenant subscriptions
+### Tenant subscriptions
 
 Monitor multiple subscriptions in a Tenant
 
@@ -85,26 +90,12 @@ terraform apply
 
 For full details, refer to the `examples` provided in the GitHub repository: https://github.com/deepfence/terraform-azure-cloud-scanner
 
-## What Compliance Scans are Performed?
-
-ThreatMapper builds on a large library of **controls** - these are specific requirements and matching tests.  For example, you will find controls that correspond to best-practice configurations of access to assets, such as enabling TLS access and blocking plain-text HTTP.
-
-Controls are grouped into **benchmarks**. Where multiple benchmarks are available, controls may be used by several benchmarks.
-
-When you run a compliance scan, you can select which benchmarks you wish to measure against, and ThreatMapper will then evaluate the appropriate controls and present the results, by benchmark, once the scan has completed.
-
-For full information, refer to [Operations: Compliance Scanning](/docs/operations/compliance).
-
-:::tip Maximizing Coverage
-For maximum coverage, you can use both Cloud Scanner and local Sensor Agent compliance scans together. You could scan your Azure infrastructure using Cloud Scanner, and [scan selected VMs deployed within Azure](other) using the Sensor Agent.
-:::
-
 ## Cloud Scanner on AKS cluster
 
 :::info
 
 **Pre-requisite:**
-1. AKS cluster is created and you have access to the cluster
+1. AKS cluster is created, and you have access to the cluster
 2. azure cli is configured and is able to access the required project where cloud scanner will be deployed
 
 :::
@@ -193,8 +184,8 @@ module "test" {
 :::info
 
 **Pre-requisite:**
-1. Install docker and docker compose on the gcp compute instance([refer docker documentation for installation instructions](https://docs.docker.com/engine/install/))
-2. If a existing gcp compute instance instance is used, check if docker and docker compose plugins are installed on the gcp compute instance.
+1. Install docker and docker compose on the Azure virtual machine ([refer docker documentation for installation instructions](https://docs.docker.com/engine/install/))
+2. If an existing Azure virtual machine is used, check if docker and docker compose plugins are installed on the Azure virtual machine.
 3. azure cli is configured and is able to access the required project where cloud scanner will be deployed
 
 :::
@@ -262,8 +253,12 @@ module "test" {
         sensitive = true
       }
       ```
-2. Apply the terraform script and note the output `tenant_id`, `client_id` and `client_secret`
-4. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
+2. Apply the terraform script and note the output `tenant_id`, `client_id` and `client_secret`.
+   Please run this command to retrieve `client_secret` from terraform output.
+    ```
+    terraform output client_secret
+    ```
+3. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
     ```
     https://raw.githubusercontent.com/deepfence/cloud-scanner/main/docker-compose.yaml
     ```
@@ -271,7 +266,7 @@ module "test" {
     mkdir deepfence-cloud-scanner && cd deepfence-cloud-scanner
     wget https://raw.githubusercontent.com/deepfence/cloud-scanner/main/docker-compose.yaml
     ```
-5. Update the environment vars account details and console details in the docker-compose.yaml, if deploying for multi tenants cloud scanner set `ORGANIZATION_DEPLOYMENT: true`
+4. Update the environment vars account details and console details in the docker-compose.yaml, if deploying for multi tenants cloud scanner set `ORGANIZATION_DEPLOYMENT: true`
     ```
     environment:
       MGMT_CONSOLE_URL: "<Console URL>"
@@ -297,7 +292,21 @@ module "test" {
       AZURE_CLIENT_SECRET: "<client_secret>"
       AZURE_SUBSCRIPTION_ID: "SUBSCRIPTION_ID"
     ```
-6. Start the cloud scanner using docker compose
+5. Start the cloud scanner using docker compose
     ```
     docker compose up -d
     ```
+
+## What Compliance Scans are Performed?
+
+ThreatMapper builds on a large library of **controls** - these are specific requirements and matching tests.  For example, you will find controls that correspond to best-practice configurations of access to assets, such as enabling TLS access and blocking plain-text HTTP.
+
+Controls are grouped into **benchmarks**. Where multiple benchmarks are available, controls may be used by several benchmarks.
+
+When you run a compliance scan, you can select which benchmarks you wish to measure against, and ThreatMapper will then evaluate the appropriate controls and present the results, by benchmark, once the scan has completed.
+
+For full information, refer to [Operations: Compliance Scanning](/docs/operations/compliance).
+
+:::tip Maximizing Coverage
+For maximum coverage, you can use both Cloud Scanner and local Sensor Agent compliance scans together. You could scan your Azure infrastructure using Cloud Scanner, and [scan selected VMs deployed within Azure](other) using the Sensor Agent.
+:::
