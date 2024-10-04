@@ -4,7 +4,13 @@ title: AWS
 
 # Configuring Cloud Scanner for AWS
 
-## CloudFormation
+Cloud Scanner can be deployed using one of the following:
+- [ECS - CloudFormation](#cloud-scanner-on-ecs-cloudformation)
+- [ECS - Terraform](#cloud-scanner-on-ecs-terraform)
+- [EKS Cluster](#cloud-scanner-on-eks-cluster)
+- [EC2 Instance](#cloud-scanner-on-ec2-instance)
+
+## Cloud Scanner on ECS (CloudFormation)
 
 ### Organization Deployment
 
@@ -62,7 +68,7 @@ You may want to configure CIDR blocks to avoid collision with existing CIDR bloc
 |:------------------------------------------------:|
 |                   Choose CIDRs                   |
 
-## Terraform
+## Cloud Scanner on ECS (Terraform)
 
 Cloud Scanner is deployed as a task within your AWS infrastructure.
 
@@ -130,21 +136,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
 
 For full details, refer to the GitHub repository: https://github.com/deepfence/terraform-aws-cloud-scanner/tree/main/examples/organizational-deploy-with-member-account-read-only-access-creation
 
-## What Compliance Scans are Performed?
-
-ThreatMapper builds on a large library of **controls** - these are specific requirements and matching tests.  For example, you will find controls that correspond to best-practice configurations of access to assets, such as enabling TLS access and blocking plain-text HTTP.
-
-Controls are grouped into **benchmarks**. Where multiple benchmarks are available, controls may be used by several benchmarks.
-
-When you run a compliance scan, you can select which benchmarks you wish to measure against, and ThreatMapper will then evaluate the appropriate controls and present the results, by benchmark, once the scan has completed.
-
-For full information, refer to [Operations: Compliance Scanning](/docs/operations/compliance).
-
-:::tip Maximizing Coverage
-For maximum coverage, you can use both Cloud Scanner and local Sensor Agent compliance scans together. You could scan your AWS infrastructure using Cloud Scanner, and [scan selected VMs deployed within AWS](other) using the Sensor Agent.
-:::
-
-## Cloud Scanner on EKS Cluster using IRSA
+## Cloud Scanner on EKS Cluster
 
 :::info
 
@@ -296,16 +288,16 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
         --version CLOUD_SCANNER_HELM_CHART_VERSION
     ```
 
-## Cloud Scanner on EC2 instance using IAM Roles
+## Cloud Scanner on EC2 Instance
 
 :::info
 
 **Pre-requisite:**
 - Install docker and docker compose on the EC2 instance([refer docker documentation for installation instructions](https://docs.docker.com/engine/install/))
-- If a existing EC2 instance is used, check if docker and docker compose plugins are installed on the EC2 instance
+- If an existing EC2 instance is used, check if docker and docker compose plugins are installed on the EC2 instance
 :::
 
-### Single Account Cloud Scanner on EC2 instance using IAM Roles
+### Single Account Cloud Scanner on EC2 Instance using IAM Roles
 1. Create the IAM role and instance profile for deepfence cloud scanner using the cloudformation script [deepfence-cloud-scanner-single-account-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/ec2/single-account-ec2-iam-role/deepfence-cloud-scanner-single-account-iam-role.template)
 2. Note the instance profile from the cloudformation stack output
 3. Modify the EC2 instance, add the instance profile created by cloudformation script
@@ -323,7 +315,7 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
     docker compose up -d
     ```
 
-### Organization Account Cloud Scanner on EC2 instance using IAM Roles
+### Organization Account Cloud Scanner on EC2 Instance using IAM Roles
 1. Create the IAM role and instance profile for deepfence cloud scanner using the cloudformation script [deepfence-cloud-scanner-organization-stackset-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/ec2/organization-ec2-iam-role/deepfence-cloud-scanner-organization-stackset-iam-role.template)
 2. Note the instance profile from the cloudformation stack output
 3. Modify the EC2 instance, add the instance profile created by cloudformation script
@@ -340,3 +332,17 @@ For maximum coverage, you can use both Cloud Scanner and local Sensor Agent comp
     ```
     docker compose up -d
     ```
+
+## What Compliance Scans are Performed?
+
+ThreatMapper builds on a large library of **controls** - these are specific requirements and matching tests.  For example, you will find controls that correspond to best-practice configurations of access to assets, such as enabling TLS access and blocking plain-text HTTP.
+
+Controls are grouped into **benchmarks**. Where multiple benchmarks are available, controls may be used by several benchmarks.
+
+When you run a compliance scan, you can select which benchmarks you wish to measure against, and ThreatMapper will then evaluate the appropriate controls and present the results, by benchmark, once the scan has completed.
+
+For full information, refer to [Operations: Compliance Scanning](/docs/operations/compliance).
+
+:::tip Maximizing Coverage
+For maximum coverage, you can use both Cloud Scanner and local Sensor Agent compliance scans together. You could scan your AWS infrastructure using Cloud Scanner, and [scan selected VMs deployed within AWS](other) using the Sensor Agent.
+:::
