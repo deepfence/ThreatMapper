@@ -4,13 +4,18 @@ title: Google Compute Platform
 
 # Configuring Cloud Scanner for Google Cloud Platform
 
-Cloud Scanner is deployed as a task within your Google Cloud Platform instance.
+Cloud Scanner can be deployed using one of the following:
+- [GCP Cloud Run](#cloud-scanner-on-gcp-cloud-run)
+- [GKE Cluster](#cloud-scanner-on-gke-cluster)
+- [GCP Compute Instance](#cloud-scanner-on-gcp-compute-instance)
+
+## Cloud Scanner on GCP Cloud Run
 
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
 
 Copy and paste the following (single project or multiple projects) into a new file cloud-scanner.tf. Edit the fields: region, mgmt-console-url and deepfence-key.
 
-## Single Project
+### Single Project
 
 ```terraform
 module "cloud-scanner_example_single-project" {
@@ -43,7 +48,7 @@ module "cloud-scanner_example_single-project" {
 }
 ```
 
-## Multiple Projects (Organization Deployment)
+### Multiple Projects (Organization Deployment)
 
 ```terraform
 module "cloud-scanner_example_multiple-projects" {
@@ -90,22 +95,7 @@ For full details, refer to the `examples` provided in the GitHub repository: htt
 
 Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the project of deployment
 
-## What Compliance Scans are Performed?
-
-ThreatMapper builds on a large library of **controls** - these are specific requirements and matching tests.  For example, you will find controls that correspond to best-practice configurations of access to assets, such as enabling TLS access and blocking plain-text HTTP.
-
-Controls are grouped into **benchmarks**. Where multiple benchmarks are available, controls may be used by several benchmarks.
-
-When you run a compliance scan, you can select which benchmarks you wish to measure against, and ThreatMapper will then evaluate the appropriate controls and present the results, by benchmark, once the scan has completed.
-
-For full information, refer to [Operations: Compliance Scanning](/docs/operations/compliance).
-
-:::tip Maximizing Coverage
-For maximum coverage, you can use both Cloud Scanner and local Sensor Agent compliance scans together. You could scan your GCP infrastructure using Cloud Scanner, and [scan selected VMs deployed within GCP](other) using the Sensor Agent.
-:::
-
-
-## Cloud Scanner on GKE Cluster using workload identity
+## Cloud Scanner on GKE Cluster
 
 :::info
 
@@ -202,7 +192,7 @@ module "cloud_scanner_example_multiple_project" {
 }
 ```
 
-## Cloud Scanner on GCP compute instance using service account
+## Cloud Scanner on GCP Compute Instance
 
 :::info
 
@@ -213,7 +203,7 @@ module "cloud_scanner_example_multiple_project" {
 
 2. gcloud cli is configured and is able to access the required project where cloud scanner will be deployed
 3. Install docker and docker compose on the gcp compute instance([refer docker documentation for installation instructions](https://docs.docker.com/engine/install/))
-4. If a existing gcp compute instance instance is used, check if docker and docker compose plugins are installed on the gcp compute instance.
+4. If an existing gcp compute instance is used, check if docker and docker compose plugins are installed on the gcp compute instance.
 
 :::
 
@@ -259,7 +249,7 @@ module "cloud_scanner_example_multiple_project" {
       }
       ```
 2. Apply the terraform script and note the service account from the output
-3. Stop the the gcp compute instance and update the service account in `API and identity management` select the service account create by the terraform script and select option `Allow full access to all Cloud APIs`, save the config and start the instance, if creating a new instance these options can be set while creating the instance
+3. Stop the gcp compute instance and update the service account in `API and identity management` select the service account create by the terraform script and select option `Allow full access to all Cloud APIs`, save the config and start the instance, if creating a new instance these options can be set while creating the instance
 ![gcp-vm-service-account](../img/gcp-vm-service-account.png)
 4. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
     ```
@@ -274,3 +264,17 @@ module "cloud_scanner_example_multiple_project" {
     ```
     docker compose up -d
     ```
+
+## What Compliance Scans are Performed?
+
+ThreatMapper builds on a large library of **controls** - these are specific requirements and matching tests.  For example, you will find controls that correspond to best-practice configurations of access to assets, such as enabling TLS access and blocking plain-text HTTP.
+
+Controls are grouped into **benchmarks**. Where multiple benchmarks are available, controls may be used by several benchmarks.
+
+When you run a compliance scan, you can select which benchmarks you wish to measure against, and ThreatMapper will then evaluate the appropriate controls and present the results, by benchmark, once the scan has completed.
+
+For full information, refer to [Operations: Compliance Scanning](/docs/operations/compliance).
+
+:::tip Maximizing Coverage
+For maximum coverage, you can use both Cloud Scanner and local Sensor Agent compliance scans together. You could scan your GCP infrastructure using Cloud Scanner, and [scan selected VMs deployed within GCP](other) using the Sensor Agent.
+:::
