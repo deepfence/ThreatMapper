@@ -149,43 +149,12 @@ export const UniqueVulnerabilitiesCountsCard = () => {
   );
 };
 
-export const MostExploitableVulnerabilitiesCountsCard = () => {
-  return (
-    <Card className="rounded min-h-full flex flex-col">
-      <CardHeader
-        icon={<VulnerabilityIcon />}
-        title={'Most Exploitable Vulnerabilities'}
-        path={'/vulnerability/most-exploitable'}
-      />
-      <div className="flex-1 flex flex-col">
-        <Suspense
-          fallback={
-            <div className="flex-1 flex items-center justify-center">
-              <CircleSpinner size="md" />
-            </div>
-          }
-        >
-          <MostExploitableVulnerabilitiesCardContent />
-        </Suspense>
-      </div>
-    </Card>
-  );
-};
-
 const UniqueVulnerabilitiesCardContent = () => {
   const { data } = useSuspenseQuery({
     ...queries.vulnerability.uniqueVulnerabilitiesCount(),
   });
 
   return <CardContent data={data} to="/vulnerability/unique-vulnerabilities" />;
-};
-
-const MostExploitableVulnerabilitiesCardContent = () => {
-  const { data } = useSuspenseQuery({
-    ...queries.vulnerability.mostExploitableVulnerabilitiesCount(),
-  });
-
-  return <CardContent data={data} to="/vulnerability/most-exploitable" />;
 };
 
 const CardContent = ({
