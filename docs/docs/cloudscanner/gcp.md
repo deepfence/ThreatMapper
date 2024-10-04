@@ -136,9 +136,8 @@ module "cloud_scanner_example_single_project" {
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url           = "<Console URL>"
   deepfence-key              = "<Deepfence-key>"
-  # quay.io/deepfenceio/cloud_scanner_ce if using ThreatMapper. quay.io/deepfenceio/cloud_scanner if using ThreatStryker
-  image_name                 = "quay.io/deepfenceio/cloud_scanner_ce"
-  image_tag                  = "2.3.1"
+  image_name                 = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud_scanner_ce"
+  image_tag                  = "THREATMAPPER_VERSION"
   # project_id example: dev1-123456
   project_id                 = "<PROJECT_ID>"
   # region example: asia-east1
@@ -173,9 +172,8 @@ module "cloud_scanner_example_multiple_project" {
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url           = "<Console URL>"
   deepfence-key              = "<Deepfence-key>"
-  # quay.io/deepfenceio/cloud_scanner_ce if using ThreatMapper. quay.io/deepfenceio/cloud_scanner if using ThreatStryker
-  image_name                 = "quay.io/deepfenceio/cloud_scanner_ce"
-  image_tag                  = "2.3.1"
+  image_name                 = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud_scanner_ce"
+  image_tag                  = "THREATMAPPER_VERSION"
   # project_id example: dev1-123456
   project_id                 = "<PROJECT_ID>"
   # region example: asia-east1
