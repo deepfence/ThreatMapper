@@ -16,7 +16,7 @@ data:
   DEEPFENCE_FILE_SERVER_EXTERNAL: "false"
   {{- else }}
   DEEPFENCE_FILE_SERVER_HOST: {{ .Values.fileserver.fileServerHost }}
-  DEEPFENCE_FILE_SERVER_PORT: {{ .Values.fileserver.fileServerPort }}
+  DEEPFENCE_FILE_SERVER_PORT: {{ .Values.fileserver.fileServerPort | quote }}
   DEEPFENCE_FILE_SERVER_EXTERNAL: "true"
   {{- end }}
 
