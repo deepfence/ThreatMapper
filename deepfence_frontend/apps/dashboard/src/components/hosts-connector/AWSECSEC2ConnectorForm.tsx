@@ -23,7 +23,7 @@ export const AWSECSEC2ConnectorForm = () => {
             In AWS ECS (EC2), the ThreatMapper sensors are deployed as a daemon service
             task definition.{' '}
             <DFLink
-              href={`https://community.deepfence.io/threatmapper/docs/v2.3/sensors/aws-ecs`}
+              href={`https://community.deepfence.io/threatmapper/docs/v2.4/sensors/aws-ecs`}
               target="_blank"
               rel="noreferrer"
               className="mt-2"
