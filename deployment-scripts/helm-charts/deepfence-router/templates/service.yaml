@@ -4,7 +4,6 @@ kind: Service
 metadata:
   name: {{ .Values.service.name }}
   labels:
-    app: deepfence-router
     {{- include "deepfence-router.labels" . | nindent 4 }}
   namespace: {{ .Release.Namespace }}
   {{- with .Values.service.annotations }}
