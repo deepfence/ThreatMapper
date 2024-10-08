@@ -22,7 +22,6 @@ configure_cron() {
 launch_deepfenced() {
   # In k8s, if agent pod restarts these files are not cleared
   rm -rf $DF_INSTALL_DIR/var/log/fenced/* 2>/dev/null
-  configure_cron
 
   mkdir -p $DF_INSTALL_DIR/var/log/fenced/api $DF_INSTALL_DIR/var/log/fenced/cloud-resource-refresh-log \
     $DF_INSTALL_DIR/var/log/fenced/cloud-resources $DF_INSTALL_DIR/var/log/fenced/cloud-scanner \
@@ -33,10 +32,8 @@ launch_deepfenced() {
     SCOPE_HOSTNAME="$(hostname)"
     export SCOPE_HOSTNAME="$SCOPE_HOSTNAME"
   fi
-  if [ "$DF_PROXY_MODE" == "1" ]; then
-    # echo "App security : Active Mode, Listening on port $DF_LISTEN_PORT "
-    DOCKER_API_VERSION=$DOCKER_API_VERSION run_dind.sh -a $MGMT_CONSOLE_PORT -s 0
-  fi
+
+  configure_cron
 
   unlink /var/run/supervisor.sock 2>/dev/null
   /usr/bin/supervisord -c /home/deepfence/supervisord.conf
@@ -64,9 +61,10 @@ check_persistent_volume() {
 
     if [[ $clean_df_install_dir == "true" ]]; then
       rm -rf "${DF_INSTALL_DIR:?}"/* "${DF_INSTALL_DIR:?}"/.*
-      cp -R /home/deepfence/var "$DF_INSTALL_DIR"
 
-      mkdir -p "$STEAMPIPE_INSTALL_DIR"
+      mkdir -p "$DF_INSTALL_DIR" "$STEAMPIPE_INSTALL_DIR"
+
+      cp -R /home/deepfence/var "$DF_INSTALL_DIR"
       cp -R /home/deepfence/.steampipe/config "$STEAMPIPE_INSTALL_DIR"/
       cp -R /home/deepfence/.steampipe/plugins "$STEAMPIPE_INSTALL_DIR"/
       cp -R /home/deepfence/.steampipe/db "$STEAMPIPE_INSTALL_DIR"/

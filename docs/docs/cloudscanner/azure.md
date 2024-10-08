@@ -260,25 +260,26 @@ module "test" {
     ```
 3. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
     ```
-    https://raw.githubusercontent.com/deepfence/cloud-scanner/main/docker-compose.yaml
+    https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.4/docker-compose.yaml
     ```
     ```bash
     mkdir deepfence-cloud-scanner && cd deepfence-cloud-scanner
-    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/main/docker-compose.yaml
+    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.4/docker-compose.yaml
     ```
 4. Update the environment vars account details and console details in the docker-compose.yaml, if deploying for multi tenants cloud scanner set `ORGANIZATION_DEPLOYMENT: true`
     ```
+    image: quay.io/deepfenceio/cloud_scanner_ce:THREATMAPPER_VERSION
     environment:
-      MGMT_CONSOLE_URL: "<Console URL>"
-      MGMT_CONSOLE_PORT: <Console PORT>
-      DEEPFENCE_KEY: "<DEEPFENCE KEY>"
+      MGMT_CONSOLE_URL: "<CONSOLE_URL>"
+      MGMT_CONSOLE_PORT: <CONSOLE_PORT>
+      DEEPFENCE_KEY: "<DEEPFENCE_KEY>"
       CLOUD_PROVIDER: "azure"
       CLOUD_REGION: "<LOCATION>"
       CLOUD_ACCOUNT_ID: "<SUBSCRIPTION_ID>"
       DEPLOYED_ACCOUNT_ID: "<SUBSCRIPTION_ID>"
       CLOUD_ACCOUNT_NAME: ""
       ORGANIZATION_DEPLOYMENT: false
-      CLOUD_ORGANIZATION_ID: "<tenant_id>"
+      CLOUD_ORGANIZATION_ID: "<TENANT_ID>"
       ROLE_NAME: ""
       CLOUD_AUDIT_LOG_IDS: ""
       HTTP_SERVER_REQUIRED: "false"
@@ -286,11 +287,12 @@ module "test" {
       DF_LOG_LEVEL: info
       SCAN_INACTIVE_THRESHOLD: "21600"
       CLOUD_SCANNER_POLICY: ""
-      AZURE_TENANT_ID: "<tenant_id>"
-      AZURE_REGION: <LOCATION>
-      AZURE_CLIENT_ID: "<client_id>"
-      AZURE_CLIENT_SECRET: "<client_secret>"
-      AZURE_SUBSCRIPTION_ID: "SUBSCRIPTION_ID"
+
+      AZURE_TENANT_ID: "<TENANT_ID>"
+      AZURE_REGION: "<LOCATION>"
+      AZURE_CLIENT_ID: "<CLIENT_ID>"
+      AZURE_CLIENT_SECRET: "<CLIENT_SECRET>"
+      AZURE_SUBSCRIPTION_ID: "<SUBSCRIPTION_ID>"
     ```
 5. Start the cloud scanner using docker compose
     ```
