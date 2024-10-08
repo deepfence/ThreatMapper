@@ -160,7 +160,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
     ```
 5. Download the helm chart values for depfence-cloud-scanner chart to file **cloud-scanner.yaml**
     ```
-    helm show values cloud-scanner/deepfence-cloud-scanner --version CLOUD_SCANNER_HELM_CHART_VERSION > cloud-scanner.yaml
+    helm show values cloud-scanner/deepfence-cloud-scanner --version 2.3.2 > cloud-scanner.yaml
     ```
 6. Update the following values in the values.yaml. Add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
     ```yaml
@@ -209,7 +209,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
     helm install -f cloud-scanner.yaml cloud-scanner cloud-scanner/deepfence-cloud-scanner \
         --namespace deepfence \
         --create-namespace \
-        --version CLOUD_SCANNER_HELM_CHART_VERSION
+        --version 2.3.2
     ```
 
 ### Organization Account Cloud Scanner on EKS cluster using IRSA
@@ -222,7 +222,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
     ```
 4. Download the helm chart values for depfence-cloud-scanner chart to file **cloud-scanner.yaml**
     ```
-    helm show values cloud-scanner/deepfence-cloud-scanner --version CLOUD_SCANNER_HELM_CHART_VERSION > cloud-scanner.yaml
+    helm show values cloud-scanner/deepfence-cloud-scanner --version 2.3.2 > cloud-scanner.yaml
     ```
 5. Update the following values in the values.yaml. Add service account annotation and service account name in **cloud-scanner.yaml** as shown in the example below
     ```yaml
@@ -285,7 +285,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
     helm install -f cloud-scanner.yaml cloud-scanner cloud-scanner/deepfence-cloud-scanner \
         --namespace deepfence \
         --create-namespace \
-        --version CLOUD_SCANNER_HELM_CHART_VERSION
+        --version 2.3.2
     ```
 
 ## Cloud Scanner on EC2 Instance
