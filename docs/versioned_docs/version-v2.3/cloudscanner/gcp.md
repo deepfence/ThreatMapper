@@ -251,13 +251,34 @@ module "cloud_scanner_example_multiple_project" {
 ![gcp-vm-service-account](../img/gcp-vm-service-account.png)
 4. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
     ```
-    https://raw.githubusercontent.com/deepfence/cloud-scanner/main/docker-compose.yaml
+    https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.3/docker-compose.yaml 
     ```
     ```bash
     mkdir deepfence-cloud-scanner && cd deepfence-cloud-scanner
-    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/main/docker-compose.yaml
+    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.3/docker-compose.yaml
     ```
 5. Update the account details and console details in the docker-compose.yaml
+    ```
+    image: quay.io/deepfenceio/cloud_scanner_ce:2.3.1
+    environment:
+      MGMT_CONSOLE_URL: "<CONSOLE_URL>"
+      MGMT_CONSOLE_PORT: <CONSOLE_PORT>
+      DEEPFENCE_KEY: "<DEEPFENCE_KEY>"
+      CLOUD_PROVIDER: "gcp"
+      CLOUD_REGION: "<REGION>"
+      CLOUD_ACCOUNT_ID: "<PROJECT_ID>"
+      DEPLOYED_ACCOUNT_ID: "<PROJECT_ID>"
+      CLOUD_ACCOUNT_NAME: ""
+      ORGANIZATION_DEPLOYMENT: false
+      CLOUD_ORGANIZATION_ID: ""
+      ROLE_NAME: ""
+      CLOUD_AUDIT_LOG_IDS: ""
+      HTTP_SERVER_REQUIRED: "false"
+      SUCCESS_SIGNAL_URL: ""
+      DF_LOG_LEVEL: info
+      SCAN_INACTIVE_THRESHOLD: "21600"
+      CLOUD_SCANNER_POLICY: ""
+    ```
 6. Start the cloud scanner using docker compose
     ```
     docker compose up -d

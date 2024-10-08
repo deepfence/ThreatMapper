@@ -277,7 +277,7 @@ module "cloud_scanner_example_multiple_project" {
       SUCCESS_SIGNAL_URL: ""
       DF_LOG_LEVEL: info
       SCAN_INACTIVE_THRESHOLD: "21600"
-      CLOUD_SCANNER_POLICY: "arn:aws:iam::aws:policy/SecurityAudit"
+      CLOUD_SCANNER_POLICY: ""
     ```
 6. Start the cloud scanner using docker compose
     ```
