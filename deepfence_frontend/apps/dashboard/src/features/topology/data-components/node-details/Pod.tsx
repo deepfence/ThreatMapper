@@ -2,7 +2,10 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useState } from 'react';
 import { CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
 
-import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
 import {
   Metadata,
@@ -20,24 +23,11 @@ function useLookupPod(nodeId: string) {
 
 interface PodModalProps {
   nodeId: string;
-  onGoBack: () => void;
-  showBackBtn: boolean;
-  onNodeClick: (nodeId: string, nodeType: string) => void;
-  onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
-  onTabChange: (defaultTab: string) => void;
   defaultTab?: string;
 }
 
 export const Pod = (props: PodModalProps) => {
-  const {
-    nodeId,
-    defaultTab,
-    onGoBack,
-    showBackBtn,
-    onStartScanClick,
-    onNodeClick,
-    onTabChange,
-  } = props;
+  const { nodeId, defaultTab } = props;
   const [tab, setTab] = useState(defaultTab ?? 'metadata');
 
   const tabs = [
@@ -56,12 +46,12 @@ export const Pod = (props: PodModalProps) => {
       <Suspense
         fallback={
           <Header
-            onStartScanClick={onStartScanClick}
+            onStartScanClick={() => {
+              /** noop */
+            }}
             nodeId={nodeId}
             label={nodeId}
             nodeType="pod"
-            onGoBack={onGoBack}
-            showBackBtn={showBackBtn}
             availableScanTypes={[]}
             showInstallAgentOption={false}
           />
@@ -76,7 +66,6 @@ export const Pod = (props: PodModalProps) => {
             defaultValue={tab}
             tabs={tabs}
             onValueChange={(v) => {
-              onTabChange(v);
               setTab(v);
             }}
           >
@@ -87,7 +76,7 @@ export const Pod = (props: PodModalProps) => {
                 </div>
               }
             >
-              <TabContent tab={tab} nodeId={nodeId} onNodeClick={onNodeClick} />
+              <TabContent tab={tab} nodeId={nodeId} />
             </Suspense>
           </Tabs>
         </div>
@@ -96,40 +85,36 @@ export const Pod = (props: PodModalProps) => {
   );
 };
 
-const PodHeader = ({
-  nodeId,
-  onStartScanClick,
-  onGoBack,
-  showBackBtn,
-}: PodModalProps) => {
+const PodHeader = ({ nodeId }: PodModalProps) => {
   const { data } = useLookupPod(nodeId);
+  const [scanOptions, setScanOptions] =
+    useState<ConfigureScanModalProps['scanOptions']>();
   return (
-    <Header
-      onStartScanClick={onStartScanClick}
-      nodeId={nodeId}
-      label={data?.podData?.node_name}
-      nodeType="pod"
-      onGoBack={onGoBack}
-      showBackBtn={showBackBtn}
-      availableScanTypes={[
-        ScanTypeEnum.VulnerabilityScan,
-        ScanTypeEnum.SecretScan,
-        ScanTypeEnum.MalwareScan,
-      ]}
-      showInstallAgentOption={false}
-    />
+    <>
+      <Header
+        onStartScanClick={setScanOptions}
+        nodeId={nodeId}
+        label={data?.podData?.node_name}
+        nodeType="pod"
+        availableScanTypes={[
+          ScanTypeEnum.VulnerabilityScan,
+          ScanTypeEnum.SecretScan,
+          ScanTypeEnum.MalwareScan,
+        ]}
+        showInstallAgentOption={false}
+      />
+      {!!scanOptions && (
+        <ConfigureScanModal
+          open
+          onOpenChange={() => setScanOptions(undefined)}
+          scanOptions={scanOptions}
+        />
+      )}
+    </>
   );
 };
 
-const TabContent = ({
-  tab,
-  nodeId,
-  onNodeClick,
-}: {
-  tab: string;
-  nodeId: string;
-  onNodeClick: (nodeId: string, nodeType: string) => void;
-}) => {
+const TabContent = ({ tab, nodeId }: { tab: string; nodeId: string }) => {
   const { data } = useLookupPod(nodeId);
   return (
     <div className="p-5 flex flex-col gap-x-4 gap-y-7 dark:bg-bg-side-panel bg-white">
@@ -157,10 +142,7 @@ const TabContent = ({
       )}
       {tab === 'containers' && (
         <>
-          <ContainerTable
-            containers={data?.podData?.containers ?? []}
-            onNodeClick={onNodeClick}
-          />
+          <ContainerTable containers={data?.podData?.containers ?? []} />
         </>
       )}
     </div>

@@ -12,7 +12,6 @@ import {
 } from 'ui-components';
 
 import { ModelCloudResource } from '@/api/generated';
-import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
@@ -38,26 +37,19 @@ function useSearchCloudResources(params: {
 export const CloudService = ({
   nodeType,
   region,
-  onGoBack,
-  showBackBtn,
-  onStartScanClick,
 }: {
   nodeType: string;
   region: string;
-  onGoBack: () => void;
-  showBackBtn: boolean;
-  onNodeClick: (nodeId: string, nodeType: string) => void;
-  onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
 }) => {
   return (
     <>
       <Header
-        onStartScanClick={onStartScanClick}
+        onStartScanClick={() => {
+          // NOOP
+        }}
         nodeId={nodeType}
         label={nodeType}
         nodeType={nodeType}
-        onGoBack={onGoBack}
-        showBackBtn={showBackBtn}
         availableScanTypes={[]}
         showInstallAgentOption={false}
       />

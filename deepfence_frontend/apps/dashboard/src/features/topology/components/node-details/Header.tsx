@@ -1,7 +1,6 @@
 import { Button, Dropdown, DropdownItem, SlidingModalHeader } from 'ui-components';
 
 import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
-import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
@@ -16,8 +15,6 @@ export const Header = ({
   nodeId,
   nodeType,
   label,
-  onGoBack,
-  showBackBtn,
   onStartScanClick,
   availableScanTypes,
   showInstallAgentOption,
@@ -25,8 +22,6 @@ export const Header = ({
   nodeId: string;
   nodeType: string;
   label?: string;
-  onGoBack: () => void;
-  showBackBtn: boolean;
   onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
   availableScanTypes: ScanTypeEnum[];
   showInstallAgentOption: boolean;
@@ -37,17 +32,7 @@ export const Header = ({
   return (
     <SlidingModalHeader>
       <div className="flex pt-5 pl-5 pr-16 pb-1.5 gap-4 dark:bg-bg-header bg-bg-breadcrumb-bar">
-        <div className="flex gap-2 text-h3 text-text-text-and-icon overflow-hidden items-center">
-          {showBackBtn ? (
-            <button
-              className="h-5 w-5 shrink-0 -rotate-90 dark:text-accent-accent "
-              onClick={() => {
-                onGoBack();
-              }}
-            >
-              <ArrowLine />
-            </button>
-          ) : null}
+        <div className="min-h-[30px] flex gap-2 text-h3 text-text-text-and-icon overflow-hidden items-center">
           <div className="w-6 h-6 shrink-0">
             <img
               src={getNodeImage(mode, nodeType)}

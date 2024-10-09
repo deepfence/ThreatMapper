@@ -22,6 +22,7 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
+import { useGlobalModalStack } from '@/components/detail-modal-stack';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
@@ -37,7 +38,6 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
-import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { queries } from '@/queries';
 import {
   MalwareScanNodeTypeEnum,
@@ -535,12 +535,9 @@ const DataTable = ({
 }) => {
   const { data } = useSearchContainersWithPagination();
   const columnHelper = createColumnHelper<ModelContainer>();
-  const [clickedItem, setClickedItem] = useState<{
-    nodeId: string;
-    nodeType: string;
-  }>();
   const [sort, setSort] = useSortingState();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { addGlobalModal } = useGlobalModalStack();
 
   const columns = useMemo(
     () => [
@@ -568,9 +565,9 @@ const DataTable = ({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    setClickedItem({
-                      nodeId: info.row.original.node_id!,
-                      nodeType: 'container',
+                    addGlobalModal({
+                      kind: 'container',
+                      nodeId: info.row.original.node_id,
                     });
                   }}
                 >
@@ -692,15 +689,6 @@ const DataTable = ({
           });
         }}
       />
-      {clickedItem ? (
-        <NodeDetailsStackedModal
-          node={clickedItem}
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) setClickedItem(undefined);
-          }}
-        />
-      ) : null}
     </>
   );
 };
