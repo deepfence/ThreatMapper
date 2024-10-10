@@ -11,6 +11,7 @@ import {
 } from 'ui-components';
 
 import { CopyButton, useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { useGlobalModalStack } from '@/components/detail-modal-stack';
 import { DFLink } from '@/components/DFLink';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { PopOutIcon } from '@/components/icons/common/PopOut';
@@ -113,6 +114,7 @@ const DetailsComponent = ({
   const {
     data: { data: secrets },
   } = useGetSecretDetails();
+  const { addGlobalModal } = useGlobalModalStack();
 
   const [showResourceModal, setShowResourceModal] = useState({
     resource: '',
@@ -247,6 +249,18 @@ const DetailsComponent = ({
                   target="_blank"
                   rel="noreferrer"
                   className="text-p2 flex items-center gap-3"
+                  onClick={(e) => {
+                    if (
+                      resource.node_type === 'container' ||
+                      resource.node_type === 'host'
+                    ) {
+                      e.preventDefault();
+                      addGlobalModal({
+                        kind: resource.node_type,
+                        nodeId: resource.node_id,
+                      });
+                    }
+                  }}
                 >
                   <span className="h-4 w-4 shrink-0">
                     <PopOutIcon />

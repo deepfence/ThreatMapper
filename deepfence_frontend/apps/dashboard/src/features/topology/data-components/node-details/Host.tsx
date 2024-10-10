@@ -2,7 +2,10 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useState } from 'react';
 import { CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
 
-import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
 import {
   Metadata,
@@ -27,24 +30,11 @@ function useLookupHost(nodeId: string) {
 
 interface HostModalProps {
   nodeId: string;
-  onGoBack: () => void;
-  showBackBtn: boolean;
-  onNodeClick: (nodeId: string, nodeType: string) => void;
-  onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
-  onTabChange: (defaultTab: string) => void;
   defaultTab?: string;
 }
 
 export const Host = (props: HostModalProps) => {
-  const {
-    nodeId,
-    defaultTab,
-    onGoBack,
-    showBackBtn,
-    onNodeClick,
-    onStartScanClick,
-    onTabChange,
-  } = props;
+  const { nodeId, defaultTab } = props;
   const [tab, setTab] = useState(defaultTab ?? 'metadata');
   const tabs = [
     {
@@ -70,14 +60,14 @@ export const Host = (props: HostModalProps) => {
       <Suspense
         fallback={
           <Header
-            onStartScanClick={onStartScanClick}
             nodeId={nodeId}
             label={nodeId}
             nodeType="host"
-            onGoBack={onGoBack}
-            showBackBtn={showBackBtn}
             availableScanTypes={[]}
             showInstallAgentOption={false}
+            onStartScanClick={() => {
+              /** noop */
+            }}
           />
         }
       >
@@ -90,7 +80,6 @@ export const Host = (props: HostModalProps) => {
             defaultValue={tab}
             tabs={tabs}
             onValueChange={(v) => {
-              onTabChange(v);
               setTab(v);
             }}
           >
@@ -101,7 +90,7 @@ export const Host = (props: HostModalProps) => {
                 </div>
               }
             >
-              <TabContent tab={tab} nodeId={nodeId} onNodeClick={onNodeClick} />
+              <TabContent tab={tab} nodeId={nodeId} />
             </Suspense>
           </Tabs>
         </div>
@@ -112,45 +101,43 @@ export const Host = (props: HostModalProps) => {
 
 const HostHeader = ({
   nodeId,
-  onStartScanClick,
-  onGoBack,
-  showBackBtn,
 }: HostModalProps & {
   agentRunning?: boolean;
 }) => {
   const { data } = useLookupHost(nodeId);
+  const [scanOptions, setScanOptions] =
+    useState<ConfigureScanModalProps['scanOptions']>();
   return (
-    <Header
-      onStartScanClick={onStartScanClick}
-      nodeId={nodeId}
-      label={data.hostData[0].host_name}
-      nodeType="host"
-      onGoBack={onGoBack}
-      showBackBtn={showBackBtn}
-      availableScanTypes={
-        data.hostData[0].agent_running
-          ? [
-              ScanTypeEnum.VulnerabilityScan,
-              ScanTypeEnum.SecretScan,
-              ScanTypeEnum.MalwareScan,
-              ScanTypeEnum.ComplianceScan,
-            ]
-          : []
-      }
-      showInstallAgentOption={!data.hostData[0].agent_running}
-    />
+    <>
+      <Header
+        onStartScanClick={setScanOptions}
+        nodeId={nodeId}
+        label={data.hostData[0].host_name}
+        nodeType="host"
+        availableScanTypes={
+          data.hostData[0].agent_running
+            ? [
+                ScanTypeEnum.VulnerabilityScan,
+                ScanTypeEnum.SecretScan,
+                ScanTypeEnum.MalwareScan,
+                ScanTypeEnum.ComplianceScan,
+              ]
+            : []
+        }
+        showInstallAgentOption={!data.hostData[0].agent_running}
+      />
+      {!!scanOptions && (
+        <ConfigureScanModal
+          open
+          onOpenChange={() => setScanOptions(undefined)}
+          scanOptions={scanOptions}
+        />
+      )}
+    </>
   );
 };
 
-const TabContent = ({
-  tab,
-  nodeId,
-  onNodeClick,
-}: {
-  tab: string;
-  nodeId: string;
-  onNodeClick: (nodeId: string, nodeType: string) => void;
-}) => {
+const TabContent = ({ tab, nodeId }: { tab: string; nodeId: string }) => {
   const { data } = useLookupHost(nodeId);
   return (
     <div className="p-5 flex flex-col gap-x-4 gap-y-7 dark:bg-bg-side-panel bg-white">
@@ -182,10 +169,7 @@ const TabContent = ({
       )}
       {tab === 'connections-and-processes' && (
         <>
-          <ProcessTable
-            processes={data.hostData[0].processes ?? []}
-            onNodeClick={onNodeClick}
-          />
+          <ProcessTable processes={data.hostData[0].processes ?? []} />
           <ConnectionsTable
             type="inbound"
             connections={data.hostData[0].inbound_connections ?? []}
@@ -198,14 +182,8 @@ const TabContent = ({
       )}
       {tab === 'containers-and-images' && (
         <>
-          <ContainerTable
-            containers={data?.hostData[0].containers ?? []}
-            onNodeClick={onNodeClick}
-          />
-          <ImageTable
-            images={data?.hostData[0].container_images ?? []}
-            onNodeClick={onNodeClick}
-          />
+          <ContainerTable containers={data?.hostData[0].containers ?? []} />
+          <ImageTable images={data?.hostData[0].container_images ?? []} />
         </>
       )}
       {tab === 'scan-results' && (

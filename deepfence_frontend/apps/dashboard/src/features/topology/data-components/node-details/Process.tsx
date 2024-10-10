@@ -2,7 +2,6 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useState } from 'react';
 import { CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
 
-import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
 import {
   Metadata,
@@ -18,24 +17,11 @@ function useLookupProcess(nodeId: string) {
 
 interface ProcessModalProps {
   nodeId: string;
-  onGoBack: () => void;
-  showBackBtn: boolean;
-  onNodeClick: (nodeId: string, nodeType: string) => void;
-  onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
-  onTabChange: (defaultTab: string) => void;
   defaultTab?: string;
 }
 
 export const Process = (props: ProcessModalProps) => {
-  const {
-    nodeId,
-    defaultTab,
-    onGoBack,
-    showBackBtn,
-    onStartScanClick,
-    onNodeClick,
-    onTabChange,
-  } = props;
+  const { nodeId, defaultTab } = props;
   const [tab, setTab] = useState(defaultTab ?? 'metadata');
 
   const tabs = [
@@ -50,12 +36,12 @@ export const Process = (props: ProcessModalProps) => {
       <Suspense
         fallback={
           <Header
-            onStartScanClick={onStartScanClick}
+            onStartScanClick={() => {
+              /** noop */
+            }}
             nodeId={nodeId}
             label={nodeId}
             nodeType="process"
-            onGoBack={onGoBack}
-            showBackBtn={showBackBtn}
             availableScanTypes={[]}
             showInstallAgentOption={false}
           />
@@ -70,7 +56,6 @@ export const Process = (props: ProcessModalProps) => {
             defaultValue={tab}
             tabs={tabs}
             onValueChange={(v) => {
-              onTabChange(v);
               setTab(v);
             }}
           >
@@ -81,7 +66,7 @@ export const Process = (props: ProcessModalProps) => {
                 </div>
               }
             >
-              <TabContent tab={tab} nodeId={nodeId} onNodeClick={onNodeClick} />
+              <TabContent tab={tab} nodeId={nodeId} />
             </Suspense>
           </Tabs>
         </div>
@@ -90,36 +75,23 @@ export const Process = (props: ProcessModalProps) => {
   );
 };
 
-const ProcessHeader = ({
-  nodeId,
-  onStartScanClick,
-  onGoBack,
-  showBackBtn,
-}: ProcessModalProps) => {
+const ProcessHeader = ({ nodeId }: ProcessModalProps) => {
   const { data } = useLookupProcess(nodeId);
   return (
     <Header
-      onStartScanClick={onStartScanClick}
+      onStartScanClick={() => {
+        /** noop */
+      }}
       nodeId={nodeId}
       label={data?.processData?.node_name}
       nodeType="process"
-      onGoBack={onGoBack}
-      showBackBtn={showBackBtn}
       availableScanTypes={[]}
       showInstallAgentOption={false}
     />
   );
 };
 
-const TabContent = ({
-  tab,
-  nodeId,
-  onNodeClick,
-}: {
-  tab: string;
-  nodeId: string;
-  onNodeClick: (nodeId: string, nodeType: string) => void;
-}) => {
+const TabContent = ({ tab, nodeId }: { tab: string; nodeId: string }) => {
   const { data } = useLookupProcess(nodeId);
   return (
     <div className="p-5 flex flex-col gap-x-4 gap-y-7 dark:bg-bg-side-panel bg-white">

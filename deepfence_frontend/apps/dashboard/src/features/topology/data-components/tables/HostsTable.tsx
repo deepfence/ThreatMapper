@@ -25,6 +25,7 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
+import { useGlobalModalStack } from '@/components/detail-modal-stack';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
@@ -40,7 +41,6 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
 import { FilterWrapper } from '@/features/common/FilterWrapper';
-import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { SearchableCloudAccountForHost } from '@/features/topology/data-components/tables/SearchableCloudAccountForHost';
 import { queries } from '@/queries';
 import {
@@ -678,12 +678,9 @@ const DataTable = ({
   const { data } = useSearchHostsWithPagination();
   const columnHelper = createColumnHelper<ModelHost>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [clickedItem, setClickedItem] = useState<{
-    nodeId: string;
-    nodeType: string;
-  }>();
   const [sort, setSort] = useSortingState();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { addGlobalModal } = useGlobalModalStack();
 
   const { data: versionsData } = useGetAgentVersions();
   const versions = versionsData.versions ?? [];
@@ -731,9 +728,9 @@ const DataTable = ({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    setClickedItem({
+                    addGlobalModal({
+                      kind: 'host',
                       nodeId: info.row.original.node_id!,
-                      nodeType: 'host',
                     });
                   }}
                 >
@@ -934,15 +931,6 @@ const DataTable = ({
           });
         }}
       />
-      {clickedItem ? (
-        <NodeDetailsStackedModal
-          node={clickedItem}
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) setClickedItem(undefined);
-          }}
-        />
-      ) : null}
     </>
   );
 };

@@ -2,7 +2,10 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useState } from 'react';
 import { CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
 
-import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
 import {
   Metadata,
@@ -21,24 +24,11 @@ function useLookupContainerImage(nodeId: string) {
 
 interface ContainerImageModalProps {
   nodeId: string;
-  onGoBack: () => void;
-  showBackBtn: boolean;
-  onNodeClick: (nodeId: string, nodeType: string) => void;
-  onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
-  onTabChange: (defaultTab: string) => void;
   defaultTab?: string;
 }
 
 export const ContainerImage = (props: ContainerImageModalProps) => {
-  const {
-    nodeId,
-    defaultTab,
-    onGoBack,
-    showBackBtn,
-    onNodeClick,
-    onStartScanClick,
-    onTabChange,
-  } = props;
+  const { nodeId, defaultTab } = props;
   const [tab, setTab] = useState(defaultTab ?? 'metadata');
 
   const tabs = [
@@ -61,12 +51,12 @@ export const ContainerImage = (props: ContainerImageModalProps) => {
       <Suspense
         fallback={
           <Header
-            onStartScanClick={onStartScanClick}
+            onStartScanClick={() => {
+              /** noop */
+            }}
             nodeId={nodeId}
             label={nodeId}
             nodeType="container_image"
-            onGoBack={onGoBack}
-            showBackBtn={showBackBtn}
             availableScanTypes={[]}
             showInstallAgentOption={false}
           />
@@ -81,7 +71,6 @@ export const ContainerImage = (props: ContainerImageModalProps) => {
             defaultValue={tab}
             tabs={tabs}
             onValueChange={(v) => {
-              onTabChange(v);
               setTab(v);
             }}
           >
@@ -92,7 +81,7 @@ export const ContainerImage = (props: ContainerImageModalProps) => {
                 </div>
               }
             >
-              <TabContent tab={tab} nodeId={nodeId} onNodeClick={onNodeClick} />
+              <TabContent tab={tab} nodeId={nodeId} />
             </Suspense>
           </Tabs>
         </div>
@@ -101,40 +90,36 @@ export const ContainerImage = (props: ContainerImageModalProps) => {
   );
 };
 
-const ContainerImageHeader = ({
-  nodeId,
-  onStartScanClick,
-  onGoBack,
-  showBackBtn,
-}: ContainerImageModalProps) => {
+const ContainerImageHeader = ({ nodeId }: ContainerImageModalProps) => {
   const { data } = useLookupContainerImage(nodeId);
+  const [scanOptions, setScanOptions] =
+    useState<ConfigureScanModalProps['scanOptions']>();
   return (
-    <Header
-      onStartScanClick={onStartScanClick}
-      nodeId={nodeId}
-      label={data.imageData?.node_name}
-      nodeType="container_image"
-      onGoBack={onGoBack}
-      showBackBtn={showBackBtn}
-      availableScanTypes={[
-        ScanTypeEnum.VulnerabilityScan,
-        ScanTypeEnum.SecretScan,
-        ScanTypeEnum.MalwareScan,
-      ]}
-      showInstallAgentOption={false}
-    />
+    <>
+      <Header
+        onStartScanClick={setScanOptions}
+        nodeId={nodeId}
+        label={data.imageData?.node_name}
+        nodeType="container_image"
+        availableScanTypes={[
+          ScanTypeEnum.VulnerabilityScan,
+          ScanTypeEnum.SecretScan,
+          ScanTypeEnum.MalwareScan,
+        ]}
+        showInstallAgentOption={false}
+      />
+      {!!scanOptions && (
+        <ConfigureScanModal
+          open
+          onOpenChange={() => setScanOptions(undefined)}
+          scanOptions={scanOptions}
+        />
+      )}
+    </>
   );
 };
 
-const TabContent = ({
-  tab,
-  nodeId,
-  onNodeClick,
-}: {
-  tab: string;
-  nodeId: string;
-  onNodeClick: (nodeId: string, nodeType: string) => void;
-}) => {
+const TabContent = ({ tab, nodeId }: { tab: string; nodeId: string }) => {
   const { data } = useLookupContainerImage(nodeId);
   return (
     <div className="p-5 flex flex-col gap-x-4 gap-y-7 dark:bg-bg-side-panel bg-white">
@@ -159,10 +144,7 @@ const TabContent = ({
 
       {tab === 'containers' && (
         <>
-          <ContainerTable
-            containers={data?.imageData?.containers ?? []}
-            onNodeClick={onNodeClick}
-          />
+          <ContainerTable containers={data?.imageData?.containers ?? []} />
         </>
       )}
       {tab === 'scan-results' && (
