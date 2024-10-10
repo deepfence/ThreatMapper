@@ -25,7 +25,7 @@ spec:
     spec:
       serviceAccountName: {{ include "deepfence-agent.serviceAccountName" . }}
       {{- if .Values.priorityClassName }}
-      priorityClassName: {{ .Values.priorityClassName | quote }} 
+      priorityClassName: {{ .Values.priorityClassName | quote }}
       {{- end }}
       containers:
         - name: deepfence-cluster-agent
@@ -50,6 +50,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: http_proxy
+              value: "{{ .Values.managementConsoleProxy.http_proxy }}"
+            - name: https_proxy
+              value: "{{ .Values.managementConsoleProxy.https_proxy }}"
+            - name: no_proxy
+              value: "{{ .Values.managementConsoleProxy.no_proxy }}"
+
             {{- if .Values.clusterName }}
             - name: SCOPE_HOSTNAME
               value: "{{ .Values.clusterName }}-$(AGENT_HOSTNAME)"
