@@ -39,6 +39,9 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
+    -e http_proxy="" \
+    -e https_proxy="" \
+    -e no_proxy="" \
     quay.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION
 ```
 
@@ -66,6 +69,9 @@ sudo podman run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
+    -e http_proxy="" \
+    -e https_proxy="" \
+    -e no_proxy="" \
     quay.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION
 ```
 
@@ -80,7 +86,11 @@ To upgrade a sensor install, stop the existing sensor and start the new version.
 
 ## Using a Proxy Server with Docker
 
-If ThreatMapper management console is accessed through a proxy server, add the proxy server details to the docker configuration.
+If ThreatMapper management console is accessed through a proxy server, there are two ways of configuring it.
+- You can start the container by providing the environment variable `http_proxy` and `https_proxy` as shown [here](#docker-1).
+The environment variable will be used by our agent to communicate with the proxy.
+
+- Alternatively, you can also configure docker to use a proxy server for all transactions.
 
 Edit the file: `~/.docker/config.json`, and add the following content.  Remember to change the proxy server ip address from 111.111.111.111 to your proxy server ip:
 

@@ -94,6 +94,9 @@ docker run -dit \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
+    -e http_proxy="" \
+    -e https_proxy="" \
+    -e no_proxy="" \
     quay.io/deepfenceio/deepfence_agent_ce:2.4.0
 ```
 
