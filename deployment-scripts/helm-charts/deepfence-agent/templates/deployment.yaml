@@ -51,9 +51,11 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
             - name: http_proxy
-              value: "{{ .Values.managementConsoleProxy }}"
+              value: "{{ .Values.managementConsoleProxy.http_proxy }}"
             - name: https_proxy
-              value: "{{ .Values.managementConsoleProxy }}"
+              value: "{{ .Values.managementConsoleProxy.https_proxy }}"
+            - name: no_proxy
+              value: "{{ .Values.managementConsoleProxy.no_proxy }}"
 
             {{- if .Values.clusterName }}
             - name: SCOPE_HOSTNAME
