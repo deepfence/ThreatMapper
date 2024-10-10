@@ -20,6 +20,8 @@ EOF
 
 MGMT_CONSOLE_URL=""
 MGMT_CONSOLE_PORT="443"
+# Optional - only set a value if agent needs to go via a proxy
+MGMT_CONSOLE_PROXY=""
 # Log level: debug / info / error
 DF_LOG_LEVEL="info"
 USER_DEFINED_TAGS=""
@@ -113,6 +115,8 @@ start_agent() {
     -e DEEPFENCE_KEY="$DEEPFENCE_KEY" \
     -e DF_USE_DUMMY_SCOPE="$DF_USE_DUMMY_SCOPE" \
     -e DF_USE_FAT_DUMMY_SCOPE="$DF_USE_FAT_DUMMY_SCOPE" \
+    -e http_proxy="$MGMT_CONSOLE_PROXY" \
+    -e https_proxy="$MGMT_CONSOLE_PROXY" \
     "$IMAGE_REPOSITORY"/deepfence_agent_ce:"${DF_IMG_TAG:-3.0.0}"
 }
 

@@ -75,6 +75,8 @@ cluster_agent:
 # required deepfence management console url and port
 managementConsoleUrl: ""
 managementConsolePort: "443"
+# Optional - only set a value if agent needs to go via a proxy
+managementConsoleProxy: ""
 
 # Auth: Get deepfence api key from UI -> Settings -> User Management
 deepfenceKey: ""
