@@ -87,6 +87,11 @@ spec:
           #     port: http
           resources:
             {{- toYaml .Values.worker.resources | nindent 12 }}
+          {{- if .Values.worker.ephemeralVolume.create }}
+          volumeMounts:
+          - mountPath: /tmp
+            name: worker-tmp-volume
+          {{- end }}
       {{- with .Values.worker.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -98,6 +103,21 @@ spec:
       {{- with .Values.worker.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.worker.ephemeralVolume.create }}
+      volumes:
+      - name: worker-tmp-volume
+        ephemeral:
+          volumeClaimTemplate:
+            metadata:
+              labels:
+                {{- include "deepfence-console.labels" . | nindent 16 }}
+            spec:
+              accessModes: [ "ReadWriteOnce" ]
+              storageClassName: {{ default .Values.global.storageClass .Values.worker.ephemeralVolume.storageClass }}
+              resources:
+                requests:
+                  storage: {{ .Values.worker.ephemeralVolume.volumeSize }}
       {{- end }}
 ---
 apiVersion: v1
