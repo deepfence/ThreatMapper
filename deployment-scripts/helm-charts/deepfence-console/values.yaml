@@ -17,7 +17,7 @@ global:
   # this image tag is used everywhere for console services
   # to override set tag at service level
   imageTag: 3.0.0
-  storageClass: "standard"
+  storageClass: ""
   # used in service name generation
   # <service>.<namespace>.svc.<cluster_domain>
   cluster_domain: "cluster.local"
@@ -412,6 +412,13 @@ worker:
   tolerations: []
   affinity: {}
   podLabels: {}
+  ephemeralVolume:
+    # Create ephemeral volume and mount it at /tmp
+    create: false
+    # Storage class
+    # AWS: gp3, GCP: standard
+    storageClass: ""
+    volumeSize: 200G
 
 ingester:
   replicaCount: 1
