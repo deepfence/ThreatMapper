@@ -12,7 +12,7 @@ import {
   ModelContainerImage,
   ModelProcess,
 } from '@/api/generated';
-import { useGlobalModalStack } from '@/components/detail-modal-stack';
+import { DetailModal, useDetailModalState } from '@/components/detail-modal-stack';
 import { TruncatedText } from '@/components/TruncatedText';
 import { TableHeading } from '@/features/topology/components/node-details/TableHeading';
 import { formatMemory, formatPercentage } from '@/utils/number';
@@ -25,7 +25,7 @@ export const ProcessTable = ({ processes }: { processes: ModelProcess[] }) => {
       desc: true,
     },
   ]);
-  const { addGlobalModal } = useGlobalModalStack();
+  const { detailModalItem, setDetailModalItem } = useDetailModalState();
 
   const columns = useMemo(() => {
     return [
@@ -36,7 +36,7 @@ export const ProcessTable = ({ processes }: { processes: ModelProcess[] }) => {
               className="text-text-link hover:underline w-full text-left"
               type="button"
               onClick={() => {
-                addGlobalModal({
+                setDetailModalItem({
                   kind: 'process',
                   nodeId: cell.row.original.node_id,
                 });
@@ -111,6 +111,14 @@ export const ProcessTable = ({ processes }: { processes: ModelProcess[] }) => {
           <TableNoDataElement text="No processes" className="min-h-[192px]" />
         }
       />
+      {detailModalItem ? (
+        <DetailModal
+          itemInfo={detailModalItem}
+          onItemClose={() => {
+            setDetailModalItem(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 };
@@ -123,7 +131,7 @@ export const ContainerTable = ({ containers }: { containers: ModelContainer[] })
       desc: true,
     },
   ]);
-  const { addGlobalModal } = useGlobalModalStack();
+  const { detailModalItem, setDetailModalItem } = useDetailModalState();
 
   const columns = useMemo(() => {
     return [
@@ -134,7 +142,7 @@ export const ContainerTable = ({ containers }: { containers: ModelContainer[] })
               className="text-text-link hover:underline w-full text-left"
               type="button"
               onClick={() => {
-                addGlobalModal({
+                setDetailModalItem({
                   kind: 'container',
                   nodeId: cell.row.original.node_id,
                 });
@@ -200,6 +208,14 @@ export const ContainerTable = ({ containers }: { containers: ModelContainer[] })
           <TableNoDataElement text="No containers" className="min-h-[192px]" />
         }
       />
+      {detailModalItem ? (
+        <DetailModal
+          itemInfo={detailModalItem}
+          onItemClose={() => {
+            setDetailModalItem(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 };
@@ -212,7 +228,7 @@ export const ImageTable = ({ images }: { images: ModelContainerImage[] }) => {
       desc: true,
     },
   ]);
-  const { addGlobalModal } = useGlobalModalStack();
+  const { detailModalItem, setDetailModalItem } = useDetailModalState();
 
   const columns = useMemo(() => {
     return [
@@ -223,7 +239,7 @@ export const ImageTable = ({ images }: { images: ModelContainerImage[] }) => {
               className="text-text-link hover:underline w-full text-left"
               type="button"
               onClick={() => {
-                addGlobalModal({
+                setDetailModalItem({
                   kind: 'container_image',
                   nodeId: cell.row.original.node_id,
                 });
@@ -270,6 +286,14 @@ export const ImageTable = ({ images }: { images: ModelContainerImage[] }) => {
           <TableNoDataElement text="No container images" className="min-h-[192px]" />
         }
       />
+      {detailModalItem ? (
+        <DetailModal
+          itemInfo={detailModalItem}
+          onItemClose={() => {
+            setDetailModalItem(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 };

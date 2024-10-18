@@ -22,7 +22,7 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
-import { useGlobalModalStack } from '@/components/detail-modal-stack';
+import { DetailModal, useDetailModalState } from '@/components/detail-modal-stack';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
@@ -464,7 +464,7 @@ const DataTable = ({
 
   const [sort, setSort] = useSortingState();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { addGlobalModal } = useGlobalModalStack();
+  const { detailModalItem, setDetailModalItem } = useDetailModalState();
 
   const columns = useMemo(
     () => [
@@ -488,7 +488,7 @@ const DataTable = ({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    addGlobalModal({
+                    setDetailModalItem({
                       nodeId: info.row.original.node_id!,
                       kind: 'pod',
                     });
@@ -627,6 +627,14 @@ const DataTable = ({
           });
         }}
       />
+      {detailModalItem ? (
+        <DetailModal
+          itemInfo={detailModalItem}
+          onItemClose={() => {
+            setDetailModalItem(null);
+          }}
+        />
+      ) : null}
     </>
   );
 };

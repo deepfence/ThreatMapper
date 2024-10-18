@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 
 import { AppHeader } from '@/components/AppHeader';
-import { GlobalModals } from '@/components/detail-modal-stack';
 import { getSideNavigationState, SideNavigation } from '@/components/SideNavigation';
 import { UserInfoGuard } from '@/components/UserInfoGuard';
 
@@ -28,7 +27,6 @@ export const RootLayout = () => {
           <Outlet />
         </main>
       </div>
-      <GlobalModals />
       <UserInfoGuard />
     </>
   );
