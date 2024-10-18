@@ -196,8 +196,6 @@ export function getSearchApiClient() {
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
     searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
-    searchVulnerabilityRules: searchApi.searchVulnerabilityRules.bind(searchApi),
-    searchVulnerabilityRulesCount: searchApi.countVulnerabilityRules.bind(searchApi),
     searchCloudResources: searchApi.searchCloudResources.bind(searchApi),
     searchCloudResourcesCount: searchApi.countCloudResources.bind(searchApi),
     searchRegistryAccounts: searchApi.searchRegistryAccounts.bind(searchApi),

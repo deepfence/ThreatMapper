@@ -73,8 +73,6 @@ import { module as malwareFeeds } from '@/features/settings/pages/feeds/MalwareF
 import { module as malwareRuleDetailModal } from '@/features/settings/pages/feeds/MalwareRuleDetailModal';
 import { module as secretFeeds } from '@/features/settings/pages/feeds/SecretFeeds';
 import { module as secretRuleDetailModal } from '@/features/settings/pages/feeds/SecretRuleDetailModal';
-import { module as vulnerabilityFeeds } from '@/features/settings/pages/feeds/VulnerabilityFeeds';
-import { module as vulnerabilityRuleDetailModal } from '@/features/settings/pages/feeds/VulnerabilityRuleDetailModal';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
 import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
 import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs';
@@ -575,18 +573,6 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'tm-license-details',
             ...threatMapperLicenseDetailsSettings,
             meta: { title: 'License Details' },
-          },
-          {
-            path: 'feeds/vulnerability',
-            ...vulnerabilityFeeds,
-            meta: { title: 'Vulnerability rules management' },
-            children: [
-              {
-                path: ':ruleId',
-                ...vulnerabilityRuleDetailModal,
-                meta: { title: 'Vulnerability rule' },
-              },
-            ],
           },
           {
             path: 'feeds/secret',
