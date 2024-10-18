@@ -4,7 +4,7 @@ import { useDebounce, useEffectOnce, useHoverDirty, useMeasure } from 'react-use
 import { cn } from 'tailwind-preset';
 import { CircleSpinner } from 'ui-components';
 
-import { useGlobalModalStack } from '@/components/detail-modal-stack';
+import { DetailModal, useDetailModalState } from '@/components/detail-modal-stack';
 import { DFLink } from '@/components/DFLink';
 import { DetailsLineIcon } from '@/components/icons/common/DetailsLine';
 import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
@@ -44,7 +44,7 @@ export const TopologyGraph = () => {
   // measures parent of the graph, so we can set the graph width and height
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
   const { mode } = useTheme();
-  const { addGlobalModal } = useGlobalModalStack();
+  const { detailModalItem, setDetailModalItem } = useDetailModalState();
 
   // tooltip related hooks
   const [tooltipLoc, setTooltipLoc] = useState<TooltipState>({
@@ -244,32 +244,32 @@ export const TopologyGraph = () => {
               const nodeType = model.df_data.type;
               const nodeId = model.df_data.id;
               if (nodeType === 'host') {
-                addGlobalModal({
+                setDetailModalItem({
                   kind: 'host',
                   nodeId,
                 });
               } else if (nodeType === 'container') {
-                addGlobalModal({
+                setDetailModalItem({
                   kind: 'container',
                   nodeId,
                 });
               } else if (nodeType === 'process') {
-                addGlobalModal({
+                setDetailModalItem({
                   kind: 'process',
                   nodeId,
                 });
               } else if (nodeType === 'container_image') {
-                addGlobalModal({
+                setDetailModalItem({
                   kind: 'container_image',
                   nodeId,
                 });
               } else if (nodeType === 'pod') {
-                addGlobalModal({
+                setDetailModalItem({
                   kind: 'pod',
                   nodeId,
                 });
               } else if (isCloudServiceNode({ type: nodeType })) {
-                addGlobalModal({
+                setDetailModalItem({
                   kind: 'cloud_service',
                   nodeType,
                   region: model.df_data.immediate_parent_id ?? '',
@@ -295,6 +295,14 @@ export const TopologyGraph = () => {
           <div className="absolute inset-0">
             <NodeLimitExceeded />
           </div>
+        ) : null}
+        {detailModalItem ? (
+          <DetailModal
+            itemInfo={detailModalItem}
+            onItemClose={() => {
+              setDetailModalItem(null);
+            }}
+          />
         ) : null}
       </div>
     </>

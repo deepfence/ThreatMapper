@@ -11,7 +11,7 @@ import {
 } from 'ui-components';
 
 import { CopyButton, useCopyToClipboardState } from '@/components/CopyToClipboard';
-import { useGlobalModalStack } from '@/components/detail-modal-stack';
+import { DetailModal, useDetailModalState } from '@/components/detail-modal-stack';
 import { DFLink } from '@/components/DFLink';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { PopOutIcon } from '@/components/icons/common/PopOut';
@@ -114,7 +114,7 @@ const DetailsComponent = ({
   const {
     data: { data: secrets },
   } = useGetSecretDetails();
-  const { addGlobalModal } = useGlobalModalStack();
+  const { detailModalItem, setDetailModalItem } = useDetailModalState();
 
   const [showResourceModal, setShowResourceModal] = useState({
     resource: '',
@@ -255,7 +255,7 @@ const DetailsComponent = ({
                       resource.node_type === 'host'
                     ) {
                       e.preventDefault();
-                      addGlobalModal({
+                      setDetailModalItem({
                         kind: resource.node_type,
                         nodeId: resource.node_id,
                       });
@@ -271,6 +271,14 @@ const DetailsComponent = ({
             })}
           </div>
         </div>
+      ) : null}
+      {detailModalItem ? (
+        <DetailModal
+          itemInfo={detailModalItem}
+          onItemClose={() => {
+            setDetailModalItem(null);
+          }}
+        />
       ) : null}
     </div>
   );

@@ -25,7 +25,7 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
-import { useGlobalModalStack } from '@/components/detail-modal-stack';
+import { DetailModal, useDetailModalState } from '@/components/detail-modal-stack';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
@@ -680,7 +680,7 @@ const DataTable = ({
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [sort, setSort] = useSortingState();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { addGlobalModal } = useGlobalModalStack();
+  const { detailModalItem, setDetailModalItem } = useDetailModalState();
 
   const { data: versionsData } = useGetAgentVersions();
   const versions = versionsData.versions ?? [];
@@ -728,7 +728,7 @@ const DataTable = ({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    addGlobalModal({
+                    setDetailModalItem({
                       kind: 'host',
                       nodeId: info.row.original.node_id!,
                     });
@@ -931,6 +931,14 @@ const DataTable = ({
           });
         }}
       />
+      {detailModalItem ? (
+        <DetailModal
+          itemInfo={detailModalItem}
+          onItemClose={() => {
+            setDetailModalItem(null);
+          }}
+        />
+      ) : null}
     </>
   );
 };

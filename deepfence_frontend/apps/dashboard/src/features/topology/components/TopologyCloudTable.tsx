@@ -11,7 +11,7 @@ import {
 } from 'ui-components';
 
 import { DetailedNodeSummary } from '@/api/generated';
-import { useGlobalModalStack } from '@/components/detail-modal-stack';
+import { DetailModal, useDetailModalState } from '@/components/detail-modal-stack';
 import { DFLink } from '@/components/DFLink';
 import { MinusCircleLineIcon } from '@/components/icons/common/MinusCircleLine';
 import { PlusCircleLineIcon } from '@/components/icons/common/PlusCircleLine';
@@ -37,7 +37,7 @@ export function TopologyCloudTable() {
   const { isRefreshInProgress, treeData, action, ...graphDataManagerFunctions } =
     useTableDataManager();
   const graphDataManagerFunctionsRef = useRef(graphDataManagerFunctions);
-  const { addGlobalModal } = useGlobalModalStack();
+  const { detailModalItem, setDetailModalItem } = useDetailModalState();
 
   graphDataManagerFunctionsRef.current = graphDataManagerFunctions;
 
@@ -116,32 +116,32 @@ export function TopologyCloudTable() {
                     const nodeId = info.row.original.id!;
                     const nodeType = info.row.original.type!;
                     if (nodeType === 'host') {
-                      addGlobalModal({
+                      setDetailModalItem({
                         kind: 'host',
                         nodeId,
                       });
                     } else if (nodeType === 'container') {
-                      addGlobalModal({
+                      setDetailModalItem({
                         kind: 'container',
                         nodeId,
                       });
                     } else if (nodeType === 'process') {
-                      addGlobalModal({
+                      setDetailModalItem({
                         kind: 'process',
                         nodeId,
                       });
                     } else if (nodeType === 'container_image') {
-                      addGlobalModal({
+                      setDetailModalItem({
                         kind: 'container_image',
                         nodeId,
                       });
                     } else if (nodeType === 'pod') {
-                      addGlobalModal({
+                      setDetailModalItem({
                         kind: 'pod',
                         nodeId,
                       });
                     } else if (isCloudServiceNode({ type: nodeType })) {
-                      addGlobalModal({
+                      setDetailModalItem({
                         kind: 'cloud_service',
                         nodeType,
                         region: info.row.original.immediate_parent_id ?? '',
@@ -219,6 +219,14 @@ export function TopologyCloudTable() {
         }}
         getSubRows={(row) => row.children ?? []}
       />
+      {detailModalItem ? (
+        <DetailModal
+          itemInfo={detailModalItem}
+          onItemClose={() => {
+            setDetailModalItem(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

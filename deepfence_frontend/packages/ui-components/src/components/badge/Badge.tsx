@@ -1,4 +1,3 @@
-import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, forwardRef, useId } from 'react';
 import { cn } from 'tailwind-preset';
@@ -20,7 +19,7 @@ export type ColorType =
   | 'warning'
   | 'error';
 
-const badgeCVA = cva(['inline-block pt-0.5 min-w-[20px] text-center'], {
+const badgeCVA = cva(['flex items-center gap-2 min-w-[20px] justify-center'], {
   variants: {
     color: {
       grey: '',
@@ -143,7 +142,14 @@ export interface BadgeProps
   color?: ColorType;
   size?: SizeType;
   variant?: VariantType;
+  endIcon?: React.ReactNode;
+  startIcon?: React.ReactNode;
+  onStartIconClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  onEndIconClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
+
+const NormalIconClass = 'w-4 h-4';
+const SmallIconClass = 'w-3 h-3';
 
 export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
   (
@@ -154,6 +160,10 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
       size = 'default',
       variant = 'outlined',
       className,
+      startIcon,
+      endIcon,
+      onEndIconClick,
+      onStartIconClick,
       ...rest
     },
     ref,
@@ -161,19 +171,50 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
     const internalId = useId();
     const _id = id ? id : internalId;
     return (
-      <>
-        <LabelPrimitive.Label
-          className={cn(badgeCVA({ color, variant, size }), className)}
-          id={_id}
-          data-testid={`badge-${_id}`}
-          ref={ref}
-          {...rest}
-        >
-          {label}
-        </LabelPrimitive.Label>
-      </>
+      <span className="inline-block">
+        <div className={cn(badgeCVA({ color, variant, size }), className)}>
+          {startIcon ? (
+            <ButtonOrText
+              content={startIcon}
+              onClick={onStartIconClick}
+              className={size === 'default' ? NormalIconClass : SmallIconClass}
+            />
+          ) : null}
+          <label id={_id} data-testid={`badge-${_id}`} ref={ref} {...rest}>
+            {label}
+          </label>
+          {endIcon ? (
+            <ButtonOrText
+              content={endIcon}
+              onClick={onEndIconClick}
+              className={size === 'default' ? NormalIconClass : SmallIconClass}
+            />
+          ) : null}
+        </div>
+      </span>
     );
   },
 );
+
+const ButtonOrText = ({
+  content,
+  onClick,
+  className,
+}: {
+  content: React.ReactNode;
+  className?: string;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+}) => {
+  if (onClick) {
+    return (
+      <button type="button" className={className} onClick={onClick}>
+        {content}
+      </button>
+    );
+  } else {
+    return <div className={className}>{content}</div>;
+  }
+};
+
 Badge.displayName = 'Badge';
 export default Badge;
