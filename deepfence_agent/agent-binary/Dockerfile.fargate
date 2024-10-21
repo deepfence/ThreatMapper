@@ -1,6 +1,5 @@
 FROM alpine:3.19 as builder
 
-ARG AGENT_BINARY_BUILD_RELATIVE
 # renovate: source=github-tags name=curl/curl versioning=regex:^(?:curl-)?(?<major>\d+)_(?<minor>\d+)_(?<patch>\d+)$ extractVersion=^(?:curl-)?(?<version>[\d_]+)$
 ENV CURL_VERSION="8_5_0"
 
@@ -110,6 +109,8 @@ RUN set -x \
 
 
 FROM scratch
+
+ARG AGENT_BINARY_BUILD_RELATIVE
 
 LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
