@@ -54,10 +54,6 @@ const FeedMenuItems: Array<{
   to: string;
 }> = [
   {
-    title: 'Vulnerability rules',
-    to: '/settings/feeds/vulnerability',
-  },
-  {
     title: 'Secret rules',
     to: '/settings/feeds/secret',
   },
