@@ -385,7 +385,7 @@ func (Vulnerability) NodeType() string {
 }
 
 func (Vulnerability) ExtendedField() string {
-	return ""
+	return "rule_id"
 }
 
 func (v Vulnerability) GetCategory() string {
