@@ -1,70 +1,29 @@
 package threatintel
 
 import (
-	"archive/tar"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
-	"os"
 	"path"
 	"path/filepath"
-	"regexp"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/threatintel/vulnerabilitydatabase"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils/ingesters"
-	"github.com/glebarez/sqlite"
 	"github.com/minio/minio-go/v7"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"gorm.io/gorm"
 )
 
 const (
 	Version3 = "3"
 	Version5 = "5"
-
-	vulnerabilityDBFileName       = "vulnerability.db"
-	vulnerabilityMetadataFileName = "metadata.json"
-
-	sqliteWriteBatchSize = 1
-	neo4jWriteBatchSize  = 5000
-)
-
-const (
-	ScanTypeBase       = "base"
-	ScanTypeRuby       = "ruby"
-	ScanTypePython     = "python"
-	ScanTypeJavaScript = "javascript"
-	ScanTypePhp        = "php"
-	ScanTypeGolang     = "golang"
-	ScanTypeJava       = "java"
-	ScanTypeRust       = "rust"
 )
 
 var (
 	ListingJSON          = "listing.json"
 	VulnerabilityDBStore = "vulnerability"
 	ListingPath          = path.Join(VulnerabilityDBStore, ListingJSON)
-
-	attackVectorRegex = regexp.MustCompile(`.*av:n.*`)
-
-	namespaceToLanguage = map[string]string{
-		"github:language:go":         ScanTypeGolang,
-		"github:language:java":       ScanTypeJava,
-		"github:language:javascript": ScanTypeJavaScript,
-		"github:language:php":        ScanTypePhp,
-		"github:language:python":     ScanTypePython,
-		"github:language:ruby":       ScanTypeRuby,
-		"github:language:rust":       ScanTypeRust,
-	}
 )
 
 type VulnerabilityDBListing struct {
@@ -255,369 +214,14 @@ func DownloadVulnerabilityDB(ctx context.Context, info Entry) error {
 		return err
 	}
 
-	fileServerPath, checksum, err := IngestVulnerabilityRules(ctx, data.Bytes(), info.Built)
+	fileServerPath, checksum, err := UploadToMinio(ctx, data.Bytes(), VulnerabilityDBStore,
+		fmt.Sprintf("vuln-db-%d.tar.gz", info.Built.Unix()))
 	if err != nil {
+		log.Error().Msg(err.Error())
 		return err
 	}
 
 	// update listing.json file
 	return VulnDBUpdateListing(ctx, fileServerPath, checksum, info.Built)
 
-}
-
-func IngestVulnerabilityRules(ctx context.Context, content []byte, builtDate time.Time) (string, string, error) {
-	var fileServerPath, checksum string
-	nc, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return fileServerPath, checksum, err
-	}
-	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close(ctx)
-
-	err = ProcessTarGz(content, func(header *tar.Header, reader io.Reader) error {
-		var feeds FeedsBundle
-		if header.FileInfo().IsDir() {
-			return nil
-		}
-		if header.Name != VulnerabilityRuleJSONFileName {
-			return nil
-		}
-		jdec := json.NewDecoder(reader)
-		err = jdec.Decode(&feeds)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return err
-		}
-
-		if len(feeds.ScannerFeeds.VulnerabilityRules) != 1 {
-			log.Error().Err(err).Msg("deepfence vulnerability rule not found")
-			return nil
-		}
-
-		var vulnerabilityDBModel vulnerabilitydatabase.VulnerabilityDBModel
-		payload, err := base64.StdEncoding.DecodeString(feeds.ScannerFeeds.VulnerabilityRules[0].Payload)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return err
-		}
-		err = json.Unmarshal(payload, &vulnerabilityDBModel)
-		if err != nil {
-			log.Error().Err(err).Msg("deepfence rule unmarshal error")
-			return err
-		}
-
-		dbTmpDir, err := os.MkdirTemp("", "vulnerability-db-*")
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return err
-		}
-		defer os.RemoveAll(dbTmpDir)
-		dbFileName := path.Join(dbTmpDir, vulnerabilityDBFileName)
-		tarFileName := fmt.Sprintf("vuln-db-%d.tar.gz", builtDate.Unix())
-		tarFilePath := path.Join(dbTmpDir, tarFileName)
-
-		err = deepfenceRuleToSqliteDatabase(vulnerabilityDBModel, dbFileName)
-		if err != nil {
-			log.Error().Err(err).Msg("converting vulnerability db json to sqlite failed")
-			return err
-		}
-
-		dbFileChecksum, err := utils.ComputeChecksumForFile(dbFileName)
-		if err != nil {
-			log.Error().Err(err).Msg("computing db file checksum failed")
-			return err
-		}
-
-		metadataFileName := path.Join(dbTmpDir, vulnerabilityMetadataFileName)
-		err = createVulnerabilityDBMetadataFile(vulnerabilityDBModel.IDModel,
-			fmt.Sprintf("sha256:%s", dbFileChecksum), builtDate, metadataFileName)
-		if err != nil {
-			log.Error().Err(err).Msg("creating vulnerability db metadata.json failed")
-			return err
-		}
-
-		err = ingestVulnerabilityRules(ctx, vulnerabilityDBModel)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return err
-		}
-
-		err = compressVulnerabilityDB([]string{dbFileName, metadataFileName}, tarFilePath)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return err
-		}
-
-		tarFileContent, err := openFile(tarFilePath)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return err
-		}
-
-		fileServerPath, checksum, err = UploadToMinio(ctx, tarFileContent, VulnerabilityDBStore, tarFileName)
-		if err != nil {
-			log.Error().Msg(err.Error())
-			return err
-		}
-
-		return nil
-	})
-	if err != nil {
-		return fileServerPath, checksum, err
-	}
-
-	return fileServerPath, checksum, err
-}
-
-func createVulnerabilityDBMetadataFile(metadataModel vulnerabilitydatabase.IDModel, dbFileChecksum string, builtDate time.Time, metadataFileName string) error {
-	f, err := os.OpenFile(metadataFileName, os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	metadata := Database{
-		Built:    builtDate,
-		Version:  metadataModel.SchemaVersion,
-		Checksum: dbFileChecksum,
-	}
-
-	metadataJson, err := json.Marshal(metadata)
-	if err != nil {
-		return err
-	}
-	if _, err = f.Write(metadataJson); err != nil {
-		return err
-	}
-	return nil
-}
-
-func deepfenceRuleToSqliteDatabase(vulnerabilityDBModel vulnerabilitydatabase.VulnerabilityDBModel, dbFileName string) error {
-	db, err := gorm.Open(sqlite.Open(dbFileName), &gorm.Config{})
-	if err != nil {
-		return err
-	}
-
-	err = db.AutoMigrate(&vulnerabilitydatabase.VulnerabilityModel{})
-	if err != nil {
-		return err
-	}
-	err = db.AutoMigrate(&vulnerabilitydatabase.VulnerabilityMetadataModel{})
-	if err != nil {
-		return err
-	}
-	err = db.AutoMigrate(&vulnerabilitydatabase.IDModel{})
-	if err != nil {
-		return err
-	}
-	err = db.AutoMigrate(&vulnerabilitydatabase.VulnerabilityMatchExclusionModel{})
-	if err != nil {
-		return err
-	}
-
-	// insert into db
-	err = db.CreateInBatches(&vulnerabilityDBModel.VulnerabilityModel, sqliteWriteBatchSize).Error
-	if err != nil {
-		return err
-	}
-	err = db.CreateInBatches(&vulnerabilityDBModel.VulnerabilityMetadataModel, sqliteWriteBatchSize).Error
-	if err != nil {
-		return err
-	}
-	err = db.Create(&vulnerabilityDBModel.IDModel).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func ingestVulnerabilityRules(ctx context.Context, vulnerabilityDBModel vulnerabilitydatabase.VulnerabilityDBModel) error {
-	vulnerabilityMetadataMap := make(map[string]vulnerabilitydatabase.VulnerabilityMetadata, len(vulnerabilityDBModel.VulnerabilityMetadataModel))
-	for _, v := range vulnerabilityDBModel.VulnerabilityMetadataModel {
-		meta, err := v.Inflate()
-		if err != nil {
-			log.Error().Msg(err.Error())
-			continue
-		}
-		vulnerabilityMetadataMap[v.ID+":"+v.Namespace] = meta
-	}
-	vulnerabilityRules := make(map[string]ingesters.VulnerabilityRule)
-	for _, v := range vulnerabilityDBModel.VulnerabilityModel {
-		vulnerabilityMetadata, ok := vulnerabilityMetadataMap[v.ID+":"+v.Namespace]
-		if !ok {
-			log.Debug().Msgf("No vulnerability metadata found for %s in namespace %s", v.ID, v.Namespace)
-			continue
-		}
-
-		vulnerability, err := v.Inflate()
-		if err != nil {
-			log.Error().Msg(err.Error())
-			continue
-		}
-		cveFixedInVersion := ""
-		if len(vulnerability.Fix.Versions) > 0 {
-			cveFixedInVersion = vulnerability.Fix.Versions[0]
-		}
-		cveCVSSScoreList := vulnerabilityMetadata.Cvss
-		var cvssScore float64
-		var overallScore float64
-		var attackVector string
-
-		if len(cveCVSSScoreList) == 0 {
-			if len(vulnerability.RelatedVulnerabilities) > 0 {
-				relatedVulnerability := vulnerability.RelatedVulnerabilities[0]
-				relatedVulnerabilityMetadata, ok := vulnerabilityMetadataMap[relatedVulnerability.ID+":"+relatedVulnerability.Namespace]
-				if ok {
-					cvssScore, overallScore, attackVector = vulnerabilitydatabase.GetCvss(relatedVulnerabilityMetadata.Cvss)
-				}
-			}
-		} else {
-			cvssScore, overallScore, attackVector = vulnerabilitydatabase.GetCvss(vulnerabilityMetadata.Cvss)
-		}
-
-		if cvssScore == 0.0 {
-			switch strings.ToLower(vulnerabilityMetadata.Severity) {
-			case "critical":
-				cvssScore = vulnerabilitydatabase.DefaultCVSSCritical
-			case "high":
-				cvssScore = vulnerabilitydatabase.DefaultCVSSHigh
-			case "medium":
-				cvssScore = vulnerabilitydatabase.DefaultCVSSMedium
-			case "low":
-				cvssScore = vulnerabilitydatabase.DefaultCVSSLow
-			}
-		}
-
-		metasploitURL, urls := vulnerabilitydatabase.ExtractExploitPocURL(vulnerabilityMetadata.URLs)
-		var parsedAttackVector string
-		if attackVectorRegex.MatchString(attackVector) || attackVector == "network" || attackVector == "n" {
-			parsedAttackVector = "network"
-		} else {
-			parsedAttackVector = "local"
-		}
-
-		var cveType string
-		if cveType, ok = namespaceToLanguage[vulnerabilityMetadata.Namespace]; !ok {
-			cveType = ScanTypeBase
-		}
-
-		var vulnerabilityRule ingesters.VulnerabilityRule
-		if vulnerabilityRule, ok = vulnerabilityRules[vulnerability.ID]; !ok {
-			vulnerabilityRule = ingesters.VulnerabilityRule{
-				// Common fields
-				CveID:     vulnerability.ID,
-				CISAKEV:   vulnerabilityMetadata.CISAKEV,
-				EPSSScore: vulnerabilityMetadata.EPSSScore,
-			}
-		}
-
-		// Ordered insert
-		vulnerabilityRule.Namespaces = append(vulnerabilityRule.Namespaces, vulnerability.Namespace)
-		vulnerabilityRule.PackageNames = append(vulnerabilityRule.PackageNames, vulnerability.PackageName)
-		vulnerabilityRule.CveTypes = append(vulnerabilityRule.CveTypes, cveType)
-		vulnerabilityRule.CveSeverities = append(vulnerabilityRule.CveSeverities, strings.ToLower(vulnerabilityMetadata.Severity))
-		vulnerabilityRule.CveFixedIns = append(vulnerabilityRule.CveFixedIns, cveFixedInVersion)
-		vulnerabilityRule.CveDescriptions = append(vulnerabilityRule.CveDescriptions, vulnerabilityMetadata.Description)
-		vulnerabilityRule.CveCvssScores = append(vulnerabilityRule.CveCvssScores, cvssScore)
-		vulnerabilityRule.CveOverallScores = append(vulnerabilityRule.CveOverallScores, overallScore)
-		vulnerabilityRule.CveAttackVectors = append(vulnerabilityRule.CveAttackVectors, attackVector)
-		vulnerabilityRule.ParsedAttackVectors = append(vulnerabilityRule.ParsedAttackVectors, parsedAttackVector)
-
-		// Common fields
-		if vulnerabilityMetadata.DataSource != "" {
-			if !utils.InSlice(vulnerabilityMetadata.DataSource, vulnerabilityRule.CveLinks) {
-				vulnerabilityRule.CveLinks = append(vulnerabilityRule.CveLinks, vulnerabilityMetadata.DataSource)
-			}
-		}
-		if metasploitURL != "" {
-			if !utils.InSlice(metasploitURL, vulnerabilityRule.ExploitPOCs) {
-				vulnerabilityRule.ExploitPOCs = append(vulnerabilityRule.ExploitPOCs, metasploitURL)
-			}
-		}
-		for _, url := range urls {
-			if !utils.InSlice(url, vulnerabilityRule.URLs) {
-				vulnerabilityRule.URLs = append(vulnerabilityRule.URLs, url)
-			}
-		}
-
-		vulnerabilityRules[vulnerability.ID] = vulnerabilityRule
-	}
-
-	vulnerabilityRulesData := make([]map[string]interface{}, 0)
-	for _, vulnerabilityRule := range vulnerabilityRules {
-		vulnerabilityRulesData = append(vulnerabilityRulesData, vulnerabilityRule.ToMap())
-
-		if len(vulnerabilityRulesData) == neo4jWriteBatchSize {
-			_ = saveVulnerabilityRulesInNeo4j(ctx, vulnerabilityRulesData)
-			vulnerabilityRulesData = make([]map[string]interface{}, 0)
-		}
-	}
-	if len(vulnerabilityRulesData) > 0 {
-		_ = saveVulnerabilityRulesInNeo4j(ctx, vulnerabilityRulesData)
-	}
-	return nil
-}
-
-func saveVulnerabilityRulesInNeo4j(ctx context.Context, vulnerabilityRules []map[string]interface{}) error {
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-
-	session := driver.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close(ctx)
-
-	tx, err := session.BeginTransaction(ctx, neo4j.WithTxTimeout(600*time.Second))
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-	defer tx.Close(ctx)
-
-	if _, err = tx.Run(ctx, `
-		UNWIND $batch as rule
-		MERGE (v:VulnerabilityStub:DeepfenceRule{rule_id:rule.cve_id})
-		SET v += rule,
-			v.type = "vulnerability",
-		    v.masked = COALESCE(v.masked, false),
-		    v.updated_at = TIMESTAMP()`,
-		map[string]interface{}{"batch": vulnerabilityRules}); err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-	return nil
-}
-
-func compressVulnerabilityDB(fileNames []string, tarFileName string) error {
-	out, err := os.Create(tarFileName)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-	defer out.Close()
-
-	err = createArchive(fileNames, out)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-
-	return nil
-}
-
-func openFile(fileName string) ([]byte, error) {
-	content, err := os.ReadFile(fileName)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return nil, err
-	}
-	return content, nil
 }

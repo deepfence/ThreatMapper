@@ -15,7 +15,7 @@ func (h *Handler) CompleteProcessInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CompleteVulnerabilityInfo(w http.ResponseWriter, r *http.Request) {
-	genericCompleteInfoHandler[model.Vulnerability](w, r, h)
+	genericCompleteInfoHandler[model.VulnerabilityRule](w, r, h)
 }
 
 func (h *Handler) CompleteHostInfo(w http.ResponseWriter, r *http.Request) {
