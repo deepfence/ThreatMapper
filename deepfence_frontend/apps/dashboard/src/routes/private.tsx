@@ -67,6 +67,7 @@ import { module as secretScanResults } from '@/features/secrets/pages/SecretScan
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
 import { module as uniqueSecrets } from '@/features/secrets/pages/UniqueSecrets';
 import { module as connectorInstructions } from '@/features/settings/pages/ConnectorInstructions';
+import { module as postureControls } from '@/features/settings/pages/controls/Controls';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
 import { module as malwareFeeds } from '@/features/settings/pages/feeds/MalwareFeeds';
@@ -597,6 +598,11 @@ export const privateRoutes: CustomRouteObject[] = [
                 meta: { title: 'Malware rule' },
               },
             ],
+          },
+          {
+            path: 'posture/controls/:nodeType',
+            ...postureControls,
+            meta: { title: 'Posture controls management' },
           },
         ],
       },
