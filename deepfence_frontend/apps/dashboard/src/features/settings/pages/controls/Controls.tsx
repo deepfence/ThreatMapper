@@ -345,7 +345,13 @@ const PostureControlsTable = ({
     }
     if (filterData.searchText?.length) {
       controls = matchSorter(controls, filterData.searchText, {
-        keys: ['control_id', 'problem_title', 'description', 'category_hierarchy_short'],
+        keys: [
+          'control_id',
+          'title',
+          'problem_title',
+          'description',
+          'category_hierarchy_short',
+        ],
         threshold: matchSorter.rankings.ACRONYM,
         sorter: (rankedItems) => rankedItems,
       });
