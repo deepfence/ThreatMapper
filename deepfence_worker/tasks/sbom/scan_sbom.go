@@ -155,6 +155,7 @@ func (s SbomParser) ScanSBOM(ctx context.Context, task *asynq.Task) error {
 		ScanID:                params.ScanID,
 		ImageID:               params.ImageID,
 		ContainerName:         params.ContainerName,
+		GrypeConfigPath:       grypeConfig,
 	}
 
 	report, err := grype.PopulateFinalReport(vulnerabilities, cfg)
