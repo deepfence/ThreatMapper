@@ -20,7 +20,7 @@ echo "Deepfence agent started..."
 if [ "$#" -ne 0 ]; then
     echo "Application entry-point specified as arguments to deepfence entrypoint. Execute application entrypoint."
     echo executing -- "$@"
-    "$@"
+    exec $(echo "$@" | /deepfence/bin/envsubst)
 else
     echo "No application entry-point specified as arguments to deepfence entrypoint."
 fi
