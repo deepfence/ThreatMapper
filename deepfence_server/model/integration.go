@@ -34,6 +34,7 @@ type IntegrationFilters struct {
 	FieldsFilters  reporters.FieldsFilters `json:"fields_filters"`
 	NodeIds        []NodeIdentifier        `json:"node_ids" required:"true"`
 	ContainerNames []string                `json:"container_names" required:"false"`
+	CloudProvider  string                  `json:"cloud_provider" required:"false"`
 }
 
 func (i *IntegrationAddReq) IntegrationExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {

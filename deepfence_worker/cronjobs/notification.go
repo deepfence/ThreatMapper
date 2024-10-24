@@ -295,6 +295,12 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 		return err
 	}
 
+	scanType, ok := utils.DetectedNodeScanType[intg.Resource]
+	if !ok {
+		log.Error().Msgf("error %s: %v", ErrUnsupportedScan, intg)
+		return ErrUnsupportedScan
+	}
+
 	start := time.Now()
 
 	lastUpdatedAt := getLastEventUpdatedAt(intg.LastEventUpdatedAt, start)
@@ -308,20 +314,21 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			FieldValue:  lastUpdatedAt,
 		},
 	)
+
+	containsFilter := map[string][]interface{}{
+		"status": {utils.ScanStatusSuccess},
+	}
 	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{
-		FieldsValues: map[string][]interface{}{"status": {utils.ScanStatusSuccess}},
+		FieldsValues: containsFilter,
 	}
 
 	scansList := []model.ScanInfo{}
-	scanType, ok := utils.DetectedNodeScanType[intg.Resource]
-	if !ok {
-		log.Error().Msgf("error %s: %v", ErrUnsupportedScan, intg)
-		return ErrUnsupportedScan
-	}
 
 	reqNC, reqC := integrationFilters2SearchScanReqs(filters)
+
 	profileStart := time.Now()
 	if reqNC != nil {
+		log.Debug().Msgf("filters reqNC: %+v", reqNC)
 		scansInfo, err := reporters_search.SearchScansReport(ctx, *reqNC, scanType)
 		if err != nil {
 			log.Error().Msgf("Failed to get scans for non-container type, error: %v", err)
@@ -334,6 +341,7 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 
 	profileStart = time.Now()
 	if reqC != nil {
+		log.Debug().Msgf("filters reqC: %+v", reqC)
 		containerScanInfo, err := reporters_search.SearchScansReport(ctx, *reqC, scanType)
 		if err != nil {
 			log.Error().Msgf("Failed to get scans for container type, error: %v", err)
@@ -352,6 +360,12 @@ func processIntegration[T any](ctx context.Context, intg postgresql_db.Integrati
 			Filters: filters.FieldsFilters,
 		}
 		reqDefault.Window = model.FetchWindow{}
+		if scanType == utils.NEO4JCloudComplianceScan {
+			reqDefault.NodeFilter.Filters.ContainsFilter.FieldsValues = map[string][]interface{}{
+				"cloud_provider": []interface{}{filters.CloudProvider},
+			}
+		}
+		log.Debug().Msgf("filters default: %+v", reqDefault)
 		defaultScanInfo, err := reporters_search.SearchScansReport(ctx, reqDefault, scanType)
 		if err != nil {
 			log.Error().Msgf("Failed to get default scans, error: %v", err)
