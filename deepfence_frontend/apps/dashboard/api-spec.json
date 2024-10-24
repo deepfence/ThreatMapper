@@ -14951,6 +14951,7 @@
         "required": ["node_ids"],
         "type": "object",
         "properties": {
+          "cloud_provider": { "type": "string" },
           "container_names": {
             "type": "array",
             "items": { "type": "string" },

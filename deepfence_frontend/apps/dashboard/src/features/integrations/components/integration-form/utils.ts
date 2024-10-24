@@ -144,7 +144,7 @@ export const getCloudAccountsFilter = (
     return [];
   }
   return nodeIds.reduce((acc: string[], current) => {
-    if (current.node_type === ModelNodeIdentifierNodeTypeEnum.CloudAccount) {
+    if (['aws', 'gcp', 'azure'].includes(current.node_type)) {
       acc.push(current.node_id);
     }
     return acc;

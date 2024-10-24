@@ -20,6 +20,7 @@ export type SearchableCloudAccountsListProps = {
   helperText?: string;
   displayValue?: string;
   color?: 'error' | 'default';
+  name?: string;
 };
 
 const fieldName = 'cloudAccountsFilter';
@@ -36,6 +37,7 @@ const SearchableCloudAccounts = ({
   helperText,
   color,
   displayValue,
+  name,
 }: SearchableCloudAccountsListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -85,7 +87,7 @@ const SearchableCloudAccounts = ({
         startIcon={
           isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
-        name={fieldName}
+        name={name ?? fieldName}
         getDisplayValue={() =>
           isSelectVariantType && selectedAccounts.length > 0
             ? `${selectedAccounts.length} selected`
@@ -136,13 +138,14 @@ export const SearchableCloudAccountsList = (props: SearchableCloudAccountsListPr
     triggerVariant,
     displayValue,
     defaultSelectedAccounts = [],
+    name,
   } = props;
   return (
     <Suspense
       fallback={
         <>
           <Combobox
-            name={fieldName}
+            name={name ?? fieldName}
             value={defaultSelectedAccounts}
             label={label}
             triggerVariant={triggerVariant}

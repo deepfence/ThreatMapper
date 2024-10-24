@@ -1,3 +1,4 @@
+import { upperCase } from 'lodash-es';
 import { useState } from 'react';
 import { useUpdateEffect } from 'react-use';
 import { Listbox, ListboxOption } from 'ui-components';
@@ -87,10 +88,10 @@ export const AdvancedFilters = ({
       <div className="grid grid-cols-2 gap-y-8 gap-x-8 pt-4">
         {isCloudComplianceNotification(notificationType) && cloudProvider ? (
           <SearchableCloudAccountsList
-            label={`${cloudProvider} Account`}
+            label={`${upperCase(cloudProvider)} Account`}
             triggerVariant="select"
             defaultSelectedAccounts={selectedCloudAccounts}
-            cloudProvider={cloudProvider.toLowerCase() as 'aws' | 'gcp' | 'azure'}
+            cloudProvider={cloudProvider as 'aws' | 'gcp' | 'azure'}
             onClearAll={() => {
               setSelectedCloudAccounts([]);
             }}
