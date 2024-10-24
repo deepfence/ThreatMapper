@@ -58,6 +58,7 @@ type VulnerabilityData struct {
 	CveCausedByPackagePath  string  `json:"cve_caused_by_package_path"`
 	CveContainerLayer       string  `json:"cve_container_layer"`
 	CveLink                 string  `json:"cve_link"`
+	CveCvssScore            float64 `json:"cve_cvss_score"`
 	ExploitabilityScore     int     `json:"exploitability_score"`
 	InitExploitabilityScore int     `json:"init_exploitability_score"`
 	HasLiveConnection       bool    `json:"has_live_connection"`
@@ -73,6 +74,7 @@ func (c Vulnerability) Split() (VulnerabilityData, VulnerabilityRule) {
 			CveCausedByPackagePath:  c.CveCausedByPackagePath,
 			CveContainerLayer:       c.CveContainerLayer,
 			CveLink:                 c.CveLink,
+			CveCvssScore:            c.CveCvssScore,
 			ExploitabilityScore:     c.ExploitabilityScore,
 			InitExploitabilityScore: c.InitExploitabilityScore,
 			HasLiveConnection:       c.HasLiveConnection,
