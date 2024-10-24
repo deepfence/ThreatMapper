@@ -320,7 +320,7 @@ export const IntegrationForm = ({
                   color={fieldErrors?.aws_region ? 'error' : 'default'}
                 />
                 <SearchableCloudAccountsList
-                  label="AWS Account"
+                  label="Target AWS Account"
                   triggerVariant="select"
                   defaultSelectedAccounts={awsAccounts}
                   cloudProvider="aws"
@@ -331,6 +331,7 @@ export const IntegrationForm = ({
                   onChange={(value) => {
                     setAccounts(value);
                   }}
+                  name="targetAWSAccount"
                   helperText={fieldErrors?.aws_account_id}
                   color={fieldErrors?.aws_account_id ? 'error' : 'default'}
                 />

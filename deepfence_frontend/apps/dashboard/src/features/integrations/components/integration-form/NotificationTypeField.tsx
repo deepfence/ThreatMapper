@@ -1,3 +1,4 @@
+import { upperCase } from 'lodash-es';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Checkbox, Listbox, ListboxOption, Tooltip } from 'ui-components';
@@ -50,7 +51,7 @@ export const NotificationTypeField = ({
   const [notificationType, setNotificationType] = useState<ScanTypeEnum | string>(
     defaultNotificationType,
   );
-  const [cloud, setCloud] = useState<string>('AWS');
+  const [cloud, setCloud] = useState<string>(data?.filters?.cloud_provider ?? 'aws');
 
   const { integrationType } = useParams() as {
     integrationType: string;
@@ -116,13 +117,13 @@ export const NotificationTypeField = ({
             }}
             placeholder="Select provider"
             getDisplayValue={() => {
-              return cloud;
+              return upperCase(cloud);
             }}
           >
-            {['AWS', 'GCP', 'AZURE'].map((cloud) => {
+            {['aws', 'gcp', 'azure'].map((cloud) => {
               return (
                 <ListboxOption value={cloud} key={cloud}>
-                  {cloud}
+                  {upperCase(cloud)}
                 </ListboxOption>
               );
             })}

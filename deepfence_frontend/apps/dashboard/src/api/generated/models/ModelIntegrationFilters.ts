@@ -34,6 +34,12 @@ import {
 export interface ModelIntegrationFilters {
     /**
      * 
+     * @type {string}
+     * @memberof ModelIntegrationFilters
+     */
+    cloud_provider?: string;
+    /**
+     * 
      * @type {Array<string>}
      * @memberof ModelIntegrationFilters
      */
@@ -72,6 +78,7 @@ export function ModelIntegrationFiltersFromJSONTyped(json: any, ignoreDiscrimina
     }
     return {
         
+        'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
         'container_names': !exists(json, 'container_names') ? undefined : json['container_names'],
         'fields_filters': !exists(json, 'fields_filters') ? undefined : ReportersFieldsFiltersFromJSON(json['fields_filters']),
         'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
@@ -87,6 +94,7 @@ export function ModelIntegrationFiltersToJSON(value?: ModelIntegrationFilters | 
     }
     return {
         
+        'cloud_provider': value.cloud_provider,
         'container_names': value.container_names,
         'fields_filters': ReportersFieldsFiltersToJSON(value.fields_filters),
         'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),
