@@ -36,7 +36,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		log.Error().Err(err).Msgf("register request: %+v", req)
 		h.respondError(&ValidatorError{err: err}, w)
 		return
 	}
