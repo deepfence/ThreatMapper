@@ -1,5 +1,9 @@
 package ingesters
 
+import (
+	"strings"
+)
+
 type VulnerabilityScanStatus struct {
 	ScanID      string `json:"scan_id"`
 	ScanStatus  string `json:"scan_status"`
@@ -52,18 +56,15 @@ type VulnerabilityRule struct {
 }
 
 type VulnerabilityData struct {
-	CveID                   string  `json:"cve_id"`
-	CveSeverity             string  `json:"cve_severity"`
-	CveCausedByPackage      string  `json:"cve_caused_by_package"`
-	CveCausedByPackagePath  string  `json:"cve_caused_by_package_path"`
-	CveContainerLayer       string  `json:"cve_container_layer"`
-	CveLink                 string  `json:"cve_link"`
-	CveCvssScore            float64 `json:"cve_cvss_score"`
-	ExploitabilityScore     int     `json:"exploitability_score"`
-	InitExploitabilityScore int     `json:"init_exploitability_score"`
-	HasLiveConnection       bool    `json:"has_live_connection"`
-	CISAKEV                 bool    `json:"cisa_kev"`
-	EPSSScore               float64 `json:"epss_score"`
+	CveID                   string `json:"cve_id"`
+	CveSeverity             string `json:"cve_severity"`
+	CveCausedByPackage      string `json:"cve_caused_by_package"`
+	CveCausedByPackagePath  string `json:"cve_caused_by_package_path"`
+	CveContainerLayer       string `json:"cve_container_layer"`
+	CveLink                 string `json:"cve_link"`
+	ExploitabilityScore     int    `json:"exploitability_score"`
+	InitExploitabilityScore int    `json:"init_exploitability_score"`
+	HasLiveConnection       bool   `json:"has_live_connection"`
 }
 
 func (c Vulnerability) Split() (VulnerabilityData, VulnerabilityRule) {
@@ -74,13 +75,11 @@ func (c Vulnerability) Split() (VulnerabilityData, VulnerabilityRule) {
 			CveCausedByPackagePath:  c.CveCausedByPackagePath,
 			CveContainerLayer:       c.CveContainerLayer,
 			CveLink:                 c.CveLink,
-			CveCvssScore:            c.CveCvssScore,
 			ExploitabilityScore:     c.ExploitabilityScore,
 			InitExploitabilityScore: c.InitExploitabilityScore,
 			HasLiveConnection:       c.HasLiveConnection,
-			CISAKEV:                 c.CISAKEV,
-			EPSSScore:               c.EPSSScore,
 		}, VulnerabilityRule{
+			NodeID:             strings.Join([]string{c.CveID, c.Namespace, c.CveCausedByPackage}, "-"),
 			CveID:              c.CveID,
 			CveType:            c.CveType,
 			CveSeverity:        c.CveSeverity,

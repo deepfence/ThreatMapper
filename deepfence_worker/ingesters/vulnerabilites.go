@@ -41,9 +41,8 @@ func CommitFuncVulnerabilities(ctx context.Context, ns string, data []ingestersU
 	log.Debug().Msgf("Committing %d vulnerabilities", len(dataMap))
 
 	if _, err = tx.Run(ctx, `
-		UNWIND $batch as row WITH row.rule as rule, row.data as data,
-		row.scan_id as scan_id, row.node_id as node_id, row.rule_id as rule_id
-		MERGE (v:VulnerabilityStub{node_id:rule_id})
+		UNWIND $batch as row WITH row.rule as rule, row.data as data, row.scan_id as scan_id, row.node_id as node_id
+		MERGE (v:VulnerabilityStub{node_id:rule.node_id})
 		MERGE (n:Vulnerability{node_id:node_id})
 		MERGE (n) -[:IS]-> (v)
 		SET v += rule,
@@ -73,8 +72,7 @@ func CVEsToMaps(ms []ingestersUtil.Vulnerability) ([]map[string]interface{}, err
 			"rule":    utils.ToMap(rule),
 			"data":    utils.ToMap(data),
 			"scan_id": v.ScanID,
-			"node_id": data.CveCausedByPackagePath + data.CveCausedByPackage + data.CveID,
-			"rule_id": strings.Join([]string{rule.CveID, rule.Namespace, rule.PackageName}, "-"),
+			"node_id": strings.Join([]string{data.CveCausedByPackagePath, data.CveCausedByPackage, data.CveID}, "-"),
 		})
 	}
 	return res, nil
