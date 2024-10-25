@@ -118,6 +118,15 @@ func (j Jira) SendNotification(ctx context.Context, message []map[string]interfa
 		}
 
 		payload = string(finalByte)
+	} else {
+		finalByte, err := json.MarshalIndent(message, "", "  ")
+		if err != nil {
+			log.Error().Msgf(err.Error())
+			span.EndWithErr(err)
+			return err
+		}
+
+		payload = string(finalByte)
 	}
 
 	attachment, resp, err := client.Issue.PostAttachment(issue.ID, strings.NewReader(payload), "scan-results.json")
