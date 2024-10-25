@@ -68,7 +68,6 @@ copy() {
 
   echo "Copy some required binaries..."
   cp start_deepfenced.sh $folder/home/deepfence/
-  deep_docker_copy "/usr/bin/envsubst" "$folder/bin/envsubst"
 
   # delete rules.tar (not needed)
   rm -rf $folder/home/deepfence/rules.tar.gz
