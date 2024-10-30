@@ -29,4 +29,4 @@
 [submodule "deepfence_agent/plugins/cloud-scanner"]
 	path = deepfence_agent/plugins/cloud-scanner
 	url = https://github.com/deepfence/cloud-scanner
-	branch = main
+	branch = upgrade-go

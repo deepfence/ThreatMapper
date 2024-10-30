@@ -174,7 +174,7 @@ openapi: server
 	--git-user-id deepfence
 
 	rm openapi.yaml
-	cd $(PWD)/golang_deepfence_sdk/client && rm -rf ./test && sed -i 's/go 1.18/go 1.20/g' go.mod && go mod tidy -v && cd -
+	cd $(PWD)/golang_deepfence_sdk/client && rm -rf ./test && sed -i 's/go 1.18/go 1.23/g' go.mod && go mod tidy -v && cd -
 
 .PHONY: cli
 cli: bootstrap

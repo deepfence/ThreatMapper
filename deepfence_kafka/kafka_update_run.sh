@@ -7,7 +7,7 @@ POD_NAME_WITHOUT_INDEX=${POD_NAME%%-[[:digit:]]*}
 
 if [ ! -z "$POD_NUMBER" ]
 then
-    echo "were are inside kuberntes, update kafka config vars"
+    echo "were are inside kubernetes, update kafka config vars"
     if [ -z "$STORAGE_UUID" ]
     then
         echo "storage uuid not set run kafka-storage random-uuid and set STORAGE_UUID var"

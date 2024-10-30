@@ -8,10 +8,10 @@ FROM $IMAGE_REPOSITORY/deepfence_compliance_scanner_ce:$DF_IMG_TAG AS compliance
 
 FROM debian:12-slim as downloads
 
-ENV DOCKERVERSION="24.0.2" \
-    VESSEL_VERSION="0.12.3"\
-    NERDCTL_VERSION="1.6.0" \
-    CRICTL_VERSION="v1.28.0"
+ENV DOCKERVERSION="27.3.1" \
+    VESSEL_VERSION="0.12.5"\
+    NERDCTL_VERSION="1.7.7" \
+    CRICTL_VERSION="v1.31.1"
 
 ARG TARGETARCH
 

@@ -2,11 +2,10 @@ package reports
 
 import (
 	"context"
+	_ "embed"
 	"os"
 	"strconv"
 	"time"
-
-	_ "embed"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
@@ -56,9 +55,11 @@ func truncateText(s string, max int) string {
 
 func getMarato() core.Maroto {
 	cfg := config.NewBuilder().
-		WithWorkerPoolSize(2).
-		WithPageNumber("Page {current}/{total}", props.RightBottom).
-		WithMargins(10, 15, 10).
+		WithConcurrentMode(2).
+		WithPageNumber(props.PageNumber{Pattern: "Page {current}/{total}", Place: props.RightBottom}).
+		WithTopMargin(10).
+		WithLeftMargin(15).
+		WithRightMargin(10).
 		Build()
 
 	mrt := maroto.New(cfg)

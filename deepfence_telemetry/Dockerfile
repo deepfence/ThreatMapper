@@ -1,4 +1,4 @@
-FROM jaegertracing/all-in-one:1.53
+FROM jaegertracing/all-in-one:1.62.0
 
 ENV DEEPFENCE_TELEMETRY_ENABLED="false"
 

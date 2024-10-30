@@ -1,4 +1,4 @@
-FROM nginx:1.23-alpine
+FROM nginx:1.27-alpine3.20
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
