@@ -1,4 +1,4 @@
-FROM neo4j:5.16.0
+FROM neo4j:5.24.2-community-bullseye
 RUN apt update && apt install rclone netcat -y
 COPY df.sh /startup
 COPY pre-upgrade-to-v5.sh /startup

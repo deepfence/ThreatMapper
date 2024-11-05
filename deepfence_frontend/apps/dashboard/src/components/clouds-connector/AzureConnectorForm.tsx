@@ -22,7 +22,7 @@ export const AzureConnectorForm = () => {
           <div className="text-p7a text-text-text-and-icon">
             Connect to your Microsoft Azure via terraform. Find out more information by{' '}
             <DFLink
-              href={`https://community.deepfence.io/threatmapper/docs/v3.0/cloudscanner/azure`}
+              href={`https://community.deepfence.io/threatmapper/docs/v2.5/cloudscanner/azure`}
               target="_blank"
               rel="noreferrer"
               className="mt-2"

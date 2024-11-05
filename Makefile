@@ -18,7 +18,7 @@ export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
 export STEAMPIPE_IMG_TAG?=0.23.x
 export IS_DEV_BUILD?=false
-export VERSION?=v3.0.0
+export VERSION?=v2.5.0
 export AGENT_BINARY_BUILD=$(DEEPFENCE_FARGATE_DIR)/build
 export AGENT_BINARY_BUILD_RELATIVE=deepfence_agent/agent-binary/build
 export AGENT_BINARY_DIST=$(DEEPFENCE_FARGATE_DIR)/dist
@@ -174,7 +174,7 @@ openapi: server
 	--git-user-id deepfence
 
 	rm openapi.yaml
-	cd $(PWD)/golang_deepfence_sdk/client && rm -rf ./test && sed -i 's/go 1.18/go 1.20/g' go.mod && go mod tidy -v && cd -
+	cd $(PWD)/golang_deepfence_sdk/client && rm -rf ./test && sed -i 's/go 1.18/go 1.23.2/g' go.mod && go mod tidy -v && cd -
 
 .PHONY: cli
 cli: bootstrap

@@ -32,7 +32,7 @@ export const AmazonECRConnectorForm = ({
       <div className="text-p4a text-text-input-value mt-1.5 mb-4">
         Connect to your Amazon ECR Registry. Find out more information by{' '}
         <DFLink
-          href={`https://community.deepfence.io/threatmapper/docs/v3.0/registries/aws-ecr`}
+          href={`https://community.deepfence.io/threatmapper/docs/v2.5/registries/aws-ecr`}
           target="_blank"
           rel="noreferrer"
         >

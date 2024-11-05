@@ -1,4 +1,4 @@
-FROM alpine:3.18
+FROM alpine:3.20
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
@@ -11,7 +11,7 @@ WORKDIR /usr/local/bin
 COPY entrypoint.sh /entrypoint.sh
 COPY config.json /etc/seaweed.json.sample
 RUN apk update --no-cache && apk upgrade --no-cache
-RUN wget https://github.com/seaweedfs/seaweedfs/releases/download/3.55/linux_amd64_full.tar.gz
+RUN wget https://github.com/seaweedfs/seaweedfs/releases/download/3.79/linux_amd64_full.tar.gz
 RUN tar xvf ./linux_amd64_full.tar.gz
 RUN chmod +x /usr/local/bin/weed /entrypoint.sh
 RUN rm ./linux_amd64_full.tar.gz
