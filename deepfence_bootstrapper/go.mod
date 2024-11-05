@@ -22,7 +22,7 @@ require (
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
-	github.com/deepfence/kubernetes-scanner/v2 v2.2.0
+	github.com/deepfence/kubernetes-scanner/v2 v2.5.0
 	github.com/minio/selfupdate v0.6.0
 	github.com/opencontainers/runtime-spec v1.2.0
 	github.com/rs/zerolog v1.33.0
