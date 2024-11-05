@@ -29,7 +29,6 @@ import { module as malware } from '@/features/malwares/pages/Malware';
 import { module as malwareDetails } from '@/features/malwares/pages/MalwareDetailModal';
 import { module as malwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
 import { module as malwareScans } from '@/features/malwares/pages/MalwareScans';
-import { module as mostExploitableMalwares } from '@/features/malwares/pages/MostExploitableMalwares';
 import { module as uniqueMalwares } from '@/features/malwares/pages/UniqueMalwares';
 import {
   ConnectorsLayout,
@@ -60,7 +59,6 @@ import { module as registryAccounts } from '@/features/registries/pages/Registry
 import { module as registryImages } from '@/features/registries/pages/RegistryImages';
 import { module as registryImageTags } from '@/features/registries/pages/RegistryImageTags';
 import { module as secretRulesForScan } from '@/features/secrets/data-components/secretScanRulesApiLoader';
-import { module as mostExploitableSecrets } from '@/features/secrets/pages/MostExploitableSecrets';
 import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
@@ -410,18 +408,6 @@ export const privateRoutes: CustomRouteObject[] = [
           },
         ],
       },
-      {
-        path: 'secret/most-exploitable',
-        ...mostExploitableSecrets,
-        meta: { title: 'Most Exploitable Secrets' },
-        children: [
-          {
-            path: ':secretId',
-            ...secretDetails,
-            meta: { title: 'Most Exploitable Secret Details' },
-          },
-        ],
-      },
       // malware
       {
         path: 'malware',
@@ -454,18 +440,6 @@ export const privateRoutes: CustomRouteObject[] = [
             path: ':malwareId',
             ...malwareDetails,
             meta: { title: 'Unique Malware Details' },
-          },
-        ],
-      },
-      {
-        path: 'malware/most-exploitable',
-        ...mostExploitableMalwares,
-        meta: { title: 'Most Exploitable Malwares' },
-        children: [
-          {
-            path: ':malwareId',
-            ...malwareDetails,
-            meta: { title: 'Most Exploitable Malware Details' },
           },
         ],
       },
