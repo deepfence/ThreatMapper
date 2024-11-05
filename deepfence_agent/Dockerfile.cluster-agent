@@ -18,7 +18,7 @@ ENV CHECKPOINT_DISABLE=true \
 WORKDIR /home/deepfence
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends libpcap0.8 bash conntrack iproute2 util-linux curl grep tar git wget supervisor gettext htop vim ca-certificates sudo cron logrotate
-RUN /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/refs/tags/v${STEAMPIPE_VERSION}/scripts/install.sh)"
+RUN curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/refs/tags/v${STEAMPIPE_VERSION}/scripts/install.sh | /bin/sh -s v${STEAMPIPE_VERSION}
 RUN useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfence
 
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
