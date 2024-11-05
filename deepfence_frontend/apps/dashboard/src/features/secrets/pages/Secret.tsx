@@ -8,10 +8,8 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
 import { BreadcrumbWrapper } from '@/features/common/BreadcrumbWrapper';
 import { CardHeader } from '@/features/secrets/components/landing/CardHeader';
-import {
-  MostExploitableSecretsCountsCard,
-  UniqueSecretsCountsCard,
-} from '@/features/secrets/components/landing/SecretsCountsCard';
+import { MostExploitablePromoCard } from '@/features/secrets/components/landing/MostExploitablePromoCard';
+import { UniqueSecretsCountsCard } from '@/features/secrets/components/landing/SecretsCountsCard';
 import { TopNSecretCard } from '@/features/secrets/components/landing/TopNSecretCard';
 import { THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
@@ -62,7 +60,7 @@ const Secret = () => {
         </div>
 
         <div className="col-span-3">
-          <MostExploitableSecretsCountsCard />
+          <MostExploitablePromoCard />
         </div>
         <div className="col-span-6">
           <Card className="rounded min-h-[380px] flex flex-col">

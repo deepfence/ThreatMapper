@@ -144,43 +144,12 @@ export const UniqueSecretsCountsCard = () => {
   );
 };
 
-export const MostExploitableSecretsCountsCard = () => {
-  return (
-    <Card className="rounded min-h-full flex flex-col">
-      <CardHeader
-        icon={<SecretsIcon />}
-        title={'Most Exploitable Secrets'}
-        path={'/secret/most-exploitable'}
-      />
-      <div className="flex-1 flex flex-col">
-        <Suspense
-          fallback={
-            <div className="flex-1 flex items-center justify-center">
-              <CircleSpinner size="md" />
-            </div>
-          }
-        >
-          <MostExploitableSecretsCardContent />
-        </Suspense>
-      </div>
-    </Card>
-  );
-};
-
 const UniqueSecretsCardContent = () => {
   const { data } = useSuspenseQuery({
     ...queries.secret.uniqueSecretsCount(),
   });
 
   return <CardContent data={data} to="/secret/unique-secrets" />;
-};
-
-const MostExploitableSecretsCardContent = () => {
-  const { data } = useSuspenseQuery({
-    ...queries.secret.mostExploitableSecretsCount(),
-  });
-
-  return <CardContent data={data} to="/secret/most-exploitable" />;
 };
 
 const CardContent = ({ data, to }: { data: SecretsCountsCardData; to: string }) => {
