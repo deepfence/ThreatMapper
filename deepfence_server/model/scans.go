@@ -304,7 +304,7 @@ type Secret struct {
 	UpdatedAt      int64       `json:"updated_at" required:"true"`
 	Level          string      `json:"level" validate:"required,oneof=critical high medium low unknown" required:"true" enum:"critical,high,medium,low,unknown"`
 	Score          float64     `json:"score" required:"true"`
-	Name           string      `json:"name" required:"true"`
+	RuleID         string      `json:"rule_id" required:"true"`
 	Resources      []BasicNode `json:"resources" required:"false"`
 }
 
@@ -326,7 +326,6 @@ func (Secret) GetJSONCategory() string {
 
 type SecretRule struct {
 	RuleID           string `json:"rule_id"`
-	Name             string `json:"name"`
 	Part             string `json:"part"`
 	SignatureToMatch string `json:"signature_to_match"`
 	Level            string `json:"level" required:"true"`

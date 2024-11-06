@@ -1155,7 +1155,7 @@ func (h *Handler) ListSecretScanResultRulesHandler(w http.ResponseWriter, r *htt
 
 	rules := []string{}
 	for _, e := range entries {
-		rules = append(rules, e.Name)
+		rules = append(rules, e.RuleID)
 	}
 
 	err = httpext.JSON(w, http.StatusOK, model.SecretScanResultRules{Rules: lo.Uniq(rules)})
