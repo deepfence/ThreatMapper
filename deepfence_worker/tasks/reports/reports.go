@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
@@ -39,8 +41,41 @@ func reportFileName(params sdkUtils.ReportParams) string {
 	if sdkUtils.ReportType(params.ReportType) == sdkUtils.ReportSBOM {
 		return fmt.Sprintf("sbom_%s%s", params.ReportID, fileExt(sdkUtils.ReportSBOM))
 	}
+
 	list := []string{params.Filters.ScanType, params.Filters.NodeType, params.ReportID}
+
+	if params.ZippedReport {
+		return strings.Join(list, "_") + ".zip"
+	}
+
 	return strings.Join(list, "_") + fileExt(sdkUtils.ReportType(params.ReportType))
+}
+
+func writeReportToFile(dir string, fileName string, data []byte) (string, error) {
+
+	// make sure directory exists
+	os.MkdirAll(dir, os.ModePerm)
+
+	out := filepath.Join(dir, fileName)
+
+	log.Debug().Msgf("write report to path %s", out)
+
+	err := os.WriteFile(out, data, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+
+	return out, nil
+}
+
+func tempReportFile(params utils.ReportParams) string {
+	return strings.Join(
+		[]string{
+			"report",
+			fmt.Sprintf("%d", time.Now().UnixMilli()),
+			reportFileName(params),
+		},
+		"-")
 }
 
 func putOpts(reportType sdkUtils.ReportType) minio.PutObjectOptions {
@@ -51,6 +86,8 @@ func putOpts(reportType sdkUtils.ReportType) minio.PutObjectOptions {
 		return minio.PutObjectOptions{ContentType: "application/pdf"}
 	case sdkUtils.ReportSBOM:
 		return minio.PutObjectOptions{ContentType: "application/gzip"}
+	case sdkUtils.ReportZIP:
+		return minio.PutObjectOptions{ContentType: "application/zip"}
 	}
 	return minio.PutObjectOptions{}
 }
@@ -107,7 +144,8 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	localReportPath, err := generateReport(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
-		updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusFailed, err.Error())
+		updateReportState(ctx, session, params.ReportID,
+			"", "", sdkUtils.ScanStatusFailed, err.Error())
 		return nil
 	}
 	log.Info().Msgf("report file path %s", localReportPath)
@@ -123,14 +161,21 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	}
 
 	reportName := path.Join("/report", reportFileName(params))
-	res, err := mc.UploadLocalFile(ctx, reportName,
-		localReportPath, true, putOpts(sdkUtils.ReportType(params.ReportType)))
+
+	putOptions := putOpts(sdkUtils.ReportType(params.ReportType))
+	// specical case zip in not report type
+	if params.ZippedReport {
+		putOptions = putOpts(sdkUtils.ReportZIP)
+	}
+
+	res, err := mc.UploadLocalFile(ctx, reportName, localReportPath, true, putOptions)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to upload file to minio")
 		return nil
 	}
 
-	updateReportState(ctx, session, params.ReportID, reportName, res.Key, sdkUtils.ScanStatusSuccess, "")
+	updateReportState(ctx, session, params.ReportID,
+		reportName, res.Key, sdkUtils.ScanStatusSuccess, "")
 
 	return nil
 }

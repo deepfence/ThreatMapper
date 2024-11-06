@@ -252,6 +252,7 @@ const (
 	ReportXLSX ReportType = "xlsx"
 	ReportPDF  ReportType = "pdf"
 	ReportSBOM ReportType = "sbom"
+	ReportZIP  ReportType = "zip"
 )
 
 // mask_global : This is to mask gobally. (same as previous mask_across_hosts_and_images flag)
