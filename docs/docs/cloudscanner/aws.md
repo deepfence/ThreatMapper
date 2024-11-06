@@ -85,7 +85,7 @@ provider "aws" {
 
 module "deepfence-cloud-scanner_example_single-account" {
   source                        = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
-  version                       = "0.6.0"
+  version                       = "0.9.0"
   name                          = "deepfence-cloud-scanner"
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url              = "<Console URL>"
@@ -303,11 +303,11 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
 3. Modify the EC2 instance, add the instance profile created by cloudformation script
 4. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
     ```
-    https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.4/docker-compose.yaml 
+    https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.5/docker-compose.yaml 
     ```
     ```bash
     mkdir deepfence-cloud-scanner && cd deepfence-cloud-scanner
-    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.4/docker-compose.yaml
+    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.5/docker-compose.yaml
     ```
 5. Update the account details and console details in the docker-compose.yaml
     ```
@@ -342,11 +342,11 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
 3. Modify the EC2 instance, add the instance profile created by cloudformation script
 4. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
     ```
-    https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.4/docker-compose.yaml 
+    https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.5/docker-compose.yaml 
     ```
     ```bash
     mkdir deepfence-cloud-scanner && cd deepfence-cloud-scanner
-    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.4/docker-compose.yaml
+    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.5/docker-compose.yaml
     ```
 5. Update the organization account details and console details in the docker-compose.yaml
     ```
