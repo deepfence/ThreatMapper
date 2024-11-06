@@ -20,7 +20,7 @@ Copy and paste the following (single project or multiple projects) into a new fi
 ```terraform
 module "cloud-scanner_example_single-project" {
   source              = "deepfence/cloud-scanner/gcp//examples/single-project"
-  version             = "0.6.0"
+  version             = "0.9.0"
   name                = "deepfence-cloud-scanner"
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url    = "<Console URL>"
@@ -53,7 +53,7 @@ module "cloud-scanner_example_single-project" {
 ```terraform
 module "cloud-scanner_example_multiple-projects" {
   source              = "deepfence/cloud-scanner/gcp//examples/multi-project"
-  version             = "0.6.0"
+  version             = "0.9.0"
   name                = "deepfence-cloud-scanner"
   # org_domain: root project name
   org_domain          = ""
@@ -128,7 +128,7 @@ data "google_container_cluster" "target_cluster" {
 
 module "cloud_scanner_example_single_project" {
   source                     = "deepfence/cloud-scanner/gcp//examples/gke"
-  version                    = "0.7.2"
+  version                    = "0.9.0"
   gke_host                   = "https://${data.google_container_cluster.target_cluster.endpoint}"
   gke_token                  = data.google_client_config.current.access_token
   gke_cluster_ca_certificate = base64decode(data.google_container_cluster.target_cluster.master_auth[0].cluster_ca_certificate,)
@@ -164,7 +164,7 @@ data "google_container_cluster" "target_cluster" {
 
 module "cloud_scanner_example_multiple_project" {
   source                     = "deepfence/cloud-scanner/gcp//examples/gke"
-  version                    = "0.7.2"
+  version                    = "0.9.0"
   name                       = "deepfence-cloud-scanner"
   gke_host                   = "https://${data.google_container_cluster.target_cluster.endpoint}"
   gke_token                  = data.google_client_config.current.access_token
@@ -214,7 +214,7 @@ module "cloud_scanner_example_multiple_project" {
 
       module "cloud_scanner_example_single_project" {
         source     = "deepfence/cloud-scanner/gcp//examples/gce-vm"
-        version    = "0.7.2"
+        version    = "0.9.0"
         # gcp service account name
         name       = "deepfence-cloud-scanner"
         # project_id example: dev1-123456
@@ -233,7 +233,7 @@ module "cloud_scanner_example_multiple_project" {
 
       module "cloud_scanner_example_multiple_project" {
         source                   = "deepfence/cloud-scanner/gcp//examples/gce-vm"
-        version                  = "0.7.2"
+        version                  = "0.9.0"
         # gcp service account name
         name                     = "deepfence-cloud-scanner"
         # project_id example: dev1-123456
@@ -251,11 +251,11 @@ module "cloud_scanner_example_multiple_project" {
 ![gcp-vm-service-account](../img/gcp-vm-service-account.png)
 4. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
     ```
-    https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.4/docker-compose.yaml 
+    https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.5/docker-compose.yaml 
     ```
     ```bash
     mkdir deepfence-cloud-scanner && cd deepfence-cloud-scanner
-    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.4/docker-compose.yaml
+    wget https://raw.githubusercontent.com/deepfence/cloud-scanner/refs/heads/release-2.5/docker-compose.yaml
     ```
 5. Update the account details and console details in the docker-compose.yaml
     ```
@@ -277,7 +277,7 @@ module "cloud_scanner_example_multiple_project" {
       SUCCESS_SIGNAL_URL: ""
       DF_LOG_LEVEL: info
       SCAN_INACTIVE_THRESHOLD: "21600"
-      CLOUD_SCANNER_POLICY: "arn:aws:iam::aws:policy/SecurityAudit"
+      CLOUD_SCANNER_POLICY: ""
     ```
 6. Start the cloud scanner using docker compose
     ```
