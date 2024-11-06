@@ -91,7 +91,7 @@ func secretPDF(ctx context.Context, params utils.ReportParams) (core.Document, e
 					text.NewCol(1, strconv.Itoa(k+1),
 						props.Text{Size: 10, Top: 1, Align: align.Center}).
 						WithStyle(cellStyle),
-					text.NewCol(2, v.Name,
+					text.NewCol(2, v.RuleID,
 						props.Text{Size: 10, Top: 1, Align: align.Center, BreakLineStrategy: breakline.DashStrategy}).WithStyle(cellStyle),
 					text.NewCol(3, v.FullFilename,
 						props.Text{Size: 10, Left: 1, Top: 1, BreakLineStrategy: breakline.DashStrategy}).
