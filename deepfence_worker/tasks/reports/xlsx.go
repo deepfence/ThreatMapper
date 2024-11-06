@@ -206,7 +206,7 @@ func secretXLSX(ctx context.Context, params utils.ReportParams) (string, error) 
 			value := []interface{}{
 				s.FullFilename,
 				s.MatchedContent,
-				s.Name,
+				s.RuleID,
 				s.Level,
 				s.StartingIndex,
 				nodeScanData.ScanInfo.NodeName,
