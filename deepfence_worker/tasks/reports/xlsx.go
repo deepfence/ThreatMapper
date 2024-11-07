@@ -2,11 +2,15 @@ package reports
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"path/filepath"
+	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -72,7 +76,7 @@ var (
 	}
 )
 
-func generateXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+func generateXLSX(ctx context.Context, params sdkUtils.ReportParams) (string, error) {
 
 	ctx, span := telemetry.NewSpan(ctx, "reports", "generate-xlsx-report")
 	defer span.End()
@@ -104,20 +108,29 @@ func generateXLSX(ctx context.Context, params utils.ReportParams) (string, error
 	return xlsxFile, nil
 }
 
-func xlsxSave(xlsx *excelize.File, params utils.ReportParams) (string, error) {
-	// create a temp file to hold xlsx report
-	temp, err := os.CreateTemp("", "report-*-"+reportFileName(params))
-	if err != nil {
-		return "", err
-	}
-	defer temp.Close()
+func xlsxSave(xlsx *excelize.File, dir, fileName string) (string, error) {
 
-	// save spreadsheet by the given path.
-	if err := xlsx.SaveAs(temp.Name()); err != nil {
+	// cleanup xlsx
+	defer func() {
+		if err := xlsx.Close(); err != nil {
+			log.Error().Err(err).Msg("failed to close file")
+		}
+	}()
+
+	// make sure directory exists
+	os.MkdirAll(dir, os.ModePerm)
+
+	out := filepath.Join(dir, fileName)
+
+	log.Debug().Msgf("write xlsx report to path %s", out)
+
+	// save spreadsheet to the given path.
+	if err := xlsx.SaveAs(out); err != nil {
 		log.Error().Err(err).Msg("failed to save xlsx file")
 		return "", err
 	}
-	return temp.Name(), nil
+
+	return out, nil
 }
 
 func xlsxSetHeader(xlsx *excelize.File, sheet string, headers map[string]string) {
@@ -129,229 +142,371 @@ func xlsxSetHeader(xlsx *excelize.File, sheet string, headers map[string]string)
 	}
 }
 
-func vulnerabilityXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+func vulnerabilityXLSX(ctx context.Context, params sdkUtils.ReportParams) (string, error) {
 	data, err := getVulnerabilityData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get vulnerabilities info")
 		return "", err
 	}
 
-	xlsx := excelize.NewFile()
-	defer func() {
-		if err := xlsx.Close(); err != nil {
-			log.Error().Err(err).Msg("failed to close file")
+	// single file
+	if !params.ZippedReport {
+		xlsx := excelize.NewFile()
+		xlsxSetHeader(xlsx, "Sheet1", vulnerabilityHeader)
+		// add results
+		offset := 0
+		for _, nodeScanData := range data.NodeWiseData.ScanData {
+			xlsxAddVulnResults(xlsx, "Sheet1", offset, nodeScanData)
+			offset = offset + len(nodeScanData.ScanResults)
 		}
-	}()
 
-	xlsxSetHeader(xlsx, "Sheet1", vulnerabilityHeader)
-
-	offset := 0
-	for _, nodeScanData := range data.NodeWiseData.ScanData {
-		for i, v := range nodeScanData.ScanResults {
-			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
-			if err != nil {
-				log.Error().Err(err).Msg("error generating cell name")
-			}
-			value := []interface{}{
-				v.CveID,
-				v.CveSeverity,
-				v.CveAttackVector,
-				v.CveCausedByPackage,
-				v.CveCausedByPackagePath,
-				v.CveCVSSScore,
-				v.CveDescription,
-				v.CveFixedIn,
-				v.CveLink,
-				v.CveOverallScore,
-				v.CveType,
-				nodeScanData.ScanInfo.NodeName,
-				nodeScanData.ScanInfo.NodeType,
-				nodeScanData.ScanInfo.KubernetesClusterName,
-				v.Masked,
-			}
-			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
-			if err != nil {
-				log.Error().Msg(err.Error())
-			}
-		}
-		offset = offset + len(nodeScanData.ScanResults)
+		return xlsxSave(xlsx, os.TempDir(), tempReportFile(params))
 	}
 
-	return xlsxSave(xlsx, params)
+	// zipped report
+	// tmp dir to save generated reports
+	tmpDir := filepath.Join(
+		os.TempDir(),
+		fmt.Sprintf("%d", time.Now().UnixMilli())+"-"+params.ReportID,
+	)
+	defer os.RemoveAll(tmpDir)
+
+	for i, d := range data.NodeWiseData.ScanData {
+		xlsx := excelize.NewFile()
+		xlsxSetHeader(xlsx, "Sheet1", vulnerabilityHeader)
+		xlsxAddVulnResults(xlsx, "Sheet1", 0, d)
+
+		outputFile := sdkUtils.NodeNameReplacer.Replace(i) +
+			fileExt(sdkUtils.ReportType(params.ReportType))
+
+		xlsxSave(xlsx, tmpDir, outputFile)
+	}
+
+	outputZip := reportFileName(params)
+
+	if err := sdkUtils.ZipDir(tmpDir, "reports", outputZip); err != nil {
+		return "", err
+	}
+
+	return outputZip, nil
+
 }
 
-func secretXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+func xlsxAddVulnResults(xlsx *excelize.File, sheet string, offset int, data ScanData[model.Vulnerability]) {
+	for i, v := range data.ScanResults {
+		cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
+		if err != nil {
+			log.Error().Err(err).Msg("error generating cell name")
+		}
+		value := []interface{}{
+			v.CveID,
+			v.CveSeverity,
+			v.CveAttackVector,
+			v.CveCausedByPackage,
+			v.CveCausedByPackagePath,
+			v.CveCVSSScore,
+			v.CveDescription,
+			v.CveFixedIn,
+			v.CveLink,
+			v.CveOverallScore,
+			v.CveType,
+			data.ScanInfo.NodeName,
+			data.ScanInfo.NodeType,
+			data.ScanInfo.KubernetesClusterName,
+			v.Masked,
+		}
+		err = xlsx.SetSheetRow(sheet, cellName, &value)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}
+}
+
+func secretXLSX(ctx context.Context, params sdkUtils.ReportParams) (string, error) {
 	data, err := getSecretData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get secrets info")
 		return "", err
 	}
 
-	xlsx := excelize.NewFile()
-	defer func() {
-		if err := xlsx.Close(); err != nil {
-			log.Error().Err(err).Msg("failed to close file")
+	// single file
+	if !params.ZippedReport {
+		xlsx := excelize.NewFile()
+		xlsxSetHeader(xlsx, "Sheet1", secretHeader)
+		// add results
+		offset := 0
+		for _, nodeScanData := range data.NodeWiseData.ScanData {
+			xlsxAddSecretResults(xlsx, "Sheet1", offset, nodeScanData)
+			offset = offset + len(nodeScanData.ScanResults)
 		}
-	}()
 
-	xlsxSetHeader(xlsx, "Sheet1", secretHeader)
-
-	offset := 0
-	for _, nodeScanData := range data.NodeWiseData.ScanData {
-		for i, s := range nodeScanData.ScanResults {
-			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
-			if err != nil {
-				log.Error().Err(err).Msg("error generating cell name")
-			}
-			value := []interface{}{
-				s.FullFilename,
-				s.MatchedContent,
-				s.RuleID,
-				s.Level,
-				s.StartingIndex,
-				nodeScanData.ScanInfo.NodeName,
-				nodeScanData.ScanInfo.NodeType,
-				nodeScanData.ScanInfo.KubernetesClusterName,
-				s.Masked,
-			}
-			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
-			if err != nil {
-				log.Error().Msg(err.Error())
-			}
-		}
-		offset = offset + len(nodeScanData.ScanResults)
+		return xlsxSave(xlsx, os.TempDir(), tempReportFile(params))
 	}
 
-	return xlsxSave(xlsx, params)
+	// zipped report
+	// tmp dir to save generated reports
+	tmpDir := filepath.Join(
+		os.TempDir(),
+		fmt.Sprintf("%d", time.Now().UnixMilli())+"-"+params.ReportID,
+	)
+	defer os.RemoveAll(tmpDir)
+
+	for i, d := range data.NodeWiseData.ScanData {
+		xlsx := excelize.NewFile()
+		xlsxSetHeader(xlsx, "Sheet1", secretHeader)
+		xlsxAddSecretResults(xlsx, "Sheet1", 0, d)
+
+		outputFile := sdkUtils.NodeNameReplacer.Replace(i) +
+			fileExt(sdkUtils.ReportType(params.ReportType))
+
+		xlsxSave(xlsx, tmpDir, outputFile)
+	}
+
+	outputZip := reportFileName(params)
+
+	if err := sdkUtils.ZipDir(tmpDir, "reports", outputZip); err != nil {
+		return "", err
+	}
+
+	return outputZip, nil
+
 }
 
-func malwareXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+func xlsxAddSecretResults(xlsx *excelize.File, sheet string, offset int, data ScanData[model.Secret]) {
+	for i, s := range data.ScanResults {
+		cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
+		if err != nil {
+			log.Error().Err(err).Msg("error generating cell name")
+		}
+		value := []interface{}{
+			s.FullFilename,
+			s.MatchedContent,
+			s.RuleID,
+			s.Level,
+			s.StartingIndex,
+			data.ScanInfo.NodeName,
+			data.ScanInfo.NodeType,
+			data.ScanInfo.KubernetesClusterName,
+			s.Masked,
+		}
+		err = xlsx.SetSheetRow(sheet, cellName, &value)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}
+}
+
+func malwareXLSX(ctx context.Context, params sdkUtils.ReportParams) (string, error) {
 	data, err := getMalwareData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get malwares info")
 		return "", err
 	}
 
-	xlsx := excelize.NewFile()
-	defer func() {
-		if err := xlsx.Close(); err != nil {
-			log.Error().Err(err).Msg("failed to close file")
+	// single file
+	if !params.ZippedReport {
+		xlsx := excelize.NewFile()
+		xlsxSetHeader(xlsx, "Sheet1", malwareHeader)
+		// add results
+		offset := 0
+		for _, nodeScanData := range data.NodeWiseData.ScanData {
+			xlsxAddMalwareResults(xlsx, "Sheet1", offset, nodeScanData)
+			offset = offset + len(nodeScanData.ScanResults)
 		}
-	}()
 
-	xlsxSetHeader(xlsx, "Sheet1", malwareHeader)
-
-	offset := 0
-	for _, nodeScanData := range data.NodeWiseData.ScanData {
-		for i, m := range nodeScanData.ScanResults {
-			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
-			if err != nil {
-				log.Error().Err(err).Msg("error generating cell name")
-			}
-			value := []interface{}{
-				m.RuleName,
-				m.CompleteFilename,
-				m.Summary,
-				m.FileSeverity,
-				nodeScanData.ScanInfo.NodeName,
-				nodeScanData.ScanInfo.NodeType,
-				nodeScanData.ScanInfo.KubernetesClusterName,
-				m.Masked,
-			}
-			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
-			if err != nil {
-				log.Error().Msg(err.Error())
-			}
-		}
-		offset = offset + len(nodeScanData.ScanResults)
+		return xlsxSave(xlsx, os.TempDir(), tempReportFile(params))
 	}
 
-	return xlsxSave(xlsx, params)
+	// zipped report
+	// tmp dir to save generated reports
+	tmpDir := filepath.Join(
+		os.TempDir(),
+		fmt.Sprintf("%d", time.Now().UnixMilli())+"-"+params.ReportID,
+	)
+	defer os.RemoveAll(tmpDir)
+
+	for i, d := range data.NodeWiseData.ScanData {
+		xlsx := excelize.NewFile()
+		xlsxSetHeader(xlsx, "Sheet1", malwareHeader)
+		xlsxAddMalwareResults(xlsx, "Sheet1", 0, d)
+
+		outputFile := sdkUtils.NodeNameReplacer.Replace(i) +
+			fileExt(sdkUtils.ReportType(params.ReportType))
+
+		xlsxSave(xlsx, tmpDir, outputFile)
+	}
+
+	outputZip := reportFileName(params)
+
+	if err := sdkUtils.ZipDir(tmpDir, "reports", outputZip); err != nil {
+		return "", err
+	}
+
+	return outputZip, nil
 }
 
-func complianceXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+func xlsxAddMalwareResults(xlsx *excelize.File, sheet string, offset int, data ScanData[model.Malware]) {
+	for i, m := range data.ScanResults {
+		cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
+		if err != nil {
+			log.Error().Err(err).Msg("error generating cell name")
+		}
+		value := []interface{}{
+			m.RuleName,
+			m.CompleteFilename,
+			m.Summary,
+			m.FileSeverity,
+			data.ScanInfo.NodeName,
+			data.ScanInfo.NodeType,
+			data.ScanInfo.KubernetesClusterName,
+			m.Masked,
+		}
+		err = xlsx.SetSheetRow(sheet, cellName, &value)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}
+}
+
+func complianceXLSX(ctx context.Context, params sdkUtils.ReportParams) (string, error) {
 	data, err := getComplianceData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get compliance info")
 		return "", err
 	}
 
-	xlsx := excelize.NewFile()
-	defer func() {
-		if err := xlsx.Close(); err != nil {
-			log.Error().Err(err).Msg("failed to close file")
+	// single file
+	if !params.ZippedReport {
+		xlsx := excelize.NewFile()
+		xlsxSetHeader(xlsx, "Sheet1", complianceHeader)
+		// add results
+		offset := 0
+		for _, nodeScanData := range data.NodeWiseData.ScanData {
+			xlsxAddCompResults(xlsx, "Sheet1", offset, nodeScanData)
+			offset = offset + len(nodeScanData.ScanResults)
 		}
-	}()
 
-	xlsxSetHeader(xlsx, "Sheet1", complianceHeader)
-
-	offset := 0
-	for _, nodeScanData := range data.NodeWiseData.ScanData {
-		for i, c := range nodeScanData.ScanResults {
-			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
-			if err != nil {
-				log.Error().Err(err).Msg("error generating cell name")
-			}
-			value := []interface{}{
-				c.ComplianceCheckType,
-				c.Status,
-				c.TestCategory,
-				c.TestDesc,
-				c.TestInfo,
-				c.TestNumber,
-				nodeScanData.ScanInfo.NodeName,
-				nodeScanData.ScanInfo.NodeType,
-				c.Masked,
-			}
-			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
-			if err != nil {
-				log.Error().Msg(err.Error())
-			}
-		}
-		offset = offset + len(nodeScanData.ScanResults)
+		return xlsxSave(xlsx, os.TempDir(), tempReportFile(params))
 	}
 
-	return xlsxSave(xlsx, params)
+	// zipped report
+	// tmp dir to save generated reports
+	tmpDir := filepath.Join(
+		os.TempDir(),
+		fmt.Sprintf("%d", time.Now().UnixMilli())+"-"+params.ReportID,
+	)
+	defer os.RemoveAll(tmpDir)
+
+	for i, d := range data.NodeWiseData.ScanData {
+		xlsx := excelize.NewFile()
+		xlsxSetHeader(xlsx, "Sheet1", complianceHeader)
+		xlsxAddCompResults(xlsx, "Sheet1", 0, d)
+
+		outputFile := sdkUtils.NodeNameReplacer.Replace(i) +
+			fileExt(sdkUtils.ReportType(params.ReportType))
+
+		xlsxSave(xlsx, tmpDir, outputFile)
+	}
+
+	outputZip := reportFileName(params)
+
+	if err := sdkUtils.ZipDir(tmpDir, "reports", outputZip); err != nil {
+		return "", err
+	}
+
+	return outputZip, nil
 }
 
-func cloudComplianceXLSX(ctx context.Context, params utils.ReportParams) (string, error) {
+func xlsxAddCompResults(xlsx *excelize.File, sheet string, offset int, data ScanData[model.Compliance]) {
+	for i, c := range data.ScanResults {
+		cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
+		if err != nil {
+			log.Error().Err(err).Msg("error generating cell name")
+		}
+		value := []interface{}{
+			c.ComplianceCheckType,
+			c.Status,
+			c.TestCategory,
+			c.TestDesc,
+			c.TestInfo,
+			c.TestNumber,
+			data.ScanInfo.NodeName,
+			data.ScanInfo.NodeType,
+			c.Masked,
+		}
+		err = xlsx.SetSheetRow(sheet, cellName, &value)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}
+}
+
+func cloudComplianceXLSX(ctx context.Context, params sdkUtils.ReportParams) (string, error) {
 	data, err := getCloudComplianceData(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get cloud compliance info")
 		return "", err
 	}
 
-	xlsx := excelize.NewFile()
-	defer func() {
-		if err := xlsx.Close(); err != nil {
-			log.Error().Err(err).Msg("failed to close file")
+	// single file
+	if !params.ZippedReport {
+		xlsx := excelize.NewFile()
+		xlsxSetHeader(xlsx, "Sheet1", cloudComplianceHeader)
+		// add results
+		for _, nodeScanData := range data.NodeWiseData.ScanData {
+			xlsxAddCloudCompResults(xlsx, "Sheet1", nodeScanData)
 		}
-	}()
 
-	xlsxSetHeader(xlsx, "Sheet1", cloudComplianceHeader)
-
-	for _, nodeScanData := range data.NodeWiseData.ScanData {
-		for i, c := range nodeScanData.ScanResults {
-			cellName, err := excelize.CoordinatesToCellName(1, i+2)
-			if err != nil {
-				log.Error().Err(err).Msg("error generating cell name")
-			}
-			value := []interface{}{
-				c.ComplianceCheckType,
-				c.Status,
-				c.Title,
-				c.Description,
-				c.ControlID,
-				nodeScanData.ScanInfo.NodeName,
-				nodeScanData.ScanInfo.NodeType,
-				c.Masked,
-			}
-			err = xlsx.SetSheetRow("Sheet1", cellName, &value)
-			if err != nil {
-				log.Error().Msg(err.Error())
-			}
-		}
+		return xlsxSave(xlsx, os.TempDir(), tempReportFile(params))
 	}
 
-	return xlsxSave(xlsx, params)
+	// zipped report
+	// tmp dir to save generated reports
+	tmpDir := filepath.Join(
+		os.TempDir(),
+		fmt.Sprintf("%d", time.Now().UnixMilli())+"-"+params.ReportID,
+	)
+	defer os.RemoveAll(tmpDir)
+
+	for i, d := range data.NodeWiseData.ScanData {
+		xlsx := excelize.NewFile()
+		xlsxSetHeader(xlsx, "Sheet1", cloudComplianceHeader)
+		xlsxAddCloudCompResults(xlsx, "Sheet1", d)
+
+		outputFile := sdkUtils.NodeNameReplacer.Replace(i) +
+			fileExt(sdkUtils.ReportType(params.ReportType))
+
+		xlsxSave(xlsx, tmpDir, outputFile)
+	}
+
+	outputZip := reportFileName(params)
+
+	if err := sdkUtils.ZipDir(tmpDir, "reports", outputZip); err != nil {
+		return "", err
+	}
+
+	return outputZip, nil
+}
+
+func xlsxAddCloudCompResults(xlsx *excelize.File, sheet string, data ScanData[model.CloudCompliance]) {
+	for i, c := range data.ScanResults {
+		cellName, err := excelize.CoordinatesToCellName(1, i+2)
+		if err != nil {
+			log.Error().Err(err).Msg("error generating cell name")
+		}
+		value := []interface{}{
+			c.ComplianceCheckType,
+			c.Status,
+			c.Title,
+			c.Description,
+			c.ControlID,
+			data.ScanInfo.NodeName,
+			data.ScanInfo.NodeType,
+			c.Masked,
+		}
+		err = xlsx.SetSheetRow(sheet, cellName, &value)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}
 }

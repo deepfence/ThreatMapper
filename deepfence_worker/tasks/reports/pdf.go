@@ -3,6 +3,8 @@ package reports
 import (
 	"context"
 	_ "embed"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -213,4 +215,21 @@ func generatePDF(ctx context.Context, params utils.ReportParams) (string, error)
 	}
 
 	return document, nil
+}
+
+func writeReportToFile(dir string, fileName string, data []byte) (string, error) {
+
+	// make sure directory exists
+	os.MkdirAll(dir, os.ModePerm)
+
+	out := filepath.Join(dir, fileName)
+
+	log.Debug().Msgf("write report to path %s", out)
+
+	err := os.WriteFile(out, data, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+
+	return out, nil
 }

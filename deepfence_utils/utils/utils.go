@@ -786,6 +786,9 @@ func ComputeChecksumForFile(filePath string) (string, error) {
 }
 
 func ZipDir(sourceDir string, baseZipPath string, outputZip string) error {
+
+	log.Debug().Msgf("add files from directory %s to zip", sourceDir)
+
 	archive, err := os.Create(outputZip)
 	if err != nil {
 		return err
@@ -808,6 +811,8 @@ func ZipDir(sourceDir string, baseZipPath string, outputZip string) error {
 				return err
 			}
 			defer file.Close()
+
+			log.Debug().Msgf("adding file to zip %s", info.Name())
 
 			f, err := zw.Create(filepath.Join(baseZipPath, info.Name()))
 			if err != nil {

@@ -7,14 +7,12 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/hibiken/asynq"
 	"github.com/minio/minio-go/v7"
@@ -51,24 +49,7 @@ func reportFileName(params sdkUtils.ReportParams) string {
 	return strings.Join(list, "_") + fileExt(sdkUtils.ReportType(params.ReportType))
 }
 
-func writeReportToFile(dir string, fileName string, data []byte) (string, error) {
-
-	// make sure directory exists
-	os.MkdirAll(dir, os.ModePerm)
-
-	out := filepath.Join(dir, fileName)
-
-	log.Debug().Msgf("write report to path %s", out)
-
-	err := os.WriteFile(out, data, os.ModePerm)
-	if err != nil {
-		return "", err
-	}
-
-	return out, nil
-}
-
-func tempReportFile(params utils.ReportParams) string {
+func tempReportFile(params sdkUtils.ReportParams) string {
 	return strings.Join(
 		[]string{
 			"report",
@@ -132,10 +113,6 @@ func GenerateReport(ctx context.Context, task *asynq.Task) error {
 	}
 
 	session := client.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return nil
-	}
 	defer session.Close(ctx)
 
 	updateReportState(ctx, session, params.ReportID, "", "", sdkUtils.ScanStatusInProgress, "")
