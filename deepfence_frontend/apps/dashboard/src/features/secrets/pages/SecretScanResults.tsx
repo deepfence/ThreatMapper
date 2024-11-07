@@ -1523,10 +1523,10 @@ const SecretTable = ({
             <div className="w-4 h-4 shrink-0 text-text-text-and-icon">
               <SecretsIcon />
             </div>
-            <TruncatedText text={info.row.original.name ?? info.getValue() ?? ''} />
+            <TruncatedText text={info.row.original.rule_id ?? info.getValue() ?? ''} />
           </DFLink>
         ),
-        header: () => 'Name',
+        header: () => 'Rule ID',
         minSize: 100,
         size: 120,
         maxSize: 150,
@@ -2000,7 +2000,7 @@ const Top5Widget = () => {
                       className="flex items-center min-w-0"
                     >
                       <div className="text-p7 truncate">
-                        <TruncatedText text={secret.name} />
+                        <TruncatedText text={secret.rule_id} />
                       </div>
                     </DFLink>
                   </div>

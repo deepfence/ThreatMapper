@@ -13,7 +13,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "v3.0.0"
+    "version": "v2.5.0"
   },
   "externalDocs": {
     "description": "Deepfence Community",
@@ -13532,6 +13532,7 @@
       "IngestersVulnerability": {
         "type": "object",
         "properties": {
+          "cisa_kev": { "type": "boolean" },
           "cve_attack_vector": { "type": "string" },
           "cve_caused_by_package": { "type": "string" },
           "cve_caused_by_package_path": { "type": "string" },
@@ -13544,6 +13545,7 @@
           "cve_overall_score": { "type": "number" },
           "cve_severity": { "type": "string" },
           "cve_type": { "type": "string" },
+          "epss_score": { "type": "number" },
           "exploit_poc": { "type": "string" },
           "exploitability_score": { "type": "integer" },
           "has_live_connection": { "type": "boolean" },
@@ -15841,7 +15843,7 @@
           "updated_at",
           "level",
           "score",
-          "name"
+          "rule_id"
         ],
         "type": "object",
         "properties": {
@@ -15852,13 +15854,13 @@
           },
           "masked": { "type": "boolean" },
           "matched_content": { "type": "string" },
-          "name": { "type": "string" },
           "node_id": { "type": "string" },
           "resources": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelBasicNode" },
             "nullable": true
           },
+          "rule_id": { "type": "string" },
           "score": { "type": "number" },
           "starting_index": { "type": "integer" },
           "updated_at": { "type": "integer" }
@@ -15870,7 +15872,6 @@
         "properties": {
           "level": { "type": "string" },
           "masked": { "type": "boolean" },
-          "name": { "type": "string" },
           "part": { "type": "string" },
           "payload": { "type": "string" },
           "rule_id": { "type": "string" },
