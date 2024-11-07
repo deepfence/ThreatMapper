@@ -303,10 +303,10 @@ const UniqueTable = () => {
             <div className="w-4 h-4 shrink-0 text-text-text-and-icon">
               <SecretsIcon />
             </div>
-            <TruncatedText text={info.row.original.name ?? info.getValue() ?? ''} />
+            <TruncatedText text={info.row.original.rule_id ?? info.getValue() ?? ''} />
           </DFLink>
         ),
-        header: () => <TruncatedText text="Name" />,
+        header: () => <TruncatedText text="Rule ID" />,
         minSize: 100,
         size: 120,
         maxSize: 130,

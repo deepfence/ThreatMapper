@@ -59,7 +59,7 @@ const Header = ({
             <SecretsIcon />
           </div>
           <h3 className="text-h3  grow-0 overflow-hidden">
-            <TruncatedText text={data?.name ?? '-'} />
+            <TruncatedText text={data?.rule_id ?? '-'} />
           </h3>
           <RemediationButton
             className="ml-auto"
@@ -145,7 +145,7 @@ const DetailsComponent = ({
             type: 'secret',
             args: {
               query_type: 'remediation',
-              name: secret.name,
+              name: secret.rule_id,
             },
           }}
           onBackButtonClick={() => {
@@ -157,7 +157,7 @@ const DetailsComponent = ({
   }
 
   const keyValues = getFieldsKeyValue(secret ?? {}, {
-    hiddenFields: ['starting_index', 'score', 'node_id', 'resources', 'name', 'level'],
+    hiddenFields: ['starting_index', 'score', 'node_id', 'resources', 'level'],
     priorityFields: ['full_filename', 'matched_content', 'masked', 'updated_at'],
   });
 
