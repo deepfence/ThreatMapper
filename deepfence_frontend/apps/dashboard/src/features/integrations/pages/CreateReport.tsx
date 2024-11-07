@@ -152,7 +152,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         severity_or_check_type:
           severitiesOrCheckTypes as UtilsReportFiltersSeverityOrCheckTypeEnum,
       },
-
+      zipped_report: body.downloadZip === 'on',
       report_type: _reportType,
     },
   });
@@ -191,6 +191,7 @@ const ReportForm = () => {
   const [provider, setProvider] = useState('');
   const [downloadType, setDownloadType] = useState('');
   const [deadNodes, setIncludeDeadNodes] = useState(false);
+  const [downloadZip, setDownloadZip] = useState(false);
 
   const { navigate } = usePageNavigation();
 
@@ -308,7 +309,7 @@ const ReportForm = () => {
               })}
             </Listbox>
 
-            <div className="col-span-2 my-5">
+            <div className="col-span-2">
               <Checkbox
                 label="Include Dead Nodes"
                 key="deadNodes"
@@ -316,6 +317,17 @@ const ReportForm = () => {
                 checked={deadNodes}
                 onCheckedChange={(checked: boolean) => {
                   setIncludeDeadNodes(checked);
+                }}
+              />
+            </div>
+
+            <div className="col-span-2">
+              <Checkbox
+                label="Download a zipped archive of reports with a separate file per node/account?"
+                name="downloadZip"
+                checked={downloadZip}
+                onCheckedChange={(checked: boolean) => {
+                  setDownloadZip(checked);
                 }}
               />
             </div>
