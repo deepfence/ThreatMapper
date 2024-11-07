@@ -118,6 +118,7 @@ module "deepfence-cloud-scanner_example_single-account" {
   # Optional: To refresh the cloud resources every hour, provide CloudTrail Trail ARNs (Management events with write-only or read-write).
   # If empty, a trail with management events will be automatically chosen if available.
   # e.g.: ["arn:aws:cloudtrail:us-east-1:123456789012:trail/aws-events"]
+  enable_cloudtrail_trails      = false
   cloudtrail_trails             = []
 }
 ```
@@ -191,6 +192,11 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
 
       # Optional: AWS account ID where the helm chart is deployed, in case it is different from cloudAccount.accountID
       deployedAccountID: ""
+
+    # Optional: To refresh the cloud resources every hour, provide CloudTrail Trail ARNs (Management events with write-only or read-write).
+    # If empty, a trail with management events will be automatically chosen if available.
+    cloudAuditLogsEnabled: false
+    cloudAuditLogIDs: ""
 
     serviceAccount:
       # Specifies whether a service account should be created
@@ -268,6 +274,11 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       # Role name in this case is deepfence-cloud-scanner-role
       roleName: ""
 
+    # Optional: To refresh the cloud resources every hour, provide CloudTrail Trail ARNs (Management events with write-only or read-write).
+    # If empty, a trail with management events will be automatically chosen if available.
+    cloudAuditLogsEnabled: false
+    cloudAuditLogIDs: ""
+
     serviceAccount:
       # Specifies whether a service account should be created
       create: true
@@ -324,6 +335,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       ORGANIZATION_DEPLOYMENT: false
       CLOUD_ORGANIZATION_ID: ""
       ROLE_NAME: ""
+      CLOUD_AUDIT_LOGS_ENABLED: "false"
       CLOUD_AUDIT_LOG_IDS: ""
       HTTP_SERVER_REQUIRED: "false"
       SUCCESS_SIGNAL_URL: ""
@@ -363,6 +375,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       ORGANIZATION_DEPLOYMENT: true
       CLOUD_ORGANIZATION_ID: "<ROOT_ACCOUNT_ID>"
       ROLE_NAME: "<ROLE_NAME>"
+      CLOUD_AUDIT_LOGS_ENABLED: "false"
       CLOUD_AUDIT_LOG_IDS: ""
       HTTP_SERVER_REQUIRED: "false"
       SUCCESS_SIGNAL_URL: ""
