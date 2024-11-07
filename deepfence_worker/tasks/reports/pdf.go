@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -189,7 +190,7 @@ func generatePDF(ctx context.Context, params utils.ReportParams) (string, error)
 	log := log.WithCtx(ctx)
 
 	var (
-		document core.Document
+		document string
 		err      error
 	)
 
@@ -213,19 +214,22 @@ func generatePDF(ctx context.Context, params utils.ReportParams) (string, error)
 		return "", err
 	}
 
-	// create a temp file to hold pdf report
-	temp, err := os.CreateTemp("", "report-*-"+reportFileName(params))
+	return document, nil
+}
+
+func writeReportToFile(dir string, fileName string, data []byte) (string, error) {
+
+	// make sure directory exists
+	os.MkdirAll(dir, os.ModePerm)
+
+	out := filepath.Join(dir, fileName)
+
+	log.Debug().Msgf("write report to path %s", out)
+
+	err := os.WriteFile(out, data, os.ModePerm)
 	if err != nil {
 		return "", err
 	}
-	defer temp.Close()
 
-	if _, err := temp.Write(document.GetBytes()); err != nil {
-		return "", err
-	}
-
-	log.Info().Msgf("report id %s pdf generation metrics %s",
-		params.ReportID, document.GetReport())
-
-	return temp.Name(), nil
+	return out, nil
 }

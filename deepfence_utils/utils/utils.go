@@ -45,6 +45,8 @@ var (
 
 	SBOMFormatReplacer = strings.NewReplacer("@", "_", ".", "_")
 
+	NodeNameReplacer = strings.NewReplacer("/", "_", " ", "")
+
 	matchFirstCap                = regexp.MustCompile("(.)([A-Z][a-z]+)")
 	matchAllCap                  = regexp.MustCompile("([a-z0-9])([A-Z])")
 	once1, once2                 sync.Once
@@ -781,4 +783,47 @@ func ComputeChecksumForFile(filePath string) (string, error) {
 	}
 	cs := fmt.Sprintf("%x", h.Sum(nil))
 	return cs, nil
+}
+
+func ZipDir(sourceDir string, baseZipPath string, outputZip string) error {
+
+	log.Debug().Msgf("add files from directory %s to zip", sourceDir)
+
+	archive, err := os.Create(outputZip)
+	if err != nil {
+		return err
+	}
+	defer archive.Close()
+
+	zw := zip.NewWriter(archive)
+	defer zw.Close()
+
+	return filepath.Walk(sourceDir,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			file, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			log.Debug().Msgf("adding file to zip %s", info.Name())
+
+			f, err := zw.Create(filepath.Join(baseZipPath, info.Name()))
+			if err != nil {
+				return err
+			}
+
+			_, err = io.Copy(f, file)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		})
 }

@@ -10,6 +10,7 @@ type GenerateReportReq struct {
 	ToTimestamp   int64               `json:"to_timestamp"`   // timestamp in milliseconds
 	Filters       utils.ReportFilters `json:"filters"`
 	Options       utils.ReportOptions `json:"options" validate:"omitempty"`
+	ZippedReport  bool                `json:"zipped_report"`
 }
 
 type GenerateReportResp struct {
