@@ -62,6 +62,12 @@ export interface ModelGenerateReportReq {
      * @memberof ModelGenerateReportReq
      */
     to_timestamp?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelGenerateReportReq
+     */
+    zipped_report?: boolean;
 }
 
 
@@ -101,6 +107,7 @@ export function ModelGenerateReportReqFromJSONTyped(json: any, ignoreDiscriminat
         'options': !exists(json, 'options') ? undefined : UtilsReportOptionsFromJSON(json['options']),
         'report_type': json['report_type'],
         'to_timestamp': !exists(json, 'to_timestamp') ? undefined : json['to_timestamp'],
+        'zipped_report': !exists(json, 'zipped_report') ? undefined : json['zipped_report'],
     };
 }
 
@@ -118,6 +125,7 @@ export function ModelGenerateReportReqToJSON(value?: ModelGenerateReportReq | nu
         'options': UtilsReportOptionsToJSON(value.options),
         'report_type': value.report_type,
         'to_timestamp': value.to_timestamp,
+        'zipped_report': value.zipped_report,
     };
 }
 
