@@ -492,6 +492,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		ToTimestamp:   toTimestamp,
 		Filters:       req.Filters,
 		Options:       req.Options,
+		ZippedReport:  req.ZippedReport,
 	}
 
 	// scan id can only be sent while downloading individual scans

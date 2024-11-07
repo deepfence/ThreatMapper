@@ -83,6 +83,7 @@ type ReportParams struct {
 	ToTimestamp   time.Time     `json:"to_timestamp"`
 	Filters       ReportFilters `json:"filters"`
 	Options       ReportOptions `json:"options,omitempty"`
+	ZippedReport  bool          `json:"zipped_report"`
 }
 
 type ReportOptions struct {
