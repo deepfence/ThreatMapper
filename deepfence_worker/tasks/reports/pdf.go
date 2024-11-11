@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
@@ -74,7 +75,8 @@ func getMarato() core.Maroto {
 	return m
 }
 
-func getFiltersPage(title, scanType, nodeType, timeRange, severity, advFilters string) core.Page {
+func getFiltersPage(title string, scanType string, nodeType []string,
+	timeRange string, severity string, advFilters string) core.Page {
 
 	cellStyle := &props.Cell{
 		BackgroundColor: &props.Color{Red: 255, Green: 255, Blue: 255},
@@ -104,7 +106,7 @@ func getFiltersPage(title, scanType, nodeType, timeRange, severity, advFilters s
 		),
 		row.New(6).Add(
 			text.NewCol(6, "Node Type", filtersTextProps).WithStyle(cellStyle),
-			text.NewCol(6, nodeType, filtersTextProps).WithStyle(cellStyle),
+			text.NewCol(6, strings.Join(nodeType, ","), filtersTextProps).WithStyle(cellStyle),
 		),
 		row.New(6).Add(
 			text.NewCol(6, "Time Range", filtersTextProps).WithStyle(cellStyle),

@@ -137,7 +137,7 @@ func createCompSingleReport(data *Info[model.Compliance], params sdkUtils.Report
 
 	// summary table
 	var summaryPage core.Page
-	if data.AppliedFilters.NodeType != "cluster" {
+	if data.AppliedFilters.NodeType[0] != "cluster" {
 		summaryPage = getComplianceSummaryPage(data.NodeWiseData.SeverityCount)
 	} else {
 		summaryPage = getCloudComplianceSummaryPage(data.NodeWiseData.SeverityCount)
@@ -202,7 +202,7 @@ func createCompZippedReport(data *Info[model.Compliance], params sdkUtils.Report
 			i: data.NodeWiseData.SeverityCount[i],
 		}
 		var summaryPage core.Page
-		if data.AppliedFilters.NodeType != "cluster" {
+		if data.AppliedFilters.NodeType[0] != "cluster" {
 			summaryPage = getComplianceSummaryPage(singleSummary)
 		} else {
 			summaryPage = getCloudComplianceSummaryPage(singleSummary)
@@ -249,9 +249,9 @@ func createCompZippedReport(data *Info[model.Compliance], params sdkUtils.Report
 	return outputZip, nil
 }
 
-func addCompResultHeaders(p core.Page, nodeName string, nodeType string) {
+func addCompResultHeaders(p core.Page, nodeName string, nodeType []string) {
 	p.Add(text.NewRow(10, fmt.Sprintf("%s - Scan Details", nodeName), compResultHeaderProps))
-	if nodeType != "cluster" {
+	if nodeType[0] != "cluster" {
 		p.Add(row.New(10).Add(
 			text.NewCol(1, "No.", compResultHeaderProps).WithStyle(compResultCellStyle),
 			text.NewCol(1, "Status", compResultHeaderProps).WithStyle(compResultCellStyle),
@@ -273,10 +273,10 @@ func addCompResultHeaders(p core.Page, nodeName string, nodeType string) {
 	}
 }
 
-func getCompResultRows(d ScanData[model.Compliance], nodeType string) []core.Row {
+func getCompResultRows(d ScanData[model.Compliance], nodeType []string) []core.Row {
 	resultRows := []core.Row{}
 	for k, v := range d.ScanResults {
-		if nodeType != "cluster" {
+		if nodeType[0] != "cluster" {
 			resultRows = append(
 				resultRows,
 				row.New(15).Add(
