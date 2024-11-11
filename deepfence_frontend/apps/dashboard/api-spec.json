@@ -16663,17 +16663,20 @@
           "include_dead_nodes": { "type": "boolean" },
           "most_exploitable_report": { "type": "boolean" },
           "node_type": {
-            "enum": [
-              "host",
-              "container",
-              "container_image",
-              "linux",
-              "cluster",
-              "aws",
-              "gcp",
-              "azure"
-            ],
-            "type": "string"
+            "type": "array",
+            "items": {
+              "enum": [
+                "host",
+                "container",
+                "container_image",
+                "linux",
+                "cluster",
+                "aws",
+                "gcp",
+                "azure"
+              ]
+            },
+            "nullable": true
           },
           "scan_id": { "type": "string" },
           "scan_type": {

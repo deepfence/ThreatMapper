@@ -46,10 +46,10 @@ export interface UtilsReportFilters {
     most_exploitable_report?: boolean;
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof UtilsReportFilters
      */
-    node_type: UtilsReportFiltersNodeTypeEnum;
+    node_type: Array<UtilsReportFiltersNodeTypeEnum>;
     /**
      * 
      * @type {string}
