@@ -70,7 +70,7 @@ func searchScansFilter(params sdkUtils.ReportParams) rptSearch.SearchScanReq {
 		Filters: reporters.FieldsFilters{
 			ContainsFilter: reporters.ContainsFilter{
 				FieldsValues: map[string][]interface{}{
-					"node_type": {params.Filters.NodeType},
+					"node_type": sdkUtils.StringArrayToInterfaceArray(params.Filters.NodeType),
 				},
 			},
 		},
