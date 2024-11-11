@@ -40,7 +40,9 @@ func reportFileName(params sdkUtils.ReportParams) string {
 		return fmt.Sprintf("sbom_%s%s", params.ReportID, fileExt(sdkUtils.ReportSBOM))
 	}
 
-	list := []string{params.Filters.ScanType, params.Filters.NodeType, params.ReportID}
+	list := []string{params.Filters.ScanType}
+	list = append(list, params.Filters.NodeType...)
+	list = append(list, params.ReportID)
 
 	if params.ZippedReport {
 		return strings.Join(list, "_") + ".zip"
