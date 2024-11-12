@@ -17,8 +17,6 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  IngestersSecret,
-  IngestersSecretScanStatus,
   ModelScanListReq,
   ModelScanListResp,
   ModelScanResultsReq,
@@ -37,10 +35,6 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    IngestersSecretFromJSON,
-    IngestersSecretToJSON,
-    IngestersSecretScanStatusFromJSON,
-    IngestersSecretScanStatusToJSON,
     ModelScanListReqFromJSON,
     ModelScanListReqToJSON,
     ModelScanListRespFromJSON,
@@ -69,14 +63,6 @@ import {
 
 export interface CountResultsSecretScanRequest {
     modelScanResultsReq?: ModelScanResultsReq;
-}
-
-export interface IngestSecretScanStatusRequest {
-    ingestersSecretScanStatus?: Array<IngestersSecretScanStatus> | null;
-}
-
-export interface IngestSecretsRequest {
-    ingestersSecret?: Array<IngestersSecret> | null;
 }
 
 export interface ListSecretScanRequest {
@@ -140,38 +126,6 @@ export interface SecretScanApiInterface {
      * Group Secret Results
      */
     groupResultsSecrets(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchResultGroupResp>;
-
-    /**
-     * Ingest secrets scan status from the agent
-     * @summary Ingest Secrets Scan Status
-     * @param {Array<IngestersSecretScanStatus>} [ingestersSecretScanStatus] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SecretScanApiInterface
-     */
-    ingestSecretScanStatusRaw(requestParameters: IngestSecretScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
-
-    /**
-     * Ingest secrets scan status from the agent
-     * Ingest Secrets Scan Status
-     */
-    ingestSecretScanStatus(requestParameters: IngestSecretScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
-
-    /**
-     * Ingest secrets found while scanning the agent
-     * @summary Ingest Secrets
-     * @param {Array<IngestersSecret>} [ingestersSecret] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SecretScanApiInterface
-     */
-    ingestSecretsRaw(requestParameters: IngestSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
-
-    /**
-     * Ingest secrets found while scanning the agent
-     * Ingest Secrets
-     */
-    ingestSecrets(requestParameters: IngestSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Get Secret Scans list on agent or registry
@@ -349,82 +303,6 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
     async groupResultsSecrets(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchResultGroupResp> {
         const response = await this.groupResultsSecretsRaw(initOverrides);
         return await response.value();
-    }
-
-    /**
-     * Ingest secrets scan status from the agent
-     * Ingest Secrets Scan Status
-     */
-    async ingestSecretScanStatusRaw(requestParameters: IngestSecretScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/ingest/secret-scan-logs`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: requestParameters.ingestersSecretScanStatus?.map(IngestersSecretScanStatusToJSON),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Ingest secrets scan status from the agent
-     * Ingest Secrets Scan Status
-     */
-    async ingestSecretScanStatus(requestParameters: IngestSecretScanStatusRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.ingestSecretScanStatusRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Ingest secrets found while scanning the agent
-     * Ingest Secrets
-     */
-    async ingestSecretsRaw(requestParameters: IngestSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/ingest/secrets`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: requestParameters.ingestersSecret?.map(IngestersSecretToJSON),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Ingest secrets found while scanning the agent
-     * Ingest Secrets
-     */
-    async ingestSecrets(requestParameters: IngestSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.ingestSecretsRaw(requestParameters, initOverrides);
     }
 
     /**

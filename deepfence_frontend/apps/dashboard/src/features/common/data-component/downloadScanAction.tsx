@@ -34,7 +34,7 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
   const getReportIdApiResponse = await getReportIdApi({
     modelGenerateReportReq: {
       filters: {
-        node_type: nodeType,
+        node_type: [nodeType],
         scan_type: scanType,
         scan_id: scanId,
       },

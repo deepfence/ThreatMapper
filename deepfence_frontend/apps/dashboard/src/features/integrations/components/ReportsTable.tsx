@@ -154,7 +154,10 @@ export const ReportTable = ({
       }
       if (
         nodeTypeFilter?.length &&
-        (!nodeTypeFilter.includes(filters?.node_type) || isNil(filters?.node_type))
+        (!nodeTypeFilter.some((filter) =>
+          filters?.node_type?.includes(filter as UtilsReportFiltersNodeTypeEnum),
+        ) ||
+          isNil(filters?.node_type))
       ) {
         return false;
       }

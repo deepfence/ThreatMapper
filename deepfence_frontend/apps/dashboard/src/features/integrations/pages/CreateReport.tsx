@@ -147,7 +147,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
       filters: {
         advanced_report_filters: advanced_report_filters,
         include_dead_nodes: body.deadNodes === 'on',
-        node_type: _nodeType,
+        node_type: [_nodeType],
         scan_type: _resource,
         severity_or_check_type:
           severitiesOrCheckTypes as UtilsReportFiltersSeverityOrCheckTypeEnum,
