@@ -17,8 +17,6 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  IngestersCompliance,
-  IngestersComplianceScanStatus,
   ModelComplianceScanResult,
   ModelComplianceScanResultsGroupResp,
   ModelComplianceScanTriggerReq,
@@ -37,10 +35,6 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    IngestersComplianceFromJSON,
-    IngestersComplianceToJSON,
-    IngestersComplianceScanStatusFromJSON,
-    IngestersComplianceScanStatusToJSON,
     ModelComplianceScanResultFromJSON,
     ModelComplianceScanResultToJSON,
     ModelComplianceScanResultsGroupRespFromJSON,
@@ -77,14 +71,6 @@ export interface GroupResultsCloudComplianceRequest {
 
 export interface GroupResultsComplianceRequest {
     modelComplinaceScanResultsGroupReq?: ModelComplinaceScanResultsGroupReq;
-}
-
-export interface IngestComplianceScanStatusRequest {
-    ingestersComplianceScanStatus?: Array<IngestersComplianceScanStatus> | null;
-}
-
-export interface IngestCompliancesRequest {
-    ingestersCompliance?: Array<IngestersCompliance> | null;
 }
 
 export interface ListComplianceScanRequest {
@@ -161,38 +147,6 @@ export interface ComplianceApiInterface {
      * Count Compliance Results by Control ID
      */
     groupResultsCompliance(requestParameters: GroupResultsComplianceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanResultsGroupResp>;
-
-    /**
-     * Ingest compliance issues found while scanning the agent
-     * @summary Ingest Compliance Scan Status
-     * @param {Array<IngestersComplianceScanStatus>} [ingestersComplianceScanStatus] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof ComplianceApiInterface
-     */
-    ingestComplianceScanStatusRaw(requestParameters: IngestComplianceScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
-
-    /**
-     * Ingest compliance issues found while scanning the agent
-     * Ingest Compliance Scan Status
-     */
-    ingestComplianceScanStatus(requestParameters: IngestComplianceScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
-
-    /**
-     * Ingest compliance issues found while scanning the agent
-     * @summary Ingest Compliances
-     * @param {Array<IngestersCompliance>} [ingestersCompliance] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof ComplianceApiInterface
-     */
-    ingestCompliancesRaw(requestParameters: IngestCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
-
-    /**
-     * Ingest compliance issues found while scanning the agent
-     * Ingest Compliances
-     */
-    ingestCompliances(requestParameters: IngestCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Get Compliance Scans list on agent or registry
@@ -396,82 +350,6 @@ export class ComplianceApi extends runtime.BaseAPI implements ComplianceApiInter
     async groupResultsCompliance(requestParameters: GroupResultsComplianceRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelComplianceScanResultsGroupResp> {
         const response = await this.groupResultsComplianceRaw(requestParameters, initOverrides);
         return await response.value();
-    }
-
-    /**
-     * Ingest compliance issues found while scanning the agent
-     * Ingest Compliance Scan Status
-     */
-    async ingestComplianceScanStatusRaw(requestParameters: IngestComplianceScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/ingest/compliance-scan-logs`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: requestParameters.ingestersComplianceScanStatus?.map(IngestersComplianceScanStatusToJSON),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Ingest compliance issues found while scanning the agent
-     * Ingest Compliance Scan Status
-     */
-    async ingestComplianceScanStatus(requestParameters: IngestComplianceScanStatusRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.ingestComplianceScanStatusRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Ingest compliance issues found while scanning the agent
-     * Ingest Compliances
-     */
-    async ingestCompliancesRaw(requestParameters: IngestCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/ingest/compliance`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: requestParameters.ingestersCompliance?.map(IngestersComplianceToJSON),
-        }, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * Ingest compliance issues found while scanning the agent
-     * Ingest Compliances
-     */
-    async ingestCompliances(requestParameters: IngestCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.ingestCompliancesRaw(requestParameters, initOverrides);
     }
 
     /**

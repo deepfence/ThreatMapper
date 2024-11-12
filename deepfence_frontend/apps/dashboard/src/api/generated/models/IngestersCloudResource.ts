@@ -360,6 +360,12 @@ export interface IngestersCloudResource {
      * @type {string}
      * @memberof IngestersCloudResource
      */
+    resource_group?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
     resource_id?: string;
     /**
      * 
@@ -558,6 +564,7 @@ export function IngestersCloudResourceFromJSONTyped(json: any, ignoreDiscriminat
         'public_ips': !exists(json, 'public_ips') ? undefined : json['public_ips'],
         'public_network_access': !exists(json, 'public_network_access') ? undefined : json['public_network_access'],
         'region': !exists(json, 'region') ? undefined : json['region'],
+        'resource_group': !exists(json, 'resource_group') ? undefined : json['resource_group'],
         'resource_id': !exists(json, 'resource_id') ? undefined : json['resource_id'],
         'resource_vpc_config': !exists(json, 'resource_vpc_config') ? undefined : json['resource_vpc_config'],
         'resources_vpc_config': !exists(json, 'resources_vpc_config') ? undefined : json['resources_vpc_config'],
@@ -647,6 +654,7 @@ export function IngestersCloudResourceToJSON(value?: IngestersCloudResource | nu
         'public_ips': value.public_ips,
         'public_network_access': value.public_network_access,
         'region': value.region,
+        'resource_group': value.resource_group,
         'resource_id': value.resource_id,
         'resource_vpc_config': value.resource_vpc_config,
         'resources_vpc_config': value.resources_vpc_config,

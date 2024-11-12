@@ -1,7 +1,6 @@
 .openapi-generator-ignore
 apis/AuthenticationApi.ts
 apis/CloudNodesApi.ts
-apis/CloudResourcesApi.ts
 apis/CloudScannerApi.ts
 apis/CommonApi.ts
 apis/CompletionApi.ts

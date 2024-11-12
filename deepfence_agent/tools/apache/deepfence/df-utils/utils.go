@@ -19,22 +19,9 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
-type PktDirection string
-type PolicyAction string
-
 const (
 	maxIdleConnsPerHost = 1024
-	HostMountDir        = "/fenced/mnt/host/"
-	CheckTypeHIPAA      = "hipaa"
-	CheckTypePCI        = "pci"
-	CheckTypeNIST       = "nist"
-	CheckTypeGDPR       = "gdpr"
 )
-
-type ComplianceScan struct {
-	Code  string `json:"code"`
-	Label string `json:"label"`
-}
 
 func RemoveLastCharacter(s string) string {
 	r := []rune(s)
@@ -45,6 +32,7 @@ func BuildHttpClientWithCert(certPath string) (*http.Client, error) {
 	// Set up our own certificate pool
 	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
 	transport := &http.Transport{
+		Proxy:               http.ProxyFromEnvironment,
 		MaxIdleConnsPerHost: maxIdleConnsPerHost,
 		TLSHandshakeTimeout: 0 * time.Second,
 		TLSClientConfig:     tlsConfig,
