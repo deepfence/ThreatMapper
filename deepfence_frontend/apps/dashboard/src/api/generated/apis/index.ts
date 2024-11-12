@@ -2,7 +2,6 @@
 /* eslint-disable */
 export * from './AuthenticationApi';
 export * from './CloudNodesApi';
-export * from './CloudResourcesApi';
 export * from './CloudScannerApi';
 export * from './CommonApi';
 export * from './CompletionApi';

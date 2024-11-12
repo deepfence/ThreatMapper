@@ -11,8 +11,9 @@
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "codegen": "pnpm run codegen:clean && openapi-generator-cli generate",
-    "codegen:clean": "rm -rf ./src/api/generated"
+    "codegen": "pnpm run codegen:clean && pnpm run transform-api-spec && openapi-generator-cli generate",
+    "codegen:clean": "rm -rf ./src/api/generated",
+    "transform-api-spec": "node scripts/transformAPISpec.js"
   },
   "dependencies": {
     "@antv/g6": "^4.8.24",
