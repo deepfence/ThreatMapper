@@ -58,9 +58,12 @@ var (
 
 func GetHTTPClient() *http.Client {
 	once1.Do(func() {
+		tr := http.DefaultTransport.(*http.Transport).Clone()
+		tr.Proxy = http.ProxyFromEnvironment
+
 		secureClient = &http.Client{
 			Timeout:   time.Second * 10,
-			Transport: http.DefaultTransport.(*http.Transport).Clone(),
+			Transport: tr,
 		}
 	})
 
@@ -77,6 +80,7 @@ func GetInsecureHTTPClient() *http.Client {
 		tr := http.DefaultTransport.(*http.Transport).Clone()
 		tr.TLSClientConfig = tlsConfig
 		tr.WriteBufferSize = 10240
+		tr.Proxy = http.ProxyFromEnvironment
 
 		insecureClient = &http.Client{
 			Timeout:   time.Second * 10,

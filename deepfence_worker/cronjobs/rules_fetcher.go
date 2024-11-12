@@ -50,6 +50,7 @@ func FetchThreatIntelListing(ctx context.Context, token string) (threatintel.Lis
 	tr.TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
+	tr.Proxy = http.ProxyFromEnvironment
 	hc := http.Client{
 		Timeout:   10 * time.Second,
 		Transport: tr,
