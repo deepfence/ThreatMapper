@@ -110,6 +110,7 @@ func downloadFile(filepath string, url string) (err error) {
 
 	tr := http.DefaultTransport.(*http.Transport).Clone()
 	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	tr.Proxy = http.ProxyFromEnvironment
 
 	client := &http.Client{
 		Timeout:   5 * time.Minute,
