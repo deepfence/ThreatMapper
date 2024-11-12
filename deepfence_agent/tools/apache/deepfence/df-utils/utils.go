@@ -45,6 +45,7 @@ func BuildHttpClientWithCert(certPath string) (*http.Client, error) {
 	// Set up our own certificate pool
 	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
 	transport := &http.Transport{
+		Proxy:               http.ProxyFromEnvironment,
 		MaxIdleConnsPerHost: maxIdleConnsPerHost,
 		TLSHandshakeTimeout: 0 * time.Second,
 		TLSClientConfig:     tlsConfig,

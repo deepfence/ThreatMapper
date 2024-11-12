@@ -149,6 +149,7 @@ func ExposeFile(ctx context.Context, fName string, consoleURL string, ttlCache *
 func downloadFile(ctx context.Context, url string) (*bytes.Buffer, error) {
 
 	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.Proxy = http.ProxyFromEnvironment
 	tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	client := http.Client{Timeout: 600 * time.Second}

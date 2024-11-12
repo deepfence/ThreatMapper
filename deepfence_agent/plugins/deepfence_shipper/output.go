@@ -160,15 +160,17 @@ func NewPublisher(cfg PublisherConfig, maxRetries int, batchSize int) *Publisher
 		return rhttp.DefaultRetryPolicy(ctx, resp, err)
 	}
 
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.Proxy = http.ProxyFromEnvironment
+
 	if cfg.URLSchema == "https" {
-		tr := http.DefaultTransport.(*http.Transport).Clone()
 		tr.TLSClientConfig = &tls.Config{
 			RootCAs:            x509.NewCertPool(),
 			InsecureSkipVerify: true,
 		}
 		tr.DisableKeepAlives = false
-		rhc.HTTPClient.Transport = tr
 	}
+	rhc.HTTPClient.Transport = tr
 
 	hc = rhc.StandardClient()
 
