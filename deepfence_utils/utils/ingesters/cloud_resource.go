@@ -99,6 +99,7 @@ type CloudResource struct {
 	Users                          *json.RawMessage `json:"users"`
 	UserGroups                     *json.RawMessage `json:"user-groups"`
 	ResourcesVpcConfig             *json.RawMessage `json:"resources_vpc_config"`
+	ResourceGroup                  string           `json:"resource_group,omitempty"`
 }
 
 func (c *CloudResource) ToMap() (map[string]interface{}, error) {
