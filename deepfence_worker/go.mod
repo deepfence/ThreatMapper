@@ -29,7 +29,7 @@ require (
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
-	github.com/deepfence/YaraHunter v0.0.0-20241112093056-346816ab4553
+	github.com/deepfence/YaraHunter v0.0.0-20241115044508-1b0003138c9f
 	github.com/deepfence/agent-plugins-grpc v1.1.0
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20241112090544-f42aabb5dc7f
 	github.com/deepfence/match-scanner v0.0.0-20241104190155-00799508ab6c
