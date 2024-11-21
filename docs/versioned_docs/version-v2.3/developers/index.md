@@ -1,18 +1,13 @@
 ---
-title: ThreatMapper Architecture
+title: Developer Resources
 ---
 
-# ThreatMapper Architecture
-
-:::info
-
-Help needed to provide architectural information for developers
-
-:::
+# Developer Resources
 
 Resources:
  * [How to build Deepfence ThreatMapper](build)
- * [How To Use Python Sdk](https://github.com/deepfence/threatmapper-python-client/blob/main/README.md)
+ * [REST API Reference](api-reference)
+ * [How To Use Python Sdk](python-sdk)
 
 ```mdx-code-block
 import DocCardList from '@theme/DocCardList';
