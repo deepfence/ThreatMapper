@@ -2,7 +2,7 @@
 title: How to Use Python Sdk
 ---
 
-# threatmapper
+# ThreatMapper Python SDK
 A client library for accessing Deepfence ThreatMapper
 
 ## How to Install

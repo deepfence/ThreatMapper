@@ -170,6 +170,7 @@ const sidebars = {
         'developers/build',
         'developers/deploy-console',
         'developers/deploy-agent',
+        'developers/api-reference',
         'developers/python-sdk',
       ],
     },
