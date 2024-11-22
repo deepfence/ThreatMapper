@@ -62,8 +62,13 @@ func (h *Handler) APIAuthHandler(w http.ResponseWriter, r *http.Request) {
 		h.respondError(err, w)
 		return
 	}
-	// licenseActive - not needed in this api
-	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypeAPIToken, false)
+
+	licenseActive := false
+	license, err := model.GetLicense(r.Context(), pgClient)
+	if err == nil {
+		licenseActive = license.IsActive
+	}
+	accessTokenResponse, err := user.GetAccessToken(h.TokenAuth, model.GrantTypeAPIToken, licenseActive)
 	if err != nil {
 		h.respondError(err, w)
 		return
@@ -90,13 +95,11 @@ func (h *Handler) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	licenseActive := false
-	if grantType == model.GrantTypePassword {
-		pgClient, err := directory.PostgresClient(r.Context())
+	pgClient, err := directory.PostgresClient(r.Context())
+	if err == nil {
+		license, err := model.GetLicense(r.Context(), pgClient)
 		if err == nil {
-			license, err := model.GetLicense(r.Context(), pgClient)
-			if err == nil {
-				licenseActive = license.IsActive
-			}
+			licenseActive = license.IsActive
 		}
 	}
 
