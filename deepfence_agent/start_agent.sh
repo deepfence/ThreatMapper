@@ -47,7 +47,12 @@ configure_cron() {
   #doesnt work smoothly inside docker!
   service cron start
   chmod 600 /etc/logrotate.d/fenced_logrotate.conf
-  (echo "*/5 * * * * /usr/sbin/logrotate /etc/logrotate.d/fenced_logrotate.conf") | crontab -
+  MARK="/etc/logrotate.d/fenced_logrotate.conf"
+  crontab_output=$(crontab -l)
+  if [ $(echo "$crontab_output" | grep -ic "$MARK") -eq 0 ]
+  then
+      { crontab -l; echo "*/5 * * * * /usr/sbin/logrotate /etc/logrotate.d/fenced_logrotate.conf"; } | crontab -
+  fi
 }
 
 launch_deepfenced() {
