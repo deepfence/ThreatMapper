@@ -48,9 +48,9 @@ managementConsoleUrl: ""
 - Set image tag
 ```yaml
 global:
-  # this image tag is used every where for agents
+  # this image tag is used everywhere for agents
   # to override set tag at agents level
-  imageTag: 2.0.1
+  imageTag: 2.5.1
 ```
 - Set deepfence auth key
 Set authentication key when it is enabled in management console
