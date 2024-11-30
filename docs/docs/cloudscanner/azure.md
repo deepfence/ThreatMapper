@@ -28,7 +28,7 @@ provider "azurerm" {
 
 module "cloud-scanner_example_single-subscription" {
   source              = "deepfence/cloud-scanner/azure//examples/single-subscription"
-  version             = "0.9.0"
+  version             = "0.9.1"
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
@@ -59,7 +59,7 @@ provider "azurerm" {
 
 module "cloud-scanner_example_tenant-subscriptions" {
   source                  = "deepfence/cloud-scanner/azure//examples/tenant-subscriptions"
-  version                 = "0.9.0"
+  version                 = "0.9.1"
   mgmt-console-url        = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port       = "<Console port> eg. 443"
   deepfence-key           = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
@@ -123,7 +123,7 @@ data "azurerm_kubernetes_cluster" "default" {
 
 module "cloud-scanner" {
   source                     = "deepfence/cloud-scanner/azure//examples/aks"
-  version                    = "0.9.0"
+  version                    = "0.9.1"
   name                       = "<name of the app>"
   mgmt-console-url           = "<Console URL> eg. XXX.XXX.XX.XXX"
   deepfence-key              = "<DEEPFENCE API KEY>"
@@ -158,7 +158,7 @@ data "azurerm_kubernetes_cluster" "default" {
 
 module "test" {
   source                     = "deepfence/cloud-scanner/azure//examples/aks"
-  version                    = "0.9.0"
+  version                    = "0.9.1"
   name                       = "<name of the app>"
   mgmt-console-url           = "<Console URL> eg. XXX.XXX.XX.XXX"
   deepfence-key              = "<DEEPFENCE API KEY>"
@@ -204,7 +204,7 @@ module "test" {
 
       module "infrastructure_cloud-scanner-app" {
         source                  = "deepfence/cloud-scanner/azure//modules/infrastructure/cloud-scanner-app"
-        version                 = "0.9.0"
+        version                 = "0.9.1"
         name                    = "deepfence-cloud-scanner"
         subscription_ids_access = [data.azurerm_subscription.current.subscription_id]
       }
@@ -235,7 +235,7 @@ module "test" {
 
       module "infrastructure_cloud-scanner-app" {
         source                  = "deepfence/cloud-scanner/azure//modules/infrastructure/cloud-scanner-app"
-        version                 = "0.9.0"
+        version                 = "0.9.1"
         name                    = "deepfence-cloud-scanner"
         subscription_ids_access = [list of tenant subscriptions ids]
       }
