@@ -85,7 +85,7 @@ provider "aws" {
 
 module "deepfence-cloud-scanner_example_single-account" {
   source                        = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
-  version                       = "0.9.0"
+  version                       = "0.9.1"
   name                          = "deepfence-cloud-scanner"
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url              = "<Console URL>"
