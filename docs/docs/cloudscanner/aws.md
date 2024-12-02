@@ -94,9 +94,10 @@ module "deepfence-cloud-scanner_example_single-account" {
   # AWS Account Name (Optional, for easy identification)
   account_name                  = ""
   image                         = "quay.io/deepfenceio/cloud_scanner_ce:THREATMAPPER_VERSION"
-  # Disabled regions: List of cloud regions which should not be scanned
+  # Enabled regions (Optional): List of regions which should be scanned. All other regions will be disabled.
+  # All regions enabled by default
   # Example: ["us-east-1", "us-east-2"]
-  disabled_cloud_regions        = []
+  enabled_cloud_regions         = []
   # Task CPU Units (Default: 4 vCPU)
   cpu                           = "4096"
   # Task Memory (Default: 8 GB)
@@ -189,8 +190,10 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       # AWS region
       region: "us-east-1"
 
-      # Optional: Comma separated list of cloud regions which should not be scanned
-      disabledCloudRegions: ""
+      # Optional: Comma separated list of regions which should be scanned. All other regions will be disabled.
+      # All regions enabled by default
+      # Example: enabledCloudRegions: "us-east-1,us-east-2"
+      enabledCloudRegions: ""
 
       # Policy set for Cloud Scanner in CloudFormation / terraform
       # arn:aws:iam::aws:policy/ReadOnlyAccess / arn:aws:iam::aws:policy/SecurityAudit
@@ -259,8 +262,10 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       # AWS region
       region: "us-east-1"
 
-      # Optional: Comma separated list of cloud regions which should not be scanned
-      disabledCloudRegions: ""
+      # Optional: Comma separated list of regions which should be scanned. All other regions will be disabled.
+      # All regions enabled by default
+      # Example: enabledCloudRegions: "us-east-1,us-east-2"
+      enabledCloudRegions: ""
 
       # Policy set for Cloud Scanner in CloudFormation / terraform
       # arn:aws:iam::aws:policy/ReadOnlyAccess / arn:aws:iam::aws:policy/SecurityAudit
@@ -338,7 +343,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       DEEPFENCE_KEY: "<DEEPFENCE_KEY>"
       CLOUD_PROVIDER: "aws"
       CLOUD_REGION: "<REGION>"
-      DISABLED_CLOUD_REGIONS: ""
+      ENABLED_CLOUD_REGIONS: ""
       CLOUD_ACCOUNT_ID: "<ACCOUNT_ID>"
       DEPLOYED_ACCOUNT_ID: ""
       CLOUD_ACCOUNT_NAME: ""
@@ -379,7 +384,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       DEEPFENCE_KEY: "<DEEPFENCE_KEY>"
       CLOUD_PROVIDER: "aws"
       CLOUD_REGION: "<REGION>"
-      DISABLED_CLOUD_REGIONS: ""
+      ENABLED_CLOUD_REGIONS: ""
       CLOUD_ACCOUNT_ID: "<ROOT_ACCOUNT_ID>"
       DEPLOYED_ACCOUNT_ID: ""
       CLOUD_ACCOUNT_NAME: ""
