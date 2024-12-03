@@ -31,42 +31,88 @@ func (e ElasticSearch) SendNotification(ctx context.Context, message []map[strin
 
 	var err error
 
-	payloadMsg := ""
-	meta := "{\"index\":{\"_index\":\"" + e.Config.Index + "\"}}\n"
-	for _, payload := range message {
-		pl, err := json.Marshal(payload)
+	// send messages to bulk api
+	sendBulkRequest := func() error {
+		payloadMsg := ""
+		meta := "{\"index\":{\"_index\":\"" + e.Config.Index + "\"}}\n"
+		for _, payload := range message {
+			pl, err := json.Marshal(payload)
+			if err != nil {
+				return err
+			}
+			payloadMsg += meta + string(pl) + "\n"
+		}
+		endpointURL := strings.TrimRight(e.Config.EndpointURL, "/")
+		req, err := http.NewRequest(http.MethodPost, endpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
 		if err != nil {
+			log.Error().Err(err).Msg("error on create http request")
 			return err
 		}
-		payloadMsg += meta + string(pl) + "\n"
-	}
 
-	// send message to this elasticsearch using http
-	// Set up the HTTP request.
-	endpointURL := strings.TrimRight(e.Config.EndpointURL, "/")
-	req, err := http.NewRequest(http.MethodPost, endpointURL+"/_bulk", bytes.NewBuffer([]byte(payloadMsg)))
+		req.Header.Set("Content-Type", "application/x-ndjson")
+
+		if e.Config.AuthHeader != "" {
+			req.Header.Set("Authorization", e.Config.AuthHeader)
+		}
+
+		// Make the HTTP request.
+		resp, err := utils.GetHTTPClient().Do(req)
+		if err != nil {
+			log.Error().Err(err).Msg("error on http request")
+			return intgerr.CheckHTTPError(err)
+		}
+		defer resp.Body.Close()
+
+		return intgerr.CheckResponseCode(resp, http.StatusOK)
+	}
+	err = sendBulkRequest()
+
 	if err != nil {
-		log.Error().Err(err).Msg("error on create http request")
-		span.EndWithErr(err)
-		return err
+		log.Warn().Err(err).Msg("error sending to elasticsearch using bulk api, switching to individual requests")
+
+		// Try sending the messages individually
+		endpointURL := strings.TrimRight(e.Config.EndpointURL, "/")
+		postDocumentURL := fmt.Sprintf("%s/%s/_doc", endpointURL, e.Config.Index)
+
+		postDocumentRequest := func(message map[string]interface{}) error {
+			payloadMsg, err := json.Marshal(message)
+			if err != nil {
+				return err
+			}
+
+			req, err := http.NewRequest(http.MethodPost, postDocumentURL, bytes.NewBuffer(payloadMsg))
+			if err != nil {
+				log.Error().Err(err).Msg("error on create http request")
+				return err
+			}
+
+			req.Header.Set("Content-Type", "application/json")
+
+			if e.Config.AuthHeader != "" {
+				req.Header.Set("Authorization", e.Config.AuthHeader)
+			}
+
+			// Make the HTTP request.
+			resp, err := utils.GetHTTPClient().Do(req)
+			if err != nil {
+				log.Error().Err(err).Msg("error on http request")
+				return intgerr.CheckHTTPError(err)
+			}
+			defer resp.Body.Close()
+
+			return intgerr.CheckResponseCode(resp, http.StatusCreated)
+		}
+
+		for _, msg := range message {
+			err = postDocumentRequest(msg)
+			if err != nil {
+				log.Error().Err(err).Msg("error sending to elasticsearch")
+				span.EndWithErr(err)
+				return err
+			}
+		}
 	}
-
-	req.Header.Set("Content-Type", "application/x-ndjson")
-
-	if e.Config.AuthHeader != "" {
-		req.Header.Set("Authorization", e.Config.AuthHeader)
-	}
-
-	// Make the HTTP request.
-	resp, err := utils.GetHTTPClient().Do(req)
-	if err != nil {
-		log.Error().Err(err).Msg("error on http request")
-		span.EndWithErr(err)
-		return intgerr.CheckHTTPError(err)
-	}
-	defer resp.Body.Close()
-
-	return intgerr.CheckResponseCode(resp, http.StatusOK)
+	return nil
 }
 
 func (e ElasticSearch) IsValidCredential(ctx context.Context) (bool, error) {
