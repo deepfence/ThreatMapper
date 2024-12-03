@@ -85,7 +85,7 @@ provider "aws" {
 
 module "deepfence-cloud-scanner_example_single-account" {
   source                        = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
-  version                       = "0.9.0"
+  version                       = "0.9.1"
   name                          = "deepfence-cloud-scanner"
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url              = "<Console URL>"
@@ -94,6 +94,10 @@ module "deepfence-cloud-scanner_example_single-account" {
   # AWS Account Name (Optional, for easy identification)
   account_name                  = ""
   image                         = "quay.io/deepfenceio/cloud_scanner_ce:THREATMAPPER_VERSION"
+  # Enabled regions (Optional): List of regions which should be scanned. All other regions will be disabled.
+  # All regions enabled by default
+  # Example: ["us-east-1", "us-east-2"]
+  enabled_cloud_regions         = []
   # Task CPU Units (Default: 4 vCPU)
   cpu                           = "4096"
   # Task Memory (Default: 8 GB)
@@ -186,6 +190,11 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       # AWS region
       region: "us-east-1"
 
+      # Optional: Comma separated list of regions which should be scanned. All other regions will be disabled.
+      # All regions enabled by default
+      # Example: enabledCloudRegions: "us-east-1,us-east-2"
+      enabledCloudRegions: ""
+
       # Policy set for Cloud Scanner in CloudFormation / terraform
       # arn:aws:iam::aws:policy/ReadOnlyAccess / arn:aws:iam::aws:policy/SecurityAudit
       cloudScannerPolicy: "arn:aws:iam::aws:policy/SecurityAudit"
@@ -252,6 +261,11 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       cloudProvider: "aws"
       # AWS region
       region: "us-east-1"
+
+      # Optional: Comma separated list of regions which should be scanned. All other regions will be disabled.
+      # All regions enabled by default
+      # Example: enabledCloudRegions: "us-east-1,us-east-2"
+      enabledCloudRegions: ""
 
       # Policy set for Cloud Scanner in CloudFormation / terraform
       # arn:aws:iam::aws:policy/ReadOnlyAccess / arn:aws:iam::aws:policy/SecurityAudit
@@ -329,6 +343,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       DEEPFENCE_KEY: "<DEEPFENCE_KEY>"
       CLOUD_PROVIDER: "aws"
       CLOUD_REGION: "<REGION>"
+      ENABLED_CLOUD_REGIONS: ""
       CLOUD_ACCOUNT_ID: "<ACCOUNT_ID>"
       DEPLOYED_ACCOUNT_ID: ""
       CLOUD_ACCOUNT_NAME: ""
@@ -369,6 +384,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
       DEEPFENCE_KEY: "<DEEPFENCE_KEY>"
       CLOUD_PROVIDER: "aws"
       CLOUD_REGION: "<REGION>"
+      ENABLED_CLOUD_REGIONS: ""
       CLOUD_ACCOUNT_ID: "<ROOT_ACCOUNT_ID>"
       DEPLOYED_ACCOUNT_ID: ""
       CLOUD_ACCOUNT_NAME: ""

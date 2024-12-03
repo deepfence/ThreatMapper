@@ -20,7 +20,7 @@ Copy and paste the following (single project or multiple projects) into a new fi
 ```terraform
 module "cloud-scanner_example_single-project" {
   source              = "deepfence/cloud-scanner/gcp//examples/single-project"
-  version             = "0.9.0"
+  version             = "0.9.1"
   name                = "deepfence-cloud-scanner"
   # mgmt-console-url: deepfence.customer.com or 22.33.44.55
   mgmt-console-url    = "<Console URL>"
@@ -53,7 +53,7 @@ module "cloud-scanner_example_single-project" {
 ```terraform
 module "cloud-scanner_example_multiple-projects" {
   source              = "deepfence/cloud-scanner/gcp//examples/multi-project"
-  version             = "0.9.0"
+  version             = "0.9.1"
   name                = "deepfence-cloud-scanner"
   # org_domain: root project name
   org_domain          = ""
@@ -128,7 +128,7 @@ data "google_container_cluster" "target_cluster" {
 
 module "cloud_scanner_example_single_project" {
   source                     = "deepfence/cloud-scanner/gcp//examples/gke"
-  version                    = "0.9.0"
+  version                    = "0.9.1"
   gke_host                   = "https://${data.google_container_cluster.target_cluster.endpoint}"
   gke_token                  = data.google_client_config.current.access_token
   gke_cluster_ca_certificate = base64decode(data.google_container_cluster.target_cluster.master_auth[0].cluster_ca_certificate,)
@@ -164,7 +164,7 @@ data "google_container_cluster" "target_cluster" {
 
 module "cloud_scanner_example_multiple_project" {
   source                     = "deepfence/cloud-scanner/gcp//examples/gke"
-  version                    = "0.9.0"
+  version                    = "0.9.1"
   name                       = "deepfence-cloud-scanner"
   gke_host                   = "https://${data.google_container_cluster.target_cluster.endpoint}"
   gke_token                  = data.google_client_config.current.access_token
@@ -214,7 +214,7 @@ module "cloud_scanner_example_multiple_project" {
 
       module "cloud_scanner_example_single_project" {
         source     = "deepfence/cloud-scanner/gcp//examples/gce-vm"
-        version    = "0.9.0"
+        version    = "0.9.1"
         # gcp service account name
         name       = "deepfence-cloud-scanner"
         # project_id example: dev1-123456
@@ -233,7 +233,7 @@ module "cloud_scanner_example_multiple_project" {
 
       module "cloud_scanner_example_multiple_project" {
         source                   = "deepfence/cloud-scanner/gcp//examples/gce-vm"
-        version                  = "0.9.0"
+        version                  = "0.9.1"
         # gcp service account name
         name                     = "deepfence-cloud-scanner"
         # project_id example: dev1-123456

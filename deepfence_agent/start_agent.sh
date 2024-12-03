@@ -47,6 +47,7 @@ configure_cron() {
   #doesnt work smoothly inside docker!
   service cron start
   chmod 600 /etc/logrotate.d/fenced_logrotate.conf
+  sed -i "s/\$DF_INSTALL_DIR/$DF_INSTALL_DIR/g" /etc/logrotate.d/fenced_logrotate.conf
   MARK="/etc/logrotate.d/fenced_logrotate.conf"
   crontab_output=$(crontab -l)
   if [ $(echo "$crontab_output" | grep -ic "$MARK") -eq 0 ]
