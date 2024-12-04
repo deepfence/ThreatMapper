@@ -68,3 +68,14 @@ variable "image_tag" {
   sensitive = false
 }
 
+# deepfence_license variable can be overidden in variables.pkrvars.hcl
+variable "deepfence_license" {
+  type      = string
+  sensitive = true
+}
+
+# deepfence_product variable can be overidden in variables.pkrvars.hcl
+variable "deepfence_product" {
+  type      = string
+  sensitive = false
+}

@@ -15,16 +15,18 @@ There is also an option to fail the build in case number of vulnerabilities cros
 | def fail_low_cve_count = 20         | Fail jenkins build if number of low vulnerabilities found is >= this number. Set -1 to pass regardless of low vulnerabilities.           |  
 | def fail_cve_score = 8              | Fail jenkins build if cumulative CVE score is >= this value. Set -1 to pass regardless of cve score.                                     |
 | def mask_cve_ids = ""               | Comma separated. Example: "CVE-2019-9168,CVE-2019-9169"                                                                                  |
+| def deepfence_license = ""               | ThreatMapper or ThreatStryker                                                                                  |
+| def deepfence_product = ""               | ThreatMapper or ThreatStryker license key                                                                                  |
 
 ## Steps
-- Ensure `deepfenceio/deepfence_package_scanner_ce:1.3.1` image is present in the vm where jenkins is installed.
+- Ensure `quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.1` image is present in the vm where jenkins is installed.
 ```shell script
-docker pull deepfenceio/deepfence_package_scanner_ce:1.3.1
+docker pull quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.1
 ```
 ### Scripted Pipeline
 ```
 stage('Run Deepfence Vulnerability Mapper'){
-    DeepfenceAgent = docker.image("deepfenceio/deepfence_package_scanner_ce:1.3.1")
+    DeepfenceAgent = docker.image("quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.1")
     try {
         c = DeepfenceAgent.run("-it --net=host -v /var/run/docker.sock:/var/run/docker.sock", "-deepfence-key=${deepfence_key} -vulnerability-scan=true -output=table -mode=local -mgmt-console-url=${deepfence_mgmt_console_url} -source=${full_image_name} -fail-on-count=${fail_cve_count} -fail-on-critical-count=${fail_critical_cve_count} -fail-on-high-count=${fail_high_cve_count} -fail-on-medium-count=${fail_medium_cve_count} -fail-on-low-count=${fail_low_cve_count} -fail-on-score=${fail_cve_score} -mask-cve-ids='${mask_cve_ids}'")
         sh "docker logs -f ${c.id}"
@@ -40,7 +42,7 @@ stage('Run Deepfence Vulnerability Mapper'){
 stage('Run Deepfence Vulnerability Mapper'){
     steps {
         script {
-            DeepfenceAgent = docker.image("deepfenceio/deepfence_package_scanner_ce:1.3.1")
+            DeepfenceAgent = docker.image("quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.1")
             try {
                 c = DeepfenceAgent.run("-it --net=host -v /var/run/docker.sock:/var/run/docker.sock", "-deepfence-key=${deepfence_key} -vulnerability-scan=true -output=table -mode=local -mgmt-console-url=${deepfence_mgmt_console_url} -source=${full_image_name} -fail-on-count=${fail_cve_count} -fail-on-critical-count=${fail_critical_cve_count} -fail-on-high-count=${fail_high_cve_count} -fail-on-medium-count=${fail_medium_cve_count} -fail-on-low-count=${fail_low_cve_count} -fail-on-score=${fail_cve_score} -mask-cve-ids='${mask_cve_ids}'")
                 sh "docker logs -f ${c.id}"
