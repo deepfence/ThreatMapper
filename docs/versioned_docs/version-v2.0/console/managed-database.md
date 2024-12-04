@@ -30,7 +30,7 @@ x-service-variables: &common-creds
 
 ## AWS RDS
 
-Please use the following settings to configure the Elasticsearch service
+Please use the following settings to configure the PostgreSQL service
 
 | Option                  | Recommended Value                                    |
 |-------------------------|------------------------------------------------------|
