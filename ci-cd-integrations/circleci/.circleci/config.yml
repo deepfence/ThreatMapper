@@ -42,8 +42,8 @@ jobs:
       - run:
           name: Run Deepfence Vulnerability Mapper
           command: |
-            docker pull deepfenceio/deepfence_package_scanner_ce:v2
-            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_package_scanner_ce:v2 -source "$FULL_IMAGE_NAME" -console-url=$DEEPFENCE_CONSOLE_URL -deepfence-key=$DEEPFENCE_KEY -fail-on-count=$FAIL_CVE_COUNT -fail-on-critical-count=$FAIL_CRITICAL_CVE_COUNT -fail-on-high-count=$FAIL_HIGH_CVE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_CVE_COUNT -fail-on-low-count=$FAIL_LOW_CVE_COUNT -fail-on-score=$FAIL_CVE_SCORE -scan-type="base,java,python,ruby,php,nodejs,js,dotnet"
+            docker pull quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.1
+            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.1 -source "$FULL_IMAGE_NAME" -console-url=$DEEPFENCE_CONSOLE_URL -deepfence-key=$DEEPFENCE_KEY -fail-on-count=$FAIL_CVE_COUNT -fail-on-critical-count=$FAIL_CRITICAL_CVE_COUNT -fail-on-high-count=$FAIL_HIGH_CVE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_CVE_COUNT -fail-on-low-count=$FAIL_LOW_CVE_COUNT -fail-on-score=$FAIL_CVE_SCORE -scan-type="base,java,python,ruby,php,nodejs,js,dotnet"
           environment:
             DEEPFENCE_KEY: ""
             DEEPFENCE_CONSOLE_URL: ""
@@ -54,6 +54,8 @@ jobs:
             FAIL_LOW_CVE_COUNT: 100
             FAIL_CVE_SCORE: 10
             FULL_IMAGE_NAME: "go-server:1.0"
+            DEEPFENCE_LICENSE: ""
+            DEEPFENCE_PRODUCT: ""
 
   secret:
     docker:
@@ -69,8 +71,8 @@ jobs:
       - run:
           name: Run Deepfence Secret Scanner
           command: |
-            docker pull deepfenceio/deepfence_secret_scanner_ce:v2
-            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_secret_scanner_ce:v2 -image-name "$FULL_IMAGE_NAME"  -fail-on-count=$FAIL_SECRET_COUNT -fail-on-high-count=$FAIL_HIGH_SECRET_COUNT -fail-on-medium-count=$FAIL_MEDIUM_SECRET_COUNT -fail-on-low-count=$FAIL_LOW_SECRET_COUNT
+            docker pull quay.io/deepfenceio/deepfence_secret_scanner_ce:2.5.1
+            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw quay.io/deepfenceio/deepfence_secret_scanner_ce:2.5.1 -image-name "$FULL_IMAGE_NAME"  -fail-on-count=$FAIL_SECRET_COUNT -fail-on-high-count=$FAIL_HIGH_SECRET_COUNT -fail-on-medium-count=$FAIL_MEDIUM_SECRET_COUNT -fail-on-low-count=$FAIL_LOW_SECRET_COUNT
           environment:
             DEEPFENCE_KEY: ""
             DEEPFENCE_CONSOLE_URL: ""
@@ -79,6 +81,8 @@ jobs:
             FAIL_MEDIUM_SECRET_COUNT: 100
             FAIL_LOW_SECRET_COUNT: 100
             FULL_IMAGE_NAME: "go-server:1.0"
+            DEEPFENCE_LICENSE: ""
+            DEEPFENCE_PRODUCT: ""
 
   malware:
     docker:
@@ -94,8 +98,8 @@ jobs:
       - run:
           name: Run Deepfence Malware Scanner
           command: |
-            docker pull deepfenceio/deepfence_malware_scanner_ce:v2
-            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw deepfenceio/deepfence_malware_scanner_ce:v2 -image-name "$FULL_IMAGE_NAME"  -fail-on-count=$FAIL_MALWARE_COUNT -fail-on-high-count=$FAIL_HIGH_MALWARE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_MALWARE_COUNT -fail-on-low-count=$FAIL_LOW_MALWARE_COUNT
+            docker pull quay.io/deepfenceio/deepfence_malware_scanner_ce:2.5.1
+            docker run -i --rm --net=host --privileged=true -v /var/run/docker.sock:/var/run/docker.sock:rw quay.io/deepfenceio/deepfence_malware_scanner_ce:2.5.1 -image-name "$FULL_IMAGE_NAME"  -fail-on-count=$FAIL_MALWARE_COUNT -fail-on-high-count=$FAIL_HIGH_MALWARE_COUNT -fail-on-medium-count=$FAIL_MEDIUM_MALWARE_COUNT -fail-on-low-count=$FAIL_LOW_MALWARE_COUNT
           environment:
             DEEPFENCE_KEY: ""
             DEEPFENCE_CONSOLE_URL: ""
@@ -104,6 +108,8 @@ jobs:
             FAIL_MEDIUM_MALWARE_COUNT: 100
             FAIL_LOW_MALWARE_COUNT: 100
             FULL_IMAGE_NAME: "go-server:1.0"
+            DEEPFENCE_LICENSE: ""
+            DEEPFENCE_PRODUCT: ""
 
 workflows:
   version: 2
