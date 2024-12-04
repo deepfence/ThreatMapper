@@ -453,6 +453,7 @@ type Malware struct {
 	Filetype         string        `json:"filetype"`
 	Info             string        `json:"info"`
 	Version          string        `json:"version"`
+	Reference        string        `json:"reference"`
 	SeverityScore    int           `json:"severity_score"`
 	StringsToMatch   []interface{} `json:"strings_to_match"`
 	Summary          string        `json:"summary"`
@@ -485,7 +486,6 @@ type MalwareRule struct {
 	Filetype     string `json:"filetype"`
 	Info         string `json:"info"`
 	Version      string `json:"version"`
-	Reference    string `json:"reference"`
 	FileSeverity string `json:"file_severity"`
 	Masked       bool   `json:"masked" required:"true"`
 	Payload      string `json:"payload" required:"true"`
