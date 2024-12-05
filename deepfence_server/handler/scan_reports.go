@@ -1132,6 +1132,24 @@ func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *
 	}
 }
 
+func (h *Handler) ListVulnerabilityPackagesScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	entries, common, _, err := listScanResultsHandlerWithSeverityCounts[model.Vulnerability](w, r, utils.NEO4JVulnerabilityScan)
+	if err != nil {
+		h.respondError(err, w)
+		return
+	}
+	res := map[string][]model.Vulnerability{}
+	for _, entry := range entries {
+		res[entry.CveCausedByPackage] = append(res[entry.CveCausedByPackage], entry)
+	}
+
+	err = httpext.JSON(w, http.StatusOK, model.PackageVulnerabilityScanResult{
+		PackageVulnerability: res, ScanResultsCommon: common})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
+}
+
 func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
 	entries, common, counts, err := listScanResultsHandlerWithSeverityCounts[model.Secret](w, r, utils.NEO4JSecretScan)
 	if err != nil {

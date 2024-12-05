@@ -262,6 +262,11 @@ type VulnerabilityScanResult struct {
 	SeverityCounts  map[string]int32 `json:"severity_counts" required:"true"`
 }
 
+type PackageVulnerabilityScanResult struct {
+	ScanResultsCommon
+	PackageVulnerability map[string][]Vulnerability `json:"packages_vulnerability" required:"true"`
+}
+
 type MalwareScanResult struct {
 	ScanResultsCommon
 	Malwares       []Malware        `json:"malwares" required:"true"`

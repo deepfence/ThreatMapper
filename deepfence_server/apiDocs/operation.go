@@ -575,6 +575,9 @@ func (d *OpenAPIDocs) AddScansOperations() {
 	d.AddOperation("resultsVulnerabilityScans", http.MethodPost, "/deepfence/scan/results/vulnerability",
 		"Get Vulnerability Scans Results", "Get Vulnerability Scan results on agent or registry",
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanResultsReq), new(VulnerabilityScanResult))
+	d.AddOperation("resultsVulnerablePackagesScans", http.MethodPost, "/deepfence/scan/results/packages",
+		"Get Vulnerability Package Scans Results", "Get Vulnerability Pacakge Scan results on agent or registry",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanResultsReq), new(PackageVulnerabilityScanResult))
 	d.AddOperation("resultsSecretScan", http.MethodPost, "/deepfence/scan/results/secret",
 		"Get Secret Scans Results", "Get Secret Scans results on agent or registry",
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanResultsReq), new(SecretScanResult))
