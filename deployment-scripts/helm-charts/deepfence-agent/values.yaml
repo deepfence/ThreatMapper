@@ -59,11 +59,11 @@ cluster_agent:
   nodeSelector:
     kubernetes.io/os: linux
     # kubernetes.io/arch: amd64
-  tolerations:
-    - operator: "Exists"
-      effect: "NoSchedule"
-    - operator: "Exists"
-      effect: "NoExecute"
+  tolerations: []
+    # - operator: "Exists"
+    #   effect: "NoSchedule"
+    # - operator: "Exists"
+    #   effect: "NoExecute"
   resources:
     requests:
       cpu: 25m
