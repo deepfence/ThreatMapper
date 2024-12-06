@@ -14572,6 +14572,7 @@
           "info": { "type": "string" },
           "masked": { "type": "boolean" },
           "node_id": { "type": "string" },
+          "reference": { "type": "string" },
           "resources": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelBasicNode" },
@@ -14597,7 +14598,6 @@
           "info": { "type": "string" },
           "masked": { "type": "boolean" },
           "payload": { "type": "string" },
-          "reference": { "type": "string" },
           "rule_id": { "type": "string" },
           "rule_name": { "type": "string" },
           "severity": { "type": "string" },
