@@ -55,7 +55,7 @@ function useSearchCloudResourcesWithPagination() {
 
 export const CloudResourcesTable = () => {
   const [searchParams] = useSearchParams();
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
 
   return (
     <div className="px-4 pb-4">

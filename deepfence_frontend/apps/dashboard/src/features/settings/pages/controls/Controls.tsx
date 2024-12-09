@@ -112,7 +112,7 @@ interface FilterData {
 const Controls = () => {
   const params = useParams<{ nodeType: ParamsNodeType }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const fetcher = useFetcher<null>();
   const [filterData, setFilterData] = useState<FilterData>({});

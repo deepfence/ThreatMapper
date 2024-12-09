@@ -1615,7 +1615,7 @@ const Accounts = () => {
   const [searchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
   const fetcher = useFetcher();
   const routeParams = useParams() as {
     nodeType: string;

@@ -563,7 +563,7 @@ const SecretFeeds = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const fetcher = useFetcher<ActionData>();
   const [searchParams] = useSearchParams();
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
 
   const selectedRows = useMemo<string[]>(() => {
     return Object.keys(rowSelectionState);

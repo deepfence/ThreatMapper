@@ -62,7 +62,7 @@ import { isScanComplete } from '@/utils/scan';
 
 export const CloudPostureResultsGrouped = () => {
   const [searchParams] = useSearchParams();
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
   return (
     <div className="self-start">
       <div className="h-12 flex items-center">

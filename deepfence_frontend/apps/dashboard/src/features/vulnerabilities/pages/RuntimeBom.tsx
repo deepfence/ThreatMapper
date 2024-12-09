@@ -64,7 +64,7 @@ const RuntimeBom = () => {
   const isFetching = useIsFetching({
     queryKey: queries.vulnerability.scanList._def,
   });
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [searchParams] = useSearchParams();
 
   return (

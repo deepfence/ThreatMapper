@@ -552,7 +552,7 @@ const UniqueVulnerabilities = () => {
   const isFetching = useIsFetching({
     queryKey: queries.vulnerability.uniqueVulnerabilities._def,
   });
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [searchParams] = useSearchParams();
 
   return (
