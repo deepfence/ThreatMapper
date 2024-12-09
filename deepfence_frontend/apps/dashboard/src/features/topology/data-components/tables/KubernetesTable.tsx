@@ -174,7 +174,7 @@ function Filters() {
 export const KubernetesTable = () => {
   const [selectedNodes, setSelectedNodes] = useState<ModelKubernetesCluster[]>([]);
   const [searchParams] = useSearchParams();
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
 
   return (
     <div className="px-4 pb-4">

@@ -55,7 +55,7 @@ const DEFAULT_PAGE_SIZE = 25;
 
 export const PodsTable = () => {
   const [searchParams] = useSearchParams();
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
   const selectedIds = useMemo(() => {

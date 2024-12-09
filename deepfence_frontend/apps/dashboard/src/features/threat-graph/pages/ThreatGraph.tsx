@@ -23,7 +23,7 @@ const ThreatGraph = () => {
     cloudId: string;
   }>();
   const { mode } = useTheme();
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
 
   return (
     <div className="h-full flex flex-col">

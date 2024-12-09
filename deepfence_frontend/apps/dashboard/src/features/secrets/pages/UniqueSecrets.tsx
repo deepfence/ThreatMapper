@@ -427,7 +427,7 @@ const UniqueSecrets = () => {
   const isFetching = useIsFetching({
     queryKey: queries.secret.uniqueSecrets._def,
   });
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [searchParams] = useSearchParams();
 
   return (
