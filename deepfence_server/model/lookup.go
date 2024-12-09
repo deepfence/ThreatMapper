@@ -46,6 +46,7 @@ type BasicNode struct {
 	Name     string `json:"name" required:"true"`
 	NodeType string `json:"node_type" required:"true"`
 	HostName string `json:"host_name" required:"true"`
+	Active   bool   `json:"active" required:"true"`
 }
 
 type Connection struct {
