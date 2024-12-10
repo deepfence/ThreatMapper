@@ -568,13 +568,6 @@ export const ReportFilters = () => {
           scanType={'none'}
           defaultSelectedHosts={searchParams.getAll('host')}
           agentRunning={false}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('host');
-              prev.delete('page');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('host');
