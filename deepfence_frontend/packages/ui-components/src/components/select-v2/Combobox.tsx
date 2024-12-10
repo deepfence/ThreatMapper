@@ -54,9 +54,13 @@ const ComboboxProvider = <T extends Value = Value>(
   > & {
     loading?: boolean;
     name?: string;
+    open?: boolean;
+    setOpen?: (open: boolean) => void;
   },
 ) => {
-  const [open, setOpen] = useState(false);
+  const [_open, _setOpen] = useState(false);
+  const open = props.open ?? _open;
+  const setOpen = props.setOpen ?? _setOpen;
 
   return (
     <LocalComboboxContext.Provider
@@ -330,22 +334,28 @@ const ComboboxContent = (
           )}
         >
           {props.children}
-          {!items.length ? (
+          {!items.length && !loading ? (
             <div className="py-3 px-2 w-full flex items-center justify-center text-p6 text-text-text-and-icon">
               No results found
             </div>
           ) : null}
-          {loading ? (
+          {!items.length && loading ? (
+            <div className="py-3 px-2 w-full flex items-center justify-center text-p6 text-text-text-and-icon">
+              <CircleSpinner size="sm" />
+            </div>
+          ) : null}
+          {items.length && loading ? (
             <div className="pt-2 pb-1 px-3 flex items-center justify-center">
               <CircleSpinner size="sm" />
             </div>
-          ) : (
+          ) : null}
+          {!loading ? (
             <InfiniteLoadingObserverElement
               onVisible={() => {
                 onEndReached?.();
               }}
             />
-          )}
+          ) : null}
         </AriaKitComboboxList>
         {clearButtonContent ? (
           <div className="flex items-center justify-center py-[6px]">
