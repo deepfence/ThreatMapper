@@ -7834,6 +7834,60 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/scan/results/packages": {
+      "post": {
+        "tags": ["Vulnerability"],
+        "summary": "Get Vulnerability Package Scans Results",
+        "description": "Get Vulnerability Pacakge Scan results on agent or registry",
+        "operationId": "resultsVulnerablePackagesScans",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanResultsReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPackageVulnerabilityScanResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/scan/results/secret": {
       "post": {
         "tags": ["Secret Scan"],
@@ -13736,9 +13790,10 @@
         }
       },
       "ModelBasicNode": {
-        "required": ["node_id", "name", "node_type", "host_name"],
+        "required": ["node_id", "name", "node_type", "host_name", "active"],
         "type": "object",
         "properties": {
+          "active": { "type": "boolean" },
           "host_name": { "type": "string" },
           "name": { "type": "string" },
           "node_id": { "type": "string" },
@@ -15261,6 +15316,44 @@
             ],
             "type": "string"
           }
+        }
+      },
+      "ModelPackageVulnerabilityScanResult": {
+        "required": [
+          "docker_container_name",
+          "docker_image_name",
+          "host_name",
+          "kubernetes_cluster_name",
+          "node_id",
+          "node_name",
+          "node_type",
+          "scan_id",
+          "updated_at",
+          "created_at",
+          "cloud_account_id",
+          "packages_vulnerability"
+        ],
+        "type": "object",
+        "properties": {
+          "cloud_account_id": { "type": "string" },
+          "created_at": { "type": "integer", "format": "int64" },
+          "docker_container_name": { "type": "string" },
+          "docker_image_name": { "type": "string" },
+          "host_name": { "type": "string" },
+          "kubernetes_cluster_name": { "type": "string" },
+          "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
+          "node_type": { "type": "string" },
+          "packages_vulnerability": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/ModelVulnerability" }
+            },
+            "nullable": true
+          },
+          "scan_id": { "type": "string" },
+          "updated_at": { "type": "integer", "format": "int64" }
         }
       },
       "ModelPasswordResetRequest": {

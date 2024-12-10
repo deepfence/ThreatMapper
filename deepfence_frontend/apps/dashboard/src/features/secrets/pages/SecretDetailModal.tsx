@@ -213,62 +213,77 @@ const DetailsComponent = ({
               />
             ) : null}
 
-            {secret.resources.map((resource, index) => {
-              if (!resource.node_id || !resource.node_type) {
-                return null;
-              }
-              if (resource.node_type === 'container_image') {
+            {secret.resources
+              .filter((resource) => {
+                return resource.active;
+              })
+              .map((resource, index) => {
+                if (!resource.node_id || !resource.node_type) {
+                  return null;
+                }
+                if (resource.node_type === 'container_image') {
+                  return (
+                    <>
+                      <button
+                        type="button"
+                        key={resource.node_id + index}
+                        onClick={() => {
+                          setShowResourceModal({
+                            show: true,
+                            resource: resource.node_id,
+                          });
+                        }}
+                        className="text-p1 w-fit text-accent-accent"
+                      >
+                        {resource.name}
+                      </button>
+                    </>
+                  );
+                }
+                let redirectPath = '';
+                if (resource.node_type === 'host') {
+                  redirectPath = `host/table?hosts=${resource.node_id}`;
+                } else if (resource.node_type === 'container') {
+                  redirectPath = `container/table?containers=${resource.node_id}`;
+                }
                 return (
-                  <>
-                    <button
-                      type="button"
-                      key={resource.node_id + index}
-                      onClick={() => {
-                        setShowResourceModal({
-                          show: true,
-                          resource: resource.node_id,
+                  <DFLink
+                    key={resource.node_id}
+                    to={`/inventory/compute/${redirectPath}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-p2 flex items-center gap-3"
+                    onClick={(e) => {
+                      if (
+                        resource.node_type === 'container' ||
+                        resource.node_type === 'host'
+                      ) {
+                        e.preventDefault();
+                        setDetailModalItem({
+                          kind: resource.node_type,
+                          nodeId: resource.node_id,
                         });
-                      }}
-                      className="text-p1 w-fit text-accent-accent"
-                    >
-                      {resource.name}
-                    </button>
-                  </>
+                      }
+                    }}
+                  >
+                    <span className="h-4 w-4 shrink-0">
+                      <PopOutIcon />
+                    </span>
+                    <span className="truncate">{resource.name}</span>
+                  </DFLink>
                 );
-              }
-              let redirectPath = '';
-              if (resource.node_type === 'host') {
-                redirectPath = `host/table?hosts=${resource.node_id}`;
-              } else if (resource.node_type === 'container') {
-                redirectPath = `container/table?containers=${resource.node_id}`;
-              }
-              return (
-                <DFLink
-                  key={resource.node_id}
-                  to={`/inventory/compute/${redirectPath}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-p2 flex items-center gap-3"
-                  onClick={(e) => {
-                    if (
-                      resource.node_type === 'container' ||
-                      resource.node_type === 'host'
-                    ) {
-                      e.preventDefault();
-                      setDetailModalItem({
-                        kind: resource.node_type,
-                        nodeId: resource.node_id,
-                      });
-                    }
-                  }}
-                >
-                  <span className="h-4 w-4 shrink-0">
-                    <PopOutIcon />
+              })}
+            {secret.resources
+              .filter((resource) => {
+                return !resource.active;
+              })
+              .map((resource) => {
+                return (
+                  <span key={resource.node_id} className="truncate">
+                    {resource.name}
                   </span>
-                  <span className="truncate">{resource.name}</span>
-                </DFLink>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       ) : null}
