@@ -78,6 +78,10 @@ func getMarato() core.Maroto {
 func getFiltersPage(title string, scanType string, nodeType []string,
 	timeRange string, severity string, advFilters string) core.Page {
 
+	if timeRange == "" {
+		timeRange = "0001-01-01T00:00:00Z - 0001-01-01T00:00:00Z"
+	}
+
 	cellStyle := &props.Cell{
 		BackgroundColor: &props.Color{Red: 255, Green: 255, Blue: 255},
 		BorderType:      border.Full,

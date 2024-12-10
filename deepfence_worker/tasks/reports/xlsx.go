@@ -62,17 +62,22 @@ var (
 		"F1": "Control ID",
 		"G1": "Node Name",
 		"H1": "Node Type",
-		"I1": "Masked",
+		"I1": "Remediation",
+		"J1": "Masked",
 	}
 	cloudComplianceHeader = map[string]string{
-		"A1": "Compliance Standard",
+		"A1": "Benchmark",
 		"B1": "Status",
 		"C1": "Title",
 		"D1": "Description",
 		"E1": "Control ID",
 		"F1": "Account",
 		"G1": "Cloud Provider",
-		"H1": "Masked",
+		"H1": "Resource",
+		"I1": "Region",
+		"J1": "Reason",
+		"K1": "Service",
+		"L1": "Masked",
 	}
 )
 
@@ -432,6 +437,7 @@ func xlsxAddCompResults(xlsx *excelize.File, sheet string, offset int, data Scan
 			c.TestNumber,
 			data.ScanInfo.NodeName,
 			data.ScanInfo.NodeType,
+			c.RemediationScript,
 			c.Masked,
 		}
 		err = xlsx.SetSheetRow(sheet, cellName, &value)
@@ -502,6 +508,10 @@ func xlsxAddCloudCompResults(xlsx *excelize.File, sheet string, data ScanData[mo
 			c.ControlID,
 			data.ScanInfo.NodeName,
 			data.ScanInfo.NodeType,
+			c.Resource,
+			c.Region,
+			c.Reason,
+			c.Service,
 			c.Masked,
 		}
 		err = xlsx.SetSheetRow(sheet, cellName, &value)
