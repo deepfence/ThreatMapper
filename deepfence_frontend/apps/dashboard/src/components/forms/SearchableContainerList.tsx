@@ -36,7 +36,12 @@ const SearchableContainer = ({
   isScannedForVulnerabilities,
   isScannedForSecrets,
   isScannedForMalware,
-}: Props) => {
+  isOpen,
+  setIsOpen,
+}: Props & {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}) => {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchText = useDebouncedValue(searchText, 500);
 
@@ -52,7 +57,7 @@ const SearchableContainer = ({
     setSelectedContainers(defaultSelectedContainers ?? []);
   }, [defaultSelectedContainers]);
 
-  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage, isRefetching } =
     useSuspenseInfiniteQuery({
       ...queries.search.containers({
         scanType,
@@ -67,6 +72,7 @@ const SearchableContainer = ({
           descending: false,
         },
       }),
+      enabled: isOpen,
       keepPreviousData: true,
       getNextPageParam: (lastPage, allPages) => {
         if (lastPage.containers.length < PAGE_SIZE) return null;
@@ -79,7 +85,9 @@ const SearchableContainer = ({
     });
 
   const onEndReached = () => {
-    if (hasNextPage) fetchNextPage();
+    if (hasNextPage) {
+      fetchNextPage({ cancelRefetch: true });
+    }
   };
 
   return (
@@ -94,7 +102,9 @@ const SearchableContainer = ({
         setValue={setSearchText}
         defaultSelectedValue={defaultSelectedContainers}
         name={fieldName}
-        loading={isFetchingNextPage}
+        loading={isFetchingNextPage && !isRefetching}
+        open={isOpen}
+        setOpen={setIsOpen}
       >
         {isSelectVariantType ? (
           <ComboboxV2TriggerInput
@@ -141,6 +151,8 @@ export const SearchableContainerList = (props: Props) => {
     return triggerVariant === 'select';
   }, [triggerVariant]);
 
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <Suspense
       fallback={
@@ -148,6 +160,9 @@ export const SearchableContainerList = (props: Props) => {
           <ComboboxV2Provider
             defaultSelectedValue={defaultSelectedContainers}
             name={fieldName}
+            open={isOpen}
+            setOpen={setIsOpen}
+            loading
           >
             {isSelectVariantType ? (
               <ComboboxV2TriggerInput
@@ -156,17 +171,18 @@ export const SearchableContainerList = (props: Props) => {
                 startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
               />
             ) : (
-              <ComboboxV2TriggerButton
-                startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-              >
-                Select container
-              </ComboboxV2TriggerButton>
+              <ComboboxV2TriggerButton>Select container</ComboboxV2TriggerButton>
             )}
+            <ComboboxV2Content
+              width={isSelectVariantType ? 'anchor' : 'fixed'}
+              clearButtonContent="Clear"
+              searchPlaceholder="Search"
+            ></ComboboxV2Content>
           </ComboboxV2Provider>
         </>
       }
     >
-      <SearchableContainer {...props} />
+      <SearchableContainer {...props} isOpen={isOpen} setIsOpen={setIsOpen} />
     </Suspense>
   );
 };
