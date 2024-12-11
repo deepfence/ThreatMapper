@@ -107,9 +107,6 @@ export const AdvancedFilters = ({
             onChange={(value) => {
               setHosts(value);
             }}
-            onClearAll={() => {
-              setHosts([]);
-            }}
             agentRunning={false}
             active={false}
           />

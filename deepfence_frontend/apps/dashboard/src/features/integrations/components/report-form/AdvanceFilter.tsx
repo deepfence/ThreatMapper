@@ -110,9 +110,6 @@ export const AdvancedFilter = ({
                     onChange={(value) => {
                       setHosts(value);
                     }}
-                    onClearAll={() => {
-                      setHosts([]);
-                    }}
                     agentRunning={false}
                     active={!deadNodes}
                   />

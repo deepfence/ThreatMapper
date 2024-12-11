@@ -544,13 +544,6 @@ const Filters = () => {
           scanType={ScanTypeEnum.SecretScan}
           defaultSelectedHosts={searchParams.getAll('hosts')}
           isScannedForSecrets
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('hosts');
-              prev.delete('page');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('hosts');

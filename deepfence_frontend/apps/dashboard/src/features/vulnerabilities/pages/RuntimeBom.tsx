@@ -264,13 +264,6 @@ const Filters = () => {
         <SearchableHostList
           scanType={ScanTypeEnum.VulnerabilityScan}
           defaultSelectedHosts={searchParams.getAll('hosts')}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('hosts');
-              prev.delete('page');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('hosts');
