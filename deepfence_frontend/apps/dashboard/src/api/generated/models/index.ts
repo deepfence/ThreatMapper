@@ -131,6 +131,7 @@ export * from './ModelMalwareScanTriggerReq';
 export * from './ModelMessageResponse';
 export * from './ModelNodeIdentifier';
 export * from './ModelNodesInScanResultRequest';
+export * from './ModelPackageVulnerabilityScanResult';
 export * from './ModelPasswordResetRequest';
 export * from './ModelPasswordResetVerifyRequest';
 export * from './ModelPod';
