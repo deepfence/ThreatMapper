@@ -46,6 +46,10 @@ func (h *Handler) CompleteContainerInfo(w http.ResponseWriter, r *http.Request) 
 	genericCompleteInfoHandler[model.Container](w, r, h)
 }
 
+func (h *Handler) CompleteContainerImageInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.ContainerImage](w, r, h)
+}
+
 func genericCompleteInfoHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Request, h *Handler) {
 	defer r.Body.Close()
 	var req completion.CompletionNodeFieldReq
