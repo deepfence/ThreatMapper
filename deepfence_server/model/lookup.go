@@ -217,6 +217,7 @@ type Container struct {
 	Processes                  []Process              `json:"processes" required:"true"`
 	DockerLabels               map[string]interface{} `json:"docker_labels" required:"true" nested_json:"true"`
 	HostName                   string                 `json:"host_name" required:"true"`
+	DockerImageNameWithTag     string                 `json:"docker_image_name_with_tag" required:"true"`
 	DockerContainerCommand     string                 `json:"docker_container_command" required:"true"`
 	DockerContainerState       string                 `json:"docker_container_state" required:"true"`
 	DockerContainerStateHuman  string                 `json:"docker_container_state_human" required:"true"`
