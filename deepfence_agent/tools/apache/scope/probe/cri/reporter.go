@@ -83,16 +83,23 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 	if report.SkipReportContainerState[containerState] {
 		return nil
 	}
-	imageMetadata, ok := imageMetadataMap[c.ImageRef]
-	var imageID, imageName, imageTag string
-	if ok {
-		imageID = imageMetadata.ImageID
+
+	imageID := trimImageID(c.Image.GetImage())
+	var imageName, imageTag string
+
+	if imageMetadata, ok := imageMetadataMap[imageID]; ok {
 		imageName = imageMetadata.ImageName
 		imageTag = imageMetadata.ImageTag
 	} else {
-		imageID = trimImageID(c.Image.GetImage())
-		imageName, imageTag = docker.ParseImageDigest(c.ImageRef)
+		imageMetadata, ok = imageMetadataMap[c.ImageRef]
+		if ok {
+			imageName = imageMetadata.ImageName
+			imageTag = imageMetadata.ImageTag
+		} else {
+			imageName, imageTag = docker.ParseImageDigest(c.ImageRef)
+		}
 	}
+
 	var dockerLabels string
 	dockerLabelsJson, err := json.Marshal(c.Labels)
 	if err == nil {
@@ -181,6 +188,9 @@ func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMe
 		imageNode, imageMetadata := r.getImage(img)
 		if imageNode == nil {
 			continue
+		}
+		if imageMetadata.ImageID != "" {
+			imageMetadataMap[imageMetadata.ImageID] = *imageMetadata
 		}
 		if imageMetadata.ImageRef != "" {
 			imageMetadataMap[imageMetadata.ImageRef] = *imageMetadata
