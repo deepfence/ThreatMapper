@@ -14448,6 +14448,7 @@
           "processes",
           "docker_labels",
           "host_name",
+          "docker_image_name_with_tag",
           "docker_container_command",
           "docker_container_state",
           "docker_container_state_human",
@@ -14488,6 +14489,7 @@
           "docker_container_ports": { "type": "string" },
           "docker_container_state": { "type": "string" },
           "docker_container_state_human": { "type": "string" },
+          "docker_image_name_with_tag": { "type": "string" },
           "docker_labels": {
             "type": "object",
             "additionalProperties": {},

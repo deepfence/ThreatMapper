@@ -4,18 +4,18 @@ import { Button, Checkbox, CircleSpinner, Modal } from 'ui-components';
 import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
 import { ScanTimeList } from '@/components/forms/ScanTimeList';
 import { ImageTagType, SearchableTagList } from '@/components/forms/SearchableTagList';
-import { useScanResults as malwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
-import { useScanResults as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
-import { useScanResults as vulnerabilityScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
+import { useScanResults as useMalwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
+import { useScanResults as useSecretScanResults } from '@/features/secrets/pages/SecretScanResults';
+import { useScanResults as useVulnerabilityScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
 import { ScanTypeEnum } from '@/types/common';
 
 const useScanResults = ({ scanType }: { scanType: ScanTypeEnum }) => {
   if (scanType === ScanTypeEnum.VulnerabilityScan) {
-    return vulnerabilityScanResults().data.data?.dockerImageName;
+    return useVulnerabilityScanResults().data.data?.dockerImageName;
   } else if (scanType === ScanTypeEnum.SecretScan) {
-    return secretScanResults().data.data?.dockerImageName;
+    return useSecretScanResults().data.data?.dockerImageName;
   } else if (scanType === ScanTypeEnum.MalwareScan) {
-    return malwareScanResults().data.data?.dockerImageName;
+    return useMalwareScanResults().data.data?.dockerImageName;
   }
   return '';
 };
@@ -90,7 +90,12 @@ const InputForm = ({
   return (
     <div className="flex flex-col gap-y-6">
       <>
-        {nodeType === ModelNodeIdentifierNodeTypeEnum.Image && (
+        {(
+          [
+            ModelNodeIdentifierNodeTypeEnum.Image,
+            ModelNodeIdentifierNodeTypeEnum.Container,
+          ] as string[]
+        ).includes(nodeType) && (
           <>
             <Checkbox
               label="Compare with other tags"
@@ -124,7 +129,7 @@ const InputForm = ({
             }}
             // node id should be selected tag nodeid
             nodeId={selectedTag?.nodeId}
-            nodeType={nodeType}
+            nodeType={ModelNodeIdentifierNodeTypeEnum.Image}
             scanType={scanType as ScanTypeEnum}
             noDataText="No scan to compare"
           />

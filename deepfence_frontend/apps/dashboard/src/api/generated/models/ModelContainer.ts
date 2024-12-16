@@ -100,6 +100,12 @@ export interface ModelContainer {
     docker_container_state_human: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    docker_image_name_with_tag: string;
+    /**
+     * 
      * @type {{ [key: string]: any; }}
      * @memberof ModelContainer
      */
@@ -248,6 +254,7 @@ export function instanceOfModelContainer(value: object): boolean {
     isInstance = isInstance && "docker_container_ports" in value;
     isInstance = isInstance && "docker_container_state" in value;
     isInstance = isInstance && "docker_container_state_human" in value;
+    isInstance = isInstance && "docker_image_name_with_tag" in value;
     isInstance = isInstance && "docker_labels" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "image" in value;
@@ -295,6 +302,7 @@ export function ModelContainerFromJSONTyped(json: any, ignoreDiscriminator: bool
         'docker_container_ports': json['docker_container_ports'],
         'docker_container_state': json['docker_container_state'],
         'docker_container_state_human': json['docker_container_state_human'],
+        'docker_image_name_with_tag': json['docker_image_name_with_tag'],
         'docker_labels': json['docker_labels'],
         'host_name': json['host_name'],
         'image': ModelContainerImageFromJSON(json['image']),
@@ -340,6 +348,7 @@ export function ModelContainerToJSON(value?: ModelContainer | null): any {
         'docker_container_ports': value.docker_container_ports,
         'docker_container_state': value.docker_container_state,
         'docker_container_state_human': value.docker_container_state_human,
+        'docker_image_name_with_tag': value.docker_image_name_with_tag,
         'docker_labels': value.docker_labels,
         'host_name': value.host_name,
         'image': ModelContainerImageToJSON(value.image),
