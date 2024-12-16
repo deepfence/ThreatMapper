@@ -510,7 +510,8 @@ console_agents:
   enabled: true
   cluster_name: "tm-console"
   enableGraphReport: true
-  userDefinedTags: ""
+  # Example: customTags: "dev,server"
+  customTags: ""
   instanceIdSuffix: "N"
   mountContainerRuntimeSocket:
     dockerSock: false

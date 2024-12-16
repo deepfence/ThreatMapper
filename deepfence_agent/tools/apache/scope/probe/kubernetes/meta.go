@@ -99,5 +99,6 @@ func (m namespaceMeta) MetaNode(id string, nodeType string) report.Metadata {
 		NodeName:          m.Name() + " / " + kubernetesClusterName,
 		KubernetesLabels:  labels,
 		KubernetesCreated: m.Created(),
+		Tags:              customTags,
 	}
 }

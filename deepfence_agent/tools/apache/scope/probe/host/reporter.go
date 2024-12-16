@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"runtime"
-	"strings"
 	"sync"
 	"time"
 
@@ -59,16 +58,6 @@ type CloudMeta struct {
 	mtx           sync.RWMutex
 }
 
-func GetUserDefinedTags() []string {
-	var agentTags []string
-	// User defined tags can be set from agent side also
-	agentTagsStr := os.Getenv("USER_DEFINED_TAGS")
-	if agentTagsStr != "" {
-		agentTags = strings.Split(agentTagsStr, ",")
-	}
-	return agentTags
-}
-
 func getCloudMetadata(cloudProvider string) (string, cloud_metadata.CloudMetadata) {
 	var cloudMetadata cloud_metadata.CloudMetadata
 	if cloudProvider == "aws" {
@@ -114,11 +103,6 @@ func (r *Reporter) updateCloudMetadata(cloudProvider string) {
 	r.cloudMeta.cloudProvider = cloudProvider
 	r.cloudMeta.cloudMetadata = cloudMetadata
 	r.cloudMeta.mtx.Unlock()
-}
-
-type UserDefinedTags struct {
-	tags []string // Tags given by user. Eg: production, test
-	sync.RWMutex
 }
 
 type HostDetailsEveryMinute struct {
@@ -220,7 +204,7 @@ type Reporter struct {
 	KernelVersion      string
 	AgentVersion       string
 	IsConsoleVm        bool
-	UserDefinedTags    []string
+	CustomTags         []string
 }
 
 // NewReporter returns a Reporter which produces a report containing host
@@ -241,9 +225,8 @@ func NewReporter(hostName, probeID, version string) (*Reporter, string, string) 
 		AgentVersion:      agentCommitID + "-" + agentBuildTime,
 		IsConsoleVm:       isConsoleVm,
 		hostDetailsMinute: HostDetailsEveryMinute{},
+		CustomTags:        dfUtils.GetCustomTags(),
 	}
-
-	r.UserDefinedTags = GetUserDefinedTags()
 
 	cloudProvider := cloud_metadata.DetectCloudServiceProvider()
 	r.updateCloudMetadata(cloudProvider)
@@ -335,10 +318,11 @@ func (r *Reporter) Report() (report.Report, error) {
 	memoryUsage := r.hostDetailsMetrics.MemoryUsage
 	r.hostDetailsMetrics.RUnlock()
 
-	if len(cloudMetadata.Tags) > 0 {
-		cloudMetadata.Tags = append(cloudMetadata.Tags, r.UserDefinedTags...)
-	} else {
-		cloudMetadata.Tags = r.UserDefinedTags
+	customTags := append([]string{}, r.CustomTags...)
+	for _, cloudTag := range cloudMetadata.Tags {
+		if !dfUtils.InSlice(cloudTag, r.CustomTags) {
+			customTags = append(customTags, cloudTag)
+		}
 	}
 
 	rep.CloudProvider.AddNode(
@@ -400,7 +384,7 @@ func (r *Reporter) Report() (report.Report, error) {
 				MemoryMax:           memoryMax,
 				MemoryUsage:         memoryUsage,
 				KubernetesClusterId: r.k8sClusterId,
-				Tags:                cloudMetadata.Tags,
+				Tags:                customTags,
 			},
 			Parents: &report.Parent{
 				CloudProvider:     cloudProvider,

@@ -22,6 +22,7 @@ type Reporter struct {
 	criImageClient        client.ImageServiceClient
 	kubernetesClusterId   string
 	kubernetesClusterName string
+	customTags            []string
 }
 
 // NewReporter makes a new Reporter
@@ -33,6 +34,7 @@ func NewReporter(cri client.RuntimeServiceClient, hostID string, criImageClient 
 		isConsoleVm:           dfUtils.IsThisConsoleAgent(),
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
+		customTags:            dfUtils.GetCustomTags(),
 	}
 
 	return reporter
@@ -137,6 +139,7 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		PodName:                   c.Labels[report.PodNameLabel],
 		PodID:                     c.Labels[report.PodIDLabel],
 		KubernetesNamespace:       c.Labels[report.PodNamespaceLabel],
+		Tags:                      r.customTags,
 	}
 	if c.Labels[report.DeepfenceSystemLabelKey] == report.DeepfenceSystemLabelValue {
 		metadata.IsDeepfenceSystem = true

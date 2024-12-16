@@ -35,7 +35,7 @@ docker run -dit \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /:/fenced/mnt/host/:ro \
     -e DF_LOG_LEVEL="info" \
-    -e USER_DEFINED_TAGS="" \
+    -e CUSTOM_TAGS="" \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
@@ -65,7 +65,7 @@ sudo podman run -dit \
     -v /run/systemd/:/run/systemd/ \
     -v /:/fenced/mnt/host/:ro \
     -e DF_LOG_LEVEL="info" \
-    -e USER_DEFINED_TAGS="" \
+    -e CUSTOM_TAGS="" \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
@@ -76,7 +76,7 @@ sudo podman run -dit \
 ```
 
 :::tip
-Optionally the sensor container can be further tagged using ```USER_DEFINED_TAGS=""``` in the above command. Tags should be comma separated, for example, ```"dev,front-end"```.
+Optionally the sensor container can be further tagged using ```CUSTOM_TAGS=""``` in the above command. Tags should be comma separated, for example, ```"dev,front-end"```.
 :::
 
 

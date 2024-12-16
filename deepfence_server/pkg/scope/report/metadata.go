@@ -39,13 +39,12 @@ type Metadata struct {
 	KernelID         string   `json:"kernel_id,omitempty"`
 	CloudRegion      string   `json:"cloud_region,omitempty"`
 	ResourceGroup    string   `json:"resource_group,omitempty"`
-	Tags             []string `json:"tags,omitempty"`
 
 	// common
 	IsDeepfenceSystem bool     `json:"is_deepfence_system,omitempty"` // Is this system pod / container / image
 	Uptime            int      `json:"uptime,omitempty"`
 	Pseudo            bool     `json:"pseudo"`
-	UserDefinedTags   []string `json:"user_defined_tags,omitempty"`
+	Tags              []string `json:"tags,omitempty"`
 	CPUMax            float64  `json:"cpu_max,omitempty"`
 	CPUUsage          float64  `json:"cpu_usage,omitempty"`
 	MemoryMax         int64    `json:"memory_max,omitempty"`

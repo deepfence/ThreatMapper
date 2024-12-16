@@ -100,8 +100,8 @@ logLevel: "info"
 # Suffix cloud instance id to hostnames
 instanceIdSuffix: "N"
 
-# comma separated list of tags (labels) to set for all agents
-userDefinedTags: ""
+# comma separated list of tags (labels) to set for the nodes in this cluster
+customTags: ""
 
 # priorityClassName for pods
 priorityClassName: ""

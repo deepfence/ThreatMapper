@@ -53,6 +53,7 @@ func (s *service) GetNode() report.TopologyNode {
 		KubernetesType:        string(s.Spec.Type),
 		KubernetesClusterId:   kubernetesClusterId,
 		KubernetesClusterName: kubernetesClusterName,
+		Tags:                  customTags,
 		KubernetesIP:          s.Spec.ClusterIP,
 		KubernetesNamespace:   s.GetNamespace(),
 	}

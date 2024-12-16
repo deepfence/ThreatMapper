@@ -44,6 +44,8 @@ spec:
                 secretKeyRef:
                   name: {{ include "deepfence-agent.fullname" . }}-key
                   key: "deepfence-key"
+            - name: CUSTOM_TAGS
+              value: {{ .Values.customTags }}
             - name: DF_CLUSTER_NAME
               value: "{{ .Values.clusterName }}"
             - name: AGENT_HOSTNAME

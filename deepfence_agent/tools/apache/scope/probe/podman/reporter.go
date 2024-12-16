@@ -19,6 +19,7 @@ type Reporter struct {
 	podmanClient          *PodmanClient
 	kubernetesClusterId   string
 	kubernetesClusterName string
+	customTags            []string
 }
 
 // NewReporter makes a new Reporter
@@ -29,6 +30,7 @@ func NewReporter(podmanClient *PodmanClient, hostID string) *Reporter {
 		isConsoleVm:           dfUtils.IsThisConsoleAgent(),
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
+		customTags:            dfUtils.GetCustomTags(),
 	}
 
 	return reporter
@@ -125,6 +127,7 @@ func (r *Reporter) getContainerNode(c Container, imageMetadataMap map[string]Ima
 		DockerLabels:              containerLabels,
 		PodName:                   c.PodName,
 		PodID:                     c.Pod,
+		Tags:                      r.customTags,
 	}
 	return &report.TopologyNode{
 		Metadata: metadata,
@@ -166,7 +169,7 @@ func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMe
 		if imageNode == nil {
 			continue
 		}
-		if imageMetadata.ImageRef != "" {
+		if imageMetadata.ImageID != "" {
 			imageMetadataMap[imageMetadata.ImageID] = *imageMetadata
 		}
 		result.AddNode(*imageNode)
@@ -188,10 +191,10 @@ func (r *Reporter) getImageNode(c ContainerImage) (*report.TopologyNode, *ImageM
 		KubernetesClusterId:    r.kubernetesClusterId,
 		KubernetesClusterName:  r.kubernetesClusterName,
 	}
-	var imageRef string
-	if len(c.RepoDigests) > 0 {
-		imageRef = c.RepoDigests[0]
-	}
+	//var imageRef string
+	//if len(c.RepoDigests) > 0 {
+	//	imageRef = c.RepoDigests[0]
+	//}
 	if len(c.RepoTags) > 0 {
 		imageFullName := c.RepoTags[0]
 		metadata.ImageName = docker.ImageNameWithoutTag(imageFullName)
@@ -213,7 +216,6 @@ func (r *Reporter) getImageNode(c ContainerImage) (*report.TopologyNode, *ImageM
 			ImageName: metadata.ImageName,
 			ImageTag:  metadata.ImageTag,
 			ImageID:   c.ID,
-			ImageRef:  imageRef,
 		}
 }
 
@@ -225,5 +227,4 @@ type ImageMetadata struct {
 	ImageName string
 	ImageTag  string
 	ImageID   string
-	ImageRef  string
 }

@@ -28,7 +28,8 @@ NO_PROXY=""
 
 # Log level: debug / info / error
 DF_LOG_LEVEL="info"
-USER_DEFINED_TAGS=""
+# Example: CUSTOM_TAGS="dev,server"
+CUSTOM_TAGS=""
 DEEPFENCE_KEY=""
 DF_HOSTNAME=""
 INSTANCE_ID_SUFFIX="N"
@@ -58,7 +59,7 @@ check_options() {
       DF_HOSTNAME=$OPTARG
       ;;
     t)
-      USER_DEFINED_TAGS="$OPTARG"
+      CUSTOM_TAGS="$OPTARG"
       ;;
     i)
       if [ "$OPTARG" == "Y" ] || [ "$OPTARG" == "y" ]; then
@@ -113,7 +114,7 @@ start_agent() {
     -e DF_ENABLE_PROCESS_REPORT="true" \
     -e DF_ENABLE_CONNECTIONS_REPORT="true" \
     -e INSTANCE_ID_SUFFIX="$INSTANCE_ID_SUFFIX" \
-    -e USER_DEFINED_TAGS="$USER_DEFINED_TAGS" \
+    -e CUSTOM_TAGS="$CUSTOM_TAGS" \
     -e MGMT_CONSOLE_URL="$MGMT_CONSOLE_URL" \
     -e MGMT_CONSOLE_PORT="$MGMT_CONSOLE_PORT" \
     -e SCOPE_HOSTNAME="$DF_HOSTNAME" \
