@@ -23,6 +23,18 @@ const (
 	maxIdleConnsPerHost = 1024
 )
 
+func GetCustomTags() []string {
+	var customTags []string
+	// User defined tags
+	customTagsStr := os.Getenv("CUSTOM_TAGS")
+	if customTagsStr != "" {
+		for _, tag := range strings.Split(customTagsStr, ",") {
+			customTags = append(customTags, strings.TrimSpace(tag))
+		}
+	}
+	return customTags
+}
+
 func RemoveLastCharacter(s string) string {
 	r := []rune(s)
 	return string(r[:len(r)-1])
@@ -216,6 +228,15 @@ func GetKubernetesDetails() (string, string, string, string, error) {
 		}
 	}
 	return kubeSystemNamespaceUid, kubeClusterName, kubernetesVersion, kubernetesNodeRole, err
+}
+
+func InSlice[T comparable](e T, s []T) bool {
+	for _, v := range s {
+		if v == e {
+			return true
+		}
+	}
+	return false
 }
 
 func InArray(val interface{}, array interface{}) (exists bool, index int) {

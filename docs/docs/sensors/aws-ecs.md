@@ -89,7 +89,7 @@ Image tag `quay.io/deepfenceio/deepfence_agent_ce:THREATMAPPER_VERSION-multiarch
           "value": "info"
         },
         {
-          "name": "USER_DEFINED_TAGS",
+          "name": "CUSTOM_TAGS",
           "value": ""
         }
       ],

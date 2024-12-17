@@ -25,6 +25,7 @@ type Reporter struct {
 	probe                 *probe.Probe
 	kubernetesClusterId   string
 	kubernetesClusterName string
+	customTags            []string
 }
 
 // NewReporter makes a new Reporter
@@ -37,6 +38,7 @@ func NewReporter(registry Registry, hostID string, probeID string, probe *probe.
 		probe:                 probe,
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
+		customTags:            dfUtils.GetCustomTags(),
 	}
 	return reporter
 }
@@ -113,7 +115,6 @@ func (r *Reporter) containerTopology(localAddrs []net.IP, imageIDTagMap map[stri
 
 			return container.NetworkInfo(localAddrs), false
 		}
-		containerImageTags := r.registry.GetContainerTags()
 		for _, node := range nodes {
 			if node.Metadata.NodeID == "" {
 				continue
@@ -125,12 +126,8 @@ func (r *Reporter) containerTopology(localAddrs []net.IP, imageIDTagMap map[stri
 			}
 			var isInHostNamespace bool
 			node.Sets, isInHostNamespace = networkInfo(node.Metadata.NodeID)
-			tags, ok := containerImageTags[node.Metadata.NodeID]
-			if !ok {
-				tags = []string{}
-			}
+			node.Metadata.Tags = r.customTags
 			node.Metadata.IsConsoleVm = r.isConsoleVm
-			node.Metadata.UserDefinedTags = tags
 			// Indicate whether the container is in the host network
 			// The container's NetworkMode is not enough due to
 			// delegation (e.g. NetworkMode="container:foo" where
@@ -155,7 +152,6 @@ type basicImage struct {
 
 func (r *Reporter) containerImageTopology() (report.Topology, map[string]basicImage) {
 	result := report.MakeTopology()
-	imageTagsMap := r.registry.GetImageTags()
 	imageIDTagMap := make(map[string]basicImage)
 	r.registry.WalkImages(func(image docker_client.APIImages) {
 		imageID := trimImageID(image.ID)
@@ -184,18 +180,9 @@ func (r *Reporter) containerImageTopology() (report.Topology, map[string]basicIm
 				ImageTag:         metadata.ImageTag,
 			}
 		}
-		var tags []string
-		var ok bool
-		if metadata.ImageNameWithTag != "" {
-			tags, ok = imageTagsMap[metadata.ImageNameWithTag]
-			if !ok {
-				tags = []string{}
-			}
-		} else {
+		if metadata.ImageNameWithTag == "" {
 			metadata.NodeName = imageID
 		}
-
-		metadata.UserDefinedTags = tags
 		if image.Labels[report.DeepfenceSystemLabelKey] == report.DeepfenceSystemLabelValue {
 			metadata.IsDeepfenceSystem = true
 		}

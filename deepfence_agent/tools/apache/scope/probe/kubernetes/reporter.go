@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 
+	dfUtils "github.com/deepfence/df-utils"
 	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/weaveworks/scope/probe"
@@ -20,6 +21,7 @@ const (
 var (
 	kubernetesClusterId   string
 	kubernetesClusterName string
+	customTags            []string
 )
 
 // Reporter generate Reports containing Container and ContainerImage topologies
@@ -36,6 +38,7 @@ type Reporter struct {
 func NewReporter(client Client, probeID string, hostID string, probe *probe.Probe, nodeName string) *Reporter {
 	kubernetesClusterId = os.Getenv(k8sClusterId)
 	kubernetesClusterName = os.Getenv(k8sClusterName)
+	customTags = dfUtils.GetCustomTags()
 
 	reporter := &Reporter{
 		client:                    client,

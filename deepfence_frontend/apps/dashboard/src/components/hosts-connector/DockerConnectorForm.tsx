@@ -48,7 +48,7 @@ const Command = () => {
   -v /var/run/docker.sock:/var/run/docker.sock \\
   -v /:/fenced/mnt/host/:ro \\
   -e DF_LOG_LEVEL="info" \\
-  -e USER_DEFINED_TAGS="" \\
+  -e CUSTOM_TAGS="" \\
   -e MGMT_CONSOLE_URL="${window.location.host ?? '---CONSOLE-IP---'}" \\
   -e MGMT_CONSOLE_PORT="443" \\
   -e DEEPFENCE_KEY="${dfApiKey}" \\
