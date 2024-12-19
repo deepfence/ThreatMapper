@@ -792,6 +792,7 @@ export const searchQueries = createQueryKeys('search', {
     cloudAccounts?: string[];
     clusterIds: string[];
     hosts: string[];
+    userDefinedTags?: string[];
   }) => {
     return {
       queryKey: [filters],
@@ -809,6 +810,7 @@ export const searchQueries = createQueryKeys('search', {
           cloudAccounts,
           clusterIds,
           hosts,
+          userDefinedTags,
         } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -820,6 +822,9 @@ export const searchQueries = createQueryKeys('search', {
                   pseudo: [false],
                   active: [true],
                 },
+              },
+              contains_in_array_filter: {
+                filter_in: {},
               },
               match_filter: {
                 filter_in: {},
@@ -914,6 +919,13 @@ export const searchQueries = createQueryKeys('search', {
             cloud_account_id: cloudAccounts,
           };
         }
+        if (userDefinedTags?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_in_array_filter!.filter_in = {
+            ...searchSearchNodeReq.node_filter.filters.contains_in_array_filter!
+              .filter_in,
+            tags: userDefinedTags,
+          };
+        }
         if (order) {
           searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
             field_name: order.sortBy,
@@ -977,11 +989,13 @@ export const searchQueries = createQueryKeys('search', {
     };
     agentRunning?: boolean[];
     clusterIds?: string[];
+    userDefinedTags?: string[];
   }) => {
     return {
       queryKey: [filters],
       queryFn: async () => {
-        const { page, pageSize, order, agentRunning, clusterIds } = filters;
+        const { page, pageSize, order, agentRunning, clusterIds, userDefinedTags } =
+          filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
             filters: {
@@ -990,6 +1004,9 @@ export const searchQueries = createQueryKeys('search', {
                 filter_in: {
                   active: [true],
                 },
+              },
+              contains_in_array_filter: {
+                filter_in: {},
               },
               match_filter: {
                 filter_in: null,
@@ -1022,6 +1039,13 @@ export const searchQueries = createQueryKeys('search', {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
             ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
             kubernetes_cluster_id: clusterIds,
+          };
+        }
+        if (userDefinedTags?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_in_array_filter!.filter_in = {
+            ...searchSearchNodeReq.node_filter.filters.contains_in_array_filter!
+              .filter_in,
+            tags: userDefinedTags,
           };
         }
         const searchKubernetesClustersApi = apiWrapper({
@@ -1086,6 +1110,7 @@ export const searchQueries = createQueryKeys('search', {
     clusterIds: string[];
     containers: string[];
     kubernetesNamespace: string[];
+    userDefinedTags?: string[];
   }) => {
     return {
       queryKey: [filters],
@@ -1101,6 +1126,7 @@ export const searchQueries = createQueryKeys('search', {
           clusterIds,
           containers,
           kubernetesNamespace,
+          userDefinedTags,
         } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -1114,6 +1140,9 @@ export const searchQueries = createQueryKeys('search', {
                     ? { kubernetes_namespace: kubernetesNamespace }
                     : {}),
                 },
+              },
+              contains_in_array_filter: {
+                filter_in: {},
               },
               match_filter: {
                 filter_in: null,
@@ -1184,6 +1213,13 @@ export const searchQueries = createQueryKeys('search', {
             node_id: containers,
           };
         }
+        if (userDefinedTags?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_in_array_filter!.filter_in = {
+            ...searchSearchNodeReq.node_filter.filters.contains_in_array_filter!
+              .filter_in,
+            tags: userDefinedTags,
+          };
+        }
         if (order) {
           searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
             field_name: order.sortBy,
@@ -1250,6 +1286,7 @@ export const searchQueries = createQueryKeys('search', {
       sortBy: string;
       descending: boolean;
     };
+    userDefinedTags?: string[];
   }) => {
     return {
       queryKey: [filters],
@@ -1263,6 +1300,7 @@ export const searchQueries = createQueryKeys('search', {
           clusterNames,
           kubernetesStatus,
           kubernetesNamespace,
+          userDefinedTags,
         } = filters;
         const searchSearchNodeReq: SearchSearchNodeReq = {
           node_filter: {
@@ -1280,6 +1318,9 @@ export const searchQueries = createQueryKeys('search', {
                     ? { kubernetes_namespace: kubernetesNamespace }
                     : {}),
                 },
+              },
+              contains_in_array_filter: {
+                filter_in: {},
               },
               match_filter: {
                 filter_in: null,
@@ -1305,6 +1346,13 @@ export const searchQueries = createQueryKeys('search', {
           searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
             ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
             kubernetes_state: [state],
+          };
+        }
+        if (userDefinedTags?.length) {
+          searchSearchNodeReq.node_filter.filters.contains_in_array_filter!.filter_in = {
+            ...searchSearchNodeReq.node_filter.filters.contains_in_array_filter!
+              .filter_in,
+            tags: userDefinedTags,
           };
         }
 

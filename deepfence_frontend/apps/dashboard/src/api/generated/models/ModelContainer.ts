@@ -214,6 +214,12 @@ export interface ModelContainer {
     secrets_count: number;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelContainer
+     */
+    tags: Array<string> | null;
+    /**
+     * 
      * @type {number}
      * @memberof ModelContainer
      */
@@ -273,6 +279,7 @@ export function instanceOfModelContainer(value: object): boolean {
     isInstance = isInstance && "secret_latest_scan_id" in value;
     isInstance = isInstance && "secret_scan_status" in value;
     isInstance = isInstance && "secrets_count" in value;
+    isInstance = isInstance && "tags" in value;
     isInstance = isInstance && "uptime" in value;
     isInstance = isInstance && "vulnerabilities_count" in value;
     isInstance = isInstance && "vulnerability_latest_scan_id" in value;
@@ -321,6 +328,7 @@ export function ModelContainerFromJSONTyped(json: any, ignoreDiscriminator: bool
         'secret_latest_scan_id': json['secret_latest_scan_id'],
         'secret_scan_status': json['secret_scan_status'],
         'secrets_count': json['secrets_count'],
+        'tags': json['tags'],
         'uptime': json['uptime'],
         'vulnerabilities_count': json['vulnerabilities_count'],
         'vulnerability_latest_scan_id': json['vulnerability_latest_scan_id'],
@@ -367,6 +375,7 @@ export function ModelContainerToJSON(value?: ModelContainer | null): any {
         'secret_latest_scan_id': value.secret_latest_scan_id,
         'secret_scan_status': value.secret_scan_status,
         'secrets_count': value.secrets_count,
+        'tags': value.tags,
         'uptime': value.uptime,
         'vulnerabilities_count': value.vulnerabilities_count,
         'vulnerability_latest_scan_id': value.vulnerability_latest_scan_id,

@@ -30,6 +30,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableUserDefinedTagList } from '@/components/forms/SearchableUserDefinedTagList';
 import { ArrowUpCircleLine } from '@/components/icons/common/ArrowUpCircleLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -243,6 +244,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   agentRunning = 'agentRunning',
   clusters = 'clusters',
   hosts = 'hosts',
+  userDefinedTags = 'userDefinedTags',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -259,6 +261,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   agentRunning: 'Agent running',
   clusters: 'Cluster',
   hosts: 'Host',
+  userDefinedTags: 'User defined tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -277,7 +280,6 @@ const getPrettyNameForAppliedFilters = ({
   switch (key) {
     case 'cloudProvider':
       return CLOUD_PROVIDERS.find((item) => item.value === value)?.label ?? '';
-
     default:
       return value;
   }
@@ -571,6 +573,28 @@ function Filters() {
               );
             })}
         </Combobox>
+        <SearchableUserDefinedTagList
+          resourceType="host"
+          defaultSelectedTags={searchParams.getAll('userDefinedTags')}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              value.forEach((tag) => {
+                prev.append('userDefinedTags', tag);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          triggerVariant="button"
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -658,6 +682,7 @@ function useSearchHostsWithPagination() {
       cloudAccounts: searchParams.getAll('cloudAccounts'),
       clusterIds: searchParams.getAll('clusters'),
       hosts: searchParams.getAll('hosts'),
+      userDefinedTags: searchParams.getAll('userDefinedTags'),
     }),
     keepPreviousData: true,
   });

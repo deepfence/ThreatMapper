@@ -136,6 +136,12 @@ export interface ModelPod {
     secret_scan_status: string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelPod
+     */
+    tags: Array<string> | null;
+    /**
+     * 
      * @type {string}
      * @memberof ModelPod
      */
@@ -164,6 +170,7 @@ export function instanceOfModelPod(value: object): boolean {
     isInstance = isInstance && "pod_name" in value;
     isInstance = isInstance && "processes" in value;
     isInstance = isInstance && "secret_scan_status" in value;
+    isInstance = isInstance && "tags" in value;
     isInstance = isInstance && "vulnerability_scan_status" in value;
 
     return isInstance;
@@ -196,6 +203,7 @@ export function ModelPodFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'pod_name': json['pod_name'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
         'secret_scan_status': json['secret_scan_status'],
+        'tags': json['tags'],
         'vulnerability_scan_status': json['vulnerability_scan_status'],
     };
 }
@@ -226,6 +234,7 @@ export function ModelPodToJSON(value?: ModelPod | null): any {
         'pod_name': value.pod_name,
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
         'secret_scan_status': value.secret_scan_status,
+        'tags': value.tags,
         'vulnerability_scan_status': value.vulnerability_scan_status,
     };
 }

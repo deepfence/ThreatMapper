@@ -26,6 +26,7 @@ import {
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableUserDefinedTagList } from '@/components/forms/SearchableUserDefinedTagList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -54,6 +55,7 @@ const DEFAULT_PAGE_SIZE = 25;
 
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   agentRunning: 'Agent running',
+  userDefinedTags: 'User defined tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -122,6 +124,28 @@ function Filters() {
               );
             })}
         </Combobox>
+        <SearchableUserDefinedTagList
+          defaultSelectedTags={searchParams.getAll('userDefinedTags')}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              value.forEach((tag) => {
+                prev.append('userDefinedTags', tag);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          triggerVariant="button"
+          resourceType="kubernetes_cluster"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -349,6 +373,7 @@ function useSearchClustersWithPagination() {
       agentRunning: searchParams
         .getAll('agentRunning')
         .map((value) => (value === 'Yes' ? true : false)),
+      userDefinedTags: searchParams.getAll('userDefinedTags'),
     }),
     keepPreviousData: true,
   });

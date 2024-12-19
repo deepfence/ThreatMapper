@@ -29,6 +29,7 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableNamespaceList } from '@/components/forms/SearchableNamespaceList';
+import { SearchableUserDefinedTagList } from '@/components/forms/SearchableUserDefinedTagList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -207,6 +208,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   clusters = 'clusters',
   containers = 'containers',
   namespaces = 'namespaces',
+  userDefinedTags = 'userDefinedTags',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -223,6 +225,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   clusters: 'Cluster',
   containers: 'Container',
   namespaces: 'Namespace',
+  userDefinedTags: 'User defined tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -434,6 +437,28 @@ function Filters() {
             });
           }}
         />
+        <SearchableUserDefinedTagList
+          defaultSelectedTags={searchParams.getAll('userDefinedTags')}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              value.forEach((tag) => {
+                prev.append('userDefinedTags', tag);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          resourceType="container"
+          triggerVariant="button"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -514,6 +539,7 @@ function useSearchContainersWithPagination() {
       clusterIds: searchParams.getAll('clusters'),
       containers: searchParams.getAll('containers'),
       kubernetesNamespace: searchParams.getAll('namespaces'),
+      userDefinedTags: searchParams.getAll('userDefinedTags'),
     }),
     keepPreviousData: true,
   });

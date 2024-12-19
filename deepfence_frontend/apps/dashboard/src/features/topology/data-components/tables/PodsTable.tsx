@@ -29,6 +29,7 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableNamespaceList } from '@/components/forms/SearchableNamespaceList';
 import { SearchablePodList } from '@/components/forms/SearchablePodList';
+import { SearchableUserDefinedTagList } from '@/components/forms/SearchableUserDefinedTagList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
@@ -109,6 +110,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   kubernetesStatus = 'kubernetesStatus',
   pods = 'pods',
   namespaces = 'namespaces',
+  userDefinedTags = 'userDefinedTags',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -123,6 +125,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   kubernetesStatus: 'Kubernetes status',
   pods: 'Pod',
   namespaces: 'Namespace',
+  userDefinedTags: 'User defined tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -273,6 +276,28 @@ function Filters() {
             });
           }}
         />
+        <SearchableUserDefinedTagList
+          defaultSelectedTags={searchParams.getAll('userDefinedTags')}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              value.forEach((tag) => {
+                prev.append('userDefinedTags', tag);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          resourceType="pod"
+          triggerVariant="button"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -345,6 +370,7 @@ function useSearchPodsWithPagination() {
       pods: searchParams.getAll('pods'),
       kubernetesStatus: searchParams.get('kubernetesStatus') ?? undefined,
       kubernetesNamespace: searchParams.getAll('namespaces'),
+      userDefinedTags: searchParams.getAll('userDefinedTags'),
     }),
     keepPreviousData: true,
   });
