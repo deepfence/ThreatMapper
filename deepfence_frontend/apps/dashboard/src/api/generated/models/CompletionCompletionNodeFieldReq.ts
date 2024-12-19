@@ -52,6 +52,12 @@ export interface CompletionCompletionNodeFieldReq {
     filters?: ReportersFieldsFilters;
     /**
      * 
+     * @type {boolean}
+     * @memberof CompletionCompletionNodeFieldReq
+     */
+    is_array_field?: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof CompletionCompletionNodeFieldReq
      */
@@ -89,6 +95,7 @@ export function CompletionCompletionNodeFieldReqFromJSONTyped(json: any, ignoreD
         'completion': json['completion'],
         'field_name': json['field_name'],
         'filters': !exists(json, 'filters') ? undefined : ReportersFieldsFiltersFromJSON(json['filters']),
+        'is_array_field': !exists(json, 'is_array_field') ? undefined : json['is_array_field'],
         'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
@@ -106,6 +113,7 @@ export function CompletionCompletionNodeFieldReqToJSON(value?: CompletionComplet
         'completion': value.completion,
         'field_name': value.field_name,
         'filters': ReportersFieldsFiltersToJSON(value.filters),
+        'is_array_field': value.is_array_field,
         'scan_id': value.scan_id,
         'window': ModelFetchWindowToJSON(value.window),
     };

@@ -55,6 +55,10 @@ export interface CompleteHostInfoRequest {
     completionCompletionNodeFieldReq?: CompletionCompletionNodeFieldReq;
 }
 
+export interface CompleteKubernetesClusterInfoRequest {
+    completionCompletionNodeFieldReq?: CompletionCompletionNodeFieldReq;
+}
+
 export interface CompletePodInfoRequest {
     completionCompletionNodeFieldReq?: CompletionCompletionNodeFieldReq;
 }
@@ -169,6 +173,22 @@ export interface CompletionApiInterface {
      * Get Completion for host fields
      */
     completeHostInfo(requestParameters: CompleteHostInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes>;
+
+    /**
+     * Complete Kubernetes Cluster info
+     * @summary Get Completion for Kubernetes Cluster fields
+     * @param {CompletionCompletionNodeFieldReq} [completionCompletionNodeFieldReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CompletionApiInterface
+     */
+    completeKubernetesClusterInfoRaw(requestParameters: CompleteKubernetesClusterInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CompletionCompletionNodeFieldRes>>;
+
+    /**
+     * Complete Kubernetes Cluster info
+     * Get Completion for Kubernetes Cluster fields
+     */
+    completeKubernetesClusterInfo(requestParameters: CompleteKubernetesClusterInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes>;
 
     /**
      * Complete Pod info
@@ -456,6 +476,45 @@ export class CompletionApi extends runtime.BaseAPI implements CompletionApiInter
      */
     async completeHostInfo(requestParameters: CompleteHostInfoRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes> {
         const response = await this.completeHostInfoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Complete Kubernetes Cluster info
+     * Get Completion for Kubernetes Cluster fields
+     */
+    async completeKubernetesClusterInfoRaw(requestParameters: CompleteKubernetesClusterInfoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CompletionCompletionNodeFieldRes>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/complete/kubernetes-cluster`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CompletionCompletionNodeFieldReqToJSON(requestParameters.completionCompletionNodeFieldReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CompletionCompletionNodeFieldResFromJSON(jsonValue));
+    }
+
+    /**
+     * Complete Kubernetes Cluster info
+     * Get Completion for Kubernetes Cluster fields
+     */
+    async completeKubernetesClusterInfo(requestParameters: CompleteKubernetesClusterInfoRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CompletionCompletionNodeFieldRes> {
+        const response = await this.completeKubernetesClusterInfoRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

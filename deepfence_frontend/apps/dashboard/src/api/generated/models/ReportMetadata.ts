@@ -459,12 +459,6 @@ export interface ReportMetadata {
     uptime?: number;
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ReportMetadata
-     */
-    user_defined_tags?: Array<string>;
-    /**
-     * 
      * @type {string}
      * @memberof ReportMetadata
      */
@@ -563,7 +557,6 @@ export function ReportMetadataFromJSONTyped(json: any, ignoreDiscriminator: bool
         'threads': !exists(json, 'threads') ? undefined : json['threads'],
         'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
         'uptime': !exists(json, 'uptime') ? undefined : json['uptime'],
-        'user_defined_tags': !exists(json, 'user_defined_tags') ? undefined : json['user_defined_tags'],
         'version': !exists(json, 'version') ? undefined : json['version'],
     };
 }
@@ -650,7 +643,6 @@ export function ReportMetadataToJSON(value?: ReportMetadata | null): any {
         'threads': value.threads,
         'timestamp': value.timestamp,
         'uptime': value.uptime,
-        'user_defined_tags': value.user_defined_tags,
         'version': value.version,
     };
 }
