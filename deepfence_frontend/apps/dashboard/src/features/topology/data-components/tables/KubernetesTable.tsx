@@ -30,6 +30,7 @@ import { SearchableUserDefinedTagList } from '@/components/forms/SearchableUserD
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { FilterIcon } from '@/components/icons/common/Filter';
+import { TagOutlineIcon } from '@/components/icons/common/TagOutline';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
@@ -466,6 +467,27 @@ const DataTable = ({
           } else {
             name = info.row.original.node_id;
           }
+          return (
+            <div className="flex flex-col gap-1 items-start text-start py-2">
+              <TruncatedText text={name} />
+              {info.row.original?.tags?.length ? (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {info.row.original.tags.map((tag) => {
+                    return (
+                      <Badge
+                        startIcon={<TagOutlineIcon />}
+                        key={tag}
+                        label={tag}
+                        variant="filled"
+                        color="info"
+                        size="small"
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          );
           return <TruncatedText text={name} />;
         },
         header: () => 'Name',
