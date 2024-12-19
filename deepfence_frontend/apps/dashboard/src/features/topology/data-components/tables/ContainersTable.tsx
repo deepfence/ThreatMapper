@@ -226,7 +226,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   clusters: 'Cluster',
   containers: 'Container',
   namespaces: 'Namespace',
-  userDefinedTags: 'User defined tags',
+  userDefinedTags: 'Custom tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {

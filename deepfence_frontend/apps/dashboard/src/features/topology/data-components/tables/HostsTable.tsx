@@ -262,7 +262,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   agentRunning: 'Agent running',
   clusters: 'Cluster',
   hosts: 'Host',
-  userDefinedTags: 'User defined tags',
+  userDefinedTags: 'Custom tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {

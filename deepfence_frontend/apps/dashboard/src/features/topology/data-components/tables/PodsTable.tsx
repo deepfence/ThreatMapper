@@ -126,7 +126,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   kubernetesStatus: 'Kubernetes status',
   pods: 'Pod',
   namespaces: 'Namespace',
-  userDefinedTags: 'User defined tags',
+  userDefinedTags: 'Custom tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {

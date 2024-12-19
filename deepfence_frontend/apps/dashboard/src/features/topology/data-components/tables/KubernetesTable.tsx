@@ -56,7 +56,7 @@ const DEFAULT_PAGE_SIZE = 25;
 
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   agentRunning: 'Agent running',
-  userDefinedTags: 'User defined tags',
+  userDefinedTags: 'Custom tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {

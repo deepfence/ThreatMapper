@@ -132,14 +132,14 @@ const SearchableTag = ({
         }
         name="tagFilter"
         triggerVariant={triggerVariant || 'button'}
-        label={isSelectVariantType ? 'Select User Defined Tags' : undefined}
+        label={isSelectVariantType ? 'Select Custom Tags' : undefined}
         getDisplayValue={() => {
           if (isSelectVariantType) {
             return selectedTags.length > 0 ? `${selectedTags.length} selected` : null;
           }
           return null;
         }}
-        placeholder="User defined tags"
+        placeholder="Custom tags"
         value={selectedTags}
         onChange={(value) => {
           setSelectedTags(value);
@@ -177,10 +177,10 @@ export const SearchableUserDefinedTagList = (props: Props) => {
     <Suspense
       fallback={
         <Combobox
-          label={isSelectVariantType ? 'Select User Defined Tags' : undefined}
+          label={isSelectVariantType ? 'Select Custom Tags' : undefined}
           triggerVariant={triggerVariant || 'button'}
           startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-          placeholder="User defined tags"
+          placeholder="Custom tags"
           multiple
           onQueryChange={() => {
             // no operation
