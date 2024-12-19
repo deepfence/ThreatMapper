@@ -22,6 +22,10 @@ func (h *Handler) CompleteHostInfo(w http.ResponseWriter, r *http.Request) {
 	genericCompleteInfoHandler[model.Host](w, r, h)
 }
 
+func (h *Handler) CompleteKubernetesClusterInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.KubernetesCluster](w, r, h)
+}
+
 func (h *Handler) CompleteComplianceInfo(w http.ResponseWriter, r *http.Request) {
 	genericCompleteInfoHandler[model.ComplianceRule](w, r, h)
 }

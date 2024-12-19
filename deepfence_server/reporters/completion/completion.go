@@ -56,65 +56,47 @@ func FieldValueCompletion[T reporters.Cypherable](ctx context.Context, req Compl
 		filterClauses = mo.Some(*req.Filters)
 	}
 
+	var cypherNodeName string
+	if req.ScanID != "" {
+		cypherNodeName = "r"
+	} else {
+		cypherNodeName = "n"
+	}
+	var fieldName string
+	var substringMatch string
 	if req.IsArrayField {
-		if req.ScanID != "" {
-			if dummy.NodeType() == "CloudCompliance" {
-				query = `
+		fieldName = "field_name"
+		substringMatch = `UNWIND ` + cypherNodeName + `.` + req.FieldName + ` as ` + fieldName + `
+		WITH ` + fieldName + `
+		WHERE ` + fieldName + ` =~ '^` + req.Completion + `.*'`
+	} else {
+		fieldName = cypherNodeName + `.` + req.FieldName
+		substringMatch = `WHERE ` + fieldName + ` =~ '^` + req.Completion + `.*'`
+	}
+
+	if req.ScanID != "" {
+		if dummy.NodeType() == "CloudCompliance" {
+			query = `
 			MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (r:` + dummy.NodeType() + `)
-			UNWIND r.` + req.FieldName + ` as array_field_value
-		    WITH array_field_value
-			WHERE array_field_value =~ '^` + req.Completion + `.*'
+			` + substringMatch + `
 			` + reporters.ParseFieldFilters2CypherWhereConditions(`n`, filterClauses, false) + `
-			RETURN DISTINCT array_field_value
-			ORDER BY array_field_value` + req.Window.FetchWindow2CypherQuery()
-			} else {
-				query = `
-			MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (m) -[:IS]-> (r:` + dummy.NodeType() + `)
-			UNWIND r.` + req.FieldName + ` as array_field_value
-		    WITH array_field_value
-			WHERE array_field_value =~ '^` + req.Completion + `.*'
-			` + reporters.ParseFieldFilters2CypherWhereConditions(`n`, filterClauses, false) + `
-			RETURN DISTINCT array_field_value
-			ORDER BY array_field_value` + req.Window.FetchWindow2CypherQuery()
-			}
+			RETURN DISTINCT ` + fieldName + `
+			ORDER BY ` + fieldName + req.Window.FetchWindow2CypherQuery()
 		} else {
 			query = `
-		MATCH (n:` + dummy.NodeType() + `)
-		UNWIND n.` + req.FieldName + ` as array_field_value
-		WITH array_field_value
-		WHERE array_field_value =~ '^` + req.Completion + `.*'
-		` + reporters.ParseFieldFilters2CypherWhereConditions(`n`, filterClauses, false) + `
-		RETURN DISTINCT array_field_value
-		ORDER BY array_field_value` + req.Window.FetchWindow2CypherQuery()
+			MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (m) -[:IS]-> (r:` + dummy.NodeType() + `)
+			` + substringMatch + `
+			` + reporters.ParseFieldFilters2CypherWhereConditions(`n`, filterClauses, false) + `
+			RETURN DISTINCT ` + fieldName + `
+			ORDER BY ` + fieldName + req.Window.FetchWindow2CypherQuery()
 		}
 	} else {
-		if req.ScanID != "" {
-			if dummy.NodeType() == "CloudCompliance" {
-				query = `
-			MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (r:` + dummy.NodeType() + `)
-			WHERE r.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
-			` + reporters.ParseFieldFilters2CypherWhereConditions(`n`, filterClauses, false) + `
-			RETURN DISTINCT r.` + req.FieldName + `
-			ORDER BY r.` + req.FieldName +
-					req.Window.FetchWindow2CypherQuery()
-			} else {
-				query = `
-			MATCH (n{node_id: $scan_id}) -[:DETECTED]-> (m) -[:IS]-> (r:` + dummy.NodeType() + `)
-			WHERE r.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
-			` + reporters.ParseFieldFilters2CypherWhereConditions(`n`, filterClauses, false) + `
-			RETURN DISTINCT r.` + req.FieldName + `
-			ORDER BY r.` + req.FieldName +
-					req.Window.FetchWindow2CypherQuery()
-			}
-		} else {
-			query = `
+		query = `
 		MATCH (n:` + dummy.NodeType() + `) 
-		WHERE n.` + req.FieldName + ` =~ '^` + req.Completion + `.*'
+		` + substringMatch + `
 		` + reporters.ParseFieldFilters2CypherWhereConditions(`n`, filterClauses, false) + `
-		RETURN DISTINCT n.` + req.FieldName + `
-		ORDER BY n.` + req.FieldName +
-				req.Window.FetchWindow2CypherQuery()
-		}
+		RETURN DISTINCT ` + fieldName + `
+		ORDER BY ` + fieldName + req.Window.FetchWindow2CypherQuery()
 	}
 
 	log.Debug().Msgf("completion query: \n%v", query)
