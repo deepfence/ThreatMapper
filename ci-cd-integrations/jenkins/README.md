@@ -19,14 +19,14 @@ There is also an option to fail the build in case number of vulnerabilities cros
 | def deepfence_product = ""               | ThreatMapper or ThreatStryker license key                                                                                  |
 
 ## Steps
-- Ensure `quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.1` image is present in the vm where jenkins is installed.
+- Ensure `quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.2` image is present in the vm where jenkins is installed.
 ```shell script
-docker pull quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.1
+docker pull quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.2
 ```
 ### Scripted Pipeline
 ```
 stage('Run Deepfence Vulnerability Mapper'){
-    DeepfenceAgent = docker.image("quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.1")
+    DeepfenceAgent = docker.image("quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.2")
     try {
         c = DeepfenceAgent.run("-it --net=host -v /var/run/docker.sock:/var/run/docker.sock", "-deepfence-key=${deepfence_key} -vulnerability-scan=true -output=table -mode=local -mgmt-console-url=${deepfence_mgmt_console_url} -source=${full_image_name} -fail-on-count=${fail_cve_count} -fail-on-critical-count=${fail_critical_cve_count} -fail-on-high-count=${fail_high_cve_count} -fail-on-medium-count=${fail_medium_cve_count} -fail-on-low-count=${fail_low_cve_count} -fail-on-score=${fail_cve_score} -mask-cve-ids='${mask_cve_ids}'")
         sh "docker logs -f ${c.id}"
@@ -42,7 +42,7 @@ stage('Run Deepfence Vulnerability Mapper'){
 stage('Run Deepfence Vulnerability Mapper'){
     steps {
         script {
-            DeepfenceAgent = docker.image("quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.1")
+            DeepfenceAgent = docker.image("quay.io/deepfenceio/deepfence_package_scanner_cli:2.5.2")
             try {
                 c = DeepfenceAgent.run("-it --net=host -v /var/run/docker.sock:/var/run/docker.sock", "-deepfence-key=${deepfence_key} -vulnerability-scan=true -output=table -mode=local -mgmt-console-url=${deepfence_mgmt_console_url} -source=${full_image_name} -fail-on-count=${fail_cve_count} -fail-on-critical-count=${fail_critical_cve_count} -fail-on-high-count=${fail_high_cve_count} -fail-on-medium-count=${fail_medium_cve_count} -fail-on-low-count=${fail_low_cve_count} -fail-on-score=${fail_cve_score} -mask-cve-ids='${mask_cve_ids}'")
                 sh "docker logs -f ${c.id}"

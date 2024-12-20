@@ -50,7 +50,7 @@ managementConsoleUrl: ""
 global:
   # this image tag is used everywhere for agents
   # to override set tag at agents level
-  imageTag: 2.5.1
+  imageTag: 2.5.2
 ```
 - Set deepfence auth key
 Set authentication key when it is enabled in management console

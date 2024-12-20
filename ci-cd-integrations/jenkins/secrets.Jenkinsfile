@@ -19,7 +19,7 @@ node {
     }
 
     stage('Run Deepfence Secret Scanner'){
-        DeepfenceAgent = docker.image("quay.io/deepfenceio/deepfence_secret_scanner:2.5.1")
+        DeepfenceAgent = docker.image("quay.io/deepfenceio/deepfence_secret_scanner:2.5.2")
         try {
             c = DeepfenceAgent.run("-it --net=host -v /var/run/docker.sock:/var/run/docker.sock:rw", "-product=${deepfence_product} -license=${deepfence_license} -image-name $full_image_name -fail-on-count=${fail_secret_count} -fail-on-high-count=${fail_high_secret_count} -fail-on-medium-count=${fail_medium_secret_count} -fail-on-low-count=${fail_low_secret_count}")
             sh "docker logs -f ${c.id}"
