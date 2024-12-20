@@ -137,6 +137,7 @@ const TabContent = ({ tab, nodeId }: { tab: string; nodeId: string }) => {
             kubernetes_is_in_host_network: toTopologyMetadataString(
               data?.podData?.kubernetes_is_in_host_network,
             ),
+            custom_tags: toTopologyMetadataString(data?.podData?.tags),
           }}
         />
       )}

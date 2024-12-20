@@ -304,6 +304,12 @@ export interface ModelHost {
     secrets_count: number;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelHost
+     */
+    tags: Array<string> | null;
+    /**
+     * 
      * @type {number}
      * @memberof ModelHost
      */
@@ -387,6 +393,7 @@ export function instanceOfModelHost(value: object): boolean {
     isInstance = isInstance && "secret_latest_scan_id" in value;
     isInstance = isInstance && "secret_scan_status" in value;
     isInstance = isInstance && "secrets_count" in value;
+    isInstance = isInstance && "tags" in value;
     isInstance = isInstance && "uptime" in value;
     isInstance = isInstance && "version" in value;
     isInstance = isInstance && "vulnerabilities_count" in value;
@@ -449,6 +456,7 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'secret_latest_scan_id': json['secret_latest_scan_id'],
         'secret_scan_status': json['secret_scan_status'],
         'secrets_count': json['secrets_count'],
+        'tags': json['tags'],
         'uptime': json['uptime'],
         'version': json['version'],
         'vulnerabilities_count': json['vulnerabilities_count'],
@@ -509,6 +517,7 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         'secret_latest_scan_id': value.secret_latest_scan_id,
         'secret_scan_status': value.secret_scan_status,
         'secrets_count': value.secrets_count,
+        'tags': value.tags,
         'uptime': value.uptime,
         'version': value.version,
         'vulnerabilities_count': value.vulnerabilities_count,

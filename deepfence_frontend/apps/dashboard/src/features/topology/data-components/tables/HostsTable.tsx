@@ -30,9 +30,11 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableUserDefinedTagList } from '@/components/forms/SearchableUserDefinedTagList';
 import { ArrowUpCircleLine } from '@/components/icons/common/ArrowUpCircleLine';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
+import { TagOutlineIcon } from '@/components/icons/common/TagOutline';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
@@ -70,7 +72,7 @@ const useGetAgentVersions = () => {
 export const HostsTable = () => {
   const [selectedNodes, setSelectedNodes] = useState<ModelHost[]>([]);
   const [searchParams] = useSearchParams();
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
 
   return (
     <div className="px-4 pb-4">
@@ -243,6 +245,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   agentRunning = 'agentRunning',
   clusters = 'clusters',
   hosts = 'hosts',
+  userDefinedTags = 'userDefinedTags',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -259,6 +262,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   agentRunning: 'Agent running',
   clusters: 'Cluster',
   hosts: 'Host',
+  userDefinedTags: 'Custom tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -277,7 +281,6 @@ const getPrettyNameForAppliedFilters = ({
   switch (key) {
     case 'cloudProvider':
       return CLOUD_PROVIDERS.find((item) => item.value === value)?.label ?? '';
-
     default:
       return value;
   }
@@ -314,13 +317,6 @@ function Filters() {
         <SearchableHostList
           scanType={'none'}
           defaultSelectedHosts={searchParams.getAll('hosts')}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('hosts');
-              prev.delete('page');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('hosts');
@@ -578,6 +574,28 @@ function Filters() {
               );
             })}
         </Combobox>
+        <SearchableUserDefinedTagList
+          resourceType="host"
+          defaultSelectedTags={searchParams.getAll('userDefinedTags')}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              value.forEach((tag) => {
+                prev.append('userDefinedTags', tag);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          triggerVariant="button"
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -665,6 +683,7 @@ function useSearchHostsWithPagination() {
       cloudAccounts: searchParams.getAll('cloudAccounts'),
       clusterIds: searchParams.getAll('clusters'),
       hosts: searchParams.getAll('hosts'),
+      userDefinedTags: searchParams.getAll('userDefinedTags'),
     }),
     keepPreviousData: true,
   });
@@ -716,13 +735,13 @@ const DataTable = ({
             name = info.row.original.node_name;
           }
           return (
-            <div className="flex items-center">
+            <div className="flex flex-col gap-1 items-start text-start py-2">
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
-                className="truncate"
+                className="truncate w-full"
               >
                 <DFLink
                   href="#"
@@ -733,10 +752,27 @@ const DataTable = ({
                       nodeId: info.row.original.node_id!,
                     });
                   }}
+                  className="text-left"
                 >
                   <TruncatedText text={name} />
                 </DFLink>
               </button>
+              {info.row.original?.tags?.length ? (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {info.row.original.tags.map((tag) => {
+                    return (
+                      <Badge
+                        startIcon={<TagOutlineIcon />}
+                        key={tag}
+                        label={tag}
+                        variant="filled"
+                        color="info"
+                        size="small"
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
           );
         },

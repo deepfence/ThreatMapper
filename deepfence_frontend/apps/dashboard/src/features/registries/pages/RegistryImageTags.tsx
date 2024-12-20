@@ -458,7 +458,7 @@ const RegistryImagesTagsResults = () => {
 
   const [searchParams] = useSearchParams();
 
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
 
   const onTableAction = useCallback(
     (nodeIds: string[], scanType: RegistryScanType, _: string) => {

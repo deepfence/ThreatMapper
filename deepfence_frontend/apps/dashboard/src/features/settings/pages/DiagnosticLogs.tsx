@@ -478,9 +478,6 @@ const AgentDiagnosticsLogsModal = ({
                   onChange={(value) => {
                     setHosts(value);
                   }}
-                  onClearAll={() => {
-                    setHosts([]);
-                  }}
                   helperText={fetcher?.data?.fieldErrors?.node_ids}
                   color={fetcher?.data?.fieldErrors?.node_ids ? 'error' : 'default'}
                 />

@@ -29,8 +29,10 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableNamespaceList } from '@/components/forms/SearchableNamespaceList';
+import { SearchableUserDefinedTagList } from '@/components/forms/SearchableUserDefinedTagList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { FilterIcon } from '@/components/icons/common/Filter';
+import { TagOutlineIcon } from '@/components/icons/common/TagOutline';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
@@ -58,7 +60,7 @@ const DEFAULT_PAGE_SIZE = 25;
 export const ContainersTable = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [searchParams] = useSearchParams();
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
   const selectedIds = useMemo(() => {
     return Object.keys(rowSelectionState);
   }, [rowSelectionState]);
@@ -207,6 +209,7 @@ enum FILTER_SEARCHPARAMS_KEYS_ENUM {
   clusters = 'clusters',
   containers = 'containers',
   namespaces = 'namespaces',
+  userDefinedTags = 'userDefinedTags',
 }
 
 const FILTER_SEARCHPARAMS_DYNAMIC_KEYS = [
@@ -223,6 +226,7 @@ const FILTER_SEARCHPARAMS: Record<FILTER_SEARCHPARAMS_KEYS_ENUM, string> = {
   clusters: 'Cluster',
   containers: 'Container',
   namespaces: 'Namespace',
+  userDefinedTags: 'Custom tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -382,13 +386,6 @@ function Filters() {
           valueKey="hostName"
           scanType={ScanTypeEnum.VulnerabilityScan}
           defaultSelectedHosts={searchParams.getAll('hosts')}
-          onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('hosts');
-              prev.delete('page');
-              return prev;
-            });
-          }}
           onChange={(value) => {
             setSearchParams((prev) => {
               prev.delete('hosts');
@@ -436,6 +433,28 @@ function Filters() {
               value.forEach((pod) => {
                 prev.append('namespaces', pod);
               });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+        <SearchableUserDefinedTagList
+          defaultSelectedTags={searchParams.getAll('userDefinedTags')}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              value.forEach((tag) => {
+                prev.append('userDefinedTags', tag);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          resourceType="container"
+          triggerVariant="button"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
               prev.delete('page');
               return prev;
             });
@@ -521,6 +540,7 @@ function useSearchContainersWithPagination() {
       clusterIds: searchParams.getAll('clusters'),
       containers: searchParams.getAll('containers'),
       kubernetesNamespace: searchParams.getAll('namespaces'),
+      userDefinedTags: searchParams.getAll('userDefinedTags'),
     }),
     keepPreviousData: true,
   });
@@ -553,13 +573,13 @@ const DataTable = ({
             name = info.row.original.node_name;
           }
           return (
-            <div className="flex items-center">
+            <div className="flex flex-col gap-1 items-start text-start py-2">
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
-                className="truncate"
+                className="truncate w-full"
               >
                 <DFLink
                   href="#"
@@ -570,10 +590,27 @@ const DataTable = ({
                       nodeId: info.row.original.node_id,
                     });
                   }}
+                  className="text-left"
                 >
                   <TruncatedText text={name} />
                 </DFLink>
               </button>
+              {info.row.original?.tags?.length ? (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {info.row.original.tags.map((tag) => {
+                    return (
+                      <Badge
+                        startIcon={<TagOutlineIcon />}
+                        key={tag}
+                        label={tag}
+                        variant="filled"
+                        color="info"
+                        size="small"
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
           );
         },

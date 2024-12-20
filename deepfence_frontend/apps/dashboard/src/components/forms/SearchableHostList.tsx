@@ -1,15 +1,21 @@
 import { useSuspenseInfiniteQuery } from '@suspensive/react-query';
-import { debounce } from 'lodash-es';
 import { Suspense, useEffect, useMemo, useState } from 'react';
-import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
+import {
+  CircleSpinner,
+  ComboboxV2Content,
+  ComboboxV2Item,
+  ComboboxV2Provider,
+  ComboboxV2TriggerButton,
+  ComboboxV2TriggerInput,
+} from 'ui-components';
 
 import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
+import { useDebouncedValue } from '@/utils/useDebouncedValue';
 
-export type SearchableHostListProps = {
+export interface SearchableHostListProps {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
-  onClearAll?: () => void;
   defaultSelectedHosts?: string[];
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
   active?: boolean;
@@ -22,13 +28,14 @@ export type SearchableHostListProps = {
   isScannedForSecrets?: boolean;
   isScannedForMalware?: boolean;
   displayValue?: string;
-};
+}
+
 const fieldName = 'hostFilter';
 const PAGE_SIZE = 15;
+
 const SearchableHost = ({
   scanType,
   onChange,
-  onClearAll,
   defaultSelectedHosts,
   valueKey = 'nodeId',
   active,
@@ -41,8 +48,14 @@ const SearchableHost = ({
   isScannedForSecrets,
   isScannedForMalware,
   displayValue,
-}: SearchableHostListProps) => {
+  isOpen,
+  setIsOpen,
+}: SearchableHostListProps & {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}) => {
   const [searchText, setSearchText] = useState('');
+  const debouncedSearchText = useDebouncedValue(searchText, 500);
 
   const [selectedHosts, setSelectedHosts] = useState<string[]>(
     defaultSelectedHosts ?? [],
@@ -56,12 +69,12 @@ const SearchableHost = ({
     setSelectedHosts(defaultSelectedHosts ?? []);
   }, [defaultSelectedHosts]);
 
-  const { data, isFetchingNextPage, hasNextPage, fetchNextPage } =
+  const { data, isFetchingNextPage, hasNextPage, fetchNextPage, isRefetching } =
     useSuspenseInfiniteQuery({
       ...queries.search.hosts({
         scanType,
         size: PAGE_SIZE,
-        searchText,
+        searchText: debouncedSearchText,
         active,
         agentRunning,
         showOnlyKubernetesHosts,
@@ -73,8 +86,10 @@ const SearchableHost = ({
           descending: false,
         },
       }),
+      enabled: isOpen,
       keepPreviousData: true,
       getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.hosts.length < PAGE_SIZE) return null;
         return allPages.length * PAGE_SIZE;
       },
       getPreviousPageParam: (firstPage, allPages) => {
@@ -83,89 +98,98 @@ const SearchableHost = ({
       },
     });
 
-  const searchHost = debounce((query: string) => {
-    setSearchText(query);
-  }, 1000);
-
   const onEndReached = () => {
     if (hasNextPage) fetchNextPage();
   };
 
   return (
-    <>
-      <Combobox
-        startIcon={
-          isFetchingNextPage ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
-        }
-        name={fieldName}
-        triggerVariant={triggerVariant || 'button'}
-        label={isSelectVariantType ? 'Host' : undefined}
-        getDisplayValue={() =>
-          isSelectVariantType && selectedHosts.length > 0
-            ? `${selectedHosts.length} selected`
-            : displayValue
-              ? displayValue
-              : null
-        }
-        placeholder="Select host"
-        multiple
-        value={selectedHosts}
-        onChange={(values) => {
-          setSelectedHosts(values);
-          onChange?.(values);
-        }}
-        onQueryChange={searchHost}
-        clearAllElement="Clear"
-        onClearAll={onClearAll}
+    <ComboboxV2Provider
+      selectedValue={selectedHosts}
+      setSelectedValue={(values) => {
+        setSelectedHosts(values as string[]);
+        onChange?.(values as string[]);
+      }}
+      value={searchText}
+      setValue={setSearchText}
+      defaultSelectedValue={defaultSelectedHosts}
+      name={fieldName}
+      loading={isFetchingNextPage && !isRefetching}
+      open={isOpen}
+      setOpen={setIsOpen}
+    >
+      {isSelectVariantType ? (
+        <ComboboxV2TriggerInput
+          getDisplayValue={() =>
+            selectedHosts.length > 0
+              ? `${selectedHosts.length} selected`
+              : displayValue ?? null
+          }
+          placeholder="Select host"
+          label="Host"
+          helperText={helperText}
+          color={color}
+        />
+      ) : (
+        <ComboboxV2TriggerButton>Select host</ComboboxV2TriggerButton>
+      )}
+      <ComboboxV2Content
+        width={isSelectVariantType ? 'anchor' : 'fixed'}
+        clearButtonContent="Clear"
         onEndReached={onEndReached}
-        helperText={helperText}
-        color={color}
+        searchPlaceholder="Search"
       >
         {data?.pages
-          .flatMap((page) => {
-            return page.hosts;
-          })
-          .map((host, index) => {
-            return (
-              <ComboboxOption key={`${host.nodeId}-${index}`} value={host[valueKey]}>
-                {host.nodeName}
-              </ComboboxOption>
-            );
-          })}
-      </Combobox>
-    </>
+          .flatMap((page) => page.hosts)
+          .map((host, index) => (
+            <ComboboxV2Item key={`${host.nodeId}-${index}`} value={host[valueKey]}>
+              {host.nodeName}
+            </ComboboxV2Item>
+          ))}
+      </ComboboxV2Content>
+    </ComboboxV2Provider>
   );
 };
 
 export const SearchableHostList = (props: SearchableHostListProps) => {
-  const { triggerVariant, defaultSelectedHosts = [] } = props;
+  const { triggerVariant, defaultSelectedHosts = [], displayValue } = props;
   const isSelectVariantType = useMemo(() => {
     return triggerVariant === 'select';
   }, [triggerVariant]);
 
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <Suspense
       fallback={
-        <>
-          <Combobox
-            name={fieldName}
-            value={defaultSelectedHosts}
-            label={isSelectVariantType ? 'Host' : undefined}
-            triggerVariant={triggerVariant || 'button'}
-            startIcon={<CircleSpinner size="sm" className="w-3 h-3" />}
-            placeholder="Select host"
-            multiple
-            onQueryChange={() => {
-              // no operation
-            }}
-            getDisplayValue={() => {
-              return props.displayValue ? props.displayValue : 'Select host';
-            }}
+        <ComboboxV2Provider
+          defaultSelectedValue={defaultSelectedHosts}
+          name={fieldName}
+          open={isOpen}
+          setOpen={setIsOpen}
+          loading
+        >
+          {isSelectVariantType ? (
+            <ComboboxV2TriggerInput
+              getDisplayValue={() =>
+                defaultSelectedHosts.length > 0
+                  ? `${defaultSelectedHosts.length} selected`
+                  : displayValue ?? null
+              }
+              placeholder="Select host"
+              label="Host"
+            />
+          ) : (
+            <ComboboxV2TriggerButton>Select host</ComboboxV2TriggerButton>
+          )}
+          <ComboboxV2Content
+            width={isSelectVariantType ? 'anchor' : 'fixed'}
+            clearButtonContent="Clear"
+            searchPlaceholder="Search"
           />
-        </>
+        </ComboboxV2Provider>
       }
     >
-      <SearchableHost {...props} />
+      <SearchableHost {...props} isOpen={isOpen} setIsOpen={setIsOpen} />
     </Suspense>
   );
 };

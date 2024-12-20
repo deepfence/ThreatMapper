@@ -435,6 +435,8 @@ export function getScanResultCompletionApiClient() {
       scanCompleteionApi.completeCloudResources.bind(scanCompleteionApi),
     completeCloudAccount:
       scanCompleteionApi.completeCloudAccount.bind(scanCompleteionApi),
+    completeKubernetesClusterInfo:
+      scanCompleteionApi.completeKubernetesClusterInfo.bind(scanCompleteionApi),
   };
 }
 

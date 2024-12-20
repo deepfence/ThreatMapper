@@ -842,6 +842,62 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/complete/kubernetes-cluster": {
+      "post": {
+        "tags": ["Completion"],
+        "summary": "Get Completion for Kubernetes Cluster fields",
+        "description": "Complete Kubernetes Cluster info",
+        "operationId": "completeKubernetesClusterInfo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionCompletionNodeFieldReq"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompletionCompletionNodeFieldRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/complete/pod": {
       "post": {
         "tags": ["Completion"],
@@ -7291,6 +7347,60 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/scan/results/packages": {
+      "post": {
+        "tags": ["Vulnerability"],
+        "summary": "Get Vulnerability Package Scans Results",
+        "description": "Get Vulnerability Pacakge Scan results on agent or registry",
+        "operationId": "resultsVulnerablePackagesScans",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanResultsReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPackageVulnerabilityScanResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/scan/results/secret": {
       "post": {
         "tags": ["Secret Scan"],
@@ -12250,6 +12360,7 @@
           "completion": { "type": "string" },
           "field_name": { "type": "string" },
           "filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
+          "is_array_field": { "type": "boolean" },
           "scan_id": { "type": "string" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
@@ -13193,9 +13304,10 @@
         }
       },
       "ModelBasicNode": {
-        "required": ["node_id", "name", "node_type", "host_name"],
+        "required": ["node_id", "name", "node_type", "host_name", "active"],
         "type": "object",
         "properties": {
+          "active": { "type": "boolean" },
           "host_name": { "type": "string" },
           "name": { "type": "string" },
           "node_id": { "type": "string" },
@@ -13846,10 +13958,12 @@
           "node_id",
           "node_name",
           "docker_container_name",
+          "tags",
           "image",
           "processes",
           "docker_labels",
           "host_name",
+          "docker_image_name_with_tag",
           "docker_container_command",
           "docker_container_state",
           "docker_container_state_human",
@@ -13890,6 +14004,7 @@
           "docker_container_ports": { "type": "string" },
           "docker_container_state": { "type": "string" },
           "docker_container_state_human": { "type": "string" },
+          "docker_image_name_with_tag": { "type": "string" },
           "docker_labels": {
             "type": "object",
             "additionalProperties": {},
@@ -13916,6 +14031,7 @@
           "secret_latest_scan_id": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
+          "tags": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "uptime": { "type": "integer" },
           "vulnerabilities_count": { "type": "integer" },
           "vulnerability_latest_scan_id": { "type": "string" },
@@ -13927,6 +14043,7 @@
           "node_id",
           "image_node_id",
           "node_name",
+          "tags",
           "docker_image_name",
           "docker_image_tag",
           "docker_image_size",
@@ -13975,6 +14092,7 @@
           "secret_latest_scan_id": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
+          "tags": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "vulnerabilities_count": { "type": "integer" },
           "vulnerability_latest_scan_id": { "type": "string" },
           "vulnerability_scan_status": { "type": "string" }
@@ -14256,6 +14374,7 @@
           "node_id",
           "host_name",
           "node_name",
+          "tags",
           "containers",
           "processes",
           "pods",
@@ -14370,6 +14489,7 @@
           "secret_latest_scan_id": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
+          "tags": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "uptime": { "type": "integer" },
           "version": { "type": "string" },
           "vulnerabilities_count": { "type": "integer" },
@@ -14472,7 +14592,7 @@
         }
       },
       "ModelKubernetesCluster": {
-        "required": ["node_id", "node_name", "agent_running", "hosts"],
+        "required": ["node_id", "node_name", "tags", "agent_running", "hosts"],
         "type": "object",
         "properties": {
           "agent_running": { "type": "boolean" },
@@ -14482,7 +14602,8 @@
             "nullable": true
           },
           "node_id": { "type": "string" },
-          "node_name": { "type": "string" }
+          "node_name": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
       "ModelLicense": {
@@ -14572,6 +14693,7 @@
           "info": { "type": "string" },
           "masked": { "type": "boolean" },
           "node_id": { "type": "string" },
+          "reference": { "type": "string" },
           "resources": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelBasicNode" },
@@ -14597,7 +14719,6 @@
           "info": { "type": "string" },
           "masked": { "type": "boolean" },
           "payload": { "type": "string" },
-          "reference": { "type": "string" },
           "rule_id": { "type": "string" },
           "rule_name": { "type": "string" },
           "severity": { "type": "string" },
@@ -14720,6 +14841,44 @@
           }
         }
       },
+      "ModelPackageVulnerabilityScanResult": {
+        "required": [
+          "docker_container_name",
+          "docker_image_name",
+          "host_name",
+          "kubernetes_cluster_name",
+          "node_id",
+          "node_name",
+          "node_type",
+          "scan_id",
+          "updated_at",
+          "created_at",
+          "cloud_account_id",
+          "packages_vulnerability"
+        ],
+        "type": "object",
+        "properties": {
+          "cloud_account_id": { "type": "string" },
+          "created_at": { "type": "integer", "format": "int64" },
+          "docker_container_name": { "type": "string" },
+          "docker_image_name": { "type": "string" },
+          "host_name": { "type": "string" },
+          "kubernetes_cluster_name": { "type": "string" },
+          "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
+          "node_type": { "type": "string" },
+          "packages_vulnerability": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/ModelVulnerability" }
+            },
+            "nullable": true
+          },
+          "scan_id": { "type": "string" },
+          "updated_at": { "type": "integer", "format": "int64" }
+        }
+      },
       "ModelPasswordResetRequest": {
         "required": ["email"],
         "type": "object",
@@ -14738,6 +14897,7 @@
         "required": [
           "node_id",
           "node_name",
+          "tags",
           "kubernetes_namespace",
           "pod_name",
           "host_name",
@@ -14786,6 +14946,7 @@
             "nullable": true
           },
           "secret_scan_status": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "vulnerability_scan_status": { "type": "string" }
         }
       },
@@ -15895,7 +16056,6 @@
           "threads": { "type": "integer" },
           "timestamp": { "type": "string" },
           "uptime": { "type": "integer" },
-          "user_defined_tags": { "type": "array", "items": { "type": "string" } },
           "version": { "type": "string" }
         }
       },

@@ -137,6 +137,7 @@ export const commonQueries = createQueryKeys('common', {
         const scanResultsReq: CompletionCompletionNodeFieldReq = {
           completion: searchText,
           field_name: fieldName,
+          is_array_field: fieldName === 'tags',
           window: {
             offset: pageParam,
             size,
@@ -145,6 +146,43 @@ export const commonQueries = createQueryKeys('common', {
 
         const api = apiWrapper({
           fn: getScanResultCompletionApiClient().completeHostInfo,
+        });
+        const response = await api({
+          completionCompletionNodeFieldReq: scanResultsReq,
+        });
+
+        if (!response.ok) {
+          throw response.error;
+        }
+
+        return {
+          data: response.value?.possible_values?.slice(0, size) || [],
+        };
+      },
+    };
+  },
+  searchKubernetesClusterFilters: (filters: {
+    fieldName: string;
+    searchText: string;
+    size: number;
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async ({ pageParam = 0 }) => {
+        const { fieldName, searchText, size } = filters;
+
+        const scanResultsReq: CompletionCompletionNodeFieldReq = {
+          completion: searchText,
+          field_name: fieldName,
+          is_array_field: fieldName === 'tags',
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+
+        const api = apiWrapper({
+          fn: getScanResultCompletionApiClient().completeKubernetesClusterInfo,
         });
         const response = await api({
           completionCompletionNodeFieldReq: scanResultsReq,
@@ -169,6 +207,7 @@ export const commonQueries = createQueryKeys('common', {
         const scanResultsReq: CompletionCompletionNodeFieldReq = {
           completion: searchText,
           field_name: fieldName,
+          is_array_field: fieldName === 'tags',
           window: {
             offset: pageParam,
             size,
@@ -205,6 +244,7 @@ export const commonQueries = createQueryKeys('common', {
         const scanResultsReq: CompletionCompletionNodeFieldReq = {
           completion: searchText,
           field_name: fieldName,
+          is_array_field: fieldName === 'tags',
           window: {
             offset: pageParam,
             size,

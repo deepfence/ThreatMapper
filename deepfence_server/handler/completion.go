@@ -22,6 +22,10 @@ func (h *Handler) CompleteHostInfo(w http.ResponseWriter, r *http.Request) {
 	genericCompleteInfoHandler[model.Host](w, r, h)
 }
 
+func (h *Handler) CompleteKubernetesClusterInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.KubernetesCluster](w, r, h)
+}
+
 func (h *Handler) CompleteComplianceInfo(w http.ResponseWriter, r *http.Request) {
 	genericCompleteInfoHandler[model.ComplianceRule](w, r, h)
 }
@@ -44,6 +48,10 @@ func (h *Handler) CompletePodInfo(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) CompleteContainerInfo(w http.ResponseWriter, r *http.Request) {
 	genericCompleteInfoHandler[model.Container](w, r, h)
+}
+
+func (h *Handler) CompleteContainerImageInfo(w http.ResponseWriter, r *http.Request) {
+	genericCompleteInfoHandler[model.ContainerImage](w, r, h)
 }
 
 func genericCompleteInfoHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Request, h *Handler) {

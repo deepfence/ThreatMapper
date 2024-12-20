@@ -164,6 +164,7 @@ const TabContent = ({ tab, nodeId }: { tab: string; nodeId: string }) => {
             ),
             resource_group: toTopologyMetadataString(data.hostData[0].resource_group),
             agent_running: toTopologyMetadataString(data.hostData[0].agent_running),
+            custom_tags: toTopologyMetadataString(data.hostData[0].tags),
           }}
         />
       )}

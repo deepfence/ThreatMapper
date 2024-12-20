@@ -103,8 +103,8 @@ spec:
               value: "\"\""
             - name: "DEEPFENCE_CONSOLE_AGENT"
               value: "true"
-            - name: USER_DEFINED_TAGS
-              value: {{ .Values.console_agents.userDefinedTags }}
+            - name: CUSTOM_TAGS
+              value: {{ .Values.console_agents.customTags }}
             - name: DF_ENABLE_PROCESS_REPORT
               value: "{{ .Values.console_agents.enableGraphReport }}"
             - name: DF_ENABLE_CONNECTIONS_REPORT

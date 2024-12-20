@@ -268,12 +268,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Post("/process", dfHandler.CompleteProcessInfo)
 				r.Post("/vulnerability", dfHandler.CompleteVulnerabilityInfo)
 				r.Post("/host", dfHandler.CompleteHostInfo)
+				r.Post("/kubernetes-cluster", dfHandler.CompleteKubernetesClusterInfo)
 				r.Post("/cloud-compliance", dfHandler.CompleteCloudComplianceInfo)
 				r.Post("/cloud-resources", dfHandler.CompleteCloudResource)
 				r.Post("/cloud-account", dfHandler.CompleteCloudAccount)
 				r.Post("/compliance", dfHandler.CompleteComplianceInfo)
 				r.Post("/pod", dfHandler.CompletePodInfo)
 				r.Post("/container", dfHandler.CompleteContainerInfo)
+				r.Post("/containerimage", dfHandler.CompleteContainerImageInfo)
 			})
 
 			r.Route("/search", func(r chi.Router) {
@@ -406,6 +408,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Get("/fields", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetScanReportFields))
 
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScanResultsHandler))
+
+				r.Post("/packages", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityPackagesScanResultsHandler))
 
 				r.Route("/secret", func(r chi.Router) {
 					r.Post("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListSecretScanResultsHandler))

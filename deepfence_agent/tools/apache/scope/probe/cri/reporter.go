@@ -22,6 +22,7 @@ type Reporter struct {
 	criImageClient        client.ImageServiceClient
 	kubernetesClusterId   string
 	kubernetesClusterName string
+	customTags            []string
 }
 
 // NewReporter makes a new Reporter
@@ -33,6 +34,7 @@ func NewReporter(cri client.RuntimeServiceClient, hostID string, criImageClient 
 		isConsoleVm:           dfUtils.IsThisConsoleAgent(),
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
+		customTags:            dfUtils.GetCustomTags(),
 	}
 
 	return reporter
@@ -83,16 +85,23 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 	if report.SkipReportContainerState[containerState] {
 		return nil
 	}
-	imageMetadata, ok := imageMetadataMap[c.ImageRef]
-	var imageID, imageName, imageTag string
-	if ok {
-		imageID = imageMetadata.ImageID
+
+	imageID := trimImageID(c.Image.GetImage())
+	var imageName, imageTag string
+
+	if imageMetadata, ok := imageMetadataMap[imageID]; ok {
 		imageName = imageMetadata.ImageName
 		imageTag = imageMetadata.ImageTag
 	} else {
-		imageID = trimImageID(c.Image.GetImage())
-		imageName, imageTag = docker.ParseImageDigest(c.ImageRef)
+		imageMetadata, ok = imageMetadataMap[c.ImageRef]
+		if ok {
+			imageName = imageMetadata.ImageName
+			imageTag = imageMetadata.ImageTag
+		} else {
+			imageName, imageTag = docker.ParseImageDigest(c.ImageRef)
+		}
 	}
+
 	var dockerLabels string
 	dockerLabelsJson, err := json.Marshal(c.Labels)
 	if err == nil {
@@ -130,6 +139,7 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		PodName:                   c.Labels[report.PodNameLabel],
 		PodID:                     c.Labels[report.PodIDLabel],
 		KubernetesNamespace:       c.Labels[report.PodNamespaceLabel],
+		Tags:                      r.customTags,
 	}
 	if c.Labels[report.DeepfenceSystemLabelKey] == report.DeepfenceSystemLabelValue {
 		metadata.IsDeepfenceSystem = true
@@ -181,6 +191,9 @@ func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMe
 		imageNode, imageMetadata := r.getImage(img)
 		if imageNode == nil {
 			continue
+		}
+		if imageMetadata.ImageID != "" {
+			imageMetadataMap[imageMetadata.ImageID] = *imageMetadata
 		}
 		if imageMetadata.ImageRef != "" {
 			imageMetadataMap[imageMetadata.ImageRef] = *imageMetadata

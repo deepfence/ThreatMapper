@@ -575,6 +575,9 @@ func (d *OpenAPIDocs) AddScansOperations() {
 	d.AddOperation("resultsVulnerabilityScans", http.MethodPost, "/deepfence/scan/results/vulnerability",
 		"Get Vulnerability Scans Results", "Get Vulnerability Scan results on agent or registry",
 		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanResultsReq), new(VulnerabilityScanResult))
+	d.AddOperation("resultsVulnerablePackagesScans", http.MethodPost, "/deepfence/scan/results/packages",
+		"Get Vulnerability Package Scans Results", "Get Vulnerability Pacakge Scan results on agent or registry",
+		http.StatusOK, []string{tagVulnerability}, bearerToken, new(ScanResultsReq), new(PackageVulnerabilityScanResult))
 	d.AddOperation("resultsSecretScan", http.MethodPost, "/deepfence/scan/results/secret",
 		"Get Secret Scans Results", "Get Secret Scans results on agent or registry",
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanResultsReq), new(SecretScanResult))
@@ -938,6 +941,9 @@ func (d *OpenAPIDocs) AddCompletionOperations() {
 	d.AddOperation("completeHostInfo", http.MethodPost, "/deepfence/complete/host",
 		"Get Completion for host fields", "Complete host info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeKubernetesClusterInfo", http.MethodPost, "/deepfence/complete/kubernetes-cluster",
+		"Get Completion for kubernetes cluster fields", "Complete kubernetes cluster info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 	d.AddOperation("completeCloudCompliance", http.MethodPost, "/deepfence/complete/cloud-compliance",
 		"Get Completion for cloud compliance fields", "Complete cloud compliance info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
@@ -955,5 +961,8 @@ func (d *OpenAPIDocs) AddCompletionOperations() {
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 	d.AddOperation("completeContainerInfo", http.MethodPost, "/deepfence/complete/container",
 		"Get Completion for Container fields", "Complete Container info",
+		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
+	d.AddOperation("completeContainerImageInfo", http.MethodPost, "/deepfence/complete/containerimage",
+		"Get Completion for Container Image fields", "Complete Container Image info",
 		http.StatusOK, []string{tagCompletion}, bearerToken, new(CompletionNodeFieldReq), new(CompletionNodeFieldRes))
 }

@@ -322,8 +322,7 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		        OPTIONAL MATCH (l) -[:DETECTED]-> (n)
 		        OPTIONAL MATCH (l) -[:SCANNED]-> (k)
 				WITH distinct k
-				WHERE k.active=true
-		        RETURN collect(coalesce(k.node_id, '') + '##' + coalesce(k.node_name, '') + '##' + coalesce(k.node_type, '')) as resources
+		        RETURN collect(coalesce(k.node_id, '') + '##' + coalesce(k.node_name, '') + '##' + coalesce(k.node_type, '') + '##' + coalesce(k.active, '')) as resources
 			}
 			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources`
 	} else {
@@ -336,8 +335,7 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		        OPTIONAL MATCH (l) -[:DETECTED]-> (n)
 		        OPTIONAL MATCH (l) -[:SCANNED]-> (k)
 				WITH distinct k
-				WHERE k.active=true
-		        RETURN collect(coalesce(k.node_id, '') + '##' + coalesce(k.node_name, '') + '##' + coalesce(k.node_type, '')) as resources
+		        RETURN collect(coalesce(k.node_id, '') + '##' + coalesce(k.node_name, '') + '##' + coalesce(k.node_type, '') + '##' + coalesce(k.active, '')) as resources
 			}
 			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources`
 	}
@@ -391,13 +389,14 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 			resourceListString := make([]model.BasicNode, len(resourceList))
 			for i, v := range resourceList {
 				nodeDetails := strings.Split(v.(string), nodeReportResourcesSplit)
-				if len(nodeDetails) != 3 {
+				if len(nodeDetails) != 4 {
 					continue
 				}
 				resourceListString[i] = model.BasicNode{
 					NodeID:   nodeDetails[0],
 					Name:     nodeDetails[1],
 					NodeType: nodeDetails[2],
+					Active:   nodeDetails[3] == "true",
 				}
 			}
 			nodeMap["resources"] = resourceListString

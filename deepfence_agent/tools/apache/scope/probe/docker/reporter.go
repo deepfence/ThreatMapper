@@ -25,6 +25,7 @@ type Reporter struct {
 	probe                 *probe.Probe
 	kubernetesClusterId   string
 	kubernetesClusterName string
+	customTags            []string
 }
 
 // NewReporter makes a new Reporter
@@ -37,6 +38,7 @@ func NewReporter(registry Registry, hostID string, probeID string, probe *probe.
 		probe:                 probe,
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
+		customTags:            dfUtils.GetCustomTags(),
 	}
 	return reporter
 }
@@ -51,9 +53,10 @@ func (r *Reporter) Report() (report.Report, error) {
 		return report.MakeReport(), nil
 	}
 
+	var imageIDTagMap map[string]basicImage
 	result := report.MakeReport()
-	result.Container = r.containerTopology(localAddrs)
-	result.ContainerImage = r.containerImageTopology()
+	result.ContainerImage, imageIDTagMap = r.containerImageTopology()
+	result.Container = r.containerTopology(localAddrs, imageIDTagMap)
 	result.Overlay = r.overlayTopology()
 	return result, nil
 }
@@ -73,7 +76,7 @@ func getLocalIPs() ([]string, []net.IP, error) {
 	return ips, addrs, nil
 }
 
-func (r *Reporter) containerTopology(localAddrs []net.IP) report.Topology {
+func (r *Reporter) containerTopology(localAddrs []net.IP, imageIDTagMap map[string]basicImage) report.Topology {
 	result := report.MakeTopology()
 	nodes := []report.TopologyNode{}
 	r.registry.WalkContainers(func(c Container) {
@@ -112,19 +115,19 @@ func (r *Reporter) containerTopology(localAddrs []net.IP) report.Topology {
 
 			return container.NetworkInfo(localAddrs), false
 		}
-		containerImageTags := r.registry.GetContainerTags()
 		for _, node := range nodes {
 			if node.Metadata.NodeID == "" {
 				continue
 			}
+			if basicImageDetails, ok := imageIDTagMap[node.Metadata.DockerImageID]; ok {
+				node.Metadata.ImageNameWithTag = basicImageDetails.ImageNameWithTag
+				node.Metadata.ImageName = basicImageDetails.ImageName
+				node.Metadata.ImageTag = basicImageDetails.ImageTag
+			}
 			var isInHostNamespace bool
 			node.Sets, isInHostNamespace = networkInfo(node.Metadata.NodeID)
-			tags, ok := containerImageTags[node.Metadata.NodeID]
-			if !ok {
-				tags = []string{}
-			}
+			node.Metadata.Tags = r.customTags
 			node.Metadata.IsConsoleVm = r.isConsoleVm
-			node.Metadata.UserDefinedTags = tags
 			// Indicate whether the container is in the host network
 			// The container's NetworkMode is not enough due to
 			// delegation (e.g. NetworkMode="container:foo" where
@@ -141,9 +144,15 @@ func (r *Reporter) containerTopology(localAddrs []net.IP) report.Topology {
 	return result
 }
 
-func (r *Reporter) containerImageTopology() report.Topology {
+type basicImage struct {
+	ImageName        string `json:"docker_image_name,omitempty"`
+	ImageNameWithTag string `json:"docker_image_name_with_tag,omitempty"`
+	ImageTag         string `json:"docker_image_tag,omitempty"`
+}
+
+func (r *Reporter) containerImageTopology() (report.Topology, map[string]basicImage) {
 	result := report.MakeTopology()
-	imageTagsMap := r.registry.GetImageTags()
+	imageIDTagMap := make(map[string]basicImage)
 	r.registry.WalkImages(func(image docker_client.APIImages) {
 		imageID := trimImageID(image.ID)
 		shortImageID := getShortImageID(imageID)
@@ -165,19 +174,15 @@ func (r *Reporter) containerImageTopology() report.Topology {
 			metadata.ImageNameWithTag = imageFullName
 			metadata.ImageName = ImageNameWithoutTag(imageFullName)
 			metadata.ImageTag = ImageNameTag(imageFullName)
-		}
-		var tags []string
-		var ok bool
-		if metadata.ImageNameWithTag != "" {
-			tags, ok = imageTagsMap[metadata.ImageNameWithTag]
-			if !ok {
-				tags = []string{}
+			imageIDTagMap[imageID] = basicImage{
+				ImageName:        metadata.ImageName,
+				ImageNameWithTag: metadata.ImageNameWithTag,
+				ImageTag:         metadata.ImageTag,
 			}
-		} else {
+		}
+		if metadata.ImageNameWithTag == "" {
 			metadata.NodeName = imageID
 		}
-
-		metadata.UserDefinedTags = tags
 		if image.Labels[report.DeepfenceSystemLabelKey] == report.DeepfenceSystemLabelValue {
 			metadata.IsDeepfenceSystem = true
 		}
@@ -194,7 +199,7 @@ func (r *Reporter) containerImageTopology() report.Topology {
 		})
 	})
 
-	return result
+	return result, imageIDTagMap
 }
 
 func (r *Reporter) overlayTopology() report.Topology {

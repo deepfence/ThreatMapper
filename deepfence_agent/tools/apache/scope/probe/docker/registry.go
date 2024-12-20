@@ -44,17 +44,10 @@ type Registry interface {
 	GetContainer(string) (Container, bool)
 	GetContainerByPrefix(string) (Container, bool)
 	GetContainerImage(string) (docker_client.APIImages, bool)
-	GetContainerTags() map[string][]string
-	GetImageTags() map[string][]string
 }
 
 // ContainerUpdateWatcher is the type of functions that get called when containers are updated.
 type ContainerUpdateWatcher func(metadata report.TopologyNode)
-
-type UserDefinedTags struct {
-	tags map[string][]string
-	sync.RWMutex
-}
 
 type registry struct {
 	sync.RWMutex
@@ -66,17 +59,15 @@ type registry struct {
 	noCommandLineArguments bool
 	noEnvironmentVariables bool
 
-	watchers                 []ContainerUpdateWatcher
-	containers               *radix.Tree
-	containersByPID          map[int]Container
-	images                   map[string]docker_client.APIImages
-	networks                 []docker_client.Network
-	pipeIDToexecID           map[string]string
-	userDefinedContainerTags UserDefinedTags
-	userDefinedImageTags     UserDefinedTags
-	isConsoleVm              bool
-	kubernetesClusterId      string
-	kubernetesClusterName    string
+	watchers              []ContainerUpdateWatcher
+	containers            *radix.Tree
+	containersByPID       map[int]Container
+	images                map[string]docker_client.APIImages
+	networks              []docker_client.Network
+	pipeIDToexecID        map[string]string
+	isConsoleVm           bool
+	kubernetesClusterId   string
+	kubernetesClusterName string
 }
 
 // Client interface for mocking.
@@ -128,15 +119,9 @@ func NewRegistry(options RegistryOptions) (Registry, error) {
 		quit:                   make(chan chan struct{}),
 		noCommandLineArguments: options.NoCommandLineArguments,
 		noEnvironmentVariables: options.NoEnvironmentVariables,
-		userDefinedContainerTags: UserDefinedTags{
-			tags: make(map[string][]string),
-		},
-		userDefinedImageTags: UserDefinedTags{
-			tags: make(map[string][]string),
-		},
-		isConsoleVm:           dfUtils.IsThisConsoleAgent(),
-		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
-		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
+		isConsoleVm:            dfUtils.IsThisConsoleAgent(),
+		kubernetesClusterId:    os.Getenv(report.KubernetesClusterId),
+		kubernetesClusterName:  os.Getenv(report.KubernetesClusterName),
 	}
 	go r.loop()
 	return r, nil
@@ -440,18 +425,6 @@ func (r *registry) GetContainerImage(id string) (docker_client.APIImages, bool) 
 	defer r.RUnlock()
 	image, ok := r.images[id]
 	return image, ok
-}
-
-func (r *registry) GetContainerTags() map[string][]string {
-	r.userDefinedContainerTags.RLock()
-	defer r.userDefinedContainerTags.RUnlock()
-	return r.userDefinedContainerTags.tags
-}
-
-func (r *registry) GetImageTags() map[string][]string {
-	r.userDefinedImageTags.RLock()
-	defer r.userDefinedImageTags.RUnlock()
-	return r.userDefinedImageTags.tags
 }
 
 // WalkImages runs f on every image of running containers the registry

@@ -21,6 +21,12 @@ import { exists, mapValues } from '../runtime';
 export interface ModelBasicNode {
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelBasicNode
+     */
+    active: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ModelBasicNode
      */
@@ -50,6 +56,7 @@ export interface ModelBasicNode {
  */
 export function instanceOfModelBasicNode(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "active" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "name" in value;
     isInstance = isInstance && "node_id" in value;
@@ -68,6 +75,7 @@ export function ModelBasicNodeFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
+        'active': json['active'],
         'host_name': json['host_name'],
         'name': json['name'],
         'node_id': json['node_id'],
@@ -84,6 +92,7 @@ export function ModelBasicNodeToJSON(value?: ModelBasicNode | null): any {
     }
     return {
         
+        'active': value.active,
         'host_name': value.host_name,
         'name': value.name,
         'node_id': value.node_id,

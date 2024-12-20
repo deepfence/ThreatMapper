@@ -102,6 +102,7 @@ func (p *pod) GetNode() report.TopologyNode {
 		HostName:                  hostname,
 		KubernetesCreated:         p.Created(),
 		KubernetesLabels:          labelsStr,
+		Tags:                      customTags,
 	}
 	if appLabel, found := p.Labels()[report.DeepfenceK8sAppLabelKey]; found {
 		if appLabel == report.DeepfenceK8sConsoleAppLabelValue || appLabel == report.DeepfenceK8sAgentAppLabelValue {

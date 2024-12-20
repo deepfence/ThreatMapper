@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	dfUtils "github.com/deepfence/df-utils"
 	"github.com/deepfence/df-utils/cloud_metadata"
 	"github.com/weaveworks/scope/report"
 )
@@ -77,6 +78,7 @@ func (k *kubernetesCluster) GetNode() report.TopologyNode {
 		CloudProvider:         cloudMetadata.CloudProvider,
 		AgentRunning:          true,
 		CloudAccountID:        cloudMetadata.AccountID,
+		Tags:                  dfUtils.GetCustomTags(),
 	}
 	return report.TopologyNode{
 		Metadata: metadata,

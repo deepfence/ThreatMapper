@@ -142,6 +142,12 @@ export interface ModelContainerImage {
     secrets_count: number;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelContainerImage
+     */
+    tags: Array<string> | null;
+    /**
+     * 
      * @type {number}
      * @memberof ModelContainerImage
      */
@@ -183,6 +189,7 @@ export function instanceOfModelContainerImage(value: object): boolean {
     isInstance = isInstance && "secret_latest_scan_id" in value;
     isInstance = isInstance && "secret_scan_status" in value;
     isInstance = isInstance && "secrets_count" in value;
+    isInstance = isInstance && "tags" in value;
     isInstance = isInstance && "vulnerabilities_count" in value;
     isInstance = isInstance && "vulnerability_latest_scan_id" in value;
     isInstance = isInstance && "vulnerability_scan_status" in value;
@@ -219,6 +226,7 @@ export function ModelContainerImageFromJSONTyped(json: any, ignoreDiscriminator:
         'secret_latest_scan_id': json['secret_latest_scan_id'],
         'secret_scan_status': json['secret_scan_status'],
         'secrets_count': json['secrets_count'],
+        'tags': json['tags'],
         'vulnerabilities_count': json['vulnerabilities_count'],
         'vulnerability_latest_scan_id': json['vulnerability_latest_scan_id'],
         'vulnerability_scan_status': json['vulnerability_scan_status'],
@@ -253,6 +261,7 @@ export function ModelContainerImageToJSON(value?: ModelContainerImage | null): a
         'secret_latest_scan_id': value.secret_latest_scan_id,
         'secret_scan_status': value.secret_scan_status,
         'secrets_count': value.secrets_count,
+        'tags': value.tags,
         'vulnerabilities_count': value.vulnerabilities_count,
         'vulnerability_latest_scan_id': value.vulnerability_latest_scan_id,
         'vulnerability_scan_status': value.vulnerability_scan_status,

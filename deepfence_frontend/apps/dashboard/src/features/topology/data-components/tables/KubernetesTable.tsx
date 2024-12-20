@@ -26,9 +26,11 @@ import {
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableUserDefinedTagList } from '@/components/forms/SearchableUserDefinedTagList';
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { FilterIcon } from '@/components/icons/common/Filter';
+import { TagOutlineIcon } from '@/components/icons/common/TagOutline';
 import { TimesIcon } from '@/components/icons/common/Times';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
@@ -54,6 +56,7 @@ const DEFAULT_PAGE_SIZE = 25;
 
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   agentRunning: 'Agent running',
+  userDefinedTags: 'Custom tags',
 };
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
@@ -122,6 +125,28 @@ function Filters() {
               );
             })}
         </Combobox>
+        <SearchableUserDefinedTagList
+          defaultSelectedTags={searchParams.getAll('userDefinedTags')}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              value.forEach((tag) => {
+                prev.append('userDefinedTags', tag);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          triggerVariant="button"
+          resourceType="kubernetes_cluster"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('userDefinedTags');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
       </div>
       {appliedFilterCount > 0 ? (
         <div className="flex gap-2.5 mt-4 flex-wrap items-center">
@@ -174,7 +199,7 @@ function Filters() {
 export const KubernetesTable = () => {
   const [selectedNodes, setSelectedNodes] = useState<ModelKubernetesCluster[]>([]);
   const [searchParams] = useSearchParams();
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
 
   return (
     <div className="px-4 pb-4">
@@ -349,6 +374,7 @@ function useSearchClustersWithPagination() {
       agentRunning: searchParams
         .getAll('agentRunning')
         .map((value) => (value === 'Yes' ? true : false)),
+      userDefinedTags: searchParams.getAll('userDefinedTags'),
     }),
     keepPreviousData: true,
   });
@@ -441,6 +467,27 @@ const DataTable = ({
           } else {
             name = info.row.original.node_id;
           }
+          return (
+            <div className="flex flex-col gap-1 items-start text-start py-2">
+              <TruncatedText text={name} />
+              {info.row.original?.tags?.length ? (
+                <div className="flex gap-2 items-center flex-wrap">
+                  {info.row.original.tags.map((tag) => {
+                    return (
+                      <Badge
+                        startIcon={<TagOutlineIcon />}
+                        key={tag}
+                        label={tag}
+                        variant="filled"
+                        color="info"
+                        size="small"
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          );
           return <TruncatedText text={name} />;
         },
         header: () => 'Name',

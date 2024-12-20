@@ -11,7 +11,7 @@ commonLabels: {}
 global:
   # this image tag is used everywhere for agents
   # to override set tag at agents level
-  imageTag: 2.5.1
+  imageTag: 2.5.2
 
 imagePullSecret:
   # Specifies whether image pull secret should be created
@@ -28,7 +28,7 @@ imagePullSecret:
 agent:
   image:
     name: quay.io/deepfenceio/deepfence_agent_ce
-    # tag: 2.5.1
+    # tag: 2.5.2
     pullPolicy: Always
   affinity: {}
   podLabels: {}
@@ -52,18 +52,18 @@ agent:
 cluster_agent:
   image:
     name: quay.io/deepfenceio/deepfence_cluster_agent_ce
-    # tag: 2.5.1
+    # tag: 2.5.2
     pullPolicy: Always
   affinity: {}
   podLabels: {}
   nodeSelector:
     kubernetes.io/os: linux
     # kubernetes.io/arch: amd64
-  tolerations:
-    - operator: "Exists"
-      effect: "NoSchedule"
-    - operator: "Exists"
-      effect: "NoExecute"
+  tolerations: []
+    # - operator: "Exists"
+    #   effect: "NoSchedule"
+    # - operator: "Exists"
+    #   effect: "NoExecute"
   resources:
     requests:
       cpu: 25m
@@ -100,8 +100,8 @@ logLevel: "info"
 # Suffix cloud instance id to hostnames
 instanceIdSuffix: "N"
 
-# comma separated list of tags (labels) to set for all agents
-userDefinedTags: ""
+# comma separated list of tags (labels) to set for the nodes in this cluster
+customTags: ""
 
 # priorityClassName for pods
 priorityClassName: ""

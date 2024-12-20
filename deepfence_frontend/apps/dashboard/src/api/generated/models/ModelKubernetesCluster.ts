@@ -50,6 +50,12 @@ export interface ModelKubernetesCluster {
      * @memberof ModelKubernetesCluster
      */
     node_name: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ModelKubernetesCluster
+     */
+    tags: Array<string> | null;
 }
 
 /**
@@ -61,6 +67,7 @@ export function instanceOfModelKubernetesCluster(value: object): boolean {
     isInstance = isInstance && "hosts" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
+    isInstance = isInstance && "tags" in value;
 
     return isInstance;
 }
@@ -79,6 +86,7 @@ export function ModelKubernetesClusterFromJSONTyped(json: any, ignoreDiscriminat
         'hosts': (json['hosts'] === null ? null : (json['hosts'] as Array<any>).map(ModelHostFromJSON)),
         'node_id': json['node_id'],
         'node_name': json['node_name'],
+        'tags': json['tags'],
     };
 }
 
@@ -95,6 +103,7 @@ export function ModelKubernetesClusterToJSON(value?: ModelKubernetesCluster | nu
         'hosts': (value.hosts === null ? null : (value.hosts as Array<any>).map(ModelHostToJSON)),
         'node_id': value.node_id,
         'node_name': value.node_name,
+        'tags': value.tags,
     };
 }
 

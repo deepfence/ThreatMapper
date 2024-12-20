@@ -8,6 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	reportersScan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
@@ -161,7 +162,12 @@ func runSystemScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			log.Warn().Msgf("Unknown node type %s for compliance scan", nodeType)
 			return nil
 		}
-		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, benchmarkTypes, false)
+		cloudNodeIds, err := reportersScan.GetCloudAccountIDs(ctx, nodeIds, nil)
+		if err != nil {
+			log.Error().Msgf("Failed to resolve cloud accounts, error:%v", err)
+			return err
+		}
+		_, _, err = handler.StartMultiCloudComplianceScan(ctx, cloudNodeIds, benchmarkTypes, false)
 		if err != nil {
 			return err
 		}
@@ -237,7 +243,12 @@ func runCustomScheduledTasks(ctx context.Context, messagePayload map[string]inte
 			log.Warn().Msgf("Invalid benchmarkType for compliance scan, job id: %d", scheduleJobId)
 			return nil
 		}
-		_, _, err := handler.StartMultiCloudComplianceScan(ctx, nodeIds, model.BenchmarkTypeToArray(payload.BenchmarkTypes), false)
+		cloudNodeIds, err := reportersScan.GetCloudAccountIDs(ctx, nodeIds, nil)
+		if err != nil {
+			log.Error().Msgf("Failed to resolve cloud accounts, error:%v", err)
+			return err
+		}
+		_, _, err = handler.StartMultiCloudComplianceScan(ctx, cloudNodeIds, model.BenchmarkTypeToArray(payload.BenchmarkTypes), false)
 		if err != nil {
 			return err
 		}

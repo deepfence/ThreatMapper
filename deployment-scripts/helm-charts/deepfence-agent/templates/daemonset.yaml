@@ -89,8 +89,8 @@ spec:
                 secretKeyRef:
                   name: {{ include "deepfence-agent.fullname" . }}-key
                   key: "deepfence-key"
-            - name: USER_DEFINED_TAGS
-              value: {{ .Values.userDefinedTags }}
+            - name: CUSTOM_TAGS
+              value: {{ .Values.customTags }}
             - name: DF_ENABLE_PROCESS_REPORT
               value: "{{ .Values.enableGraphReport }}"
             - name: DF_ENABLE_CONNECTIONS_REPORT

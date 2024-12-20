@@ -86,17 +86,17 @@ docker run -dit \
     -v /var/log/fenced \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /:/fenced/mnt/host/:ro \
-    -e USER_DEFINED_TAGS="" \
+    -e CUSTOM_TAGS="" \
     -e MGMT_CONSOLE_URL="---CONSOLE-IP---" \
     -e MGMT_CONSOLE_PORT="443" \
     -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" \
     -e http_proxy="" \
     -e https_proxy="" \
     -e no_proxy="" \
-    quay.io/deepfenceio/deepfence_agent_ce:2.5.1
+    quay.io/deepfenceio/deepfence_agent_ce:2.5.2
 ```
 
-Note: Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.5.1-multiarch` is supported in amd64 and arm64/v8 architectures.
+Note: Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.5.2-multiarch` is supported in amd64 and arm64/v8 architectures.
 
 On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/threatmapper/docs/v2.5/sensors/kubernetes/)
 

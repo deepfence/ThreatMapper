@@ -15,10 +15,11 @@ type PresentationContext struct {
 type Metadata map[string]interface{}
 
 type KubernetesCluster struct {
-	ID           string `json:"node_id" required:"true"`
-	Name         string `json:"node_name" required:"true"`
-	AgentRunning bool   `json:"agent_running" required:"true"`
-	Hosts        []Host `json:"hosts" required:"true"`
+	ID           string   `json:"node_id" required:"true"`
+	Name         string   `json:"node_name" required:"true"`
+	Tags         []string `json:"tags" required:"true"`
+	AgentRunning bool     `json:"agent_running" required:"true"`
+	Hosts        []Host   `json:"hosts" required:"true"`
 }
 
 func (KubernetesCluster) NodeType() string {
@@ -46,6 +47,7 @@ type BasicNode struct {
 	Name     string `json:"name" required:"true"`
 	NodeType string `json:"node_type" required:"true"`
 	HostName string `json:"host_name" required:"true"`
+	Active   bool   `json:"active" required:"true"`
 }
 
 type Connection struct {
@@ -67,6 +69,7 @@ type Host struct {
 	ID                              string           `json:"node_id" required:"true"`
 	HostName                        string           `json:"host_name" required:"true"`
 	NodeName                        string           `json:"node_name" required:"true"`
+	Tags                            []string         `json:"tags" required:"true"`
 	Containers                      []Container      `json:"containers" required:"true"`
 	Processes                       []Process        `json:"processes" required:"true"`
 	Pods                            []Pod            `json:"pods" required:"true"`
@@ -170,6 +173,7 @@ type EndpointID struct {
 type Pod struct {
 	ID                        string                 `json:"node_id" required:"true"`
 	NodeName                  string                 `json:"node_name" required:"true"`
+	Tags                      []string               `json:"tags" required:"true"`
 	Namespace                 string                 `json:"kubernetes_namespace" required:"true"`
 	PodName                   string                 `json:"pod_name" required:"true"`
 	Host                      string                 `json:"host_name" required:"true"`
@@ -212,10 +216,12 @@ type Container struct {
 	ID                         string                 `json:"node_id" required:"true"`
 	NodeName                   string                 `json:"node_name" required:"true"`
 	Name                       string                 `json:"docker_container_name" required:"true"`
+	Tags                       []string               `json:"tags" required:"true"`
 	ContainerImage             ContainerImage         `json:"image" required:"true"`
 	Processes                  []Process              `json:"processes" required:"true"`
 	DockerLabels               map[string]interface{} `json:"docker_labels" required:"true" nested_json:"true"`
 	HostName                   string                 `json:"host_name" required:"true"`
+	DockerImageNameWithTag     string                 `json:"docker_image_name_with_tag" required:"true"`
 	DockerContainerCommand     string                 `json:"docker_container_command" required:"true"`
 	DockerContainerState       string                 `json:"docker_container_state" required:"true"`
 	DockerContainerStateHuman  string                 `json:"docker_container_state_human" required:"true"`
@@ -332,6 +338,7 @@ type ContainerImage struct {
 	ID                        string                 `json:"node_id" required:"true"`
 	ImageNodeID               string                 `json:"image_node_id" required:"true"`
 	NodeName                  string                 `json:"node_name" required:"true"`
+	Tags                      []string               `json:"tags" required:"true"`
 	Name                      string                 `json:"docker_image_name" required:"true"`
 	Tag                       string                 `json:"docker_image_tag" required:"true"`
 	Size                      string                 `json:"docker_image_size" required:"true"`

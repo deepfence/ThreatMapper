@@ -523,13 +523,6 @@ const Filters = () => {
             scanType={'none'}
             displayValue={FILTER_SEARCHPARAMS['hosts']}
             defaultSelectedHosts={searchParams.getAll('hosts')}
-            onClearAll={() => {
-              setSearchParams((prev) => {
-                prev.delete('hosts');
-                prev.delete('page');
-                return prev;
-              });
-            }}
             onChange={(value) => {
               setSearchParams((prev) => {
                 prev.delete('hosts');
@@ -1615,7 +1608,7 @@ const Accounts = () => {
   const [searchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
   const fetcher = useFetcher();
   const routeParams = useParams() as {
     nodeType: string;

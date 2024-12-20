@@ -171,6 +171,7 @@ const TabContent = ({ tab, nodeId }: { tab: string; nodeId: string }) => {
               created_at: toTopologyMetadataString(
                 data?.containerData?.image?.docker_image_created_at,
               ),
+              custom_tags: toTopologyMetadataString(data?.containerData?.tags),
             }}
           />
           <Metadata

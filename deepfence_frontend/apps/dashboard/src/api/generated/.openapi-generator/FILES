@@ -157,6 +157,7 @@ models/ModelMalwareScanTriggerReq.ts
 models/ModelMessageResponse.ts
 models/ModelNodeIdentifier.ts
 models/ModelNodesInScanResultRequest.ts
+models/ModelPackageVulnerabilityScanResult.ts
 models/ModelPasswordResetRequest.ts
 models/ModelPasswordResetVerifyRequest.ts
 models/ModelPod.ts
