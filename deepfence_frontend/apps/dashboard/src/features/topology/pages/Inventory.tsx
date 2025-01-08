@@ -7,13 +7,23 @@ import { TopologyHeader } from '@/features/topology/components/TopologyHeader';
 import { queries } from '@/queries';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
+const MAX_CLOUD_RESOURCE_COUNT = 9999;
+
 function useCloudResourcesCount() {
-  return useSuspenseQuery({ ...queries.search.cloudResourcesCount() });
+  return useSuspenseQuery({
+    ...queries.search.cloudResourcesCount({ maxSize: MAX_CLOUD_RESOURCE_COUNT + 1 }),
+  });
 }
 
 const CloudResourceCount = () => {
   const { data: cloudResourceCount } = useCloudResourcesCount();
-  return <b>{cloudResourceCount}</b>;
+  return (
+    <b>
+      {cloudResourceCount > MAX_CLOUD_RESOURCE_COUNT
+        ? `${MAX_CLOUD_RESOURCE_COUNT}+`
+        : cloudResourceCount}
+    </b>
+  );
 };
 
 const inventoryTabs = [
