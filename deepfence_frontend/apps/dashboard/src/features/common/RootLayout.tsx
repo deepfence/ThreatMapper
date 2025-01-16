@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 
 import { AppHeader } from '@/components/AppHeader';
+import { FeedAgeBanner } from '@/components/FeedAgeBanner';
 import { getSideNavigationState, SideNavigation } from '@/components/SideNavigation';
 import { UserInfoGuard } from '@/components/UserInfoGuard';
 
@@ -24,6 +25,7 @@ export const RootLayout = () => {
             'ml-[240px]': sideNavExpanded,
           })}
         >
+          <FeedAgeBanner />
           <Outlet />
         </main>
       </div>

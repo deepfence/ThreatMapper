@@ -110,6 +110,7 @@ models/ModelComplinaceScanResultsGroupReq.ts
 models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
+models/ModelDatabaseInfoResponse.ts
 models/ModelDeleteIntegrationReq.ts
 models/ModelDeleteRegistryBulkReq.ts
 models/ModelDownloadReportResponse.ts
