@@ -61,7 +61,7 @@ func AddCloudControls(ctx context.Context, task *asynq.Task) error {
 	log := log.WithCtx(ctx)
 
 	// fetch rules from file server
-	fpath, _, err := threatintel.FetchPostureControlsInfo(ctx)
+	fpath, _, _, err := threatintel.FetchPostureControlsInfo(ctx)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return err

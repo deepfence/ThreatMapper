@@ -62,7 +62,7 @@ func NewSecretScanner(ingest chan *kgo.Record) SecretScan {
 
 func checkSecretRulesUpdate(ctx context.Context) error {
 	// fetch rules url
-	path, hash, err := threatintel.FetchSecretsRulesInfo(ctx)
+	path, hash, _, err := threatintel.FetchSecretsRulesInfo(ctx)
 	if err != nil {
 		return err
 	}
