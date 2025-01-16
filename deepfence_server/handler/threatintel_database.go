@@ -212,3 +212,44 @@ func (h *Handler) UploadPostureControls(w http.ResponseWriter, r *http.Request) 
 
 	_ = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: path + " " + checksum})
 }
+
+func (h *Handler) DatabaseInfo(w http.ResponseWriter, r *http.Request) {
+	vulnDB, err := threatintel.GetLatestVulnerabilityDB(r.Context())
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	_, _, secretsRulesUpdatedAt, err := threatintel.FetchSecretsRulesInfo(r.Context())
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	_, _, malwareRulesUpdatedAt, err := threatintel.FetchMalwareRulesInfo(r.Context())
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	_, _, postureControlsUpdatedAt, err := threatintel.FetchPostureControlsInfo(r.Context())
+	if err != nil {
+		log.Error().Msg(err.Error())
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	dbUpdated := model.DatabaseInfoResponse{
+		VulnerabilityDBUpdatedAt: vulnDB.Built,
+		SecretsRulesUpdatedAt:    time.UnixMilli(secretsRulesUpdatedAt),
+		MalwareRulesUpdatedAt:    time.UnixMilli(malwareRulesUpdatedAt),
+		PostureControlsUpdatedAt: time.UnixMilli(postureControlsUpdatedAt),
+	}
+
+	log.Info().Msgf("databases updated at %+v", dbUpdated)
+
+	_ = httpext.JSON(w, http.StatusOK, dbUpdated)
+}
