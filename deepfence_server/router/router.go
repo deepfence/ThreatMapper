@@ -588,6 +588,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				r.Put("/secret", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadSecretsRules))
 				r.Put("/malware", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadMalwareRules))
 				r.Put("/posture", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadPostureControls))
+				r.Get("/info", dfHandler.DatabaseInfo)
 			})
 
 			r.Route("/license", func(r chi.Router) {

@@ -212,3 +212,17 @@ func (h *Handler) UploadPostureControls(w http.ResponseWriter, r *http.Request) 
 
 	_ = httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: path + " " + checksum})
 }
+
+func (h *Handler) DatabaseInfo(w http.ResponseWriter, r *http.Request) {
+	latest, err := threatintel.GetLatestVulnerabilityDB(r.Context())
+	if err != nil {
+		h.respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	_ = httpext.JSON(w, http.StatusOK,
+		model.DatabaseInfoResponse{
+			LatestVulnerabilityDBUpdatedAt: latest.Built,
+		},
+	)
+}
