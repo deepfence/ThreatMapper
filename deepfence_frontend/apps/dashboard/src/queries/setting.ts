@@ -4,6 +4,7 @@ import { getDiagnosisApiClient, getSettingsApiClient, getUserApiClient } from '@
 import { ModelGetAuditLogsRequest } from '@/api/generated';
 import { get403Message, getResponseErrors } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
+import { isThreatMapper } from '@/utils/version';
 
 export const settingQueries = createQueryKeys('setting', {
   listScheduledJobs: () => {
@@ -277,6 +278,62 @@ export const settingQueries = createQueryKeys('setting', {
         }
 
         return response.value;
+      },
+    };
+  },
+  getDatabaseInfo: () => {
+    return {
+      queryKey: ['getDatabaseInfo'],
+      queryFn: async (): Promise<{
+        lastUpdated: Date | undefined;
+        daysOld: number | undefined;
+        showBanner: boolean;
+        data:
+          | Awaited<
+              ReturnType<ReturnType<typeof getSettingsApiClient>['getDatabaseInfo']>
+            >
+          | undefined;
+      }> => {
+        if (!isThreatMapper) {
+          return {
+            lastUpdated: undefined,
+            daysOld: undefined,
+            showBanner: false,
+            data: undefined,
+          };
+        }
+        const api = apiWrapper({ fn: getSettingsApiClient().getDatabaseInfo });
+        const response = await api();
+
+        if (!response.ok) {
+          console.error('Failed to fetch threat intel database info');
+          console.error(response.error);
+          return {
+            lastUpdated: undefined,
+            daysOld: undefined,
+            showBanner: false,
+            data: undefined,
+          };
+        }
+
+        const data = response.value;
+
+        const lastUpdated = data.vulnerability_db_updated_at
+          ? new Date(data.vulnerability_db_updated_at)
+          : undefined;
+
+        const daysOld = lastUpdated
+          ? Math.floor(
+              (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24),
+            )
+          : undefined;
+
+        return {
+          lastUpdated,
+          daysOld,
+          showBanner: isThreatMapper && !!daysOld && daysOld >= 1,
+          data: response.value,
+        };
       },
     };
   },

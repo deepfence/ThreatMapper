@@ -25,6 +25,7 @@ import { queries } from '@/queries';
 import { invalidateAllQueries } from '@/queries';
 import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
+import { formatMilliseconds } from '@/utils/date';
 
 const millisecondsOf1Day = 86400000;
 
@@ -271,7 +272,7 @@ const useGetLink = (version: string, licenseKey?: string) => {
         },
       );
       if (!response.ok) {
-        threats.error = 'Fail to fetch threat intel feeds and rules';
+        threats.error = 'Failed to fetch threat intel feeds and rules';
         return threats;
       }
       const data = (await response.json()) as Record<
@@ -373,8 +374,9 @@ const Database = () => {
   return (
     <>
       <div className="mt-9">
-        <h3 className="text-h6 text-text-input-value">Database Management</h3>
+        <h3 className="text-h6 text-text-input-value">Threat intel</h3>
       </div>
+      <LastUpdated />
       <Suspense fallback={<SkeletonLinks />}>
         <RuleLinks />
       </Suspense>
@@ -838,6 +840,63 @@ const ScanHistoryAndDbManagement = () => {
       <Separator className="mt-6 bg-bg-grid-border h-px w-full" />
       <Database />
     </>
+  );
+};
+
+const useDatabaseInfo = () => {
+  const { data } = useSuspenseQuery({
+    ...queries.setting.getDatabaseInfo(),
+  });
+  return data;
+};
+
+const LastUpdatedContent = () => {
+  const { data } = useDatabaseInfo();
+
+  return (
+    <div className="mt-2 mb-4">
+      <h6 className="text-t1 text-text-input-value">Last Updated</h6>
+      <div className="text-p4 text-text-text-and-icon">
+        <span>Vulnerability feeds: </span>
+        <span>
+          {data?.vulnerability_db_updated_at
+            ? formatMilliseconds(data.vulnerability_db_updated_at)
+            : 'Unknown'}
+        </span>
+      </div>
+      <div className="text-p4 text-text-text-and-icon">
+        <span>Secret feeds: </span>
+        <span>
+          {data?.secrets_rules_updated_at
+            ? formatMilliseconds(data.secrets_rules_updated_at)
+            : 'Unknown'}
+        </span>
+      </div>
+      <div className="text-p4 text-text-text-and-icon">
+        <span>Malware feeds: </span>
+        <span>
+          {data?.malware_rules_updated_at
+            ? formatMilliseconds(data.malware_rules_updated_at)
+            : 'Unknown'}
+        </span>
+      </div>
+      <div className="text-p4 text-text-text-and-icon">
+        <span>Posture controls feeds: </span>
+        <span>
+          {data?.posture_controls_updated_at
+            ? formatMilliseconds(data.posture_controls_updated_at)
+            : 'Unknown'}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+const LastUpdated = () => {
+  return (
+    <Suspense fallback={null}>
+      <LastUpdatedContent />
+    </Suspense>
   );
 };
 

@@ -513,7 +513,7 @@ export const privateRoutes: CustomRouteObject[] = [
           {
             path: 'scan-history-and-db-management',
             ...scanHistoryAndDbManagement,
-            meta: { title: 'Scan History & Database Management' },
+            meta: { title: 'Scan History & Threat intel' },
           },
           {
             path: 'scheduled-jobs',

@@ -84,6 +84,7 @@ export * from './ModelComplinaceScanResultsGroupReq';
 export * from './ModelConnection';
 export * from './ModelContainer';
 export * from './ModelContainerImage';
+export * from './ModelDatabaseInfoResponse';
 export * from './ModelDeleteIntegrationReq';
 export * from './ModelDeleteRegistryBulkReq';
 export * from './ModelDownloadReportResponse';
