@@ -13,7 +13,7 @@ const MenuItems: Array<{
     to: '/settings/user-management',
   },
   {
-    title: 'Scan history & database management',
+    title: 'Scan history & Threat intel',
     to: '/settings/scan-history-and-db-management',
   },
   {

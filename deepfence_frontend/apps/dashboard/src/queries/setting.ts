@@ -306,7 +306,14 @@ export const settingQueries = createQueryKeys('setting', {
         const response = await api();
 
         if (!response.ok) {
-          throw response.error;
+          console.error('Failed to fetch threat intel database info');
+          console.error(response.error);
+          return {
+            lastUpdated: undefined,
+            daysOld: undefined,
+            showBanner: false,
+            data: undefined,
+          };
         }
 
         const data = response.value;

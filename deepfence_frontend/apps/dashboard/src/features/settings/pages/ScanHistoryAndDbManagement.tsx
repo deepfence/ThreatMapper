@@ -374,7 +374,7 @@ const Database = () => {
   return (
     <>
       <div className="mt-9">
-        <h3 className="text-h6 text-text-input-value">Database Management</h3>
+        <h3 className="text-h6 text-text-input-value">Threat intel</h3>
       </div>
       <LastUpdated />
       <Suspense fallback={<SkeletonLinks />}>

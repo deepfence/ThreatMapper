@@ -81,7 +81,7 @@ function FeedAgeBannerContent() {
       style={{ height: BANNER_HEIGHT }}
     >
       <p className="text-sm font-semibold text-text-text-inverse dark:text-white truncate">
-        Important: The Vulnerability database has not been updated in over {daysOld}{' '}
+        Important: The Threat Intelligence database has not been updated in over {daysOld}{' '}
         day(s). Your security posture may be at risk. Please reach out to{' '}
         <a href="mailto:support@deepfence.io" className="underline">
           support@deepfence.io
@@ -89,7 +89,7 @@ function FeedAgeBannerContent() {
         for daily feeds
       </p>
       <Tooltip
-        content="ThreatMapper, by default, now gets its vulnerability feeds once a quarter. Daily Vulnerability feeds are part of a paid offering now. Please get the latest version of Vulnerability feeds for accurate posture."
+        content="ThreatMapper, henceforth, shall now get its Threat Intelligence feeds once a quarter. Daily Threat Intelligence feeds are part of a paid offering now. Threat Intelligence feeds primarily includes Vulnerability, Secrets and Malware updates. Please get the latest version of Threat Intelligence feeds for accurate posture."
         placement="top"
       >
         <div className="h-4 w-4 text-text-text-inverse dark:text-white">
