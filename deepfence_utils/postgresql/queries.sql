@@ -628,7 +628,7 @@ LIMIT 1;
 -- name: GetIntegrationsFromIDs :many
 SELECT *
 FROM integration
-WHERE id = ANY($1::int[]);
+WHERE id = ANY ($1::int[]);
 
 -- name: GetIntegrationsFromType :many
 SELECT *
@@ -784,4 +784,26 @@ WHERE id = $1;
 -- name: GetIntegrationMetrics :one
 SELECT metrics
 FROM integration
+WHERE id = $1;
+
+-- name: UpsertDeepfenceCommunication :one
+INSERT INTO deepfence_communication (id, title, content, link, link_title, button_content)
+VALUES ($1, $2, $3, $4, $5, $6)
+ON CONFLICT (id) DO UPDATE
+    SET title          = $2,
+        content        = $3,
+        link           = $4,
+        link_title     = $5,
+        button_content = $6
+RETURNING *;
+
+-- name: GetUnreadDeepfenceCommunication :many
+SELECT *
+FROM deepfence_communication
+WHERE read = false
+ORDER BY created_at;
+
+-- name: MarkDeepfenceCommunicationRead :exec
+UPDATE deepfence_communication
+SET read = true
 WHERE id = $1;

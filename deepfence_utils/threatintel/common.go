@@ -44,8 +44,19 @@ type DBUploadRequest struct {
 
 var ErrDatabaseNotFound = errors.New("database type not found")
 
+type DeepfenceCommunicationMessage struct {
+	Title         string `json:"title"`
+	Content       string `json:"content"`
+	Link          string `json:"link"`
+	LinkTitle     string `json:"link_title"`
+	ButtonContent string `json:"button_content"`
+	ID            int64  `json:"id"`
+	UpdatedAt     int64  `json:"updated_at"`
+}
+
 type Listing struct {
-	Available map[string][]Entry `json:"available"`
+	Available map[string][]Entry              `json:"available"`
+	Messages  []DeepfenceCommunicationMessage `json:"messages"`
 }
 
 type Entry struct {

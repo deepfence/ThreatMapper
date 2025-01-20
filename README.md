@@ -12,6 +12,9 @@
 
 # ThreatMapper - Runtime Threat Management and Attack Path Enumeration for Cloud Native
 
+> [!IMPORTANT]
+> [Upcoming Changes to ThreatMapper Threat Intel Feeds](https://www.deepfence.io/blog/upcoming-changes-to-threatmapper-threat-intel-feeds-what-you-need-to-know)
+
 Deepfence ThreatMapper hunts for threats in your production platforms, and ranks these threats based on their risk-of-exploit. It uncovers vulnerable software components, exposed secrets and deviations from good security practice. ThreatMapper uses a combination of agent-based inspection and agent-less monitoring to provide the widest possible coverage to detect threats.
 
 With ThreatMapper's **ThreatGraph** visualization, you can then identify the issues that present the greatest risk to the security of your applications, and prioritize these for planned protection or remediation.
@@ -93,10 +96,10 @@ docker run -dit \
     -e http_proxy="" \
     -e https_proxy="" \
     -e no_proxy="" \
-    quay.io/deepfenceio/deepfence_agent_ce:2.5.2
+    quay.io/deepfenceio/deepfence_agent_ce:2.5.3
 ```
 
-Note: Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.5.2-multiarch` is supported in amd64 and arm64/v8 architectures.
+Note: Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.5.3-multiarch` is supported in amd64 and arm64/v8 architectures.
 
 On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/threatmapper/docs/v2.5/sensors/kubernetes/)
 
