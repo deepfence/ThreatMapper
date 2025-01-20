@@ -33,7 +33,7 @@ RUN cd /usr/local/share/ && \
     rm -rf /usr/local/share/swagger-ui.tar.gz /usr/local/share/swagger-ui-4.15.5
 
 COPY ./deepfence_server/deepfence_server /usr/local/bin/deepfence_server
-
+RUN echo hello-world
 EXPOSE 8080
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/local/bin/deepfence_server"]
