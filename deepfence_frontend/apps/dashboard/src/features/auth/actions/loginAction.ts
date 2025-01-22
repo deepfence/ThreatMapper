@@ -6,13 +6,15 @@ import { apiWrapper } from '@/utils/api';
 import { handleLoginAndRedirect } from '@/utils/auth';
 import { track } from '@/utils/track';
 
-export type LoginActionReturnType = {
-  error?: string;
-  fieldErrors?: {
-    email?: string;
-    password?: string;
-  };
-};
+export type LoginActionReturnType =
+  | {
+      error?: string;
+      fieldErrors?: {
+        email?: string;
+        password?: string;
+      };
+    }
+  | undefined;
 
 export const loginAction: ActionFunction = async ({
   request,
@@ -60,5 +62,5 @@ export const loginAction: ActionFunction = async ({
     });
   }
 
-  handleLoginAndRedirect(loginResponse.value, url.searchParams);
+  await handleLoginAndRedirect(loginResponse.value, url.searchParams);
 };

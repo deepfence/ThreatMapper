@@ -192,6 +192,7 @@ export * from './ModelVulnerabilityRule';
 export * from './ModelVulnerabilityScanConfigLanguage';
 export * from './ModelVulnerabilityScanResult';
 export * from './ModelVulnerabilityScanTriggerReq';
+export * from './PostgresqlDbDeepfenceCommunication';
 export * from './PostgresqlDbGetAuditLogsRow';
 export * from './PostgresqlDbScheduler';
 export * from './ReportMetadata';

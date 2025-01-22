@@ -12,6 +12,7 @@ import { module as logoutAction } from '@/features/auth/data-components/logoutAc
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { action as downloadSBOMAction } from '@/features/common/data-component/downloadSBOMAction';
 import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
+import { action as markDfMessageReadAction } from '@/features/common/data-component/markDfMessageReadAction';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { RootLayout } from '@/features/common/RootLayout';
@@ -652,6 +653,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'user-info-guard',
         ...userInfoGuardModule,
+      },
+      {
+        path: 'mark-df-message-read',
+        action: markDfMessageReadAction,
       },
     ],
   },

@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 
 import { AppHeader } from '@/components/AppHeader';
+import { DfCommunication } from '@/components/DfCommunication';
 import { FeedAgeBanner } from '@/components/FeedAgeBanner';
 import { getSideNavigationState, SideNavigation } from '@/components/SideNavigation';
 import { UserInfoGuard } from '@/components/UserInfoGuard';
@@ -26,6 +27,7 @@ export const RootLayout = () => {
           })}
         >
           <FeedAgeBanner />
+          <DfCommunication />
           <Outlet />
         </main>
       </div>
