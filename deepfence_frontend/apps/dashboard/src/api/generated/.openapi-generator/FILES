@@ -218,6 +218,7 @@ models/ModelVulnerabilityRule.ts
 models/ModelVulnerabilityScanConfigLanguage.ts
 models/ModelVulnerabilityScanResult.ts
 models/ModelVulnerabilityScanTriggerReq.ts
+models/PostgresqlDbDeepfenceCommunication.ts
 models/PostgresqlDbGetAuditLogsRow.ts
 models/PostgresqlDbScheduler.ts
 models/ReportMetadata.ts

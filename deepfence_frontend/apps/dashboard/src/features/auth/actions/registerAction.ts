@@ -6,17 +6,19 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { handleLoginAndRedirect } from '@/utils/auth';
 
-export type RegisterActionReturnType = {
-  error?: string;
-  fieldErrors?: {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-    company?: string;
-  };
-};
+export type RegisterActionReturnType =
+  | {
+      error?: string;
+      fieldErrors?: {
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+        password?: string;
+        confirmPassword?: string;
+        company?: string;
+      };
+    }
+  | undefined;
 
 export const registerAction: ActionFunction = async ({
   request,
@@ -72,5 +74,5 @@ export const registerAction: ActionFunction = async ({
     throw registerUserResponse.error;
   }
 
-  handleLoginAndRedirect(registerUserResponse.value);
+  await handleLoginAndRedirect(registerUserResponse.value);
 };

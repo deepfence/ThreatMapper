@@ -13,7 +13,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0"
     },
-    "version": "v2.5.2"
+    "version": "v2.5.3"
   },
   "externalDocs": {
     "description": "Deepfence Community",
@@ -1786,6 +1786,102 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/deepfence-communication/message": {
+      "get": {
+        "tags": ["Settings"],
+        "summary": "Get Deepfence communication messages",
+        "description": "Get Deepfence communication messages",
+        "operationId": "getDeepfenceCommunicationMessages",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PostgresqlDbDeepfenceCommunication"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/deepfence-communication/message/{id}/read": {
+      "put": {
+        "tags": ["Settings"],
+        "summary": "Mark Deepfence communication message read",
+        "description": "Mark Deepfence communication message read",
+        "operationId": "markDeepfenceCommunicationRead",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "No Content" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -16604,6 +16700,20 @@
         }
       },
       "MultipartFile": { "type": "string", "format": "binary" },
+      "PostgresqlDbDeepfenceCommunication": {
+        "type": "object",
+        "properties": {
+          "button_content": { "type": "string" },
+          "content": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "id": { "type": "integer" },
+          "link": { "type": "string" },
+          "link_title": { "type": "string" },
+          "read": { "type": "boolean" },
+          "title": { "type": "string" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
       "PostgresqlDbGetAuditLogsRow": {
         "type": "object",
         "properties": {

@@ -397,6 +397,10 @@ export function getSettingsApiClient() {
     deleteThreatMapperLicense: settingsApi.deleteLicense.bind(settingsApi),
     testUnconfiguredEmail: settingsApi.testUnconfiguredEmail.bind(settingsApi),
     getDatabaseInfo: settingsApi.databaseInfo.bind(settingsApi),
+    getDeepfenceCommunicationMessages:
+      settingsApi.getDeepfenceCommunicationMessages.bind(settingsApi),
+    markDeepfenceCommunicationRead:
+      settingsApi.markDeepfenceCommunicationRead.bind(settingsApi),
   };
 }
 
