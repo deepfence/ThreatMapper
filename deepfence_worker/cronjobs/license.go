@@ -16,6 +16,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/setting"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	wutils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/hibiken/asynq"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -58,6 +59,7 @@ func PublishLicenseUsageToLicenseServer(ctx context.Context, task *asynq.Task) e
 
 type ReportLicensePayload struct {
 	LicenseKey                              string `json:"license_key"`
+	ConsoleVersion                          string `json:"console_version"`
 	DfClusterID                             int64  `json:"df_cluster_id"`
 	CurrentNumberOfHosts                    int64  `json:"current_no_of_hosts"`
 	CurrentNumberOfCloudAccounts            int64  `json:"current_no_of_cloud_accounts"`
@@ -120,6 +122,7 @@ func publishLicenseUsageToLicenseServer(ctx context.Context) error {
 
 	reportLicensePayload := ReportLicensePayload{
 		LicenseKey:                              license.LicenseKey,
+		ConsoleVersion:                          wutils.Version,
 		DfClusterID:                             consoleID,
 		CurrentNumberOfHosts:                    activeAgentNodes,
 		CurrentNumberOfCloudAccounts:            0,

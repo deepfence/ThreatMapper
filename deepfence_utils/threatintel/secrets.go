@@ -27,7 +27,7 @@ func DownloadSecretsRules(ctx context.Context, entry Entry) error {
 	defer span.End()
 
 	// remove old rule file
-	existing, _, err := FetchSecretsRulesInfo(ctx)
+	existing, _, _, err := FetchSecretsRulesInfo(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("no existing secret rules info found")
 	} else {
@@ -86,7 +86,7 @@ func UpdateSecretsRulesInfo(ctx context.Context, hash, path string) error {
 }
 
 func FetchSecretsRulesURL(ctx context.Context, consoleURL string, ttlCache *ttlcache.Cache[string, string]) (string, string, error) {
-	path, hash, err := FetchSecretsRulesInfo(ctx)
+	path, hash, _, err := FetchSecretsRulesInfo(ctx)
 	if err != nil {
 		return "", "", err
 	}
@@ -98,34 +98,34 @@ func FetchSecretsRulesURL(ctx context.Context, consoleURL string, ttlCache *ttlc
 	return exposedURL, hash, nil
 }
 
-func FetchSecretsRulesInfo(ctx context.Context) (path, hash string, err error) {
+func FetchSecretsRulesInfo(ctx context.Context) (path, hash string, updated_at int64, err error) {
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return "", "", err
+		return "", "", 0, err
 	}
 	session := nc.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
 	tx, err := session.BeginTransaction(ctx)
 	if err != nil {
-		return "", "", err
+		return "", "", 0, err
 	}
 	defer tx.Close(ctx)
 
 	querySecretsRules := `
 	MATCH (s:SecretsRules{node_id: "latest"})
-	RETURN s.path, s.rules_hash`
+	RETURN s.path, s.rules_hash, s.updated_at`
 
 	r, err := tx.Run(ctx, querySecretsRules, map[string]interface{}{})
 	if err != nil {
-		return "", "", err
+		return "", "", 0, err
 	}
 	rec, err := r.Single(ctx)
 	if err != nil {
-		return "", "", err
+		return "", "", 0, err
 	}
 
-	return rec.Values[0].(string), rec.Values[1].(string), nil
+	return rec.Values[0].(string), rec.Values[1].(string), rec.Values[2].(int64), nil
 }
 
 func IngestSecretRules(ctx context.Context, content []byte) error {

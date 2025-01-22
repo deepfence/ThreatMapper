@@ -3,17 +3,28 @@ import { Suspense, useEffect, useState } from 'react';
 import { generatePath, Outlet, useMatches, useParams } from 'react-router-dom';
 import { Tabs } from 'ui-components';
 
+import { useCachedDatabaseInfo } from '@/components/FeedAgeBanner';
 import { TopologyHeader } from '@/features/topology/components/TopologyHeader';
 import { queries } from '@/queries';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
+const MAX_CLOUD_RESOURCE_COUNT = 9999;
+
 function useCloudResourcesCount() {
-  return useSuspenseQuery({ ...queries.search.cloudResourcesCount() });
+  return useSuspenseQuery({
+    ...queries.search.cloudResourcesCount({ maxSize: MAX_CLOUD_RESOURCE_COUNT + 1 }),
+  });
 }
 
 const CloudResourceCount = () => {
   const { data: cloudResourceCount } = useCloudResourcesCount();
-  return <b>{cloudResourceCount}</b>;
+  return (
+    <b>
+      {cloudResourceCount > MAX_CLOUD_RESOURCE_COUNT
+        ? `${MAX_CLOUD_RESOURCE_COUNT}+`
+        : cloudResourceCount}
+    </b>
+  );
 };
 
 const inventoryTabs = [
@@ -84,8 +95,12 @@ function InventoryTabs() {
 }
 
 function Inventory() {
+  const { bannerHeight, showBanner } = useCachedDatabaseInfo();
   return (
-    <div className="h-full flex flex-col">
+    <div
+      className="flex flex-col"
+      style={{ height: showBanner ? `calc(100% - ${bannerHeight}px)` : '100%' }}
+    >
       <InventoryTabs />
       <div className="flex-1">
         <Outlet />

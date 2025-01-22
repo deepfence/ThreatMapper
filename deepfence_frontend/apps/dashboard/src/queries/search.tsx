@@ -1563,7 +1563,7 @@ export const searchQueries = createQueryKeys('search', {
       },
     };
   },
-  cloudResourcesCount: () => {
+  cloudResourcesCount: ({ maxSize }: { maxSize: number }) => {
     return {
       queryKey: ['cloudResourcesCount'],
       queryFn: async () => {
@@ -1587,7 +1587,7 @@ export const searchQueries = createQueryKeys('search', {
             },
             window: {
               offset: 0,
-              size: Number.MAX_SAFE_INTEGER,
+              size: maxSize,
             },
           },
         });

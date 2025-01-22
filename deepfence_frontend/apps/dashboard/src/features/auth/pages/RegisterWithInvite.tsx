@@ -10,15 +10,17 @@ import { get403Message } from '@/utils/403';
 import { apiWrapper } from '@/utils/api';
 import { handleLoginAndRedirect } from '@/utils/auth';
 
-export type RegisterWithInviteActionReturnType = {
-  error?: string;
-  fieldErrors?: {
-    firstName?: string;
-    lastName?: string;
-    password?: string;
-    confirmPassword?: string;
-  };
-};
+export type RegisterWithInviteActionReturnType =
+  | {
+      error?: string;
+      fieldErrors?: {
+        firstName?: string;
+        lastName?: string;
+        password?: string;
+        confirmPassword?: string;
+      };
+    }
+  | undefined;
 
 const action = async ({
   request,
@@ -70,7 +72,7 @@ const action = async ({
     }
     throw registerInvitedUserResponse.error;
   }
-  handleLoginAndRedirect(registerInvitedUserResponse.value);
+  await handleLoginAndRedirect(registerInvitedUserResponse.value);
 };
 
 const RegisterWithInvite = () => {

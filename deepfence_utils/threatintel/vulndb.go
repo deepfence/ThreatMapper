@@ -225,3 +225,25 @@ func DownloadVulnerabilityDB(ctx context.Context, info Entry) error {
 	return VulnDBUpdateListing(ctx, fileServerPath, checksum, info.Built)
 
 }
+
+func GetLatestVulnerabilityDB(ctx context.Context) (*Database, error) {
+	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return nil, err
+	}
+
+	data, err := mc.DownloadFileContexts(ctx, ListingPath, minio.GetObjectOptions{})
+	if err != nil {
+		log.Error().Err(err).Msg("failed to load listing file might be missing")
+		return nil, err
+	}
+
+	listing, err := LoadListing(data)
+	if err != nil {
+		log.Warn().Msg("failed to load listing file create new listing")
+		return nil, err
+	}
+
+	return listing.Latest(Version5), nil
+}

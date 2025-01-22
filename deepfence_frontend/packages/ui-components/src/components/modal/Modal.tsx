@@ -10,9 +10,9 @@ interface FocusableElement {
   focus(options?: FocusOptions): void;
 }
 
-type ChildrenType = {
+interface ChildrenType {
   children: React.ReactNode;
-};
+}
 type SizeType = 's' | 'm' | 'l' | 'xl' | 'xxl';
 export interface ModalProps
   extends DialogPrimitive.DialogProps,
@@ -21,9 +21,13 @@ export interface ModalProps
   title?: React.ReactNode;
   footer?: React.ReactNode;
   elementToFocusOnCloseRef?: React.RefObject<FocusableElement>;
+  showCloseButton?: boolean;
 }
 
-const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
+const ModalHeader: FC<{ title?: React.ReactNode; showCloseButton?: boolean }> = ({
+  title,
+  showCloseButton = true,
+}) => {
   return (
     <>
       <div
@@ -40,18 +44,20 @@ const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
         </DialogPrimitive.Title>
       </div>
 
-      <DialogPrimitive.Close
-        aria-label="Close"
-        className={cn(
-          'absolute top-[30px] right-6 cursor-pointer',
-          // text
-          'text-text-icon',
-        )}
-        id={'modal-close-button'}
-        data-testid={'modal-close-button'}
-      >
-        <CloseIcon />
-      </DialogPrimitive.Close>
+      {showCloseButton && (
+        <DialogPrimitive.Close
+          aria-label="Close"
+          className={cn(
+            'absolute top-[30px] right-6 cursor-pointer',
+            // text
+            'text-text-icon',
+          )}
+          id={'modal-close-button'}
+          data-testid={'modal-close-button'}
+        >
+          <CloseIcon />
+        </DialogPrimitive.Close>
+      )}
     </>
   );
 };
@@ -129,6 +135,7 @@ export const Modal: FC<ModalProps> = ({
   elementToFocusOnCloseRef,
   size,
   open,
+  showCloseButton = true,
   ...rest
 }) => {
   const state = useUpdateStateIfMounted(open);
@@ -154,7 +161,7 @@ export const Modal: FC<ModalProps> = ({
             })}
             onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
           >
-            <ModalHeader title={title} />
+            <ModalHeader title={title} showCloseButton={showCloseButton} />
             <div
               className={cn('overflow-y-auto h-full', {
                 'pb-3': footer,

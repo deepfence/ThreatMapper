@@ -888,10 +888,20 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 	d.AddOperation("uploadPostureControls", http.MethodPut, "/deepfence/database/posture",
 		"Upload Posture Controls", "Upload posture controls for use in posture scans",
 		http.StatusOK, []string{tagSettings}, bearerToken, new(threatintel.DBUploadRequest), new(MessageResponse))
+	d.AddOperation("databaseInfo", http.MethodGet, "/deepfence/database/info",
+		"Get Database Info", "get database updated at info",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(DatabaseInfoResponse))
 
 	d.AddOperation("getAgentBinaryDownloadURL", http.MethodGet, "/deepfence/agent-deployment/binary/download-url",
 		"Get agent binary download url", "Get agent binary download url",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(GetAgentBinaryDownloadURLResponse))
+
+	d.AddOperation("getDeepfenceCommunicationMessages", http.MethodGet, "/deepfence/deepfence-communication/message",
+		"Get Deepfence communication messages", "Get Deepfence communication messages",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]DeepfenceCommunication))
+	d.AddOperation("markDeepfenceCommunicationRead", http.MethodPut, "/deepfence/deepfence-communication/message/{id}/read",
+		"Mark Deepfence communication message read", "Mark Deepfence communication message read",
+		http.StatusNoContent, []string{tagSettings}, bearerToken, new(DeepfenceCommunicationID), nil)
 }
 
 func (d *OpenAPIDocs) AddLicenseOperations() {
