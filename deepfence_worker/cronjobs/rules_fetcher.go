@@ -130,6 +130,11 @@ func FetchThreatIntel(ctx context.Context, task *asynq.Task) error {
 	var wg conc.WaitGroup
 	var errs []error
 
+	if err := threatintel.UpdateDeepfenceCommunication(ctx, listing.Messages); err != nil {
+		log.Error().Err(err).Msg("failed to update Deepfence communication")
+		errs = append(errs, err)
+	}
+
 	// download vulnerability db
 	vulnDBInfo, err := listing.GetLatest(wutils.Version, threatintel.DBTypeVulnerability)
 	if err != nil {

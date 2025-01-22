@@ -508,6 +508,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, serveOpenapiDocs bool, ingestC c
 				})
 			})
 
+			r.Route("/deepfence-communication/message", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.GetDeepfenceCommunication))
+				r.Put("/{id}/read", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.MarkDeepfenceCommunicationAsRead))
+			})
+
 			r.Route("/diagnosis", func(r chi.Router) {
 				r.Get("/notification", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.DiagnosticNotification))
 				r.Post("/console-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.GenerateConsoleDiagnosticLogs))
