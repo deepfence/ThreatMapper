@@ -1829,9 +1829,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PostgresqlDbDeepfenceCommunication"
-                  }
+                  "items": { "$ref": "#/components/schemas/ModelDeepfenceCommunication" }
                 }
               }
             }
@@ -14847,6 +14845,20 @@
           "vulnerability_db_updated_at": { "type": "string", "format": "date-time" }
         }
       },
+      "ModelDeepfenceCommunication": {
+        "type": "object",
+        "properties": {
+          "button_content": { "type": "string" },
+          "content": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "id": { "type": "integer" },
+          "link": { "type": "string" },
+          "link_title": { "type": "string" },
+          "read": { "type": "boolean" },
+          "title": { "type": "string" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
       "ModelDeleteIntegrationReq": {
         "required": ["integration_ids"],
         "type": "object",
@@ -16700,20 +16712,6 @@
         }
       },
       "MultipartFile": { "type": "string", "format": "binary" },
-      "PostgresqlDbDeepfenceCommunication": {
-        "type": "object",
-        "properties": {
-          "button_content": { "type": "string" },
-          "content": { "type": "string" },
-          "created_at": { "type": "string", "format": "date-time" },
-          "id": { "type": "integer" },
-          "link": { "type": "string" },
-          "link_title": { "type": "string" },
-          "read": { "type": "boolean" },
-          "title": { "type": "string" },
-          "updated_at": { "type": "string", "format": "date-time" }
-        }
-      },
       "PostgresqlDbGetAuditLogsRow": {
         "type": "object",
         "properties": {

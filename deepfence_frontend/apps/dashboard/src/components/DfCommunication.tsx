@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button, Modal } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
-import { PostgresqlDbDeepfenceCommunication } from '@/api/generated';
+import { ModelDeepfenceCommunication } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { InfoStandardIcon } from '@/components/icons/common/InfoStandard';
 import { PopOutIcon } from '@/components/icons/common/PopOut';
@@ -45,7 +45,7 @@ export function DfCommunication() {
 
   const { data } = useQuery({
     queryKey: DF_COMMUNICATION_MESSAGE_QUERY_KEY,
-    queryFn: async (): Promise<PostgresqlDbDeepfenceCommunication[]> => {
+    queryFn: async (): Promise<ModelDeepfenceCommunication[]> => {
       // noop
       return [];
     },

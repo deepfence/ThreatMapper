@@ -16,79 +16,79 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface PostgresqlDbDeepfenceCommunication
+ * @interface ModelDeepfenceCommunication
  */
-export interface PostgresqlDbDeepfenceCommunication {
+export interface ModelDeepfenceCommunication {
     /**
      * 
      * @type {string}
-     * @memberof PostgresqlDbDeepfenceCommunication
+     * @memberof ModelDeepfenceCommunication
      */
     button_content?: string;
     /**
      * 
      * @type {string}
-     * @memberof PostgresqlDbDeepfenceCommunication
+     * @memberof ModelDeepfenceCommunication
      */
     content?: string;
     /**
      * 
      * @type {Date}
-     * @memberof PostgresqlDbDeepfenceCommunication
+     * @memberof ModelDeepfenceCommunication
      */
     created_at?: Date;
     /**
      * 
      * @type {number}
-     * @memberof PostgresqlDbDeepfenceCommunication
+     * @memberof ModelDeepfenceCommunication
      */
     id?: number;
     /**
      * 
      * @type {string}
-     * @memberof PostgresqlDbDeepfenceCommunication
+     * @memberof ModelDeepfenceCommunication
      */
     link?: string;
     /**
      * 
      * @type {string}
-     * @memberof PostgresqlDbDeepfenceCommunication
+     * @memberof ModelDeepfenceCommunication
      */
     link_title?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof PostgresqlDbDeepfenceCommunication
+     * @memberof ModelDeepfenceCommunication
      */
     read?: boolean;
     /**
      * 
      * @type {string}
-     * @memberof PostgresqlDbDeepfenceCommunication
+     * @memberof ModelDeepfenceCommunication
      */
     title?: string;
     /**
      * 
      * @type {Date}
-     * @memberof PostgresqlDbDeepfenceCommunication
+     * @memberof ModelDeepfenceCommunication
      */
     updated_at?: Date;
 }
 
 /**
- * Check if a given object implements the PostgresqlDbDeepfenceCommunication interface.
+ * Check if a given object implements the ModelDeepfenceCommunication interface.
  */
-export function instanceOfPostgresqlDbDeepfenceCommunication(value: object): boolean {
+export function instanceOfModelDeepfenceCommunication(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function PostgresqlDbDeepfenceCommunicationFromJSON(json: any): PostgresqlDbDeepfenceCommunication {
-    return PostgresqlDbDeepfenceCommunicationFromJSONTyped(json, false);
+export function ModelDeepfenceCommunicationFromJSON(json: any): ModelDeepfenceCommunication {
+    return ModelDeepfenceCommunicationFromJSONTyped(json, false);
 }
 
-export function PostgresqlDbDeepfenceCommunicationFromJSONTyped(json: any, ignoreDiscriminator: boolean): PostgresqlDbDeepfenceCommunication {
+export function ModelDeepfenceCommunicationFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelDeepfenceCommunication {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -106,7 +106,7 @@ export function PostgresqlDbDeepfenceCommunicationFromJSONTyped(json: any, ignor
     };
 }
 
-export function PostgresqlDbDeepfenceCommunicationToJSON(value?: PostgresqlDbDeepfenceCommunication | null): any {
+export function ModelDeepfenceCommunicationToJSON(value?: ModelDeepfenceCommunication | null): any {
     if (value === undefined) {
         return undefined;
     }
