@@ -19,6 +19,7 @@ import type {
   ApiDocsFailureResponse,
   ModelAddScheduledTaskRequest,
   ModelDatabaseInfoResponse,
+  ModelDeepfenceCommunication,
   ModelEmailConfigurationAdd,
   ModelEmailConfigurationResp,
   ModelGenerateLicenseRequest,
@@ -31,7 +32,6 @@ import type {
   ModelRegisterLicenseRequest,
   ModelRegisterLicenseResponse,
   ModelUpdateScheduledTaskRequest,
-  PostgresqlDbDeepfenceCommunication,
   PostgresqlDbGetAuditLogsRow,
   PostgresqlDbScheduler,
   SearchSearchCountResp,
@@ -47,6 +47,8 @@ import {
     ModelAddScheduledTaskRequestToJSON,
     ModelDatabaseInfoResponseFromJSON,
     ModelDatabaseInfoResponseToJSON,
+    ModelDeepfenceCommunicationFromJSON,
+    ModelDeepfenceCommunicationToJSON,
     ModelEmailConfigurationAddFromJSON,
     ModelEmailConfigurationAddToJSON,
     ModelEmailConfigurationRespFromJSON,
@@ -71,8 +73,6 @@ import {
     ModelRegisterLicenseResponseToJSON,
     ModelUpdateScheduledTaskRequestFromJSON,
     ModelUpdateScheduledTaskRequestToJSON,
-    PostgresqlDbDeepfenceCommunicationFromJSON,
-    PostgresqlDbDeepfenceCommunicationToJSON,
     PostgresqlDbGetAuditLogsRowFromJSON,
     PostgresqlDbGetAuditLogsRowToJSON,
     PostgresqlDbSchedulerFromJSON,
@@ -305,13 +305,13 @@ export interface SettingsApiInterface {
      * @throws {RequiredError}
      * @memberof SettingsApiInterface
      */
-    getDeepfenceCommunicationMessagesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PostgresqlDbDeepfenceCommunication>>>;
+    getDeepfenceCommunicationMessagesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelDeepfenceCommunication>>>;
 
     /**
      * Get Deepfence communication messages
      * Get Deepfence communication messages
      */
-    getDeepfenceCommunicationMessages(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbDeepfenceCommunication>>;
+    getDeepfenceCommunicationMessages(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelDeepfenceCommunication>>;
 
     /**
      * Get Email Smtp / ses Configurations in system
@@ -929,7 +929,7 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      * Get Deepfence communication messages
      * Get Deepfence communication messages
      */
-    async getDeepfenceCommunicationMessagesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PostgresqlDbDeepfenceCommunication>>> {
+    async getDeepfenceCommunicationMessagesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelDeepfenceCommunication>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -949,14 +949,14 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(PostgresqlDbDeepfenceCommunicationFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelDeepfenceCommunicationFromJSON));
     }
 
     /**
      * Get Deepfence communication messages
      * Get Deepfence communication messages
      */
-    async getDeepfenceCommunicationMessages(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbDeepfenceCommunication>> {
+    async getDeepfenceCommunicationMessages(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelDeepfenceCommunication>> {
         const response = await this.getDeepfenceCommunicationMessagesRaw(initOverrides);
         return await response.value();
     }

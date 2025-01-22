@@ -111,6 +111,7 @@ models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
 models/ModelDatabaseInfoResponse.ts
+models/ModelDeepfenceCommunication.ts
 models/ModelDeleteIntegrationReq.ts
 models/ModelDeleteRegistryBulkReq.ts
 models/ModelDownloadReportResponse.ts
@@ -218,7 +219,6 @@ models/ModelVulnerabilityRule.ts
 models/ModelVulnerabilityScanConfigLanguage.ts
 models/ModelVulnerabilityScanResult.ts
 models/ModelVulnerabilityScanTriggerReq.ts
-models/PostgresqlDbDeepfenceCommunication.ts
 models/PostgresqlDbGetAuditLogsRow.ts
 models/PostgresqlDbScheduler.ts
 models/ReportMetadata.ts
