@@ -13,6 +13,7 @@ The Management Console may be installed on a single Docker host or in a dedicate
 |-------------------------------------------|---------------------------------------------|-------------------------------------|
 | CPU: No of cores                          | 8 cores                                     | 3 nodes, 4 cores each               |
 | RAM                                       | 16 GB                                       | 3 nodes, 8 GB each                  |
+| Disk space                                | 200 GB or higher                            | 100 GB or higher in each node       |
 | Telemetry and data from Deepfence Sensors | Port 443 (configurable), firewalled         | Port 443 (configurable), firewalled |
 | Administrative and API access             | Port 443 (configurable), firewalled         | Port 443 (configurable), firewalled |
 | Docker                                    | *Version 20.10.18 (minimum version 18.06.0) |                                     |
