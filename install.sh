@@ -12,7 +12,7 @@ CROSS="${RED}✘${NC}"
 INFO="${BLUE}ℹ${NC}"
 
 # Default values
-DEFAULT_IMAGE_TAG="2.5.3"
+DEFAULT_IMAGE_TAG="2.5.5"
 DEFAULT_STORAGE_CLASS=""
 # Auto-generate default Neo4j password
 DEFAULT_NEO4J_PASSWORD=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | head -c 12)
