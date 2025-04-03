@@ -1,5 +1,3 @@
-version: "3.7"
-
 x-service-variables: &common-creds
     # uncomment to set the credentials otherwise default credentials will be used
     # DEEPFENCE_NEO4J_USER: neo4juser
