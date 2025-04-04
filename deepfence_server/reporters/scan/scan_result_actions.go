@@ -415,9 +415,7 @@ func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
 	scanIDStatus := make(map[string]string)
 	for _, r := range rec {
 		if r.Values[0] != nil && r.Values[1] != nil {
-			nodeID := r.Values[0].(string)
-			status := r.Values[1].(string)
-			log.Info().Msgf("Scan ID: %s, Status: %s", nodeID, status)
+			scanIDStatus[r.Values[0].(string)] = r.Values[1].(string)
 		}
 	}
 
