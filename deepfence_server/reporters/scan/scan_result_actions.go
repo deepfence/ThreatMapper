@@ -398,19 +398,52 @@ func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
 	}
 	defer tx.Close(ctx)
 
-	query := `MATCH (n:CloudComplianceScan{node_id: $scan_id}) -[:SCANNED]-> ()
-        WHERE n.status = $in_progress
-        SET n.status = $cancel_pending`
+	query := `MATCH (n:CloudComplianceScan) -[:SCANNED]-> ()
+		WHERE n.node_id IN $scan_ids
+		RETURN n.node_id, n.status`
+	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_ids": scanIds})
+	if err != nil {
+		log.Error().Msgf("StopCloudComplianceScan: Error in getting the scan result nodes from neo4j: %v", err)
+		return err
+	}
+	rec, err := res.Collect(ctx)
+	if err != nil {
+		log.Error().Msgf("StopCloudComplianceScan: Error in collecting the scan result nodes from neo4j: %v", err)
+		return err
+	}
 
-	for _, scanid := range scanIds {
-		if _, err = tx.Run(ctx, query,
-			map[string]interface{}{
-				"scan_id":        scanid,
-				"in_progress":    utils.ScanStatusInProgress,
-				"cancel_pending": utils.ScanStatusCancelPending,
-			}); err != nil {
-			log.Error().Msgf("StopCloudComplianceScan: Error in setting the state in neo4j: %v", err)
-			return err
+	scanIDStatus := make(map[string]string)
+	for _, r := range rec {
+		if r.Values[0] != nil && r.Values[1] != nil {
+			nodeID := r.Values[0].(string)
+			status := r.Values[1].(string)
+			log.Info().Msgf("Scan ID: %s, Status: %s", nodeID, status)
+		}
+	}
+
+	for _, scanID := range scanIds {
+		if scanIDStatus[scanID] == utils.ScanStatusInProgress {
+			query = `MATCH (n:CloudComplianceScan{node_id: $scan_id}) SET n.status = $status`
+			if _, err = tx.Run(ctx, query,
+				map[string]interface{}{
+					"scan_id": scanID,
+					"status":  utils.ScanStatusCancelPending,
+				}); err != nil {
+				log.Error().Msgf("StopCloudComplianceScan: Error in setting the state in neo4j: %v", err)
+				return err
+			}
+		} else if scanIDStatus[scanID] == utils.ScanStatusStarting {
+			query = `MATCH (n:CloudComplianceScan{node_id: $scan_id}) -[:SCANNED]-> () DETACH DELETE n`
+			if _, err = tx.Run(ctx, query,
+				map[string]interface{}{
+					"scan_id": scanID,
+				}); err != nil {
+				log.Error().Msgf("StopCloudComplianceScan: Error in setting the state in neo4j: %v", err)
+				return err
+			}
+		} else {
+			log.Warn().Msgf("Scan ID: %s, Status: %s, not in progress", scanID, scanIDStatus[scanID])
+			continue
 		}
 	}
 
