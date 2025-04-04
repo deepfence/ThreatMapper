@@ -398,19 +398,52 @@ func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
 	}
 	defer tx.Close(ctx)
 
-	query := `MATCH (n:CloudComplianceScan{node_id: $scan_id}) -[:SCANNED]-> ()
-        WHERE n.status = $in_progress
-        SET n.status = $cancel_pending`
+	query := `MATCH (n:CloudComplianceScan) -[:SCANNED]-> ()
+		WHERE n.node_id IN $scan_ids
+		RETURN n.node_id, n.status`
+	res, err := tx.Run(ctx, query, map[string]interface{}{"scan_ids": scanIds})
+	if err != nil {
+		log.Error().Msgf("StopCloudComplianceScan: Error in getting the scan result nodes from neo4j: %v", err)
+		return err
+	}
+	rec, err := res.Collect(ctx)
+	if err != nil {
+		log.Error().Msgf("StopCloudComplianceScan: Error in collecting the scan result nodes from neo4j: %v", err)
+		return err
+	}
 
-	for _, scanid := range scanIds {
-		if _, err = tx.Run(ctx, query,
-			map[string]interface{}{
-				"scan_id":        scanid,
-				"in_progress":    utils.ScanStatusInProgress,
-				"cancel_pending": utils.ScanStatusCancelPending,
-			}); err != nil {
-			log.Error().Msgf("StopCloudComplianceScan: Error in setting the state in neo4j: %v", err)
-			return err
+	scanIDStatus := make(map[string]string)
+	for _, r := range rec {
+		if r.Values[0] != nil && r.Values[1] != nil {
+			scanIDStatus[r.Values[0].(string)] = r.Values[1].(string)
+		}
+	}
+
+	for _, scanID := range scanIds {
+		scanStatus, ok := scanIDStatus[scanID]
+		if !ok {
+			log.Error().Msgf("StopCloudComplianceScan: Scan ID %s not found in neo4j", scanID)
+			continue
+		}
+		if scanStatus == utils.ScanStatusInProgress {
+			query = `MATCH (n:CloudComplianceScan{node_id: $scan_id}) SET n.status = $status`
+			if _, err = tx.Run(ctx, query,
+				map[string]interface{}{
+					"scan_id": scanID,
+					"status":  utils.ScanStatusCancelPending,
+				}); err != nil {
+				log.Error().Msgf("StopCloudComplianceScan: Error in setting the state in neo4j: %v", err)
+				return err
+			}
+		} else if scanStatus == utils.ScanStatusStarting {
+			err = DeleteScan(ctx, utils.NEO4JCloudComplianceScan, scanID)
+			if err != nil {
+				log.Error().Msgf("StopCloudComplianceScan: Error in deleting the scan: %v", err)
+				return err
+			}
+		} else {
+			log.Warn().Msgf("Scan ID: %s, Status: %s, not in progress", scanID, scanStatus)
+			continue
 		}
 	}
 
