@@ -420,7 +420,12 @@ func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
 	}
 
 	for _, scanID := range scanIds {
-		if scanIDStatus[scanID] == utils.ScanStatusInProgress {
+		scanStatus, ok := scanIDStatus[scanID]
+		if !ok {
+			log.Error().Msgf("StopCloudComplianceScan: Scan ID %s not found in neo4j", scanID)
+			continue
+		}
+		if scanStatus == utils.ScanStatusInProgress {
 			query = `MATCH (n:CloudComplianceScan{node_id: $scan_id}) SET n.status = $status`
 			if _, err = tx.Run(ctx, query,
 				map[string]interface{}{
@@ -430,14 +435,14 @@ func StopCloudComplianceScan(ctx context.Context, scanIds []string) error {
 				log.Error().Msgf("StopCloudComplianceScan: Error in setting the state in neo4j: %v", err)
 				return err
 			}
-		} else if scanIDStatus[scanID] == utils.ScanStatusStarting {
+		} else if scanStatus == utils.ScanStatusStarting {
 			err = DeleteScan(ctx, utils.NEO4JCloudComplianceScan, scanID)
 			if err != nil {
 				log.Error().Msgf("StopCloudComplianceScan: Error in deleting the scan: %v", err)
 				return err
 			}
 		} else {
-			log.Warn().Msgf("Scan ID: %s, Status: %s, not in progress", scanID, scanIDStatus[scanID])
+			log.Warn().Msgf("Scan ID: %s, Status: %s, not in progress", scanID, scanStatus)
 			continue
 		}
 	}
