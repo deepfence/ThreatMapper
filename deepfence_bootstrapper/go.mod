@@ -58,7 +58,7 @@ require (
 	github.com/gorilla/websocket v0.0.0-20160221213430-5c91b59efa23 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
-	github.com/hibiken/asynq v0.24.1 // indirect
+	github.com/hibiken/asynq v0.25.1 // indirect
 	github.com/jellydator/ttlcache/v3 v3.3.0 // indirect
 	github.com/k-sone/critbitgo v1.2.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
@@ -84,7 +84,7 @@ require (
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/spf13/cast v1.3.1 // indirect
+	github.com/spf13/cast v1.7.0 // indirect
 	github.com/twmb/franz-go v1.18.0 // indirect
 	github.com/twmb/franz-go/pkg/kadm v1.14.0 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.9.0 // indirect
@@ -99,9 +99,9 @@ require (
 	golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2 // indirect
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
-	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
+	golang.org/x/time v0.8.0 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
-	google.golang.org/protobuf v1.35.1 // indirect
+	google.golang.org/protobuf v1.35.2 // indirect
 )

@@ -126,9 +126,9 @@ func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graph
 		CALL {
 		    WITH n
 		    MATCH (n) -[:SCANNED]- () -[:DETECTED]- (v:%s)
-		    WITH v limit 3
 		    RETURN v
 		    ORDER by v.exploitability_score DESC
+			LIMIT 3
 		}
 		RETURN n.node_id, collect(v.%s)
 	`, dummy.NodeType(), getNeo4jNodeIDField(dummy))
@@ -168,36 +168,36 @@ func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graph
 	}
 
 	attackPaths := map[string][]string{}
-	ports := map[string]map[int]struct{}{}
+	//ports := map[string]map[int]struct{}{}
 	for _, rec := range recs {
 		nodeID := rec.Values[0].(string)
 		paths := rec.Values[1].(dbtype.Path)
 		for _, node := range paths.Nodes {
 			attackPaths[nodeID] = append(attackPaths[nodeID], node.Props["node_id"].(string))
 		}
-		lastConnects := paths.Relationships[len(paths.Relationships)-1]
-		//TODO: remove
-		if lastConnects.Props["local_ports"] == nil {
-			continue
-		}
-		for _, port := range lastConnects.Props["local_ports"].([]interface{}) {
-			if _, has := ports[nodeID]; !has {
-				ports[nodeID] = map[int]struct{}{}
-			}
-			ports[nodeID][int(port.(int64))] = struct{}{}
-		}
+		//lastConnects := paths.Relationships[len(paths.Relationships)-1]
+		////TODO: remove
+		//if lastConnects.Props["local_ports"] == nil {
+		//	continue
+		//}
+		//for _, port := range lastConnects.Props["local_ports"].([]interface{}) {
+		//	if _, has := ports[nodeID]; !has {
+		//		ports[nodeID] = map[int]struct{}{}
+		//	}
+		//	ports[nodeID][int(port.(int64))] = struct{}{}
+		//}
 	}
 
 	for _, nodeID := range nodeIDs {
-		outputPorts := []interface{}{}
-		for port := range ports[nodeID] {
-			outputPorts = append(outputPorts, port)
-		}
+		//outputPorts := []interface{}{}
+		//for port := range ports[nodeID] {
+		//	outputPorts = append(outputPorts, port)
+		//}
 		individualThreatGraph = append(individualThreatGraph, IndividualThreatGraph{
 			AttackPath:      [][]string{attackPaths[nodeID]},
 			CveAttackVector: "network",
 			CveID:           cveIDs[nodeID],
-			Ports:           outputPorts,
+			//Ports:           outputPorts,
 		})
 	}
 
