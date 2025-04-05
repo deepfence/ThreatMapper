@@ -24,12 +24,12 @@ replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/ag
 require github.com/anchore/syft v1.3.0
 
 require (
-	github.com/aws/aws-sdk-go v1.55.5
+	github.com/aws/aws-sdk-go v1.55.6
 	github.com/cenkalti/backoff/v3 v3.2.2
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
-	github.com/deepfence/YaraHunter v0.0.0-20250402174527-056d61fed002
+	github.com/deepfence/YaraHunter v0.0.0-20250404165742-db83d9655bf1
 	github.com/deepfence/agent-plugins-grpc v1.1.0
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20241220101350-67a37a759769
 	github.com/deepfence/match-scanner v0.0.0-20241104190155-00799508ab6c
