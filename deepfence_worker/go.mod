@@ -29,9 +29,9 @@ require (
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
-	github.com/deepfence/YaraHunter v0.0.0-20250404165742-db83d9655bf1
+	github.com/deepfence/YaraHunter v0.0.0-20250410165759-d7ed791d4edd
 	github.com/deepfence/agent-plugins-grpc v1.1.0
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20241220101350-67a37a759769
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20250404165334-270bd6030734
 	github.com/deepfence/match-scanner v0.0.0-20241104190155-00799508ab6c
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/go-chi/chi/v5 v5.2.1
@@ -103,7 +103,7 @@ require (
 	github.com/containerd/typeurl/v2 v2.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20241220101350-67a37a759769 // indirect
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20250404165334-270bd6030734 // indirect
 	github.com/deepfence/vessel v0.13.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/distribution/reference v0.6.0 // indirect
