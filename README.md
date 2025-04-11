@@ -96,10 +96,10 @@ docker run -dit \
     -e http_proxy="" \
     -e https_proxy="" \
     -e no_proxy="" \
-    quay.io/deepfenceio/deepfence_agent_ce:2.5.6
+    quay.io/deepfenceio/deepfence_agent_ce:2.5.7
 ```
 
-Note: Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.5.6-multiarch` is supported in amd64 and arm64/v8 architectures.
+Note: Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.5.7-multiarch` is supported in amd64 and arm64/v8 architectures.
 
 On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/threatmapper/docs/v2.5/sensors/kubernetes/)
 

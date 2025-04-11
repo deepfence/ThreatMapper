@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
@@ -13,7 +14,7 @@ import (
 )
 
 func generateSecretRuleId(r map[string]interface{}) string {
-	return fmt.Sprintf("secret-%s", r["name"].(string))
+	return fmt.Sprintf("index-%s", r["name"].(string))
 }
 
 func CommitFuncSecrets(ctx context.Context, ns string, data []ingestersUtil.Secret) error {
@@ -66,26 +67,25 @@ func secretsToMaps(data []ingestersUtil.Secret) ([]map[string]map[string]interfa
 
 	var secrets []map[string]map[string]interface{}
 	for _, i := range data {
-		secret := utils.ToMap(i)
-		delete(secret, "Severity")
-		delete(secret, "Rule")
-		delete(secret, "Match")
-
-		for k, v := range utils.ToMap(i.Severity) {
-			secret[k] = v
+		ruleID := generateSecretRuleId(utils.ToMap(i.Rule))
+		rule := map[string]interface{}{
+			"rule_id": ruleID,
 		}
 
-		for k, v := range utils.ToMap(i.Match) {
-			secret[k] = v
+		s := model.Secret{
+			NodeID:         utils.ScanIDReplacer.Replace(fmt.Sprintf("%v:%v", ruleID, i.Match.FullFilename)),
+			StartingIndex:  int32(i.Match.StartingIndex),
+			FullFilename:   i.Match.FullFilename,
+			MatchedContent: i.Match.MatchedContent,
+			Masked:         false,
+			Level:          i.Severity.Level,
+			Score:          i.Severity.Score,
+			RuleID:         ruleID,
 		}
 
-		rule := utils.ToMap(i.Rule)
-		delete(rule, "id")
-		rule["rule_id"] = generateSecretRuleId(rule)
-		rule["level"] = i.Severity.Level
-
-		secret["node_id"] = utils.ScanIDReplacer.Replace(fmt.Sprintf("%v:%v",
-			rule["rule_id"], i.Match.FullFilename))
+		secret := utils.ToMap(s)
+		secret["scan_id"] = i.ScanID
+		delete(secret, "resources")
 
 		secrets = append(secrets, map[string]map[string]interface{}{
 			"Rule":   rule,
