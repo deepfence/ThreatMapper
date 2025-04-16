@@ -36,7 +36,6 @@ const sidebars = {
         'architecture/threatgraph',
       ],
     },
-    'demo',
 
     {
       type: 'category',

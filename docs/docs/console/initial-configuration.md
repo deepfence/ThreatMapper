@@ -31,6 +31,22 @@ You will need the IP address for the management console:
     
     Account Registration details are private to your Management Console, and are not shared with Deepfence or other third parties.
 
+## Register License
+
+1. Registration is required to download the ThreatIntel database from Deepfence.
+2. To register license, go to `Settings` -> `License Details`. If you don't register here, you will be asked to register when starting a scan.
+
+    | ![License Registration](../img/license-registration.png)  |
+    |:---------------------------------------------------------:|
+    |                   License Registration                    |
+
+3. After submitting the details, you will receive a license key via email. Copy the license key from the email.
+4. Paste the license key in the `License Key` field and click on `Register and Continue`.
+
+    | ![License Registration](../img/license-registration-2.png) |
+    |:----------------------------------------------------------:|
+    |                    License Registration                    |
+
 ## Obtain the API Key
 
 The API key is used to authenticate remote sensor agents and cloud scanner tasks. Go to `Settings` -> `User Management` and make note of the API key; you will need it when deploying the Deepfence sensors.
