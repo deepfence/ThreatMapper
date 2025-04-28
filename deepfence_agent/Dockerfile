@@ -9,7 +9,7 @@ FROM $IMAGE_REPOSITORY/deepfence_compliance_scanner_ce:$DF_IMG_TAG AS compliance
 FROM debian:12-slim as downloads
 
 ENV DOCKERVERSION="27.3.1" \
-    VESSEL_VERSION="0.13.0"\
+    VESSEL_VERSION="0.14.0" \
     NERDCTL_VERSION="1.7.7" \
     CRICTL_VERSION="v1.31.1"
 
