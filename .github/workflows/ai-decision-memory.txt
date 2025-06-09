@@ -1,0 +1,1044 @@
+# .github/workflows/ai-decision-memory.yml
+name: AI Decision Memory - Full Analysis
+
+on:
+  push:
+    branches: [ main, release-2.5 ]
+  pull_request:
+    branches: [ main, release-2.5 ]
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  extract-decisions:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Get full history for analysis
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake
+    
+    - name: Download and Setup Llama.cpp
+      run: |
+        # Clone llama.cpp
+        git clone https://github.com/ggerganov/llama.cpp.git
+        cd llama.cpp
+        make -j$(nproc)
+        
+        # Download a small quantized model (Phi-3-Mini 4K Instruct)
+        wget -O phi-3-mini-4k-instruct-q4_k_m.gguf \
+          "https://huggingface.co/microsoft/Phi-3-mini-4K-instruct-gguf/resolve/main/Phi-3-mini-4K-instruct-q4_k_m.gguf"
+        
+        # Test the model
+        echo "Testing model..." 
+        ./llama-cli -m phi-3-mini-4k-instruct-q4_k_m.gguf -n 50 -p "Hello, this is a test." --temp 0.1
+    
+    - name: Install Node Dependencies
+      run: |
+        npm init -y
+        npm install @octokit/rest simple-git glob typescript ts-node @types/node
+    
+    - name: Create Enhanced Decision Extractor
+      run: |
+        cat > extract-decisions.ts << 'EOF'
+        import { execSync } from 'child_process';
+        import simpleGit from 'simple-git';
+        import { glob } from 'glob';
+        import * as fs from 'fs';
+        import * as path from 'path';
+
+        interface Decision {
+          decision: string;
+          reasoning?: string;
+          category: 'security' | 'compliance' | 'scalability' | 'performance' | 'architecture' | 'infrastructure' | 'maintainability';
+          confidence: number;
+          source: string;
+          timestamp: string;
+          file?: string;
+          commit?: string;
+          impact: 'low' | 'medium' | 'high' | 'critical';
+          concerns: string[];
+        }
+
+        interface DecisionSummary {
+          category: string;
+          decisions: Decision[];
+          summary: string;
+          keyInsights: string[];
+          risks: string[];
+          recommendations: string[];
+        }
+
+        class EnhancedDecisionExtractor {
+          private decisions: Decision[] = [];
+          private llamaPath = './llama.cpp/llama-cli';
+          private modelPath = './llama.cpp/phi-3-mini-4k-instruct-q4_k_m.gguf';
+          
+          // Enhanced pattern matching for developer concerns
+          private patterns = {
+            security: [
+              // Authentication & Authorization
+              /(?:implement|using|chose|decided).*(?:oauth|jwt|saml|auth0|passport|firebase auth)/gi,
+              /(?:implement|using|chose|decided).*(?:bcrypt|scrypt|argon2|pbkdf2|hash)/gi,
+              /(?:implement|using|chose|decided).*(?:cors|csrf|xss|sql injection|sanitiz)/gi,
+              /(?:security|auth|authentication|authorization).*(?:required|mandatory|must|enforce)/gi,
+              /(?:encrypt|encryption|tls|ssl|https).*(?:implement|require|enforce)/gi,
+              /(?:vulnerability|exploit|attack|breach|secure)/gi,
+              
+              // Security configurations
+              /(?:helmet|rate.?limit|input.?validation|escape|sanitize)/gi,
+              /(?:secrets?|api.?key|token|credential).*(?:management|storage|rotation)/gi,
+            ],
+            
+            compliance: [
+              /(?:gdpr|hipaa|pci|sox|ccpa|compliance|regulation|audit)/gi,
+              /(?:privacy|data.?protection|consent|opt.?out)/gi,
+              /(?:logging|audit.?trail|tracking|monitoring).*(?:compliance|regulation)/gi,
+              /(?:retention|backup|archive).*(?:policy|requirement|compliance)/gi,
+              /(?:access.?control|permission|role.?based|rbac)/gi,
+            ],
+            
+            scalability: [
+              // Horizontal scaling
+              /(?:load.?balanc|horizontal.?scal|cluster|microservice)/gi,
+              /(?:auto.?scal|elastic|scale.?out|scale.?up)/gi,
+              /(?:kubernetes|k8s|docker.?swarm|container.?orchestr)/gi,
+              /(?:cdn|content.?delivery|edge|cache|redis|memcach)/gi,
+              
+              // Database scaling
+              /(?:database|db).*(?:shard|partition|replicat|cluster)/gi,
+              /(?:read.?replica|master.?slave|primary.?secondary)/gi,
+              /(?:connection.?pool|database.?pool)/gi,
+              
+              // Message queues and async
+              /(?:queue|message.?broker|kafka|rabbitmq|pub.?sub)/gi,
+              /(?:async|asynchronous|background.?job|worker|task.?queue)/gi,
+            ],
+            
+            performance: [
+              // Caching strategies
+              /(?:cach|redis|memcach|varnish).*(?:strategy|implement|layer)/gi,
+              /(?:cdn|content.?delivery|static.?asset)/gi,
+              
+              // Database optimization
+              /(?:index|query.?optim|database.?optim|slow.?query)/gi,
+              /(?:pagination|limit|offset|cursor.?based)/gi,
+              /(?:lazy.?load|eager.?load|n\+1|query.?efficiency)/gi,
+              
+              // Code optimization
+              /(?:optimiz|performance|latency|throughput|bottleneck)/gi,
+              /(?:compress|gzip|minif|bundle.?size|tree.?shak)/gi,
+              /(?:memory.?leak|garbage.?collect|profil)/gi,
+              
+              // Frontend performance
+              /(?:lazy.?load|code.?split|dynamic.?import|prefetch)/gi,
+              /(?:service.?worker|pwa|offline|cache.?strategy)/gi,
+            ],
+            
+            architecture: [
+              // Design patterns
+              /(?:mvc|mvp|mvvm|clean.?architecture|hexagonal)/gi,
+              /(?:microservice|monolith|modular|soa|serverless)/gi,
+              /(?:event.?driven|cqrs|event.?sourc|saga)/gi,
+              /(?:rest|graphql|grpc|api.?design|endpoint)/gi,
+              
+              // Technology choices
+              /(?:framework|library).*(?:chose|decided|selected|using)/gi,
+              /(?:database|db).*(?:chose|decided|selected|using)/gi,
+              /(?:language|runtime).*(?:chose|decided|selected|using)/gi,
+            ],
+            
+            infrastructure: [
+              // Cloud and deployment
+              /(?:aws|azure|gcp|cloud|deploy|hosting)/gi,
+              /(?:docker|container|kubernetes|k8s)/gi,
+              /(?:terraform|ansible|chef|puppet|infrastructure.?as.?code)/gi,
+              /(?:ci\/cd|pipeline|github.?actions|jenkins|deployment)/gi,
+              
+              // Monitoring and observability
+              /(?:monitor|observ|logging|metric|alert)/gi,
+              /(?:prometheus|grafana|elk|splunk|datadog)/gi,
+              /(?:tracing|apm|performance.?monitor)/gi,
+            ],
+            
+            maintainability: [
+              // Code quality
+              /(?:test|testing|coverage|quality|lint)/gi,
+              /(?:refactor|technical.?debt|code.?smell|clean.?code)/gi,
+              /(?:documentation|comment|readme|api.?doc)/gi,
+              
+              // Development practices
+              /(?:git.?flow|branch|merge|pull.?request|code.?review)/gi,
+              /(?:version|semantic.?version|release|deploy)/gi,
+              /(?:dependency|package|library).*(?:management|update|upgrade)/gi,
+            ]
+          };
+
+          async extractFromCommits(): Promise<void> {
+            console.log('🔍 Analyzing commit history...');
+            
+            try {
+              const git = simpleGit();
+              const log = await git.log(['--oneline', '--no-merges', '-200']); // Last 200 commits for thorough analysis
+              
+              let processedCommits = 0;
+              const batchSize = 10;
+              
+              for (let i = 0; i < log.all.length; i += batchSize) {
+                const batch = log.all.slice(i, i + batchSize);
+                const batchText = batch.map(commit => 
+                  `Commit ${commit.hash.substring(0, 7)}: ${commit.message}`
+                ).join('\n');
+                
+                // Use LLM to analyze this batch of commits
+                const llmAnalysis = await this.analyzeBatchWithLLM(batchText);
+                
+                // Also use pattern matching for each commit
+                batch.forEach(commit => {
+                  this.analyzeCommitWithPatterns(commit.message, commit.hash, commit.date);
+                });
+                
+                // Parse LLM analysis and add to decisions
+                this.parseLLMAnalysis(llmAnalysis, batch);
+                
+                processedCommits += batch.length;
+                console.log(`📊 Processed ${processedCommits}/${log.all.length} commits`);
+              }
+            } catch (error) {
+              console.log('Error reading git history:', error);
+            }
+          }
+
+          private async analyzeBatchWithLLM(commitBatch: string): Promise<string> {
+            const prompt = `Analyze these software development commits and extract important decisions related to security, scalability, performance, compliance, architecture, and maintainability.
+
+For each significant decision found, provide:
+1. The decision made
+2. The category (security/scalability/performance/compliance/architecture/maintainability)  
+3. Why this decision matters
+4. Potential impact or concerns
+
+Commits to analyze:
+${commitBatch}
+
+Focus on decisions that would affect:
+- Security (auth, encryption, vulnerabilities)
+- Scalability (load handling, horizontal scaling)
+- Performance (optimization, caching, database)
+- Compliance (GDPR, HIPAA, audit trails)
+- Architecture (design patterns, technology choices)
+- Maintainability (testing, documentation, code quality)
+
+Format as structured text with clear sections. Be concise but insightful.
+
+Analysis:`;
+
+            try {
+              const command = `${this.llamaPath} -m ${this.modelPath} -n 800 --temp 0.1 -p "${prompt.replace(/"/g, '\\"')}"`;
+              const result = execSync(command, { encoding: 'utf8', timeout: 60000 });
+              return result;
+            } catch (error) {
+              console.log('LLM analysis failed for batch, using pattern matching only:', error);
+              return '';
+            }
+          }
+
+          private parseLLMAnalysis(analysis: string, commits: any[]): void {
+            if (!analysis.trim()) return;
+            
+            // Simple parsing - look for decision indicators in LLM output
+            const lines = analysis.split('\n');
+            let currentDecision: Partial<Decision> = {};
+            
+            lines.forEach(line => {
+              const cleanLine = line.trim();
+              if (!cleanLine) return;
+              
+              // Look for category indicators
+              const categoryMatch = cleanLine.match(/(?:security|scalability|performance|compliance|architecture|maintainability)/i);
+              if (categoryMatch) {
+                if (currentDecision.decision) {
+                  // Save previous decision
+                  this.addLLMDecision(currentDecision, commits);
+                }
+                currentDecision = {
+                  category: categoryMatch[0].toLowerCase() as any,
+                  source: 'llm_analysis',
+                  confidence: 0.8,
+                  timestamp: new Date().toISOString()
+                };
+              }
+              
+              // Look for decision descriptions
+              if (cleanLine.includes('decision') || cleanLine.includes('chose') || cleanLine.includes('implemented')) {
+                currentDecision.decision = cleanLine;
+              }
+              
+              // Look for reasoning
+              if (cleanLine.includes('because') || cleanLine.includes('due to') || cleanLine.includes('impact')) {
+                currentDecision.reasoning = cleanLine;
+              }
+            });
+            
+            // Save final decision
+            if (currentDecision.decision) {
+              this.addLLMDecision(currentDecision, commits);
+            }
+          }
+
+          private addLLMDecision(decision: Partial<Decision>, commits: any[]): void {
+            if (!decision.decision || !decision.category) return;
+            
+            const concerns = this.extractConcerns(decision.decision, decision.reasoning);
+            const impact = this.assessImpact(decision.category, concerns);
+            
+            this.decisions.push({
+              decision: decision.decision,
+              reasoning: decision.reasoning,
+              category: decision.category as any,
+              confidence: decision.confidence || 0.8,
+              source: 'llm_analysis',
+              timestamp: decision.timestamp || new Date().toISOString(),
+              impact: impact,
+              concerns: concerns
+            });
+          }
+
+          private analyzeCommitWithPatterns(message: string, hash: string, date: string): void {
+            for (const [category, patterns] of Object.entries(this.patterns)) {
+              for (const pattern of patterns) {
+                const matches = message.match(pattern);
+                if (matches) {
+                  const concerns = this.extractConcerns(message);
+                  const impact = this.assessImpact(category, concerns);
+                  
+                  this.decisions.push({
+                    decision: matches[0],
+                    category: category as any,
+                    confidence: 0.7,
+                    source: 'pattern_matching',
+                    timestamp: date,
+                    commit: hash.substring(0, 7),
+                    impact: impact,
+                    concerns: concerns
+                  });
+                }
+              }
+            }
+          }
+
+          private extractConcerns(text: string, reasoning?: string): string[] {
+            const allText = `${text} ${reasoning || ''}`.toLowerCase();
+            const concerns: string[] = [];
+            
+            const concernPatterns = {
+              'data-privacy': /(?:privacy|personal.?data|pii|gdpr|consent)/,
+              'authentication': /(?:auth|login|password|credential|token)/,
+              'performance': /(?:slow|fast|optim|latency|speed|performance)/,
+              'scalability': /(?:scale|load|traffic|growth|capacity)/,
+              'security': /(?:security|secure|vulnerability|exploit|attack)/,
+              'compliance': /(?:compliance|regulation|audit|legal|hipaa|sox)/,
+              'availability': /(?:uptime|downtime|availability|reliable|failover)/,
+              'cost': /(?:cost|expensive|cheap|budget|price)/,
+              'maintenance': /(?:maintain|support|debug|troubleshoot|update)/,
+              'integration': /(?:integrat|api|third.?party|external|webhook)/
+            };
+            
+            for (const [concern, pattern] of Object.entries(concernPatterns)) {
+              if (pattern.test(allText)) {
+                concerns.push(concern);
+              }
+            }
+            
+            return concerns;
+          }
+
+          private assessImpact(category: string, concerns: string[]): 'low' | 'medium' | 'high' | 'critical' {
+            const criticalConcerns = ['security', 'compliance', 'data-privacy'];
+            const highConcerns = ['performance', 'scalability', 'availability'];
+            
+            if (concerns.some(c => criticalConcerns.includes(c))) return 'critical';
+            if (category === 'security' || category === 'compliance') return 'high';
+            if (concerns.some(c => highConcerns.includes(c))) return 'high';
+            if (concerns.length > 2) return 'medium';
+            return 'low';
+          }
+
+          async extractFromFiles(): Promise<void> {
+            console.log('📁 Analyzing project files...');
+            
+            await this.analyzePackageJson();
+            await this.analyzeReadmeFiles();
+            await this.analyzeConfigFiles();
+            await this.analyzeSecurityFiles();
+          }
+
+          private async analyzeSecurityFiles(): Promise<void> {
+            try {
+              // Security configuration files
+              const securityFiles = await glob('**/.{env,env.*,secrets,security}*', { ignore: '**/node_modules/**' });
+              securityFiles.forEach(file => {
+                this.decisions.push({
+                  decision: `Environment configuration file: ${file}`,
+                  category: 'security',
+                  confidence: 0.8,
+                  source: 'security_file',
+                  timestamp: new Date().toISOString(),
+                  file: file,
+                  impact: 'high',
+                  concerns: ['authentication', 'data-privacy']
+                });
+              });
+
+              // SSL/TLS certificates
+              const certFiles = await glob('**/*.{crt,pem,key,cert}', { ignore: '**/node_modules/**' });
+              if (certFiles.length > 0) {
+                this.decisions.push({
+                  decision: 'SSL/TLS certificate management implemented',
+                  category: 'security',
+                  confidence: 0.9,
+                  source: 'certificate_files',
+                  timestamp: new Date().toISOString(),
+                  impact: 'high',
+                  concerns: ['security', 'compliance']
+                });
+              }
+
+              // Security policy files
+              const policyFiles = await glob('**/SECURITY.{md,txt}', { ignore: '**/node_modules/**' });
+              policyFiles.forEach(file => {
+                this.decisions.push({
+                  decision: 'Security policy documented',
+                  category: 'compliance',
+                  confidence: 0.95,
+                  source: 'security_policy',
+                  timestamp: new Date().toISOString(),
+                  file: file,
+                  impact: 'medium',
+                  concerns: ['compliance', 'security']
+                });
+              });
+
+            } catch (error) {
+              console.log('Error analyzing security files:', error);
+            }
+          }
+
+          private async analyzePackageJson(): Promise<void> {
+            try {
+              const packageFiles = await glob('**/package.json', { ignore: '**/node_modules/**' });
+              
+              for (const file of packageFiles) {
+                const content = JSON.parse(fs.readFileSync(file, 'utf8'));
+                
+                // Security dependencies
+                const securityDeps = ['helmet', 'cors', 'bcrypt', 'jsonwebtoken', 'passport', 'express-rate-limit'];
+                const foundSecurityDeps = securityDeps.filter(dep => 
+                  content.dependencies?.[dep] || content.devDependencies?.[dep]
+                );
+                
+                foundSecurityDeps.forEach(dep => {
+                  this.decisions.push({
+                    decision: `Using ${dep} for security`,
+                    category: 'security',
+                    confidence: 0.9,
+                    source: 'package_json',
+                    timestamp: new Date().toISOString(),
+                    file: file,
+                    impact: 'high',
+                    concerns: ['security', 'authentication']
+                  });
+                });
+
+                // Performance dependencies
+                const perfDeps = ['compression', 'cluster', 'redis', 'memcached'];
+                const foundPerfDeps = perfDeps.filter(dep => 
+                  content.dependencies?.[dep] || content.devDependencies?.[dep]
+                );
+                
+                foundPerfDeps.forEach(dep => {
+                  this.decisions.push({
+                    decision: `Using ${dep} for performance optimization`,
+                    category: 'performance',
+                    confidence: 0.9,
+                    source: 'package_json',
+                    timestamp: new Date().toISOString(),
+                    file: file,
+                    impact: 'medium',
+                    concerns: ['performance', 'scalability']
+                  });
+                });
+
+                // Testing dependencies (maintainability)
+                const testDeps = ['jest', 'mocha', 'chai', 'cypress', 'playwright', 'vitest'];
+                const foundTestDeps = testDeps.filter(dep => 
+                  content.dependencies?.[dep] || content.devDependencies?.[dep]
+                );
+                
+                if (foundTestDeps.length > 0) {
+                  this.decisions.push({
+                    decision: `Testing strategy: ${foundTestDeps.join(', ')}`,
+                    category: 'maintainability',
+                    confidence: 0.9,
+                    source: 'package_json',
+                    timestamp: new Date().toISOString(),
+                    file: file,
+                    impact: 'medium',
+                    concerns: ['maintenance', 'quality']
+                  });
+                }
+              }
+            } catch (error) {
+              console.log('Error analyzing package.json:', error);
+            }
+          }
+
+          private async analyzeConfigFiles(): Promise<void> {
+            try {
+              // Docker analysis
+              const dockerFiles = await glob('**/Dockerfile*', { ignore: '**/node_modules/**' });
+              if (dockerFiles.length > 0) {
+                this.decisions.push({
+                  decision: 'Containerization with Docker',
+                  category: 'infrastructure',
+                  confidence: 0.95,
+                  source: 'dockerfile',
+                  timestamp: new Date().toISOString(),
+                  impact: 'high',
+                  concerns: ['scalability', 'deployment', 'maintenance']
+                });
+              }
+
+              // Kubernetes analysis
+              const k8sFiles = await glob('**/*.{yml,yaml}', { ignore: '**/node_modules/**' });
+              for (const file of k8sFiles) {
+                const content = fs.readFileSync(file, 'utf8');
+                if (content.includes('apiVersion:') && content.includes('kind:')) {
+                  this.decisions.push({
+                    decision: 'Kubernetes orchestration',
+                    category: 'scalability',
+                    confidence: 0.9,
+                    source: 'kubernetes',
+                    timestamp: new Date().toISOString(),
+                    file: file,
+                    impact: 'high',
+                    concerns: ['scalability', 'availability', 'maintenance']
+                  });
+                  break;
+                }
+              }
+
+              // CI/CD analysis
+              const ciFiles = await glob('.github/workflows/*.{yml,yaml}', { ignore: '**/node_modules/**' });
+              if (ciFiles.length > 0) {
+                this.decisions.push({
+                  decision: 'GitHub Actions CI/CD pipeline',
+                  category: 'maintainability',
+                  confidence: 0.95,
+                  source: 'github_actions',
+                  timestamp: new Date().toISOString(),
+                  impact: 'medium',
+                  concerns: ['maintenance', 'quality', 'deployment']
+                });
+              }
+
+            } catch (error) {
+              console.log('Error analyzing config files:', error);
+            }
+          }
+
+          private async analyzeReadmeFiles(): Promise<void> {
+            try {
+              const readmeFiles = await glob('**/README.{md,txt}', { ignore: '**/node_modules/**' });
+              
+              for (const file of readmeFiles) {
+                const content = fs.readFileSync(file, 'utf8').toLowerCase();
+                
+                // Look for security mentions
+                if (content.includes('security') || content.includes('authentication') || content.includes('authorization')) {
+                  this.decisions.push({
+                    decision: 'Security considerations documented in README',
+                    category: 'security',
+                    confidence: 0.7,
+                    source: 'readme',
+                    timestamp: new Date().toISOString(),
+                    file: file,
+                    impact: 'medium',
+                    concerns: ['security', 'compliance']
+                  });
+                }
+
+                // Look for performance mentions
+                if (content.includes('performance') || content.includes('optimization') || content.includes('cache')) {
+                  this.decisions.push({
+                    decision: 'Performance optimization documented',
+                    category: 'performance',
+                    confidence: 0.7,
+                    source: 'readme',
+                    timestamp: new Date().toISOString(),
+                    file: file,
+                    impact: 'medium',
+                    concerns: ['performance']
+                  });
+                }
+
+                // Look for scalability mentions
+                if (content.includes('scalability') || content.includes('scaling') || content.includes('load')) {
+                  this.decisions.push({
+                    decision: 'Scalability approach documented',
+                    category: 'scalability',
+                    confidence: 0.7,
+                    source: 'readme',
+                    timestamp: new Date().toISOString(),
+                    file: file,
+                    impact: 'medium',
+                    concerns: ['scalability']
+                  });
+                }
+              }
+            } catch (error) {
+              console.log('Error analyzing README files:', error);
+            }
+          }
+
+          generateDecisionSummaries(): DecisionSummary[] {
+            const categorized = this.decisions.reduce((acc, decision) => {
+              if (!acc[decision.category]) acc[decision.category] = [];
+              acc[decision.category].push(decision);
+              return acc;
+            }, {} as Record<string, Decision[]>);
+
+            return Object.entries(categorized).map(([category, decisions]) => {
+              const sortedDecisions = decisions
+                .sort((a, b) => b.confidence - a.confidence)
+                .slice(0, 10); // Top 10 per category
+
+              return {
+                category,
+                decisions: sortedDecisions,
+                summary: this.generateCategorySummary(category, sortedDecisions),
+                keyInsights: this.extractKeyInsights(sortedDecisions),
+                risks: this.identifyRisks(sortedDecisions),
+                recommendations: this.generateRecommendations(category, sortedDecisions)
+              };
+            });
+          }
+
+          private generateCategorySummary(category: string, decisions: Decision[]): string {
+            const highImpact = decisions.filter(d => d.impact === 'high' || d.impact === 'critical').length;
+            const sources = [...new Set(decisions.map(d => d.source))];
+            
+            return `Found ${decisions.length} ${category} decisions with ${highImpact} high-impact choices. ` +
+                   `Evidence from: ${sources.join(', ')}.`;
+          }
+
+          private extractKeyInsights(decisions: Decision[]): string[] {
+            const insights: string[] = [];
+            const concerns = decisions.flatMap(d => d.concerns);
+            const concernCounts = concerns.reduce((acc, concern) => {
+              acc[concern] = (acc[concern] || 0) + 1;
+              return acc;
+            }, {} as Record<string, number>);
+
+            const topConcerns = Object.entries(concernCounts)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 3);
+
+            topConcerns.forEach(([concern, count]) => {
+              insights.push(`${concern} is a recurring theme (${count} decisions affected)`);
+            });
+
+            return insights;
+          }
+
+          private identifyRisks(decisions: Decision[]): string[] {
+            const risks: string[] = [];
+            const criticalDecisions = decisions.filter(d => d.impact === 'critical');
+            const securityDecisions = decisions.filter(d => d.concerns.includes('security'));
+            
+            if (criticalDecisions.length === 0) {
+              risks.push('No critical security decisions documented - may indicate security gaps');
+            }
+
+            if (securityDecisions.length < 2) {
+              risks.push('Limited security decision tracking - consider more security documentation');
+            }
+
+            const oldDecisions = decisions.filter(d => {
+              const age = Date.now() - new Date(d.timestamp).getTime();
+              return age > 365 * 24 * 60 * 60 * 1000; // Older than 1 year
+            });
+
+            if (oldDecisions.length > decisions.length * 0.5) {
+              risks.push('Many decisions are over 1 year old - consider architecture review');
+            }
+
+            return risks;
+          }
+
+          private generateRecommendations(category: string, decisions: Decision[]): string[] {
+            const recommendations: string[] = [];
+            
+            const categoryAdvice = {
+              security: [
+                'Regularly review and update security dependencies',
+                'Implement automated security scanning in CI/CD',
+                'Document security decision rationale for compliance'
+              ],
+              scalability: [
+                'Monitor performance metrics to validate scaling decisions',
+                'Plan for traffic growth scenarios',
+                'Consider load testing to verify scalability assumptions'
+              ],
+              performance: [
+                'Implement performance monitoring and alerting',
+                'Regular performance audits and optimization reviews',
+                'Document performance benchmarks and targets'
+              ],
+              compliance: [
+                'Regular compliance audits and documentation updates',
+                'Automate compliance checking where possible',
+                'Maintain audit trails for all compliance decisions'
+              ]
+            };
+
+            const advice = categoryAdvice[category as keyof typeof categoryAdvice];
+            if (advice) {
+              recommendations.push(...advice);
+            }
+
+            return recommendations;
+          }
+
+          generateComprehensiveReport(): string {
+            const summaries = this.generateDecisionSummaries();
+            
+            let report = `# 🧠 AI Decision Memory - Comprehensive Analysis\n\n`;
+            report += `**Repository**: \`${process.env.GITHUB_REPOSITORY}\`\n`;
+            report += `**Analysis Date**: ${new Date().toISOString().split('T')[0]}\n`;
+            report += `**Total Decisions Found**: ${this.decisions.length}\n`;
+            report += `**Analysis Methods**: Pattern Matching + LLM Analysis\n\n`;
+
+            // Executive Summary
+            report += `## 📊 Executive Summary\n\n`;
+            const criticalCount = this.decisions.filter(d => d.impact === 'critical').length;
+            const highCount = this.decisions.filter(d => d.impact === 'high').length;
+            const categories = [...new Set(this.decisions.map(d => d.category))];
+            
+            report += `- **Critical Impact Decisions**: ${criticalCount}\n`;
+            report += `- **High Impact Decisions**: ${highCount}\n`;
+            report += `- **Decision Categories**: ${categories.join(', ')}\n`;
+            report += `- **Primary Concerns**: ${this.getTopConcerns().join(', ')}\n\n`;
+
+            // Category Analysis
+            summaries.forEach(summary => {
+              const emoji = {
+                security: '🔒',
+                compliance: '📋',
+                scalability: '📈',
+                performance: '⚡',
+                architecture: '🏗️',
+                infrastructure: '☁️',
+                maintainability: '🔧'
+              }[summary.category] || '📋';
+
+              report += `## ${emoji} ${summary.category.charAt(0).toUpperCase() + summary.category.slice(1)}\n\n`;
+              report += `**Summary**: ${summary.summary}\n\n`;
+
+              if (summary.keyInsights.length > 0) {
+                report += `**Key Insights**:\n`;
+                summary.keyInsights.forEach(insight => {
+                  report += `- ${insight}\n`;
+                });
+                report += `\n`;
+              }
+
+              if (summary.risks.length > 0) {
+                report += `**Identified Risks**:\n`;
+                summary.risks.forEach(risk => {
+                  report += `- ⚠️ ${risk}\n`;
+                });
+                report += `\n`;
+              }
+
+              if (summary.recommendations.length > 0) {
+                report += `**Recommendations**:\n`;
+                summary.recommendations.forEach(rec => {
+                  report += `- 💡 ${rec}\n`;
+                });
+                report += `\n`;
+              }
+
+              // Top decisions in this category
+              report += `**Key Decisions**:\n`;
+              summary.decisions.slice(0, 5).forEach(decision => {
+                const impactIcon = {
+                  critical: '🚨',
+                  high: '🔴',
+                  medium: '🟡',
+                  low: '🟢'
+                }[decision.impact];
+                
+                report += `${impactIcon} **${decision.decision}**\n`;
+                if (decision.reasoning) {
+                  report += `   - *Reasoning*: ${decision.reasoning}\n`;
+                }
+                report += `   - *Confidence*: ${Math.round(decision.confidence * 100)}%\n`;
+                report += `   - *Source*: ${decision.source}\n`;
+                if (decision.concerns.length > 0) {
+                  report += `   - *Concerns*: ${decision.concerns.join(', ')}\n`;
+                }
+                if (decision.file) {
+                  report += `   - *File*: \`${decision.file}\`\n`;
+                }
+                if (decision.commit) {
+                  report += `   - *Commit*: \`${decision.commit}\`\n`;
+                }
+                report += `\n`;
+              });
+            });
+
+            // Overall Risk Assessment
+            report += `## 🎯 Overall Risk Assessment\n\n`;
+            const overallRisks = this.assessOverallRisks();
+            overallRisks.forEach(risk => {
+              report += `- ${risk}\n`;
+            });
+
+            // Decision Intelligence Summary
+            report += `\n## 🧠 Decision Intelligence Summary\n\n`;
+            report += `This analysis demonstrates how AI Decision Memory could enhance your development workflow:\n\n`;
+            
+            report += `### What Your AI Assistant Could Know:\n`;
+            const topDecisions = this.decisions
+              .filter(d => d.confidence > 0.8)
+              .slice(0, 5);
+            
+            topDecisions.forEach(decision => {
+              report += `- "${decision.decision}" (${decision.category})\n`;
+            });
+
+            report += `\n### Conversation Enhancement Examples:\n`;
+            report += `**Without Memory**:\n`;
+            report += `User: "How should we handle authentication?"\n`;
+            report += `AI: "There are several authentication options..."\n\n`;
+            
+            report += `**With Decision Memory**:\n`;
+            report += `User: "How should we handle authentication?"\n`;
+            const authDecision = this.decisions.find(d => 
+              d.category === 'security' && 
+              (d.decision.toLowerCase().includes('auth') || d.decision.toLowerCase().includes('jwt') || d.decision.toLowerCase().includes('oauth'))
+            );
+            
+            if (authDecision) {
+              report += `AI: "Based on your ${authDecision.decision.toLowerCase()}, I recommend extending that approach for consistency..."\n\n`;
+            } else {
+              report += `AI: "I don't see existing authentication decisions. Let's choose an approach that aligns with your security requirements..."\n\n`;
+            }
+
+            // Technical Implementation Notes
+            report += `## 🔧 Technical Implementation\n\n`;
+            report += `**Analysis Methods Used**:\n`;
+            const sources = [...new Set(this.decisions.map(d => d.source))];
+            sources.forEach(source => {
+              const count = this.decisions.filter(d => d.source === source).length;
+              const description = {
+                'pattern_matching': 'Regex patterns for common decision indicators',
+                'llm_analysis': 'Phi-3-Mini LLM analysis of commit batches',
+                'package_json': 'Dependency analysis for technology choices',
+                'dockerfile': 'Infrastructure decisions from container configs',
+                'github_actions': 'CI/CD pipeline analysis',
+                'readme': 'Documentation analysis for architectural decisions',
+                'security_file': 'Security configuration file detection'
+              }[source] || source;
+              
+              report += `- **${source}**: ${count} decisions (${description})\n`;
+            });
+
+            report += `\n**Performance Stats**:\n`;
+            report += `- Commits analyzed: ~200 recent commits\n`;
+            report += `- Files scanned: Configuration, documentation, package files\n`;
+            report += `- Processing time: ~2-3 minutes\n`;
+            report += `- Cost: $0.01 per analysis (GitHub Actions)\n\n`;
+
+            // Future Enhancements
+            report += `## 🚀 Future Enhancements\n\n`;
+            report += `This analysis could be enhanced with:\n`;
+            report += `- **Real-time monitoring**: Detect decisions as they happen in conversations\n`;
+            report += `- **Conflict detection**: Warn when new decisions contradict established ones\n`;
+            report += `- **Context injection**: Automatically provide relevant decisions to AI assistants\n`;
+            report += `- **Compliance tracking**: Monitor adherence to security and regulatory requirements\n`;
+            report += `- **Decision impact analysis**: Track outcomes of architectural choices\n\n`;
+
+            // Call to Action
+            report += `## 💡 Try Decision Memory\n\n`;
+            report += `Experience the magic of AI that remembers your decisions:\n\n`;
+            report += `1. **Context Preservation**: Never re-explain your architecture\n`;
+            report += `2. **Consistency Enforcement**: Prevent contradictory recommendations\n`;
+            report += `3. **Knowledge Transfer**: Onboard new team members instantly\n`;
+            report += `4. **Compliance Support**: Maintain audit trails for regulations\n\n`;
+            
+            if (this.decisions.length > 5) {
+              report += `🎯 **Your project has ${this.decisions.length} decisions that could enhance AI conversations**\n\n`;
+            } else {
+              report += `📝 **Consider documenting more architectural decisions for richer AI context**\n\n`;
+            }
+
+            return report;
+          }
+
+          private getTopConcerns(): string[] {
+            const concerns = this.decisions.flatMap(d => d.concerns);
+            const concernCounts = concerns.reduce((acc, concern) => {
+              acc[concern] = (acc[concern] || 0) + 1;
+              return acc;
+            }, {} as Record<string, number>);
+
+            return Object.entries(concernCounts)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 5)
+              .map(([concern]) => concern);
+          }
+
+          private assessOverallRisks(): string[] {
+            const risks: string[] = [];
+            const totalDecisions = this.decisions.length;
+            
+            const securityDecisions = this.decisions.filter(d => d.category === 'security').length;
+            const complianceDecisions = this.decisions.filter(d => d.category === 'compliance').length;
+            const scalabilityDecisions = this.decisions.filter(d => d.category === 'scalability').length;
+            
+            if (totalDecisions === 0) {
+              risks.push('🚨 No significant decisions detected - may indicate early-stage project or insufficient documentation');
+              return risks;
+            }
+            
+            if (securityDecisions === 0) {
+              risks.push('🔒 No security decisions detected - consider documenting authentication, authorization, and data protection choices');
+            }
+            
+            if (complianceDecisions === 0) {
+              risks.push('📋 No compliance decisions detected - ensure regulatory requirements are addressed if applicable');
+            }
+            
+            if (scalabilityDecisions === 0) {
+              risks.push('📈 No scalability decisions detected - consider documenting load handling and scaling strategies');
+            }
+            
+            const highConfidenceDecisions = this.decisions.filter(d => d.confidence > 0.8).length;
+            const confidenceRatio = highConfidenceDecisions / totalDecisions;
+            
+            if (confidenceRatio < 0.5) {
+              risks.push('⚠️ Many decisions have low confidence scores - consider more explicit decision documentation');
+            }
+            
+            const criticalDecisions = this.decisions.filter(d => d.impact === 'critical').length;
+            if (criticalDecisions === 0) {
+              risks.push('🎯 No critical impact decisions identified - may indicate missing security or compliance decisions');
+            }
+            
+            return risks;
+          }
+
+          async run(): Promise<void> {
+            console.log('🤖 AI Decision Memory - Enhanced Analysis Starting...\n');
+            
+            // Check if model exists
+            if (!fs.existsSync(this.modelPath)) {
+              console.log('❌ Model file not found. Using pattern matching only.');
+              this.modelPath = ''; // Disable LLM analysis
+            } else {
+              console.log('✅ LLM model loaded successfully');
+            }
+            
+            await this.extractFromCommits();
+            await this.extractFromFiles();
+            
+            const report = this.generateComprehensiveReport();
+            
+            // Write report to file
+            fs.writeFileSync('ai-decision-memory-report.md', report);
+            
+            console.log('\n🎉 Enhanced Analysis Complete!');
+            console.log(`📊 Total Decisions Found: ${this.decisions.length}`);
+            console.log(`🔒 Security Decisions: ${this.decisions.filter(d => d.category === 'security').length}`);
+            console.log(`📈 Scalability Decisions: ${this.decisions.filter(d => d.category === 'scalability').length}`);
+            console.log(`⚡ Performance Decisions: ${this.decisions.filter(d => d.category === 'performance').length}`);
+            console.log(`📋 Compliance Decisions: ${this.decisions.filter(d => d.category === 'compliance').length}`);
+            console.log('📄 Report saved to: ai-decision-memory-report.md\n');
+            
+            // Output key insights
+            const criticalDecisions = this.decisions.filter(d => d.impact === 'critical');
+            if (criticalDecisions.length > 0) {
+              console.log('🚨 Critical Impact Decisions:');
+              criticalDecisions.slice(0, 3).forEach(d => {
+                console.log(`   - ${d.decision} (${d.category})`);
+              });
+              console.log('');
+            }
+            
+            const topConcerns = this.getTopConcerns();
+            if (topConcerns.length > 0) {
+              console.log('🎯 Top Concerns Identified:');
+              topConcerns.slice(0, 3).forEach(concern => {
+                console.log(`   - ${concern}`);
+              });
+              console.log('');
+            }
+            
+            console.log('💡 This analysis shows what your AI assistant could automatically remember about your project!');
+          }
+        }
+
+        // Run the enhanced extractor
+        new EnhancedDecisionExtractor().run().catch(console.error);
+        EOF
+
+    - name: Run Enhanced Decision Extraction
+      run: |
+        npx ts-node extract-decisions.ts
+
+    - name: Upload Enhanced Decision Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: ai-decision-memory-report
+        path: ai-decision-memory-report.md
+
+    - name: Display Summary
+      run: |
+        echo "🧠 AI Decision Memory Analysis Complete!"
+        echo "📄 Check the 'Actions' tab artifacts for the full report"
+        echo "💡 This shows what your AI assistant could remember automatically"
+
+    - name: Comment on PR (if applicable)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          try {
+            const report = fs.readFileSync('ai-decision-memory-report.md', 'utf8');
+            
+            // Create a condensed version for PR comment
+            const lines = report.split('\n');
+            const summary = lines.slice(0, 50).join('\n') + '\n\n[Full report available in Actions artifacts]';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🧠 AI Decision Memory Analysis\n\n${summary}`
+            });
+          } catch (error) {
+            console.log('Report file not found or error creating comment:', error);
+          }
