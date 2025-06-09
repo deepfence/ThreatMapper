@@ -222,26 +222,26 @@ jobs:
           private async analyzeBatchWithLLM(commitBatch: string): Promise<string> {
             const prompt = `Analyze these software development commits and extract important decisions related to security, scalability, performance, compliance, architecture, and maintainability.
 
-For each significant decision found, provide:
-1. The decision made
-2. The category (security/scalability/performance/compliance/architecture/maintainability)  
-3. Why this decision matters
-4. Potential impact or concerns
-
-Commits to analyze:
-${commitBatch}
-
-Focus on decisions that would affect:
-- Security (auth, encryption, vulnerabilities)
-- Scalability (load handling, horizontal scaling)
-- Performance (optimization, caching, database)
-- Compliance (GDPR, HIPAA, audit trails)
-- Architecture (design patterns, technology choices)
-- Maintainability (testing, documentation, code quality)
-
-Format as structured text with clear sections. Be concise but insightful.
-
-Analysis:`;
+            For each significant decision found, provide:
+            1. The decision made
+            2. The category (security/scalability/performance/compliance/architecture/maintainability)
+            3. Why this decision matters
+            4. Potential impact or concerns
+            
+            Commits to analyze:
+            ${commitBatch}
+            
+            Focus on decisions that would affect:
+            - Security (auth, encryption, vulnerabilities)
+            - Scalability (load handling, horizontal scaling)
+            - Performance (optimization, caching, database)
+            - Compliance (GDPR, HIPAA, audit trails)
+            - Architecture (design patterns, technology choices)
+            - Maintainability (testing, documentation, code quality)
+            
+            Format as structured text with clear sections. Be concise but insightful.
+            
+            Analysis:`;
 
             try {
               const command = `${this.llamaPath} -m ${this.modelPath} -n 800 --temp 0.1 -p "${prompt.replace(/"/g, '\\"')}"`;
