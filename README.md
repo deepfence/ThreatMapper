@@ -10,6 +10,9 @@
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
 [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
+
+<a href="https://trendshift.io/repositories/171" target="_blank"><img src="https://trendshift.io/api/badge/repositories/171" alt="deepfence%2FThreatMapper | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+
 # ThreatMapper - Runtime Threat Management and Attack Path Enumeration for Cloud Native
 
 > [!IMPORTANT]
