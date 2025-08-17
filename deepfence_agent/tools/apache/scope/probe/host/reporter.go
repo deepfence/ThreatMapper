@@ -80,6 +80,17 @@ func getCloudMetadata(cloudProvider string) (string, cloud_metadata.CloudMetadat
 			cloudMetadata.CloudProvider = report.CloudProviderServerless
 			cloudMetadata.Region = report.CloudRegionServerless
 		}
+		customCloudProvider := os.Getenv("CLOUD_PROVIDER")
+		if customCloudProvider != "" {
+			log.Info().Msgf("CLOUD_PROVIDER was configured")
+			cloudProvider = customCloudProvider
+			cloudMetadata.CloudProvider = customCloudProvider
+		}
+		customCloudRegion := os.Getenv("CLOUD_REGION")
+		if customCloudRegion != "" {
+			log.Info().Msgf("CLOUD_REGION was configured")
+			cloudMetadata.Region = customCloudRegion
+		}
 		if cloudProvider == "" {
 			cloudProvider = DefaultCloud
 			cloudMetadata = cloud_metadata.CloudMetadata{
