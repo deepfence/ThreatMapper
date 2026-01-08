@@ -29,6 +29,9 @@ import (
 const (
 	threatintelPollDuration = 5 * time.Hour
 
+	// ThreatIntelBaseURL is the base URL for direct threat intel downloads
+	ThreatIntelBaseURL = "https://artifacts.threatmapper.org/threat-intel"
+
 	// database types
 	DBTypeVulnerability = "vulnerability"
 	DBTypeSecrets       = "secret"
@@ -37,6 +40,14 @@ const (
 
 	VulnerabilityRuleJSONFileName = "vulnerability.json"
 )
+
+// GetThreatIntelURL returns the direct download URL for a given database type and version
+func GetThreatIntelURL(dbType, version string) string {
+	if dbType == DBTypeVulnerability {
+		return fmt.Sprintf("%s/%s/v6/%s_%s.tar.gz", ThreatIntelBaseURL, dbType, dbType, version)
+	}
+	return fmt.Sprintf("%s/%s/%s_%s.tar.gz", ThreatIntelBaseURL, dbType, dbType, version)
+}
 
 type DBUploadRequest struct {
 	Database multipart.File `formData:"database" json:"database" validate:"required" required:"true"`

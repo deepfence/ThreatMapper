@@ -6,12 +6,12 @@ FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS package_build
 FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS malware_build
 FROM $IMAGE_REPOSITORY/deepfence_compliance_scanner_ce:$DF_IMG_TAG AS compliance_build
 
-FROM debian:12-slim as downloads
+FROM debian:13-slim as downloads
 
-ENV DOCKERVERSION="27.3.1" \
-    VESSEL_VERSION="0.14.0" \
-    NERDCTL_VERSION="1.7.7" \
-    CRICTL_VERSION="v1.31.1"
+ENV DOCKERVERSION="29.1.3" \
+    VESSEL_VERSION="0.15.0" \
+    NERDCTL_VERSION="2.2.0" \
+    CRICTL_VERSION="v1.35.0"
 
 ARG TARGETARCH
 
@@ -68,9 +68,8 @@ RUN . /envfile-tools; cat /envfile-tools && \
     rm -f crictl-${CRICTL_VERSION}-linux-${ARCHITECTURE}.tar.gz
 
 
-FROM debian:12-slim
+FROM debian:13-slim
 
-MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true \

@@ -16,9 +16,9 @@ Cloud Scanner can be deployed using one of the following:
 
 Log in to the AWS management console account and open the following url link to deploy Cloud Scanner using CloudFormation in `us-east-1` region.
 
-[Deploy across multiple AWS accounts in AWS organization](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/organization-deployment/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud_scanner_ce:THREATMAPPER_VERSION)
+[Deploy across multiple AWS accounts in AWS organization](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://artifacts.threatmapper.org/cloud-scanner/self-hosted/organization-deployment/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud_scanner_ce:THREATMAPPER_VERSION)
 
-(Template URL: https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/organization-deployment/deepfence-cloud-scanner-org-common.template)
+(Template URL: https://artifacts.threatmapper.org/cloud-scanner/self-hosted/organization-deployment/deepfence-cloud-scanner-org-common.template)
 
 Then, fill in the below parameters as needed:
 
@@ -38,9 +38,9 @@ Cloud Scanner Image: quay.io/deepfenceio/cloud_scanner_ce:THREATMAPPER_VERSION
 
 Log in to the AWS management console account and open the following url link to deploy Cloud Scanner using CloudFormation in `us-east-1` region.
 
-[Deploy on a single AWS account](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/single-account-deployment/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud_scanner_ce:THREATMAPPER_VERSION)
+[Deploy on a single AWS account](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://artifacts.threatmapper.org/cloud-scanner/self-hosted/single-account-deployment/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud_scanner_ce:THREATMAPPER_VERSION)
 
-(Template URL: https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/single-account-deployment/deepfence-cloud-scanner.template)
+(Template URL: https://artifacts.threatmapper.org/cloud-scanner/self-hosted/single-account-deployment/deepfence-cloud-scanner.template)
 
 Then, fill in the below parameters as needed:
 
@@ -157,11 +157,11 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
 ### Single Account Cloud Scanner on EKS cluster using IRSA
 
 1. Create the EKS IRSA role using the terraform script [single-account-eks-iam-role](https://github.com/deepfence/cloud-scanner/tree/main/cloudformation/self-hosted/eks-iam-roles/single-account-eks-iam-role)
-2. If cloudformation is preferred create the EKS IRSA role using the cloudformation template [deepfence-cloud-scanner-single-account-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/eks-iam-roles/single-account-eks-iam-role/deepfence-cloud-scanner-single-account-iam-role.template)
+2. If cloudformation is preferred create the EKS IRSA role using the cloudformation template [deepfence-cloud-scanner-single-account-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://artifacts.threatmapper.org/cloud-scanner/self-hosted/eks-iam-roles/single-account-eks-iam-role/deepfence-cloud-scanner-single-account-iam-role.template)
 3. Note **namespace**, **service account name** and **iam role arn** from the output of terraform or cloudformation deployment
 4. Add Deepfence cloud scanner helm repo
     ```
-    helm repo add cloud-scanner https://deepfence-helm-charts.s3.amazonaws.com/cloud-scanner
+    helm repo add cloud-scanner https://artifacts.threatmapper.org/helm-charts/cloud-scanner
     ```
 5. Download the helm chart values for depfence-cloud-scanner chart to file **cloud-scanner.yaml**
     ```
@@ -229,11 +229,11 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
 
 ### Organization Account Cloud Scanner on EKS cluster using IRSA
 
-1. Create the EKS IRSA role using the cloudformation template [deepfence-cloud-scanner-organization-stackset-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/eks-iam-roles/organization-eks-iam-role/deepfence-cloud-scanner-organization-stackset-iam-role.template)
+1. Create the EKS IRSA role using the cloudformation template [deepfence-cloud-scanner-organization-stackset-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://artifacts.threatmapper.org/cloud-scanner/self-hosted/eks-iam-roles/organization-eks-iam-role/deepfence-cloud-scanner-organization-stackset-iam-role.template)
 2. Note **namespace**, **service account name** and **iam role arn** from the output of cloudformation deployment
 3. Add Deepfence cloud scanner helm repo
     ```
-    helm repo add cloud-scanner https://deepfence-helm-charts.s3.amazonaws.com/cloud-scanner
+    helm repo add cloud-scanner https://artifacts.threatmapper.org/helm-charts/cloud-scanner
     ```
 4. Download the helm chart values for depfence-cloud-scanner chart to file **cloud-scanner.yaml**
     ```
@@ -323,7 +323,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
 :::
 
 ### Single Account Cloud Scanner on EC2 Instance using IAM Roles
-1. Create the IAM role and instance profile for deepfence cloud scanner using the cloudformation script [deepfence-cloud-scanner-single-account-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/ec2/single-account-ec2-iam-role/deepfence-cloud-scanner-single-account-iam-role.template)
+1. Create the IAM role and instance profile for deepfence cloud scanner using the cloudformation script [deepfence-cloud-scanner-single-account-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://artifacts.threatmapper.org/cloud-scanner/self-hosted/ec2/single-account-ec2-iam-role/deepfence-cloud-scanner-single-account-iam-role.template)
 2. Note the instance profile from the cloudformation stack output
 3. Modify the EC2 instance, add the instance profile created by cloudformation script
 4. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url
@@ -364,7 +364,7 @@ For full details, refer to the GitHub repository: https://github.com/deepfence/t
     ```
 
 ### Organization Account Cloud Scanner on EC2 Instance using IAM Roles
-1. Create the IAM role and instance profile for deepfence cloud scanner using the cloudformation script [deepfence-cloud-scanner-organization-stackset-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/self-hosted/ec2/organization-ec2-iam-role/deepfence-cloud-scanner-organization-stackset-iam-role.template)
+1. Create the IAM role and instance profile for deepfence cloud scanner using the cloudformation script [deepfence-cloud-scanner-organization-stackset-iam-role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://artifacts.threatmapper.org/cloud-scanner/self-hosted/ec2/organization-ec2-iam-role/deepfence-cloud-scanner-organization-stackset-iam-role.template)
 2. Note the instance profile from the cloudformation stack output
 3. Modify the EC2 instance, add the instance profile created by cloudformation script
 4. Create a directory **deepfence-cloud-scanner** and download docker-compose.yaml from the url

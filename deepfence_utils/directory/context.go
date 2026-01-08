@@ -38,31 +38,6 @@ func Injector(next http.Handler) http.Handler {
 	})
 }
 
-func CheckLicenseActive(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, claims, err := jwtauth.FromContext(r.Context())
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
-		}
-		if token == nil || jwt.Validate(token) != nil {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-		licenseActive, err := utils.GetBoolValueFromInterfaceMap(claims, LicenseActiveKey)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if !licenseActive {
-			http.Error(w, http.StatusText(http.StatusPaymentRequired), http.StatusPaymentRequired)
-			return
-		}
-		// Token is authenticated, pass it through
-		next.ServeHTTP(w, r)
-	})
-}
-
 func NewGlobalContext() context.Context {
 	ctx := context.Background()
 	//nolint:staticcheck

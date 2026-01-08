@@ -6,7 +6,7 @@ FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner
 FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS yarahunter
 FROM $IMAGE_REPOSITORY/deepfence_glibc_builder_ce:$DF_IMG_TAG AS builder-yara
 
-FROM debian:12-slim AS final
+FROM debian:trixie-slim AS final
 
 ARG AGENT_BINARY_DIST_RELATIVE
 

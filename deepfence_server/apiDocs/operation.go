@@ -904,25 +904,6 @@ func (d *OpenAPIDocs) AddSettingsOperations() {
 		http.StatusNoContent, []string{tagSettings}, bearerToken, new(DeepfenceCommunicationID), nil)
 }
 
-func (d *OpenAPIDocs) AddLicenseOperations() {
-	// License
-	d.AddOperation("generateLicense", http.MethodPost, "/deepfence/license/generate",
-		"Generate License Key", "Generate a new ThreatMapper license key",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(GenerateLicenseRequest), new(GenerateLicenseResponse))
-
-	d.AddOperation("registerLicense", http.MethodPost, "/deepfence/license",
-		"Register License", "Register new license key to the console and activate",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(RegisterLicenseRequest), new(RegisterLicenseResponse))
-
-	d.AddOperation("getLicense", http.MethodGet, "/deepfence/license",
-		"Get License Details", "Get license status and expiry",
-		http.StatusOK, []string{tagSettings}, bearerToken, nil, new(License))
-
-	d.AddOperation("deleteLicense", http.MethodDelete, "/deepfence/license",
-		"Delete License", "Delete license from the console database",
-		http.StatusNoContent, []string{tagSettings}, bearerToken, nil, nil)
-}
-
 func (d *OpenAPIDocs) AddDiffAddOperations() {
 	d.AddOperation("diffAddVulnerability", http.MethodPost, "/deepfence/diff-add/vulnerability",
 		"Get Vulnerability Diff", "Get Vulnerability Diff between two scans",

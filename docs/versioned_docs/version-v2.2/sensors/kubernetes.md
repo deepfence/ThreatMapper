@@ -27,7 +27,7 @@ Image tag `quay.io/deepfenceio/deepfence_agent_ce:2.2.2-multiarch` is supported 
 
 ### Deploy deepfence-agent helm chart
 ```bash
-helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+helm repo add deepfence https://artifacts.threatmapper.org/helm-charts/threatmapper
 helm repo update
 
 # helm show readme deepfence/deepfence-agent --version 2.2.2 | less
@@ -52,7 +52,7 @@ helm install deepfence-agent deepfence/deepfence-agent \
 ## Fine-tune the Helm deployment
 
 ```bash
-helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+helm repo add deepfence https://artifacts.threatmapper.org/helm-charts/threatmapper
 helm repo update
 
 helm show values deepfence/deepfence-agent --version 2.2.2 > deepfence_agent_values.yaml
@@ -83,8 +83,8 @@ kubectl get nodes -o=custom-columns=NAME:.metadata.name,Runtime:.status.nodeInfo
 ```
 - To get container runtime socket path in the k8s cluster, run the following commands and search for `--container-runtime-endpoint` or `containerd`
 ```shell
-kubectl apply -f https://deepfence-public.s3.amazonaws.com/kubernetes/deepfence-cluster-config-job.yaml
+kubectl apply -f https://artifacts.threatmapper.org/kubernetes/deepfence-cluster-config-job.yaml
 kubectl wait --for=condition=complete --timeout=30s job/deepfence-cluster-config
 kubectl logs $(kubectl get pod -l job-name=deepfence-cluster-config -o jsonpath="{.items[0].metadata.name}")
-kubectl delete -f https://deepfence-public.s3.amazonaws.com/kubernetes/deepfence-cluster-config-job.yaml
+kubectl delete -f https://artifacts.threatmapper.org/kubernetes/deepfence-cluster-config-job.yaml
 ```

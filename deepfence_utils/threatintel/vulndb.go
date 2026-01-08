@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
-	"sort"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -16,119 +15,89 @@ import (
 )
 
 const (
-	Version3 = "3"
-	Version5 = "5"
+	// GrypeV6ModelVersion is the grype database schema model version
+	GrypeV6ModelVersion = 6
 )
 
 var (
-	ListingJSON          = "listing.json"
+	LatestJSON           = "latest.json"
 	VulnerabilityDBStore = "vulnerability"
-	ListingPath          = path.Join(VulnerabilityDBStore, ListingJSON)
+	// GrypeV6DBDir is the directory path for grype v6 format database files
+	// Grype constructs URL as: {base_url}/v{ModelVersion}/latest.json
+	GrypeV6DBDir = path.Join(VulnerabilityDBStore, fmt.Sprintf("v%d", GrypeV6ModelVersion))
+	// GrypeV6LatestPath is the path to grype v6 format latest.json
+	GrypeV6LatestPath = path.Join(GrypeV6DBDir, LatestJSON)
 )
 
-type VulnerabilityDBListing struct {
-	Available map[string][]Database `json:"available"`
+// GrypeStatus represents the lifecycle status of a vulnerability database
+type GrypeStatus string
+
+const (
+	GrypeStatusActive     GrypeStatus = "active"
+	GrypeStatusDeprecated GrypeStatus = "deprecated"
+	GrypeStatusEndOfLife  GrypeStatus = "end-of-life"
+)
+
+// GrypeSchemaVersion represents the schema version in grype v6 format (e.g., "6.0.0")
+type GrypeSchemaVersion struct {
+	Model    int `json:"-"`
+	Revision int `json:"-"`
+	Addition int `json:"-"`
 }
 
-type Database struct {
-	Built    time.Time `json:"built"`
-	Version  int       `json:"version"`
-	URL      string    `json:"url"`
-	Checksum string    `json:"checksum"`
+func (v GrypeSchemaVersion) MarshalJSON() ([]byte, error) {
+	return json.Marshal(fmt.Sprintf("%d.%d.%d", v.Model, v.Revision, v.Addition))
 }
 
-func NewVulnerabilityDBListing() *VulnerabilityDBListing {
-	return &VulnerabilityDBListing{
-		Available: map[string][]Database{
-			Version3: make([]Database, 0),
-			Version5: make([]Database, 0),
+func (v *GrypeSchemaVersion) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	_, err := fmt.Sscanf(s, "%d.%d.%d", &v.Model, &v.Revision, &v.Addition)
+	return err
+}
+
+// GrypeLatestDocument represents the grype v6 latest.json format
+type GrypeLatestDocument struct {
+	Status        GrypeStatus        `json:"status"`
+	SchemaVersion GrypeSchemaVersion `json:"schemaVersion"`
+	Built         time.Time          `json:"built"`
+	Path          string             `json:"path"`
+	Checksum      string             `json:"checksum"`
+}
+
+// NewGrypeLatestDocument creates a new GrypeLatestDocument
+func NewGrypeLatestDocument(archivePath string, checksum string, buildTime time.Time) *GrypeLatestDocument {
+	return &GrypeLatestDocument{
+		Status: GrypeStatusActive,
+		SchemaVersion: GrypeSchemaVersion{
+			Model:    GrypeV6ModelVersion,
+			Revision: 0,
+			Addition: 0,
 		},
+		Built:    buildTime,
+		Path:     filepath.Base(archivePath),
+		Checksum: checksum,
 	}
 }
 
-func LoadListing(d []byte) (*VulnerabilityDBListing, error) {
-	var v VulnerabilityDBListing
-	if err := json.Unmarshal(d, &v); err != nil {
+func (g *GrypeLatestDocument) Bytes() ([]byte, error) {
+	return json.MarshalIndent(g, "", " ")
+}
+
+// LoadLatestDocument loads a GrypeLatestDocument from bytes
+func LoadLatestDocument(data []byte) (*GrypeLatestDocument, error) {
+	var doc GrypeLatestDocument
+	if err := json.Unmarshal(data, &doc); err != nil {
 		return nil, err
 	}
-	return &v, nil
+	return &doc, nil
 }
 
-func (v *VulnerabilityDBListing) Bytes() ([]byte, error) {
-	return json.Marshal(v)
-}
-
-func (v *VulnerabilityDBListing) Set(dbs []Database, version string) {
-	v.Available[version] = dbs
-}
-
-func (v *VulnerabilityDBListing) Append(db Database, version string) {
-	exists := false
-	index := 0
-
-	for i, d := range v.Available[version] {
-		if d.URL == db.URL {
-			exists = true
-			index = i
-		}
-	}
-
-	if !exists {
-		v.Available[version] = append(v.Available[version], db)
-	} else {
-		v.Available[version][index] = db
-	}
-}
-
-func (v *VulnerabilityDBListing) Sort(version string) {
-	if len(v.Available[version]) <= 1 {
-		return
-	}
-
-	dbs := v.Available[version]
-	sort.Slice(dbs, func(i, j int) bool {
-		return dbs[i].Built.Before(dbs[j].Built)
-	})
-	v.Available[version] = dbs
-}
-
-func (v *VulnerabilityDBListing) Latest(version string) *Database {
-	// sort, get last element
-	v.Sort(version)
-
-	dbs, ok := v.Available[version]
-	if !ok {
-		return nil
-	}
-	if len(dbs) >= 1 {
-		return &dbs[len(dbs)-1]
-	}
-	return nil
-}
-
-func (v *VulnerabilityDBListing) LatestN(version string, num int) (latest []Database, oldest []Database) {
-	// sort
-	v.Sort(version)
-
-	dbs, ok := v.Available[version]
-	if !ok {
-		return latest, oldest
-	}
-
-	if len(dbs) <= num {
-		latest = dbs
-	} else {
-		latest = dbs[len(dbs)-num:]
-	}
-	if len(dbs) > num {
-		oldest = dbs[:len(dbs)-num]
-	}
-
-	return latest, oldest
-}
-
-func VulnDBUpdateListing(ctx context.Context, newFile, newFileCheckSum string, buildTime time.Time) error {
-	log.Info().Msg("update vulnerability database listing")
+// VulnDBUpdateLatest updates the grype v6 latest.json file
+func VulnDBUpdateLatest(ctx context.Context, newFile, newFileCheckSum string, buildTime time.Time) error {
+	log.Info().Msg("update vulnerability database latest.json")
 
 	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
@@ -136,69 +105,39 @@ func VulnDBUpdateListing(ctx context.Context, newFile, newFileCheckSum string, b
 		return err
 	}
 
-	// if err ignore, listing file is missing
-	data, err := mc.DownloadFileContexts(ctx, ListingPath, minio.GetObjectOptions{})
-	if err != nil {
-		log.Error().Err(err).Msg("failed to load listing file might be missing")
-	}
-
-	listing, err := LoadListing(data)
-	if err != nil {
-		log.Warn().Msg("failed to load listing file create new listing")
-		listing = NewVulnerabilityDBListing()
-	}
-
-	// for aws s3
-	fileURL := fmt.Sprintf("%s://%s.s3.%s.amazonaws.com/%s",
-		directory.FileServerProtocol, directory.FileServerDatabaseBucket, directory.FileServerRegion, newFile)
-	if directory.FileServerHost != "s3.amazonaws.com" {
-		fileURL = fmt.Sprintf("%s://%s:%s/%s",
-			directory.FileServerProtocol, directory.FileServerHost, directory.FileServerPort,
-			path.Join(string(directory.DatabaseDirKey), newFile))
-	}
-
-	listing.Append(
-		Database{
-			Built:    buildTime,
-			Version:  5,
-			URL:      fileURL,
-			Checksum: newFileCheckSum,
-		},
-		Version5,
-	)
-
-	latest, oldest := listing.LatestN(Version5, 3)
-
-	// keep only latest 3 databases
-	listing.Set(latest, Version5)
-
-	// delete old database
-	for _, d := range oldest {
-		fname := path.Join(VulnerabilityDBStore, filepath.Base(d.URL))
-		log.Info().Msgf("remove old vuln db file %s", fname)
-		if err := mc.DeleteFile(ctx, fname, true, minio.RemoveObjectOptions{ForceDelete: true}); err != nil {
-			log.Error().Err(err).Msg("failed to remove old ")
+	// Load existing latest.json to get old database filename for cleanup
+	oldData, err := mc.DownloadFileContexts(ctx, GrypeV6LatestPath, minio.GetObjectOptions{})
+	if err == nil {
+		oldDoc, err := LoadLatestDocument(oldData)
+		if err == nil && oldDoc.Path != "" && oldDoc.Path != filepath.Base(newFile) {
+			// Delete old database file
+			oldFilePath := path.Join(GrypeV6DBDir, oldDoc.Path)
+			log.Info().Msgf("remove old vuln db file %s", oldFilePath)
+			if err := mc.DeleteFile(ctx, oldFilePath, true, minio.RemoveObjectOptions{ForceDelete: true}); err != nil {
+				log.Error().Err(err).Msg("failed to remove old vuln db")
+			}
 		}
 	}
 
-	lb, err := listing.Bytes()
+	// Generate and upload grype v6 format latest.json
+	grypeLatest := NewGrypeLatestDocument(newFile, newFileCheckSum, buildTime)
+	grypeLatestBytes, err := grypeLatest.Bytes()
 	if err != nil {
-		log.Error().Msgf(err.Error())
+		log.Error().Err(err).Msg("failed to marshal grype v6 latest.json")
 		return err
 	}
 
-	_, err = mc.UploadFile(ctx, ListingPath, lb, true,
+	_, err = mc.UploadFile(ctx, GrypeV6LatestPath, grypeLatestBytes, true,
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
-		log.Error().Msgf(err.Error())
+		log.Error().Err(err).Msg("failed to upload grype v6 latest.json")
 		return err
 	}
 
-	log.Info().Msgf("vulnerability db listing updated with file %s checksum %s",
-		newFile, newFileCheckSum)
+	log.Info().Msgf("grype v6 latest.json updated at %s with file %s checksum %s",
+		GrypeV6LatestPath, newFile, newFileCheckSum)
 
 	return nil
-
 }
 
 func DownloadVulnerabilityDB(ctx context.Context, info Entry) error {
@@ -214,36 +153,32 @@ func DownloadVulnerabilityDB(ctx context.Context, info Entry) error {
 		return err
 	}
 
-	fileServerPath, checksum, err := UploadToMinio(ctx, data.Bytes(), VulnerabilityDBStore,
-		fmt.Sprintf("vuln-db-%d.tar.gz", info.Built.Unix()))
+	// Upload to the v6 directory so it's alongside latest.json
+	// Grype expects the database tarball to be relative to latest.json
+	dbFileName := fmt.Sprintf("vulnerability.db-%d.tar.gz", info.Built.Unix())
+	fileServerPath, checksum, err := UploadToMinio(ctx, data.Bytes(), GrypeV6DBDir, dbFileName)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
 	}
 
-	// update listing.json file
-	return VulnDBUpdateListing(ctx, fileServerPath, checksum, info.Built)
-
+	// update latest.json file
+	return VulnDBUpdateLatest(ctx, fileServerPath, checksum, info.Built)
 }
 
-func GetLatestVulnerabilityDB(ctx context.Context) (*Database, error) {
+// GetLatestVulnerabilityDB returns the current latest vulnerability database info
+func GetLatestVulnerabilityDB(ctx context.Context) (*GrypeLatestDocument, error) {
 	mc, err := directory.FileServerClient(directory.WithDatabaseContext(ctx))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
 
-	data, err := mc.DownloadFileContexts(ctx, ListingPath, minio.GetObjectOptions{})
+	data, err := mc.DownloadFileContexts(ctx, GrypeV6LatestPath, minio.GetObjectOptions{})
 	if err != nil {
-		log.Error().Err(err).Msg("failed to load listing file might be missing")
+		log.Error().Err(err).Msg("failed to load latest.json file")
 		return nil, err
 	}
 
-	listing, err := LoadListing(data)
-	if err != nil {
-		log.Warn().Msg("failed to load listing file create new listing")
-		return nil, err
-	}
-
-	return listing.Latest(Version5), nil
+	return LoadLatestDocument(data)
 }

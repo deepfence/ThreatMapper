@@ -2,9 +2,8 @@ ARG STEAMPIPE_IMG_TAG=0.23.x
 ARG IMAGE_REPOSITORY=quay.io/deepfenceio
 FROM $IMAGE_REPOSITORY/steampipe:$STEAMPIPE_IMG_TAG AS steampipe
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 ARG VERSION
-MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true \

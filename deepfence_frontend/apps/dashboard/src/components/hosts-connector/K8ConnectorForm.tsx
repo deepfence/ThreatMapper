@@ -216,7 +216,7 @@ const FirstCommand = () => {
     <div className="relative flex items-center">
       <pre className="h-fit text-p7a text-text-text-and-icon">
         helm repo add deepfence
-        https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+        https://artifacts.threatmapper.org/helm-charts/threatmapper
       </pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
@@ -226,7 +226,7 @@ const FirstCommand = () => {
           variant="flat"
           onClick={() => {
             copy(
-              'helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper',
+              'helm repo add deepfence https://artifacts.threatmapper.org/helm-charts/threatmapper',
             );
           }}
         />
@@ -315,7 +315,7 @@ const Skeleton = () => {
 };
 export const K8ConnectorForm = () => {
   const [instruction, setInstruction] =
-    useState(`helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+    useState(`helm repo add deepfence https://artifacts.threatmapper.org/helm-charts/threatmapper
 helm repo update
 
 helm install deepfence-agent deepfence/deepfence-agent \\

@@ -472,8 +472,6 @@ func (u *User) CreateAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string, l
 		"is_active":            u.IsActive,
 		"grant_type":           grantType,
 		directory.NamespaceKey: u.CompanyNamespace,
-
-		directory.LicenseActiveKey: licenseActive,
 	}
 	jwtauth.SetIssuedNow(claims)
 	jwtauth.SetExpiryIn(claims, AccessTokenExpiry)

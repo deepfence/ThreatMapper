@@ -47,7 +47,7 @@ The following instructions explain how to install the ThreatMapper console on a 
 3. **Install the ThreatMapper Console**
 
     ```bash
-    helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+    helm repo add deepfence https://artifacts.threatmapper.org/helm-charts/threatmapper
 
     # helm show values deepfence/deepfence-console --version 2.0.2 | less
 

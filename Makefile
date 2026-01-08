@@ -18,7 +18,7 @@ export IMAGE_REPOSITORY?=quay.io/deepfenceio
 export DF_IMG_TAG?=latest
 export STEAMPIPE_IMG_TAG?=0.23.x
 export IS_DEV_BUILD?=false
-export VERSION?=v2.5.7
+export VERSION?=v2.5.8
 export AGENT_BINARY_BUILD=$(DEEPFENCE_FARGATE_DIR)/build
 export AGENT_BINARY_BUILD_RELATIVE=deepfence_agent/agent-binary/build
 export AGENT_BINARY_DIST=$(DEEPFENCE_FARGATE_DIR)/dist
@@ -125,13 +125,13 @@ graphdb:
 ui:
 	git log --format="%h" -n 1 > $(DEEPFENCE_FRONTEND_DIR)/console_version.txt && \
 	echo $(subst v,,$(VERSION)) > $(DEEPFENCE_FRONTEND_DIR)/product_version.txt && \
-	docker run --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:18-bullseye-slim -c "cd /app && corepack enable && corepack prepare pnpm@7.17.1 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install --frozen-lockfile --prefer-offline && ENABLE_ANALYTICS=true pnpm run build" && \
+	docker run --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:24-bookworm-slim -c "cd /app && corepack enable && corepack prepare pnpm@9.15.4 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install && ENABLE_ANALYTICS=true pnpm run build" && \
 	docker build -f $(DEEPFENCE_FRONTEND_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
 	rm -rf $(DEEPFENCE_FRONTEND_DIR)/console_version.txt $(DEEPFENCE_FRONTEND_DIR)/product_version.txt
 
 .PHONY: secretscanner
 secretscanner: bootstrap-agent-plugins
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_secret_scanner_ce:$(DF_IMG_TAG) -f $(SECRET_SCANNER_DIR)/Dockerfile $(SECRET_SCANNER_DIR)
+	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_secret_scanner_ce:$(DF_IMG_TAG) -f $(SECRET_SCANNER_DIR)/Dockerfile $(DEEPFENCE_AGENT_DIR)/plugins
 
 .PHONY: malwarescanner
 malwarescanner: bootstrap-agent-plugins
@@ -139,7 +139,7 @@ malwarescanner: bootstrap-agent-plugins
 
 .PHONY: packagescanner
 packagescanner: bootstrap-agent-plugins
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
+	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(DEEPFENCE_AGENT_DIR)/plugins
 
 .PHONY: packagescanner-cli
 packagescanner-cli:
@@ -174,7 +174,7 @@ openapi: server
 	--git-user-id deepfence
 
 	rm openapi.yaml
-	cd $(PWD)/golang_deepfence_sdk/client && rm -rf ./test && sed -i 's/go 1.18/go 1.23.2/g' go.mod && go mod tidy -v && cd -
+	cd $(PWD)/golang_deepfence_sdk/client && rm -rf ./test && sed -i 's/go 1.18/go 1.25.5/g' go.mod && go mod tidy -v && cd -
 
 .PHONY: cli
 cli: bootstrap

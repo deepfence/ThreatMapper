@@ -319,7 +319,6 @@ func initializeOpenAPIDocs(openAPIDocs *apiDocs.OpenAPIDocs) {
 	openAPIDocs.AddSettingsOperations()
 	openAPIDocs.AddDiffAddOperations()
 	openAPIDocs.AddCompletionOperations()
-	openAPIDocs.AddLicenseOperations()
 }
 
 func initializeInternalOpenAPIDocs(openAPIDocs *apiDocs.OpenAPIDocs) {

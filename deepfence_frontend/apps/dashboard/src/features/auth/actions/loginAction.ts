@@ -55,12 +55,6 @@ export const loginAction: ActionFunction = async ({
     }
     throw loginResponse.error;
   }
-  if (loginResponse.value?.license_registered) {
-    track({
-      licenseKey: loginResponse.value.license_key,
-      emailDomain: loginResponse.value.email_domain,
-    });
-  }
 
   await handleLoginAndRedirect(loginResponse.value, url.searchParams);
 };

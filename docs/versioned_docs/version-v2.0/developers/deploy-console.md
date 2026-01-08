@@ -44,7 +44,7 @@ Refer to the [Kubernetes Installation Instructions](/docs/v2.0/console/kubernete
     We will install the Management Console using the helm chart, but overriding the repository source for the images:
 
     ```bash
-    helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+    helm repo add deepfence https://artifacts.threatmapper.org/helm-charts/threatmapper
 
     # Create the values file
     helm show values deepfence/deepfence-console --version 2.0.2 > deepfence_console_values.yaml
