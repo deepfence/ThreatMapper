@@ -6,5 +6,5 @@ RUN apt-get update && apt install -y --no-install-recommends default-jre
 RUN mkdir -p /app
 WORKDIR /app
 RUN corepack enable
-RUN corepack prepare pnpm@9.15.4 --activate
+RUN corepack prepare pnpm@10.30.3 --activate
 COPY . .

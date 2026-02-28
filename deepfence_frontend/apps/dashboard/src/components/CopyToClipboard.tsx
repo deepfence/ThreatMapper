@@ -9,7 +9,7 @@ import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 export function useCopyToClipboardState() {
   const [_, copyToClipboard] = useCopyToClipboard();
   const [isCopied, setIsCopied] = useState(false);
-  const timeoutIdRef = useRef<string | null>();
+  const timeoutIdRef = useRef<number | null>();
 
   useEffect(() => {
     return () => {
@@ -26,7 +26,7 @@ export function useCopyToClipboardState() {
       setIsCopied(true);
       timeoutIdRef.current = setTimeout(() => {
         setIsCopied(false);
-      }, 5000) as unknown as string;
+      }, 5000);
     },
     isCopied: isCopied,
   };

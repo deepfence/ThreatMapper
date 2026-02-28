@@ -125,7 +125,7 @@ graphdb:
 ui:
 	git log --format="%h" -n 1 > $(DEEPFENCE_FRONTEND_DIR)/console_version.txt && \
 	echo $(subst v,,$(VERSION)) > $(DEEPFENCE_FRONTEND_DIR)/product_version.txt && \
-	docker run --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:24-bookworm-slim -c "cd /app && corepack enable && corepack prepare pnpm@9.15.4 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install && ENABLE_ANALYTICS=true pnpm run build" && \
+	docker run --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:24-bookworm-slim -c "cd /app && corepack enable && corepack prepare pnpm@10.30.3 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install && ENABLE_ANALYTICS=true pnpm run build" && \
 	docker build -f $(DEEPFENCE_FRONTEND_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
 	rm -rf $(DEEPFENCE_FRONTEND_DIR)/console_version.txt $(DEEPFENCE_FRONTEND_DIR)/product_version.txt
 
