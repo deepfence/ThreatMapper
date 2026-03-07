@@ -49,16 +49,17 @@ func (h *Handler) UploadVulnerabilityDB(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Upload to the v6 directory so it's alongside latest.json
 	path, checksum, err := threatintel.UploadToMinio(ctx, out.Bytes(),
-		threatintel.VulnerabilityDBStore, fileHeader.Filename)
+		threatintel.GrypeV6DBDir, fileHeader.Filename)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
 
-	if err := threatintel.VulnDBUpdateListing(ctx, path, checksum, time.Now()); err != nil {
-		log.Error().Err(err).Msg("failed to update database listing")
+	if err := threatintel.VulnDBUpdateLatest(ctx, path, checksum, time.Now()); err != nil {
+		log.Error().Err(err).Msg("failed to update database latest.json")
 		h.respondError(&BadDecoding{err}, w)
 		return
 	}
@@ -214,39 +215,43 @@ func (h *Handler) UploadPostureControls(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handler) DatabaseInfo(w http.ResponseWriter, r *http.Request) {
-	vulnDB, err := threatintel.GetLatestVulnerabilityDB(r.Context())
+	ctx := r.Context()
+	dbUpdated := model.DatabaseInfoResponse{}
+
+	// Get vulnerability DB info - gracefully handle if not yet available
+	vulnDB, err := threatintel.GetLatestVulnerabilityDB(ctx)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(&BadDecoding{err}, w)
-		return
+		log.Warn().Err(err).Msg("vulnerability database not yet available")
+		// Leave VulnerabilityDBUpdatedAt as zero time
+	} else if vulnDB != nil {
+		dbUpdated.VulnerabilityDBUpdatedAt = vulnDB.Built
 	}
 
-	_, _, secretsRulesUpdatedAt, err := threatintel.FetchSecretsRulesInfo(r.Context())
+	// Get secrets rules info - gracefully handle if not yet available
+	_, _, secretsRulesUpdatedAt, err := threatintel.FetchSecretsRulesInfo(ctx)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(&BadDecoding{err}, w)
-		return
+		log.Warn().Err(err).Msg("secrets rules not yet available")
+		// Leave SecretsRulesUpdatedAt as zero time
+	} else {
+		dbUpdated.SecretsRulesUpdatedAt = time.UnixMilli(secretsRulesUpdatedAt)
 	}
 
-	_, _, malwareRulesUpdatedAt, err := threatintel.FetchMalwareRulesInfo(r.Context())
+	// Get malware rules info - gracefully handle if not yet available
+	_, _, malwareRulesUpdatedAt, err := threatintel.FetchMalwareRulesInfo(ctx)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(&BadDecoding{err}, w)
-		return
+		log.Warn().Err(err).Msg("malware rules not yet available")
+		// Leave MalwareRulesUpdatedAt as zero time
+	} else {
+		dbUpdated.MalwareRulesUpdatedAt = time.UnixMilli(malwareRulesUpdatedAt)
 	}
 
-	_, _, postureControlsUpdatedAt, err := threatintel.FetchPostureControlsInfo(r.Context())
+	// Get posture controls info - gracefully handle if not yet available
+	_, _, postureControlsUpdatedAt, err := threatintel.FetchPostureControlsInfo(ctx)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		h.respondError(&BadDecoding{err}, w)
-		return
-	}
-
-	dbUpdated := model.DatabaseInfoResponse{
-		VulnerabilityDBUpdatedAt: vulnDB.Built,
-		SecretsRulesUpdatedAt:    time.UnixMilli(secretsRulesUpdatedAt),
-		MalwareRulesUpdatedAt:    time.UnixMilli(malwareRulesUpdatedAt),
-		PostureControlsUpdatedAt: time.UnixMilli(postureControlsUpdatedAt),
+		log.Warn().Err(err).Msg("posture controls not yet available")
+		// Leave PostureControlsUpdatedAt as zero time
+	} else {
+		dbUpdated.PostureControlsUpdatedAt = time.UnixMilli(postureControlsUpdatedAt)
 	}
 
 	log.Info().Msgf("databases updated at %+v", dbUpdated)

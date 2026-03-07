@@ -34,11 +34,8 @@ type ErrorResponse struct {
 
 type LoginResponse struct {
 	ResponseAccessToken
-	OnboardingRequired  bool   `json:"onboarding_required" required:"true"`
-	PasswordInvalidated bool   `json:"password_invalidated" required:"true"`
-	LicenseRegistered   bool   `json:"license_registered" required:"true"`
-	LicenseKey          string `json:"license_key" required:"true"`
-	EmailDomain         string `json:"email_domain" required:"true"`
+	OnboardingRequired  bool `json:"onboarding_required" required:"true"`
+	PasswordInvalidated bool `json:"password_invalidated" required:"true"`
 }
 
 type ResponseAccessToken struct {

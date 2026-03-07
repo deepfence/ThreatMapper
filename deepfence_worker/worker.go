@@ -179,10 +179,6 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 
 	worker.AddOneShotHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs)
 
-	worker.AddOneShotHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
-
-	worker.AddOneShotHandler(utils.CheckCloudScannerAgentUpgradeTask, cronjobs.CheckCloudScannerAgentUpgrade)
-
 	worker.AddOneShotHandler(utils.TriggerConsoleActionsTask, cronjobs.NewConsoleController(cfg.MaxScanWorkload).TriggerConsoleControls)
 
 	worker.AddOneShotHandler(utils.ScheduledTasks, cronjobs.RunScheduledTasks)
@@ -233,10 +229,6 @@ func NewWorker(ns directory.NamespaceID, cfg wtils.Config) (Worker, context.Canc
 	worker.AddRetryableHandler(utils.UpdatePodScanStatusTask, scans.UpdatePodScanStatus)
 
 	worker.AddOneShotHandler(utils.BulkDeleteScans, scans.BulkDeleteScans)
-
-	worker.AddOneShotHandler(utils.UpdateLicenseTask, cronjobs.UpdateLicenseStatus)
-
-	worker.AddOneShotHandler(utils.ReportLicenseUsageTask, cronjobs.PublishLicenseUsageToLicenseServer)
 
 	worker.AddRetryableHandler(utils.ThreatIntelUpdateTask, cronjobs.FetchThreatIntel)
 

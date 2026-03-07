@@ -1,5 +1,4 @@
-FROM debian:12-slim
-MAINTAINER Deepfence Inc
+FROM debian:trixie-slim
 LABEL deepfence.role=system
 
 ENV DEEPFENCE_HTTP_LISTEN_ENDPOINT=8080 \
@@ -27,10 +26,10 @@ RUN apt update && \
 RUN chmod +x /entrypoint.sh
 
 RUN cd /usr/local/share/ && \
-    wget https://github.com/swagger-api/swagger-ui/archive/refs/tags/v4.15.5.tar.gz -O /usr/local/share/swagger-ui.tar.gz && \
+    wget https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.31.0.tar.gz -O /usr/local/share/swagger-ui.tar.gz && \
     tar -xzf /usr/local/share/swagger-ui.tar.gz -C /usr/local/share/ && \
-    mv /usr/local/share/swagger-ui-4.15.5/dist /usr/local/share/swagger-ui && \
-    rm -rf /usr/local/share/swagger-ui.tar.gz /usr/local/share/swagger-ui-4.15.5
+    mv /usr/local/share/swagger-ui-5.31.0/dist /usr/local/share/swagger-ui && \
+    rm -rf /usr/local/share/swagger-ui.tar.gz /usr/local/share/swagger-ui-5.31.0
 
 COPY ./deepfence_server/deepfence_server /usr/local/bin/deepfence_server
 

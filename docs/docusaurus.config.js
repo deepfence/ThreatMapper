@@ -160,12 +160,6 @@ const config = {
             ],
           },
           {
-            href: 'https://deepfence.io',
-            position: 'right',
-            className: 'header-deepfence-link',
-            'aria-label': 'deepfence.io',
-          },
-          {
             href: 'https://github.com/deepfence',
             position: 'right',
             className: 'header-github-link',
@@ -235,47 +229,12 @@ const config = {
                 label: 'Slack',
                 href: 'https://bitly.com/threatmapper-slack',
               },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/deepfence',
-              },
-              {
-                label: 'YouTube',
-                href: 'https://www.youtube.com/channel/UCklvbuOjnzpmtXy-g97tfWQ',
-              },
-              {
-                label: 'LinkedIn',
-                href: 'https://www.linkedin.com/company/deepfence-inc',
-              },
-            ],
-          },
-          {
-            title: 'Enterprise',
-            items: [
-              {
-                label: 'ThreatStryker',
-                href: 'https://deepfence.io/threatstryker',
-              },
-              {
-                html: '<a class="footer__link-item" href="/threatstryker/docs">ThreatStryker</a>',
-              },
-              {
-                label: 'Deepfence Cloud',
-                href: 'https://deepfence.cloud',
-              },
-              {
-                html: '<a class="footer__link-item" href="/threatstryker/docs/cloud">Deepfence Cloud Docs</a>',
-              },
             ],
           },
 
           {
             title: 'More',
             items: [
-              {
-                label: 'Blog',
-                href: 'https://deepfence.io/blog',
-              },
               {
                 label: 'GitHub',
                 href: 'https://github.com/deepfence',

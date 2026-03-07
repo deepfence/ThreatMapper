@@ -275,15 +275,14 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	_, _, err = StartMultiScan(r.Context(), true, utils.NEO4JVulnerabilityScan, scanTrigger, actionBuilder)
-	if err != nil {
-		if err.Error() == "Result contains no more records" {
-			h.respondError(&noNodesMatchedInNeo4jError, w)
-			return
+	// Only attempt image scan if we have images to scan
+	// This is a best-effort additional scan, don't fail the whole request if it fails
+	if len(scanTrigger.NodeIDs) > 0 {
+		_, _, err = StartMultiScan(r.Context(), true, utils.NEO4JVulnerabilityScan, scanTrigger, actionBuilder)
+		if err != nil {
+			// Log the error but don't fail - the container scan already succeeded
+			log.Warn().Err(err).Msg("Failed to start image scan for container, continuing with container scan")
 		}
-		log.Error().Msgf("%v", err)
-		h.respondError(err, w)
-		return
 	}
 
 	h.AuditUserActivity(r, EventVulnerabilityScan, ActionStart, reqs, true)
@@ -441,15 +440,14 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	_, _, err = StartMultiScan(r.Context(), true, utils.NEO4JSecretScan, scanTrigger, actionBuilder)
-	if err != nil {
-		if err.Error() == "Result contains no more records" {
-			h.respondError(&noNodesMatchedInNeo4jError, w)
-			return
+	// Only attempt image scan if we have images to scan
+	// This is a best-effort additional scan, don't fail the whole request if it fails
+	if len(scanTrigger.NodeIDs) > 0 {
+		_, _, err = StartMultiScan(r.Context(), true, utils.NEO4JSecretScan, scanTrigger, actionBuilder)
+		if err != nil {
+			// Log the error but don't fail - the container scan already succeeded
+			log.Warn().Err(err).Msg("Failed to start image scan for container, continuing with container scan")
 		}
-		log.Error().Msgf("%v", err)
-		h.respondError(err, w)
-		return
 	}
 
 	h.AuditUserActivity(r, EventSecretScan, ActionStart, reqs, true)
@@ -587,15 +585,14 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	_, _, err = StartMultiScan(r.Context(), true, utils.NEO4JMalwareScan, scanTrigger, actionBuilder)
-	if err != nil {
-		if err.Error() == "Result contains no more records" {
-			h.respondError(&noNodesMatchedInNeo4jError, w)
-			return
+	// Only attempt image scan if we have images to scan
+	// This is a best-effort additional scan, don't fail the whole request if it fails
+	if len(scanTrigger.NodeIDs) > 0 {
+		_, _, err = StartMultiScan(r.Context(), true, utils.NEO4JMalwareScan, scanTrigger, actionBuilder)
+		if err != nil {
+			// Log the error but don't fail - the container scan already succeeded
+			log.Warn().Err(err).Msg("Failed to start image scan for container, continuing with container scan")
 		}
-		log.Error().Msgf("%v", err)
-		h.respondError(err, w)
-		return
 	}
 
 	h.AuditUserActivity(r, EventMalwareScan, ActionStart, reqs, true)

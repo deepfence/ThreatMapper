@@ -2,7 +2,7 @@ ARG VECTORSCAN_IMG_TAG=latest
 ARG VECTORSCAN_IMAGE_REPOSITORY=deepfenceio
 FROM $VECTORSCAN_IMAGE_REPOSITORY/deepfence_vectorscan_build:$VECTORSCAN_IMG_TAG AS vectorscan
 
-FROM golang:1.23-alpine3.20
+FROM golang:1.25-alpine3.23
 
 RUN apk add --no-cache \
     git \
@@ -36,9 +36,9 @@ RUN apk add --no-cache -t .build-deps py-setuptools \
     linux-headers
 
 RUN cd /root \
-    && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.3.2.tar.gz \
-    && tar -zxf v4.3.2.tar.gz \
-    && cd yara-4.3.2 \
+    && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.5.5.tar.gz \
+    && tar -zxf v4.5.5.tar.gz \
+    && cd yara-4.5.5 \
     && ./bootstrap.sh \
     && ./configure --prefix=/usr/local/yara --disable-dotnet --enable-magic --enable-cuckoo \
     && make \

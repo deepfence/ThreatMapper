@@ -50,7 +50,7 @@ The following instructions explain how to install the ThreatMapper console on a 
 1. **Add Deepfence helm charts repo**
 
     ```bash 
-    helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+    helm repo add deepfence https://artifacts.threatmapper.org/helm-charts/threatmapper
     helm repo update
     ```
 

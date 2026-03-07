@@ -1459,22 +1459,13 @@ const AccountTable = ({
                           Version <span className="text-h6">{versions[0]}</span> is
                           available. Please follow{' '}
                           <DFLink
-                            href="https://community.deepfence.io/threatmapper/docs/cloudscanner/"
+                            href="https://threatmapper.org/threatmapper/docs/cloudscanner/"
                             target="_blank"
                             className="dark:text-text-link text-blue-500"
                           >
                             these instructions
                           </DFLink>{' '}
-                          to upgrade the scanner. If you need automatic updates to the
-                          scanner, please try{' '}
-                          <DFLink
-                            href="https://www.deepfence.io/threatstryker"
-                            target="_blank"
-                            className="dark:text-text-link text-blue-500"
-                          >
-                            ThreatStryker
-                          </DFLink>
-                          .
+                          to upgrade the scanner.
                         </div>
                       </div>
                     }

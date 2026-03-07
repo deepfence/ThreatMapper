@@ -36,7 +36,7 @@ var (
 
 func init() {
 	logRoot = os.ExpandEnv(logRootEnv)
-	err := os.Mkdir(logRoot, os.ModeDir)
+	err := os.MkdirAll(logRoot, os.ModeDir|0755)
 	if err != nil {
 		log.Error().Msgf("Failed to create %v: %v", logRoot, err)
 	}

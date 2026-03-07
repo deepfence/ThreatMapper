@@ -30,8 +30,20 @@ else
     echo "looks like we are not inside kubernetes use default kafka vars"
     if [ -z "$STORAGE_UUID" ]
     then
-        echo "storage uuid not set generate new"
-        STORAGE_UUID=$(kafka-storage random-uuid)
+        # Check if meta.properties exists with an existing cluster ID
+        META_PROPS="/var/lib/kafka/data/meta.properties"
+        if [ -f "$META_PROPS" ]; then
+            EXISTING_ID=$(grep "^cluster.id=" "$META_PROPS" | cut -d'=' -f2)
+            if [ -n "$EXISTING_ID" ]; then
+                echo "found existing cluster.id in meta.properties: $EXISTING_ID"
+                STORAGE_UUID=$EXISTING_ID
+            fi
+        fi
+        # Generate new UUID only if we didn't find an existing one
+        if [ -z "$STORAGE_UUID" ]; then
+            echo "storage uuid not set generate new"
+            STORAGE_UUID=$(kafka-storage random-uuid)
+        fi
     fi
 fi
 

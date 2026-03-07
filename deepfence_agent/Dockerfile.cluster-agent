@@ -1,5 +1,4 @@
-FROM debian:bullseye-slim
-LABEL maintainer="Deepfence Inc"
+FROM debian:trixie-slim
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true \

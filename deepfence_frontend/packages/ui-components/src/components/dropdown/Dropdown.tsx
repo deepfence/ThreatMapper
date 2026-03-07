@@ -10,7 +10,7 @@ export interface DropdownProps extends DropdownPrimitive.DropdownMenuProps {
   content: React.ReactNode;
   // pass true if you want to merge passed children with default trigger button
   triggerAsChild?: boolean;
-  align?: DropdownPrimitive.MenuContentProps['align'];
+  align?: DropdownPrimitive.DropdownMenuContentProps['align'];
   disabled?: boolean;
 }
 
@@ -128,11 +128,11 @@ Dropdown.displayName = 'Dropdown';
 export type ColorType = 'default' | 'error' | 'success';
 export const DropdownItem: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuItemProps &
-    React.RefAttributes<HTMLDivElement> & {
-      selected?: boolean;
-      icon?: React.ReactNode;
-      color?: ColorType;
-    }
+  React.RefAttributes<HTMLDivElement> & {
+    selected?: boolean;
+    icon?: React.ReactNode;
+    color?: ColorType;
+  }
 > = React.forwardRef((props, forwardedRef) => {
   const { children, className, disabled, selected, icon, color, ...rest } = props;
   const classes = cn(

@@ -38,8 +38,6 @@ const (
 	RetryFailedUpgradesTask           = "retry_failed_upgrades"
 	ScanSBOMTask                      = "tasks_scan_sbom"
 	GenerateSBOMTask                  = "tasks_generate_sbom"
-	CheckAgentUpgradeTask             = "tasks_check_agent_upgrade"
-	CheckCloudScannerAgentUpgradeTask = "tasks_check_cloud_scanner_agent_upgrade"
 	SyncRegistryTask                  = "task_sync_registry"
 	SyncRegistryPostgresNeo4jTask     = "task_sync_registry_postgres_neo4j"
 	TriggerConsoleActionsTask         = "trigger_console_actions"
@@ -65,9 +63,6 @@ const (
 	AsynqDeleteAllArchivedTasks       = "asynq_delete_all_archived_tasks"
 	RedisRewriteAOF                   = "redis_rewrite_aof"
 	DeleteCloudAccounts               = "delete_cloud_accounts"
-
-	UpdateLicenseTask      = "update_license"
-	ReportLicenseUsageTask = "report_license_usage"
 
 	ThreatIntelUpdateTask = "threat_intel_update"
 )
@@ -220,7 +215,6 @@ var Tasks = []string{
 	RetryFailedUpgradesTask,
 	ScanSBOMTask,
 	GenerateSBOMTask,
-	CheckAgentUpgradeTask,
 	SyncRegistryTask,
 	TriggerConsoleActionsTask,
 	ScheduledTasks,
@@ -239,9 +233,6 @@ var Tasks = []string{
 	StopVulnerabilityScanTask,
 	UpdateCloudResourceScanStatusTask,
 	UpdatePodScanStatusTask,
-
-	UpdateLicenseTask,
-	ReportLicenseUsageTask,
 
 	ThreatIntelUpdateTask,
 }

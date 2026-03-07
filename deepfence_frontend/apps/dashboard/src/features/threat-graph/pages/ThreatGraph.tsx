@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { Badge, Button, CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { GraphNodeInfo, GraphThreatFiltersTypeEnum } from '@/api/generated';
-import { useCachedDatabaseInfo } from '@/components/FeedAgeBanner';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -25,11 +24,9 @@ const ThreatGraph = () => {
   }>();
   const { mode } = useTheme();
   const [isFilterOpen, setIsFilterOpen] = useState(true);
-  const { bannerHeight, showBanner } = useCachedDatabaseInfo();
   return (
     <div
-      className="flex flex-col"
-      style={{ height: showBanner ? `calc(100% - ${bannerHeight}px)` : '100%' }}
+      className="flex flex-col h-full"
     >
       <ThreatGraphHeader setIsFilterOpen={setIsFilterOpen} />
       <div

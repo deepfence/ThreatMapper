@@ -51,26 +51,26 @@ export function getIntegrationPrettyName(type: IntegrationKeyType) {
 }
 
 export const AIIntegrationDocsLinkMap: Record<GenerativeAIIntegrationType, string> = {
-  openai: 'https://community.deepfence.io/threatmapper/docs/integrations/threatrx',
+  openai: 'https://threatmapper.org/threatmapper/docs/integrations/threatrx',
   'amazon-bedrock':
-    'https://community.deepfence.io/threatmapper/docs/integrations/threatrx',
+    'https://threatmapper.org/threatmapper/docs/integrations/threatrx',
 };
 
 export const IntegrationDocsLinkMap: Record<IntegrationKeyType, string> = {
-  slack: 'https://community.deepfence.io/threatmapper/docs/integrations/slack',
-  pagerduty: 'https://community.deepfence.io/threatmapper/docs/integrations/pagerduty',
-  email: 'https://community.deepfence.io/threatmapper/docs/integrations/email',
+  slack: 'https://threatmapper.org/threatmapper/docs/integrations/slack',
+  pagerduty: 'https://threatmapper.org/threatmapper/docs/integrations/pagerduty',
+  email: 'https://threatmapper.org/threatmapper/docs/integrations/email',
   http_endpoint:
-    'https://community.deepfence.io/threatmapper/docs/integrations/http-endpoint',
-  teams: 'https://community.deepfence.io/threatmapper/docs/integrations/microsoft-teams',
-  splunk: 'https://community.deepfence.io/threatmapper/docs/integrations/splunk',
-  sumologic: 'https://community.deepfence.io/threatmapper/docs/integrations/sumo-logic',
+    'https://threatmapper.org/threatmapper/docs/integrations/http-endpoint',
+  teams: 'https://threatmapper.org/threatmapper/docs/integrations/microsoft-teams',
+  splunk: 'https://threatmapper.org/threatmapper/docs/integrations/splunk',
+  sumologic: 'https://threatmapper.org/threatmapper/docs/integrations/sumo-logic',
   elasticsearch:
-    'https://community.deepfence.io/threatmapper/docs/integrations/elasticsearch',
+    'https://threatmapper.org/threatmapper/docs/integrations/elasticsearch',
   googlechronicle: '',
   aws_security_hub: '',
-  jira: 'https://community.deepfence.io/threatmapper/docs/integrations/jira',
-  s3: 'https://community.deepfence.io/threatmapper/docs/integrations/s3',
+  jira: 'https://threatmapper.org/threatmapper/docs/integrations/jira',
+  s3: 'https://threatmapper.org/threatmapper/docs/integrations/s3',
 } as const;
 
 export const isCloudTrailNotification = (notificationType: string) => {

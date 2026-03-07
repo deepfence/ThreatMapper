@@ -14,8 +14,6 @@ const (
 	NonSaaSDirKey  = NamespaceID("default")
 	DatabaseDirKey = NamespaceID("database")
 	NamespaceKey   = "namespace"
-
-	LicenseActiveKey = "license_active"
 )
 
 type NamespaceID string

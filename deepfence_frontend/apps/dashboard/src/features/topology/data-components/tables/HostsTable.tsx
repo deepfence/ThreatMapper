@@ -862,21 +862,13 @@ const DataTable = ({
                           Version <span className="text-h6">{versions[0]}</span> is
                           available. Please follow{' '}
                           <DFLink
-                            href="https://community.deepfence.io/threatmapper/docs/sensors/"
+                            href="https://threatmapper.org/threatmapper/docs/sensors/"
                             target="_blank"
                             className="dark:text-text-link text-blue-500"
                           >
                             the instructions
                           </DFLink>{' '}
-                          to upgrade the sensor probe. One click updates are available on{' '}
-                          <DFLink
-                            href="https://www.deepfence.io/threatstryker"
-                            target="_blank"
-                            className="dark:text-text-link text-blue-500"
-                          >
-                            ThreatStryker
-                          </DFLink>
-                          .
+                          to upgrade the sensor probe.
                         </div>
                       </div>
                     }

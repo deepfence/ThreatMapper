@@ -7,7 +7,7 @@ import { afterAll, afterEach, beforeAll } from 'vitest';
 import { handlers } from '@/tests/utils';
 
 // fix error of: ReferenceError: ResizeObserver is not defined
-global.ResizeObserver = ResizeObserver;
+globalThis.ResizeObserver = ResizeObserver;
 
 export const server = setupServer(...handlers);
 

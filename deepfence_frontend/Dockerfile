@@ -1,5 +1,4 @@
-FROM nginx:1.27-alpine3.20
-MAINTAINER Deepfence Inc
+FROM nginx:1.29-alpine3.23
 LABEL deepfence.role=system
 
 RUN apk upgrade --no-cache -U \

@@ -2,7 +2,6 @@ import { NodeCounts } from '@/features/dashboard/components/NodeCounts';
 import { Posture } from '@/features/dashboard/components/Posture';
 import { TopAttackPaths } from '@/features/dashboard/components/TopAttackPath';
 import { TopRisks } from '@/features/dashboard/components/TopRisks';
-import { TopRisksRuntimeDummy } from '@/features/dashboard/components/TopRisksRuntimeDummy';
 
 const Dashboard = () => {
   return (
@@ -15,9 +14,6 @@ const Dashboard = () => {
       </div>
       <div className="col-span-2 xl:col-span-1">
         <TopRisks type="vulnerability" to="/vulnerability/unique-vulnerabilities" />
-      </div>
-      <div className="col-span-2 xl:col-span-1">
-        <TopRisksRuntimeDummy />
       </div>
       <div className="col-span-4 xl:col-span-2 min-h-[360px]">
         <Posture />

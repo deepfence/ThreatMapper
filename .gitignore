@@ -66,3 +66,4 @@ deepfence_agent/fargate/*
 
 deepfence_agent/plugins/deepfence_shipper/vendor
 deepfence_agent/plugins/deepfence_shipper/deepfence_shipper
+deepfence_agent/tools/apache/scope/docker/discovery

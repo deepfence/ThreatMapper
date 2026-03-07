@@ -30,8 +30,8 @@ You can add your private and public ECR repositories to ThreatMapper to scan for
 
 The Deepfence Console needs to be deployed on AWS EC2 instance in the same AWS account as the ECR registry and the EC2 instance needs to be assigned an IAM role with the correct permissions
 
-4. The IAM role to be assigned to the Deepfence Console EC2 instance can be deployed using CloudFormation with [deepfence-ecr-role-setup.template](https://deepfence-public.s3.amazonaws.com/ecr/deepfence-ecr-role-setup.template).
-    1. [Link to create IAM role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/ecr/deepfence-ecr-role-setup.template&stackName=Deepfence-ECR-Read-Only-Role). Change region, if required. Once completed, go to `Outputs` tab and copy the value of `InstanceProfileARN`
+4. The IAM role to be assigned to the Deepfence Console EC2 instance can be deployed using CloudFormation with [deepfence-ecr-role-setup.template](https://artifacts.threatmapper.org/ecr/deepfence-ecr-role-setup.template).
+    1. [Link to create IAM role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://artifacts.threatmapper.org/ecr/deepfence-ecr-role-setup.template&stackName=Deepfence-ECR-Read-Only-Role). Change region, if required. Once completed, go to `Outputs` tab and copy the value of `InstanceProfileARN`
 
         ![ECR IAM Role ARN](../img/registry-ecr-5.png)
     2. Assign the instance profile to the EC2 instance on which the Deepfence Console is hosted.
@@ -46,12 +46,12 @@ The Deepfence Console needs to be deployed on AWS EC2 instance in the same AWS a
 
 If a user has an ECR registry in one AWS account and Deepfence Console is deployed in another AWS account, the user needs to set up cross-account ECR registry access as per the following steps:
 
-4. Create a role in the target ECR registry account which has required pull permissions. This can be deployed using CloudFormation with [deepfence-cross-acc-ecr-role-setup.template](https://deepfence-public.s3.amazonaws.com/cross-account-ecr/deepfence-ecr-role-setup.template)
-    1. [Link to create role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cross-account-ecr/deepfence-ecr-role-setup.template&stackName=Deepfence-ECR-Cross-Account-Read-Only-Role). Change region, if required. Once completed, go to `Outputs` tab and copy the value of `RoleARN`
+4. Create a role in the target ECR registry account which has required pull permissions. This can be deployed using CloudFormation with [deepfence-cross-acc-ecr-role-setup.template](https://artifacts.threatmapper.org/cross-account-ecr/deepfence-ecr-role-setup.template)
+    1. [Link to create role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://artifacts.threatmapper.org/cross-account-ecr/deepfence-ecr-role-setup.template&stackName=Deepfence-ECR-Cross-Account-Read-Only-Role). Change region, if required. Once completed, go to `Outputs` tab and copy the value of `RoleARN`
 
         ![ECR Cross Account Role ARN](../img/registry-ecr-7.png)
-5. Create a role in the account where Deepfence Console is deployed to assume the role created in the step above. This can be achieved using CloudFormation with [deepfence-console-account-setup.template](https://deepfence-public.s3.amazonaws.com/cross-account-ecr/deepfence-console-account-setup.template).
-    1. [Link to create cross-account instance role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cross-account-ecr/deepfence-console-account-setup.template&stackName=Deepfence-Cross-Account-ECR-Access-Role). Paste the `RoleARN` copied from above step into `ECRAccessRole` box.
+5. Create a role in the account where Deepfence Console is deployed to assume the role created in the step above. This can be achieved using CloudFormation with [deepfence-console-account-setup.template](https://artifacts.threatmapper.org/cross-account-ecr/deepfence-console-account-setup.template).
+    1. [Link to create cross-account instance role](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://artifacts.threatmapper.org/cross-account-ecr/deepfence-console-account-setup.template&stackName=Deepfence-Cross-Account-ECR-Access-Role). Paste the `RoleARN` copied from above step into `ECRAccessRole` box.
 
         ![ECR Cross Account Role ARN](../img/registry-ecr-8.png)
     2. Once completed, go to `Outputs` tab and copy the value of `InstanceProfileARN`.

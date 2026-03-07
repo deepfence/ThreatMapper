@@ -391,10 +391,6 @@ export function getSettingsApiClient() {
     deleteCustomScheduledTask: settingsApi.deleteCustomScheduledTask.bind(settingsApi),
     addScheduledTask: settingsApi.addScheduledTask.bind(settingsApi),
     getAgentVersions: settingsApi.getAgentVersions.bind(settingsApi),
-    generateThreatMapperLicense: settingsApi.generateLicense.bind(settingsApi),
-    registerThreatMapperLicense: settingsApi.registerLicense.bind(settingsApi),
-    getThreatMapperLicense: settingsApi.getLicense.bind(settingsApi),
-    deleteThreatMapperLicense: settingsApi.deleteLicense.bind(settingsApi),
     testUnconfiguredEmail: settingsApi.testUnconfiguredEmail.bind(settingsApi),
     getDatabaseInfo: settingsApi.databaseInfo.bind(settingsApi),
     getDeepfenceCommunicationMessages:

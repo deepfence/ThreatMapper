@@ -266,20 +266,6 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 60m",
-		s.enqueueTask(namespace, utils.CheckAgentUpgradeTask, true))
-	if err != nil {
-		return err
-	}
-	jobIDs = append(jobIDs, jobID)
-
-	jobID, err = s.cron.AddFunc("@every 60m",
-		s.enqueueTask(namespace, utils.CheckCloudScannerAgentUpgradeTask, true))
-	if err != nil {
-		return err
-	}
-	jobIDs = append(jobIDs, jobID)
-
 	jobID, err = s.cron.AddFunc("@every 12h",
 		s.enqueueTask(namespace, utils.SyncRegistryTask, true, utils.CritialTaskOpts()...))
 	if err != nil {
@@ -337,18 +323,6 @@ func (s *Scheduler) addCronJobs(ctx context.Context) error {
 	}
 	jobIDs = append(jobIDs, jobID)
 
-	jobID, err = s.cron.AddFunc("@every 2h", s.enqueueTask(namespace, utils.UpdateLicenseTask, true, utils.CritialTaskOpts()...))
-	if err != nil {
-		return err
-	}
-	jobIDs = append(jobIDs, jobID)
-
-	jobID, err = s.cron.AddFunc("@every 1h", s.enqueueTask(namespace, utils.ReportLicenseUsageTask, true, utils.CritialTaskOpts()...))
-	if err != nil {
-		return err
-	}
-	jobIDs = append(jobIDs, jobID)
-
 	jobID, err = s.cron.AddFunc("@every 5h", s.enqueueTask(namespace, utils.ThreatIntelUpdateTask, false, utils.CritialTaskOpts()...))
 	if err != nil {
 		return err
@@ -383,8 +357,6 @@ func (s *Scheduler) startInitJobs(ctx context.Context) error {
 	}
 
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
-	s.enqueueTask(namespace, utils.CheckAgentUpgradeTask, true)()
-	s.enqueueTask(namespace, utils.CheckCloudScannerAgentUpgradeTask, true)()
 	s.enqueueTask(namespace, utils.SyncRegistryPostgresNeo4jTask, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.ReportCleanUpTask, true, utils.CritialTaskOpts()...)()
 	s.enqueueTask(namespace, utils.CachePostureProviders, true, utils.CritialTaskOpts()...)()

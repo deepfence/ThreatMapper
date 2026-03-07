@@ -59,7 +59,7 @@ const (
 	ServiceKeyFieldKey     = "service_key"
 	TokenFieldKey          = "token"
 
-	DeepfenceCommunityEmailID = "community@deepfence.io"
+	DeepfenceCommunityEmailID = "community@threatmapper.org"
 )
 
 var SensitiveFields = map[string]struct{}{

@@ -34,13 +34,8 @@ var (
 )
 
 func init() {
-	// for aws s3
-	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=%s://%s.s3.%s.amazonaws.com/database/vulnerability/listing.json",
-		directory.FileServerProtocol, directory.FileServerDatabaseBucket, directory.FileServerRegion)
-	if directory.FileServerHost != "s3.amazonaws.com" {
-		GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=%s://%s:%s/database/database/vulnerability/listing.json",
-			directory.FileServerProtocol, directory.FileServerHost, directory.FileServerPort)
-	}
+	GRYPE_DB_UPDATE_URL = fmt.Sprintf("GRYPE_DB_UPDATE_URL=%s://%s:%s/database/database/vulnerability",
+		directory.FileServerProtocol, directory.FileServerHost, directory.FileServerPort)
 	log.Info().Msg(GRYPE_DB_UPDATE_URL)
 }
 

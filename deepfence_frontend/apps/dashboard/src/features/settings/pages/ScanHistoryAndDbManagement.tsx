@@ -244,13 +244,17 @@ const useGetVersion = () => {
     ...queries.setting.productVersion(),
   });
 };
-const useGetLicense = () => {
-  return useSuspenseQuery({
-    ...queries.setting.getThreatMapperLicense(),
-  });
-};
 
-const useGetLink = (version: string, licenseKey?: string) => {
+const useGetLink = (version: string) => {
+  const THREAT_INTEL_BASE_URL = 'https://artifacts.threatmapper.org/threat-intel';
+
+  const getThreatIntelURL = (type: string) => {
+    if (type === 'vulnerability') {
+      return `${THREAT_INTEL_BASE_URL}/${type}/v6/${type}_v${version}.tar.gz`;
+    }
+    return `${THREAT_INTEL_BASE_URL}/${type}/${type}_v${version}.tar.gz`;
+  };
+
   const fetchLinks = async () => {
     const threats: {
       data?: { type: string; url: string }[];
@@ -258,59 +262,25 @@ const useGetLink = (version: string, licenseKey?: string) => {
     } = {
       data: [],
     };
-    if (!licenseKey) {
-      return threats;
-    }
-    const requestHeaders: HeadersInit = new Headers();
-    requestHeaders.set('x-license-key', licenseKey);
-    try {
-      const response = await fetch(
-        `https://threat-intel.deepfence.io/threat-intel/listing.json?version=${version}&product=ThreatMapper`,
-        {
-          method: 'GET',
-          headers: requestHeaders,
-        },
-      );
-      if (!response.ok) {
-        threats.error = 'Failed to fetch threat intel feeds and rules';
-        return threats;
-      }
-      const data = (await response.json()) as Record<
-        string,
-        Record<
-          string,
-          {
-            type: string;
-            url: string;
-          }[]
-        >
-      >;
-      const links = data.available[version];
-      const sortMap: { [key: string]: number } = {
-        vulnerability: 1,
-        secret: 2,
-        malware: 3,
-        posture: 4,
-      };
-      threats.data = links
-        ?.sort((link1, link2) => sortMap[link1.type] - sortMap[link2.type])
-        .map?.((link) => ({ type: link.type, url: link.url }));
-    } catch (error) {
-      threats.error = 'Fail to fetch threat intel feeds and rules';
-    }
+
+    // Directly construct URLs without fetching listing.json
+    const types = ['vulnerability', 'secret', 'malware', 'posture'];
+    threats.data = types.map((type) => ({
+      type,
+      url: getThreatIntelURL(type),
+    }));
 
     return threats;
   };
   return useSuspenseQuery({
-    queryKey: ['threat-intel-feeds'],
+    queryKey: ['threat-intel-feeds', version],
     queryFn: fetchLinks,
   });
 };
 
 const RuleLinks = () => {
   const { data: product } = useGetVersion();
-  const { data: license } = useGetLicense();
-  const { data: threats } = useGetLink(product.version, license.key);
+  const { data: threats } = useGetLink(product.version);
 
   return (
     <>
@@ -640,27 +610,27 @@ const resources: {
   label: string;
   value: ModelBulkDeleteScansRequestScanTypeEnum;
 }[] = [
-  {
-    label: 'Vulnerability',
-    value: ModelBulkDeleteScansRequestScanTypeEnum.Vulnerability,
-  },
-  {
-    label: 'Secret',
-    value: ModelBulkDeleteScansRequestScanTypeEnum.Secret,
-  },
-  {
-    label: 'Malware',
-    value: ModelBulkDeleteScansRequestScanTypeEnum.Malware,
-  },
-  {
-    label: 'Posture',
-    value: ModelBulkDeleteScansRequestScanTypeEnum.Compliance,
-  },
-  {
-    label: 'Cloud Posture',
-    value: ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance,
-  },
-];
+    {
+      label: 'Vulnerability',
+      value: ModelBulkDeleteScansRequestScanTypeEnum.Vulnerability,
+    },
+    {
+      label: 'Secret',
+      value: ModelBulkDeleteScansRequestScanTypeEnum.Secret,
+    },
+    {
+      label: 'Malware',
+      value: ModelBulkDeleteScansRequestScanTypeEnum.Malware,
+    },
+    {
+      label: 'Posture',
+      value: ModelBulkDeleteScansRequestScanTypeEnum.Compliance,
+    },
+    {
+      label: 'Cloud Posture',
+      value: ModelBulkDeleteScansRequestScanTypeEnum.CloudCompliance,
+    },
+  ];
 
 const ScanHistoryAndDbManagement = () => {
   const [, setSeverityOrResources] = useState('severity');

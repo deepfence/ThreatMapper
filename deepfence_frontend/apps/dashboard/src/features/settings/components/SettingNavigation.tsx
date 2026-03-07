@@ -42,13 +42,6 @@ const MenuItems: Array<{
   },
 ];
 
-if (isThreatMapper) {
-  MenuItems.push({
-    title: 'License Details',
-    to: '/settings/tm-license-details',
-  });
-}
-
 const FeedMenuItems: Array<{
   title: string;
   to: string;

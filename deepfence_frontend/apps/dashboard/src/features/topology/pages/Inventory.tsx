@@ -3,7 +3,6 @@ import { Suspense, useEffect, useState } from 'react';
 import { generatePath, Outlet, useMatches, useParams } from 'react-router-dom';
 import { Tabs } from 'ui-components';
 
-import { useCachedDatabaseInfo } from '@/components/FeedAgeBanner';
 import { TopologyHeader } from '@/features/topology/components/TopologyHeader';
 import { queries } from '@/queries';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -95,11 +94,9 @@ function InventoryTabs() {
 }
 
 function Inventory() {
-  const { bannerHeight, showBanner } = useCachedDatabaseInfo();
   return (
     <div
-      className="flex flex-col"
-      style={{ height: showBanner ? `calc(100% - ${bannerHeight}px)` : '100%' }}
+      className="flex flex-col h-full"
     >
       <InventoryTabs />
       <div className="flex-1">

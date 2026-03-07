@@ -1,6 +1,5 @@
 import { Outlet } from 'react-router-dom';
 
-import { UserInfoGuard } from '@/components/UserInfoGuard';
 import { OnboardAppHeader } from '@/features/onboard/components/OnBoardAppHeader';
 
 export const OnboardLayout = () => {
@@ -10,7 +9,6 @@ export const OnboardLayout = () => {
         <Outlet />
       </div>
       <OnboardAppHeader />
-      <UserInfoGuard />
     </div>
   );
 };

@@ -16,12 +16,12 @@
     "format:fix": "prettier  --loglevel warn --write \"./**/*.{js,jsx,ts,tsx,css,md,json}\""
   },
   "devDependencies": {
-    "prettier": "^3.2.5",
-    "turbo": "^1.13.2",
-    "typescript": "^5.4.4"
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.4",
+    "typescript": "^5.7.2"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=24.0.0"
   },
-  "packageManager": "pnpm@7.17.1"
+  "packageManager": "pnpm@10.30.3+sha512.c961d1e0a2d8e354ecaa5166b822516668b7f44cb5bd95122d590dd81922f606f5473b6d23ec4a5be05e7fcd18e8488d47d978bbe981872f1145d06e9a740017"
 }

@@ -28,11 +28,12 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/telemetry"
 	"github.com/deepfence/package-scanner/utils"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/service/ecr"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
 )
 
 const (
@@ -206,30 +207,49 @@ func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 		log.Error().Msg(err.Error())
 	}
 
-	var awsConfig aws.Config
-	var svc *ecr.ECR
-	var creds *credentials.Credentials
+	ctx := context.Background()
+	var cfg aws.Config
+	var svc *ecr.Client
 
 	if hub.NonSecret.UseIAMRole == "false" {
-		awsConfig.WithCredentials(credentials.NewStaticCredentials(hub.NonSecret.AWSAccessKeyID, hub.Secret.AWSSecretAccessKey, ""))
-	}
-	mySession := session.Must(session.NewSession(&awsConfig))
-
-	if hub.NonSecret.UseIAMRole == "true" && len(hub.NonSecret.TargetAccountRoleARN) > 0 {
-		creds = stscreds.NewCredentials(mySession, hub.NonSecret.TargetAccountRoleARN)
-		svc = ecr.New(mySession, &aws.Config{
-			Credentials: creds,
-			Region:      aws.String(hub.NonSecret.AWSRegionName),
-		})
+		cfg, err = config.LoadDefaultConfig(
+			ctx,
+			config.WithRegion(hub.NonSecret.AWSRegionName),
+			config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+				hub.NonSecret.AWSAccessKeyID,
+				hub.Secret.AWSSecretAccessKey,
+				"",
+			)),
+		)
+		if err != nil {
+			return regCreds{}, err
+		}
+		svc = ecr.NewFromConfig(cfg)
+	} else if hub.NonSecret.UseIAMRole == "true" && len(hub.NonSecret.TargetAccountRoleARN) > 0 {
+		cfg, err = config.LoadDefaultConfig(ctx, config.WithRegion(hub.NonSecret.AWSRegionName))
+		if err != nil {
+			return regCreds{}, err
+		}
+		cfg.Credentials = aws.NewCredentialsCache(
+			stscreds.NewAssumeRoleProvider(
+				sts.NewFromConfig(cfg),
+				hub.NonSecret.TargetAccountRoleARN,
+			),
+		)
+		svc = ecr.NewFromConfig(cfg)
 	} else {
-		svc = ecr.New(mySession, aws.NewConfig().WithRegion(hub.NonSecret.AWSRegionName))
+		cfg, err = config.LoadDefaultConfig(ctx, config.WithRegion(hub.NonSecret.AWSRegionName))
+		if err != nil {
+			return regCreds{}, err
+		}
+		svc = ecr.NewFromConfig(cfg)
 	}
 
 	var authorizationTokenRequestInput ecr.GetAuthorizationTokenInput
 	if hub.NonSecret.AWSAccountID != "" {
-		authorizationTokenRequestInput.SetRegistryIds([]*string{aws.String(hub.NonSecret.AWSAccountID)})
+		authorizationTokenRequestInput.RegistryIds = []string{hub.NonSecret.AWSAccountID}
 	}
-	authorizationTokenResponse, err := svc.GetAuthorizationToken(&authorizationTokenRequestInput)
+	authorizationTokenResponse, err := svc.GetAuthorizationToken(ctx, &authorizationTokenRequestInput)
 	if err != nil {
 		return regCreds{}, err
 	}
@@ -237,7 +257,7 @@ func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 	if len(authorizationData) == 0 {
 		return regCreds{}, errors.New("no authorization data found")
 	}
-	authData := *authorizationData[0]
+	authData := authorizationData[0]
 	return regCreds{
 		URL:           *authData.ProxyEndpoint,
 		UserName:      *authData.AuthorizationToken,

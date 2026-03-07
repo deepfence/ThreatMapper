@@ -255,32 +255,6 @@ export const settingQueries = createQueryKeys('setting', {
       },
     };
   },
-  getThreatMapperLicense: () => {
-    return {
-      queryKey: ['getThreatMapperLicense'],
-      queryFn: async () => {
-        const api = apiWrapper({
-          fn: getSettingsApiClient().getThreatMapperLicense,
-        });
-        const response = await api();
-
-        if (!response.ok) {
-          if (
-            response.error.response.status === 403 ||
-            response.error.response.status === 400
-          ) {
-            const message = await get403Message(response.error);
-            return {
-              message,
-            };
-          }
-          throw response.error;
-        }
-
-        return response.value;
-      },
-    };
-  },
   getDatabaseInfo: () => {
     return {
       queryKey: ['getDatabaseInfo'],
@@ -289,10 +263,10 @@ export const settingQueries = createQueryKeys('setting', {
         daysOld: number | undefined;
         showBanner: boolean;
         data:
-          | Awaited<
-              ReturnType<ReturnType<typeof getSettingsApiClient>['getDatabaseInfo']>
-            >
-          | undefined;
+        | Awaited<
+          ReturnType<ReturnType<typeof getSettingsApiClient>['getDatabaseInfo']>
+        >
+        | undefined;
       }> => {
         if (!isThreatMapper) {
           return {
@@ -324,8 +298,8 @@ export const settingQueries = createQueryKeys('setting', {
 
         const daysOld = lastUpdated
           ? Math.floor(
-              (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24),
-            )
+            (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24),
+          )
           : undefined;
 
         return {

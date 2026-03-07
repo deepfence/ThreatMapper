@@ -1,7 +1,7 @@
 ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
 
-FROM golang:1.23-bookworm
+FROM golang:1.25-trixie
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
@@ -15,13 +15,9 @@ RUN apt-get -qq -y --no-install-recommends install \
     pkg-config \
     libssl-dev \
     git \
-    protoc-gen-go \
     bash \
-    make \
-    gcc \
     libc-dev \
     lsb-release \
-    software-properties-common \
     libz-dev \
     apt-utils \
     protobuf-compiler \
@@ -40,9 +36,9 @@ RUN apt-get -qq -y --no-install-recommends install \
     libvectorscan-dev
 
 RUN cd /root  \
-    && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.3.2.tar.gz \
-    && tar -zxf v4.3.2.tar.gz \
-    && cd yara-4.3.2 \
+    && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.5.5.tar.gz \
+    && tar -zxf v4.5.5.tar.gz \
+    && cd yara-4.5.5 \
     && ./bootstrap.sh \
     && ./configure --prefix=/usr/local/yara --disable-dotnet --enable-magic --enable-cuckoo \
     && make \
@@ -50,8 +46,8 @@ RUN cd /root  \
     && cd /usr/local/ \
     && tar -czf yara.tar.gz yara
 
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.32.0
-RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.0
 
 ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/local/include/hs/lib:$LD_LIBRARY_PATH \
     PKG_CONFIG_PATH=/usr/local/yara/lib/pkgconfig:$(PKG_CONFIG_PATH) \
