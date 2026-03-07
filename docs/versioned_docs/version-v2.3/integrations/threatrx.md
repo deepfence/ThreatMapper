@@ -10,10 +10,6 @@ Following LLM integrations are available:
 - OpenAI
 - Amazon Bedrock
 
-For more details, please visit Deepfence blog here:
-- https://www.deepfence.io/blog/deepfence-revolutionizes-cloud-security-with-ai-powered-remediation-introducing-threatrx-part-1
-- https://www.deepfence.io/blog/deepfence-revolutionizes-cloud-security-with-ai-powered-remediation-introducing-threatrx-part-2
-
 ## To Configure OpenAI
 
 1. Create an API key here: https://platform.openai.com/api-keys

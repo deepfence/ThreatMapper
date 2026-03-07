@@ -108,13 +108,11 @@ Thank you for using ThreatMapper.  Please feel welcome to participate in the [Th
 * [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) Got a feature request or found a bug?  Raise an issue
 * [![Documentation](https://img.shields.io/badge/documentation-read-green)](https://threatmapper.org/threatmapper/docs/v2.5/) Read the documentation in the [Deepfence ThreatMapper Documentation](https://threatmapper.org/threatmapper/docs/v2.5/)
 * [productsecurity at deepfence dot io](SECURITY.md): Found a security issue?  Share it in confidence
-* Find out more at [deepfence.io](https://deepfence.io/)
 
 # Get ThreatStryker for Enterprise
 
 ThreatStryker is the enterprise version of ThreatMapper, with additional features for enterprise security teams.  ThreatStryker is available as a cloud service or for on-premises deployment.
 
-<a href="https://deepfence.io/view-enterprise-sandbox" target="_blank"><img src="./images/threatstryker.png">
 
 # Security and Support
 

@@ -7,7 +7,6 @@ import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareS
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { actionStopScan } from '@/components/scan-configure-forms/StopScanForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
-import { module as userInfoGuardModule } from '@/components/UserInfoGuard';
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { action as downloadSBOMAction } from '@/features/common/data-component/downloadSBOMAction';
@@ -81,10 +80,8 @@ import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as topologyLoader } from '@/features/topology/data-components/topologyLoader';
-import { module as apiEndpoints } from '@/features/topology/pages/ApiEndpoints';
 import { module as cloudResourceTable } from '@/features/topology/pages/CloudResourceTable';
 import { module as inventory } from '@/features/topology/pages/Inventory';
-import { module as llm } from '@/features/topology/pages/LLM';
 import { module as visual } from '@/features/topology/pages/ViewType';
 import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
 import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
@@ -207,16 +204,6 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'compute/:viewType/:visualLayout',
             ...visual,
             meta: { title: 'Inventory | Cloud' },
-          },
-          {
-            path: 'api',
-            ...apiEndpoints,
-            meta: { title: 'Inventory | Api Endpoints' },
-          },
-          {
-            path: 'llm',
-            ...llm,
-            meta: { title: 'Inventory | LLM' },
           },
           {
             path: 'cloud_resource',
@@ -643,10 +630,6 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'malware/classes/scan/:scanId',
         ...malwareClassesForScan,
-      },
-      {
-        path: 'user-info-guard',
-        ...userInfoGuardModule,
       },
       {
         path: 'mark-df-message-read',

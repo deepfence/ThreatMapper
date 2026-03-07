@@ -4,7 +4,6 @@ import { getAuthenticationApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { apiWrapper } from '@/utils/api';
 import { handleLoginAndRedirect } from '@/utils/auth';
-import { track } from '@/utils/track';
 
 export type LoginActionReturnType =
   | {

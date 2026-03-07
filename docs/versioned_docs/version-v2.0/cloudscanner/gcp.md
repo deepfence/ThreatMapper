@@ -45,7 +45,7 @@ Copy and paste the following into a new file cloud-scanner.tf. Edit the fields: 
 ```terraform
 module "cloud-scanner_example_single-project" {
   source              = "deepfence/cloud-scanner/gcp//examples/multi-project"
-  org_domain          = "<Your Org Domain> e.g. deepfence.io"
+  org_domain          = "<Your Org Domain> e.g. threatmapper.org"
   version             = "0.3.0"
   name                = "deepfence-cloud-scanner"
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"

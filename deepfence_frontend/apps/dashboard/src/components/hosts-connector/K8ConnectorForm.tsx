@@ -348,7 +348,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
           <div className="text-p7a text-text-text-and-icon">
             Deploy Deepfence agent Kubernetes Scanner. Find out more information by{' '}
             <DFLink
-              href={`https://community.deepfence.io/threatmapper/docs/v2.5/sensors/kubernetes`}
+              href={`https://threatmapper.org/threatmapper/docs/v2.5/sensors/kubernetes`}
               target="_blank"
               rel="noreferrer"
               className="mt-2"

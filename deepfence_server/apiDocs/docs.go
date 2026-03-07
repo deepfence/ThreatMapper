@@ -68,8 +68,8 @@ func InitializeOpenAPIReflector() *OpenAPIDocs {
 	description := "Deepfence Runtime API provides programmatic control over Deepfence microservice securing your container, kubernetes and cloud deployments. The API abstracts away underlying infrastructure details like cloud provider, \ncontainer distros, container orchestrator and type of deployment. This is one uniform API to manage and control security alerts, policies and response to alerts for microservices running anywhere i.e. managed pure greenfield container deployments or a mix of containers, VMs and serverless paradigms like AWS Fargate."
 	tos := "/tos"
 	contactName := "Deepfence Support"
-	contactURL := "https://deepfence.io"
-	contactEmail := "community@deepfence.io"
+	contactURL := "https://threatmapper.org"
+	contactEmail := "community@threatmapper.org"
 	licenseURL := "https://www.apache.org/licenses/LICENSE-2.0"
 	externalDocsDesc := "Deepfence Community"
 
@@ -93,7 +93,7 @@ func InitializeOpenAPIReflector() *OpenAPIDocs {
 			},
 			ExternalDocs: &openapi3.ExternalDocumentation{
 				Description: &externalDocsDesc,
-				URL:         "https://community.deepfence.io",
+				URL:         "https://threatmapper.org",
 			},
 			Security: nil,
 			Tags:     []openapi3.Tag{{Name: tagAuthentication}, {Name: tagCommon}, {Name: tagCompliance}, {Name: tagTopology}, {Name: tagSecretScan}, {Name: tagMalwareScan}, {Name: tagVulnerability}},

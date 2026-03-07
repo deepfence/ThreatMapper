@@ -8,7 +8,7 @@ To get a quick overview of the ThreatMapper UI and operational processes, you ca
 
  * URL: https://threatmapper.deepfence.show/
 
- * Username: `community@deepfence.io`
+ * Username: `community@threatmapper.org`
 
  * Password: `mzHAmWa!89zRD$KMIZ@ot4SiO`
 
