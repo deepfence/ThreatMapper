@@ -45,36 +45,6 @@ const config = {
               label: 'v2.5',
               banner: 'none',
             },
-            "v2.4": {
-              label: 'v2.4',
-              path: 'v2.4',
-              banner: 'none',
-            },
-            "v2.3": {
-              label: 'v2.3',
-              path: 'v2.3',
-              banner: 'none',
-            },
-            "v2.2": {
-              label: 'v2.2',
-              path: 'v2.2',
-              banner: 'none',
-            },
-            "v2.1": {
-              label: 'v2.1',
-              path: 'v2.1',
-              banner: 'none',
-            },
-            "v2.0": {
-              label: 'v2.0 (deprecated)',
-              path: 'v2.0',
-              banner: 'none',
-            },
-            "v1.5": {
-              label: 'v1.5 (deprecated)',
-              path: 'v1.5',
-              banner: 'none',
-            },
           },
         },
         blog: false,
@@ -148,14 +118,6 @@ const config = {
               {
                 type: 'html',
                 value: '<div class="nav-dropdown-title">Enterprise</div>',
-              },
-              {
-                type: 'html',
-                value: '<a class="dropdown__link" href="/threatstryker/docs">ThreatStryker</a>',
-              },
-              {
-                type: 'html',
-                value: '<a class="dropdown__link" href="/threatstryker/docs/cloud">Deepfence Cloud</a>',
               },
             ],
           },
