@@ -159,7 +159,7 @@ func TriggerSendNotifications(ctx context.Context, task *asynq.Task) error {
 		if ig.ErrorMsg.String != "" &&
 			time.Since(ig.LastSentTime.Time) < NotificationErrorBackoff {
 			log.Info().Msgf("Skipping integration for %s rowId: %d due to error: %s "+
-				"occured at last attempt, %s ago",
+				"occurred at last attempt, %s ago",
 				ig.IntegrationType, ig.ID,
 				ig.ErrorMsg.String, time.Since(ig.LastSentTime.Time))
 			continue
